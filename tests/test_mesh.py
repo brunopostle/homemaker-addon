@@ -69,6 +69,12 @@ class Tests(unittest.TestCase):
         self.assertAlmostEqual(volume_1, 500.0)
         self.assertEqual(cells[0].Elevation(), 0.0)
         self.assertEqual(cells[0].Height(), 10.0)
+        self.assertEqual(len(cells[0].FacesTop()), 1)
+        self.assertEqual(len(cells[0].FacesBottom()), 1)
+        faces_top = cells[0].FacesTop()
+        self.assertTrue(faces_top[0].IsHorizontal())
+        self.assertEqual(faces_top[0].Elevation(), 10.0)
+        self.assertEqual(faces_top[0].Height(), 0.0)
 
 output = Topology.Analyze(cc)
 #print(output)
