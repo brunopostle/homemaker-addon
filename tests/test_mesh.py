@@ -67,6 +67,8 @@ class Tests(unittest.TestCase):
         volume_1 = cells[1].Volume()
         self.assertAlmostEqual(volume_0, 500.0)
         self.assertAlmostEqual(volume_1, 500.0)
+        self.assertEqual(cells[0].Elevation(), 0.0)
+        self.assertEqual(cells[0].Height(), 10.0)
 
 output = Topology.Analyze(cc)
 #print(output)
