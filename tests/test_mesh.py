@@ -8,8 +8,8 @@ import unittest
 
 import topologic
 from topologic import Vertex, Edge, Wire, Face, Cell, CellComplex, Cluster, Topology
-import topologise
-from topologise import *
+import topologist
+from topologist import *
 
 points = [[0,0,0], [10,0,0], [10,10,0], [0,10,0], [0,0,10], [10,0,10], [10,10,10], [0,10,10]]
 
