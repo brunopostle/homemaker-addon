@@ -1,4 +1,4 @@
-from topologic import Vertex, Edge, Wire, Face, Shell, Cell, CellComplex, Cluster, Topology, Graph, Dictionary, Attribute, AttributeManager, VertexUtility, EdgeUtility, WireUtility, ShellUtility, CellUtility, TopologyUtility
+from topologic import Vertex, Edge, Wire, Face, Shell, Cell, CellComplex, Cluster, Topology, VertexUtility
 
 import cppyy
 
@@ -7,16 +7,16 @@ def create_stl_list(cppyy_data_type):
     return values
 
 def convert_to_stl_list(py_list, cppyy_data_type):
-    values = create_stl_list( cppyy_data_type )
+    values = create_stl_list(cppyy_data_type)
     for i in py_list:
-        values.push_back( i )
+        values.push_back(i)
     return values
 
 def convert_to_py_list(stl_list):
     py_list = []
-    i  =  stl_list.begin()
-    while (i != stl_list.end()):
-        py_list.append( i.__deref__() )
+    i = stl_list.begin()
+    while i != stl_list.end():
+        py_list.append(i.__deref__())
         _ = i.__preinc__()
     return py_list
 
@@ -29,7 +29,7 @@ def classByType(argument):
         16: Shell,
         32: Cell,
         64: CellComplex,
-        128: Cluster }
+        128: Cluster}
     return switcher.get(argument, Topology)
 
 def fixTopologyClass(topology):
@@ -53,10 +53,10 @@ def getSubTopologies(topology, subTopologyClass):
         _ = topology.Cells(values)
     elif subTopologyClass == CellComplex:
         _ = topology.CellComplexes(values)
- 
+
     py_list = []
-    i  =  values.begin()
-    while (i != values.end()):
+    i = values.begin()
+    while i != values.end():
         py_list.append(fixTopologyClass(Topology.DeepCopy(i.__deref__())))
         _ = i.__preinc__()
     return py_list
@@ -110,4 +110,3 @@ def edgesByVertices(vertices):
     e1 = Edge.ByStartVertexEndVertex(v1, v2)
     edges.push_back(e1)
     return edges
-
