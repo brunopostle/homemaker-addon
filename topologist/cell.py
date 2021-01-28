@@ -1,6 +1,6 @@
 import topologic
-from topologic import CellUtility
-from .helpers import *
+from topologic import Vertex, Face, CellUtility
+from .helpers import getSubTopologies
 
 def Volume(self):
     return CellUtility.Volume(self)

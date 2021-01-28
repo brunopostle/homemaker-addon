@@ -1,7 +1,7 @@
 import cppyy
 import topologic
-from topologic import Vertex, Edge, Face, FaceUtility
-from .helpers import *
+from topologic import Vertex, Edge, Face, Cell, FaceUtility
+from .helpers import getSubTopologies
 
 def ByVertices(vertices):
     edges = []

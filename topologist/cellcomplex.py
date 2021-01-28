@@ -1,7 +1,7 @@
 import cppyy
 import topologic
-from topologic import Face, Cell, CellComplex, Topology
-from .helpers import *
+from topologic import Face, CellComplex
+from .helpers import getSubTopologies
 
 def ByFaces2(faces, tolerance):
     faces_ptr = cppyy.gbl.std.list[Face.Ptr]()
