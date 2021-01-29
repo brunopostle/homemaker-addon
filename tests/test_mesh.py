@@ -34,9 +34,10 @@ cc = CellComplex.ByFaces2(faces, 0.0001)
 
 class Tests(unittest.TestCase):
     def test_vertices(self):
-        self.assertEqual(len(points), len(vertices))
         self.assertEqual(points[0][0], 0.0)
         self.assertEqual(points[1][0], 10.0)
+    def test_vertices_cc(self):
+        self.assertEqual(len(points), len(vertices))
         self.assertEqual(vertices[0].X(), 0.0)
         self.assertEqual(vertices[1].X(), 10.0)
         self.assertEqual(vertices[-1].Y(), 10.0)
@@ -65,6 +66,12 @@ class Tests(unittest.TestCase):
         cells = face_cc.Cells2(cells_ptr)
         self.assertGreater(len(cells), 0)
         self.assertLess(len(cells), 3)
+        faces_ptr4 = cppyy.gbl.std.list[Face.Ptr]()
+        faces_vertical = cc.FacesVertical(faces_ptr4)
+        self.assertEqual(len(faces_vertical), 5)
+        faces_ptr5 = cppyy.gbl.std.list[Face.Ptr]()
+        faces_horizontal = cc.FacesHorizontal(faces_ptr5)
+        self.assertEqual(len(faces_horizontal), 4)
     def test_cells(self):
         centroid = cc.Centroid()
         self.assertEqual(centroid.X(), 5.0)
