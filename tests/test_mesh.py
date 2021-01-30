@@ -29,7 +29,10 @@ for face_by_id in faces_by_vertex_id:
     face_by_vertices = Face.ByVertices(vertices_face)
     faces.append(face_by_vertices)
 
-cc = CellComplex.ByFaces2(faces, 0.0001)
+faces_ptr = create_stl_list(Face)
+for face in faces:
+    faces_ptr.push_back(face)
+cc = CellComplex.ByFaces(faces_ptr, 0.0001)
 
 class Tests(unittest.TestCase):
     """Nine faces and two cells formed by a cube sliced on the diagonal"""

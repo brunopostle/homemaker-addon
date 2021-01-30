@@ -3,10 +3,8 @@ import sys
 sys.path.append('/home/bruno/src/topologicPy/cpython')
 sys.path.append('/home/bruno/src/homemaker-addon')
 
-import topologic
 from topologic import Vertex, Face, CellComplex, Topology
-import topologist
-from topologist import *
+from topologist.helpers import create_stl_list
 
 import bpy
 import bmesh
@@ -52,7 +50,10 @@ class ObjectHomemaker(bpy.types.Operator):
                 face = Face.ByVertices(vertices_face)
                 faces.append(face)
 
-            cc = CellComplex.ByFaces2(faces, 0.0001)
+            faces_ptr = create_stl_list(Face)
+            for face in faces:
+                faces_ptr.push_back(face)
+            cc = CellComplex.ByFaces(faces_ptr, 0.0001)
             output = Topology.Analyze(cc)
             print(output)
 
