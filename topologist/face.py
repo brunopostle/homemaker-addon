@@ -40,17 +40,21 @@ def IsHorizontal(self):
 def IsInternal(self):
     """Face between two indoor cells"""
     cells_ptr = cppyy.gbl.std.list[topologic.Cell.Ptr]()
-    cells = self.Cells2(cells_ptr)
-    if len(cells) == 2:
-        if cells[0].IsOutside() or cells[1].IsOutside():
-            return False
+    self.Cells(cells_ptr)
+    if len(cells_ptr) == 2:
+        for cell in cells_ptr:
+            if cell.IsOutside():
+                return False
         return True
     return False
 
 def IsExternal(self):
     """Face between indoor cell and (outdoor cell or world)"""
     cells_ptr = cppyy.gbl.std.list[topologic.Cell.Ptr]()
-    cells = self.Cells2(cells_ptr)
+    self.Cells(cells_ptr)
+    cells = []
+    for cell in cells_ptr:
+        cells.append(cell)
     if len(cells) == 2:
         if cells[0].IsOutside() and not cells[1].IsOutside():
             return True
@@ -64,17 +68,19 @@ def IsExternal(self):
 def IsWorld(self):
     """Face on outside of mesh"""
     cells_ptr = cppyy.gbl.std.list[topologic.Cell.Ptr]()
-    cells = self.Cells2(cells_ptr)
-    if len(cells) == 1:
+    self.Cells(cells_ptr)
+    if len(cells_ptr) == 1:
         return True
     return False
 
 def IsOpen(self):
     """Face on outdoor cell on outside of mesh"""
     cells_ptr = cppyy.gbl.std.list[topologic.Cell.Ptr]()
-    cells = self.Cells2(cells_ptr)
-    if len(cells) == 1 and cells[0].IsOutside():
-        return True
+    self.Cells(cells_ptr)
+    if len(cells_ptr) == 1:
+        for cell in cells_ptr:
+            if cell.IsOutside():
+                return True
     return False
 
 def Normal(self):

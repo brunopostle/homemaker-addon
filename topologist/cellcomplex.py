@@ -11,17 +11,17 @@ def ByFaces2(faces, tolerance):
 setattr(topologic.CellComplex, 'ByFaces2', ByFaces2)
 
 def FacesVertical(self, faces_ptr):
-    faces = self.Faces2(faces_ptr)
+    self.Faces(faces_ptr)
     faces_result = []
-    for face in faces:
+    for face in faces_ptr:
         if face.IsVertical():
             faces_result.append(face)
     return faces_result
 
 def FacesHorizontal(self, faces_ptr):
-    faces = self.Faces2(faces_ptr)
+    self.Faces(faces_ptr)
     faces_result = []
-    for face in faces:
+    for face in faces_ptr:
         if face.IsHorizontal():
             faces_result.append(face)
     return faces_result
