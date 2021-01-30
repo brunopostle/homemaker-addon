@@ -5,47 +5,39 @@ from topologist.helpers import create_stl_list
 def Volume(self):
     return CellUtility.Volume(self)
 
-def FacesTop(self):
+def FacesTop(self, faces_result):
     elements_ptr = create_stl_list(Face)
     self.Faces(elements_ptr)
-    faces_result = []
     for face in elements_ptr:
         if(face.Elevation() == self.Elevation() + self.Height() and face.Height() == 0.0):
-            faces_result.append(face)
-    return faces_result
+            faces_result.push_back(face)
 
-def FacesBottom(self):
+def FacesBottom(self, faces_result):
     elements_ptr = create_stl_list(Face)
     self.Faces(elements_ptr)
-    faces_result = []
     for face in elements_ptr:
         if(face.Elevation() == self.Elevation() and face.Height() == 0.0):
-            faces_result.append(face)
-    return faces_result
+            faces_result.push_back(face)
 
-def CellsAbove(self):
+def CellsAbove(self, cells_result):
     """Cells (excluding self) connected to top faces of this cell"""
     faces_top = self.FacesTop()
     elements_ptr = create_stl_list(Cell)
     self.Cells(elements_ptr)
-    cells_result = []
     for cell in elements_ptr:
         if not cell is self:
             if cell in faces_top:
-                cells_result.append(cell)
-    return cells_result
+                cells_result.push_back(cell)
 
-def CellsBelow(self):
+def CellsBelow(self, cells_result):
     """Cells (excluding self) connected to bottom faces of this cell"""
     faces_bottom = self.FacesBottom()
     elements_ptr = create_stl_list(Cell)
     self.Cells(elements_ptr)
-    cells_result = []
     for cell in elements_ptr:
         if not cell is self:
             if cell in faces_bottom:
-                cells_result.append(cell)
-    return cells_result
+                cells_result.push_back(cell)
 
 def IsOutside(self):
     """Cell with outdoor type"""

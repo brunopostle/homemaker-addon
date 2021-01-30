@@ -59,12 +59,14 @@ class Tests(unittest.TestCase):
             self.assertGreater(len(cells), 0)
             self.assertLess(len(cells), 3)
 
-        faces_vertical = cc.FacesVertical()
+        faces_vertical = create_stl_list(Face)
+        cc.FacesVertical(faces_vertical)
         self.assertEqual(len(faces_vertical), 5)
         for face in faces_vertical:
             self.assertTrue(face.IsVertical())
 
-        faces_horizontal = cc.FacesHorizontal()
+        faces_horizontal = create_stl_list(Face)
+        cc.FacesHorizontal(faces_horizontal)
         self.assertEqual(len(faces_horizontal), 4)
         for face in faces_horizontal:
             self.assertTrue(face.IsHorizontal())
@@ -88,14 +90,36 @@ class Tests(unittest.TestCase):
             self.assertEqual(cell.Elevation(), 0.0)
             self.assertEqual(cell.Height(), 10.0)
 
-            faces_top = cell.FacesTop()
+            faces_vertical = create_stl_list(Face)
+            cell.FacesVertical(faces_vertical)
+            self.assertEqual(len(faces_vertical), 3)
+
+            cell_adjacent = False
+            nowt_adjacent = False
+            for face in faces_vertical:
+                cells_adjacent = create_stl_list(Cell)
+                face.Cells(cells_adjacent)
+                if len(cells_adjacent) == 2:
+                    cell_adjacent = True
+                elif len(cells_adjacent) == 1:
+                    nowt_adjacent = True
+            self.assertTrue(cell_adjacent)
+            self.assertTrue(nowt_adjacent)
+
+            faces_horizontal = create_stl_list(Face)
+            cell.FacesHorizontal(faces_horizontal)
+            self.assertEqual(len(faces_horizontal), 2)
+
+            faces_top = create_stl_list(Face)
+            cell.FacesTop(faces_top)
             self.assertEqual(len(faces_top), 1)
             for face in faces_top:
                 self.assertTrue(face.IsHorizontal())
                 self.assertEqual(face.Elevation(), 10.0)
                 self.assertEqual(face.Height(), 0.0)
 
-            faces_bottom = cell.FacesBottom()
+            faces_bottom = create_stl_list(Face)
+            cell.FacesBottom(faces_bottom)
             self.assertEqual(len(faces_bottom), 1)
             for face in faces_bottom:
                 self.assertTrue(face.IsHorizontal())
