@@ -42,4 +42,3 @@ setattr(topologic.Topology, 'FacesVertical', FacesVertical)
 setattr(topologic.Topology, 'FacesHorizontal', FacesHorizontal)
 setattr(topologic.Topology, 'Elevation', Elevation)
 setattr(topologic.Topology, 'Height', Height)
-

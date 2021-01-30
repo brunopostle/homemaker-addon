@@ -1,5 +1,5 @@
 import topologic
-from topologic import Edge, Face, FaceUtility
+from topologic import Edge, Face, FaceUtility, Cell
 from topologist.helpers import create_stl_list
 
 def ByVertices(vertices):

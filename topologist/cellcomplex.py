@@ -9,4 +9,3 @@ def ByFaces2(faces, tolerance):
     return CellComplex.ByFaces(faces_ptr, tolerance)
 
 setattr(topologic.CellComplex, 'ByFaces2', ByFaces2)
-

@@ -93,4 +93,3 @@ def meshData(topology):
             tempList.append(index)
         faces.append(tuple(tempList))
     return [vertices, faces]
-

@@ -1,6 +1,4 @@
-from .topology import *
-from .face import *
-from .cell import *
-from .cellcomplex import *
-#from .helpers import *
-
+from . import topology
+from . import face
+from . import cell
+from . import cellcomplex
