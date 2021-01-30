@@ -14,16 +14,12 @@ def ByVertices(vertices):
     v2 = vertices[0]
     e1 = Edge.ByStartVertexEndVertex(v1, v2)
     edges.append(e1)
-    return ByEdges2(edges)
-
-def ByEdges2(edges):
     edges_ptr = cppyy.gbl.std.list[topologic.Edge.Ptr]()
     for edge in edges:
         edges_ptr.push_back(edge)
     return Face.ByEdges(edges_ptr)
 
 setattr(topologic.Face, 'ByVertices', ByVertices)
-setattr(topologic.Face, 'ByEdges2', ByEdges2)
 
 def IsVertical(self):
     normal = self.Normal()
