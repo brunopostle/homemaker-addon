@@ -96,6 +96,8 @@ class Tests(unittest.TestCase):
 
             cell_adjacent = False
             nowt_adjacent = False
+            face_internal = False
+            face_world = False
             for face in faces_vertical:
                 cells_adjacent = create_stl_list(Cell)
                 face.Cells(cells_adjacent)
@@ -103,8 +105,14 @@ class Tests(unittest.TestCase):
                     cell_adjacent = True
                 elif len(cells_adjacent) == 1:
                     nowt_adjacent = True
+                if face.IsInternal():
+                    face_internal = True
+                elif face.IsWorld():
+                    face_world = True
             self.assertTrue(cell_adjacent)
             self.assertTrue(nowt_adjacent)
+            self.assertTrue(face_internal)
+            self.assertTrue(face_world)
 
             faces_horizontal = create_stl_list(Face)
             cell.FacesHorizontal(faces_horizontal)
