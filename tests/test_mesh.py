@@ -49,14 +49,13 @@ class Tests(unittest.TestCase):
         self.assertTrue(faces[2].IsVertical())
         self.assertTrue(faces[-1].IsVertical())
     def test_faces_cc(self):
-        faces_ptr = cppyy.gbl.std.list[Face.Ptr]()
-        faces_vertical = cc.FacesVertical(faces_ptr)
+        faces_vertical = cc.FacesVertical()
         self.assertEqual(len(faces_vertical), 5)
         self.assertTrue(faces_vertical[0].IsVertical())
         self.assertTrue(faces_vertical[2].IsVertical())
         self.assertTrue(faces_vertical[4].IsVertical())
         faces_ptr2 = cppyy.gbl.std.list[Face.Ptr]()
-        faces_horizontal = cc.FacesHorizontal(faces_ptr2)
+        faces_horizontal = cc.FacesHorizontal()
         self.assertEqual(len(faces_horizontal), 4)
 
         faces_ptr3 = cppyy.gbl.std.list[Face.Ptr]()
@@ -69,12 +68,11 @@ class Tests(unittest.TestCase):
             self.assertGreater(len(cells_ptr), 0)
             self.assertLess(len(cells_ptr), 3)
 
-        faces_ptr4 = cppyy.gbl.std.list[Face.Ptr]()
-        faces_vertical = cc.FacesVertical(faces_ptr4)
+        faces_vertical = cc.FacesVertical()
         self.assertEqual(len(faces_vertical), 5)
 
         faces_ptr5 = cppyy.gbl.std.list[Face.Ptr]()
-        faces_horizontal = cc.FacesHorizontal(faces_ptr5)
+        faces_horizontal = cc.FacesHorizontal()
         self.assertEqual(len(faces_horizontal), 4)
 
     def test_cells(self):

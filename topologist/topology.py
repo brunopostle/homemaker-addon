@@ -2,7 +2,8 @@ import cppyy
 import topologic
 from topologic import Vertex
 
-def FacesVertical(self, elements_ptr):
+def FacesVertical(self):
+    elements_ptr = cppyy.gbl.std.list[topologic.Face.Ptr]()
     self.Faces(elements_ptr)
     faces_result = []
     for face in elements_ptr:
@@ -10,7 +11,8 @@ def FacesVertical(self, elements_ptr):
             faces_result.append(face)
     return faces_result
 
-def FacesHorizontal(self, elements_ptr):
+def FacesHorizontal(self):
+    elements_ptr = cppyy.gbl.std.list[topologic.Face.Ptr]()
     self.Faces(elements_ptr)
     faces_result = []
     for face in elements_ptr:
