@@ -1,6 +1,6 @@
-import cppyy
 import topologic
 from topologic import Edge, Face, FaceUtility
+from topologist.helpers import create_stl_list
 
 def ByVertices(vertices):
     edges = []
@@ -14,7 +14,7 @@ def ByVertices(vertices):
     v2 = vertices[0]
     e1 = Edge.ByStartVertexEndVertex(v1, v2)
     edges.append(e1)
-    edges_ptr = cppyy.gbl.std.list[topologic.Edge.Ptr]()
+    edges_ptr = create_stl_list(Edge)
     for edge in edges:
         edges_ptr.push_back(edge)
     return Face.ByEdges(edges_ptr)
@@ -35,7 +35,7 @@ def IsHorizontal(self):
 
 def IsInternal(self):
     """Face between two indoor cells"""
-    cells_ptr = cppyy.gbl.std.list[topologic.Cell.Ptr]()
+    cells_ptr = create_stl_list(Cell)
     self.Cells(cells_ptr)
     if len(cells_ptr) == 2:
         for cell in cells_ptr:
@@ -46,7 +46,7 @@ def IsInternal(self):
 
 def IsExternal(self):
     """Face between indoor cell and (outdoor cell or world)"""
-    cells_ptr = cppyy.gbl.std.list[topologic.Cell.Ptr]()
+    cells_ptr = create_stl_list(Cell)
     self.Cells(cells_ptr)
     cells = []
     for cell in cells_ptr:
@@ -63,7 +63,7 @@ def IsExternal(self):
 
 def IsWorld(self):
     """Face on outside of mesh"""
-    cells_ptr = cppyy.gbl.std.list[topologic.Cell.Ptr]()
+    cells_ptr = create_stl_list(Cell)
     self.Cells(cells_ptr)
     if len(cells_ptr) == 1:
         return True
@@ -71,7 +71,7 @@ def IsWorld(self):
 
 def IsOpen(self):
     """Face on outdoor cell on outside of mesh"""
-    cells_ptr = cppyy.gbl.std.list[topologic.Cell.Ptr]()
+    cells_ptr = create_stl_list(Cell)
     self.Cells(cells_ptr)
     if len(cells_ptr) == 1:
         for cell in cells_ptr:

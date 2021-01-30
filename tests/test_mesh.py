@@ -3,12 +3,11 @@
 import os
 import sys
 import unittest
-import cppyy
 
 from topologic import Vertex, Face, Cell, CellComplex, Topology
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import topologist
+from topologist.helpers import create_stl_list
 
 points = [[0.0, 0.0, 0.0], [10.0, 0.0, 0.0], [10.0, 10.0, 0.0], [0.0, 10.0, 0.0],
           [0.0, 0.0, 10.0], [10.0, 0.0, 10.0], [10.0, 10.0, 10.0], [0.0, 10.0, 10.0]]
@@ -54,16 +53,16 @@ class Tests(unittest.TestCase):
         self.assertTrue(faces_vertical[0].IsVertical())
         self.assertTrue(faces_vertical[2].IsVertical())
         self.assertTrue(faces_vertical[4].IsVertical())
-        faces_ptr2 = cppyy.gbl.std.list[Face.Ptr]()
+        faces_ptr2 = create_stl_list(Face)
         faces_horizontal = cc.FacesHorizontal()
         self.assertEqual(len(faces_horizontal), 4)
 
-        faces_ptr3 = cppyy.gbl.std.list[Face.Ptr]()
+        faces_ptr3 = create_stl_list(Face)
         cc.Faces(faces_ptr3)
         self.assertEqual(len(faces_ptr3), 9)
 
         for face_cc in faces_ptr3:
-            cells_ptr = cppyy.gbl.std.list[Cell.Ptr]()
+            cells_ptr = create_stl_list(Cell)
             face_cc.Cells(cells_ptr)
             self.assertGreater(len(cells_ptr), 0)
             self.assertLess(len(cells_ptr), 3)
@@ -71,7 +70,7 @@ class Tests(unittest.TestCase):
         faces_vertical = cc.FacesVertical()
         self.assertEqual(len(faces_vertical), 5)
 
-        faces_ptr5 = cppyy.gbl.std.list[Face.Ptr]()
+        faces_ptr5 = create_stl_list(Face)
         faces_horizontal = cc.FacesHorizontal()
         self.assertEqual(len(faces_horizontal), 4)
 
@@ -81,7 +80,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(centroid.Y(), 5.0)
         self.assertEqual(centroid.Z(), 5.0)
 
-        cells_ptr = cppyy.gbl.std.list[Cell.Ptr]()
+        cells_ptr = create_stl_list(Cell)
         cc.Cells(cells_ptr)
         self.assertEqual(len(cells_ptr), 2)
 

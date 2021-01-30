@@ -1,9 +1,9 @@
-import cppyy
 import topologic
-from topologic import Vertex
+from topologic import Vertex, Face
+from topologist.helpers import create_stl_list
 
 def FacesVertical(self):
-    elements_ptr = cppyy.gbl.std.list[topologic.Face.Ptr]()
+    elements_ptr = create_stl_list(Face)
     self.Faces(elements_ptr)
     faces_result = []
     for face in elements_ptr:
@@ -12,7 +12,7 @@ def FacesVertical(self):
     return faces_result
 
 def FacesHorizontal(self):
-    elements_ptr = cppyy.gbl.std.list[topologic.Face.Ptr]()
+    elements_ptr = create_stl_list(Face)
     self.Faces(elements_ptr)
     faces_result = []
     for face in elements_ptr:
@@ -22,7 +22,7 @@ def FacesHorizontal(self):
 
 def Elevation(self):
     lowest = 9999999.9
-    vertices = cppyy.gbl.std.list[Vertex.Ptr]()
+    vertices = create_stl_list(Vertex)
     self.Vertices(vertices)
     for vertex in vertices:
         if vertex.Z() < lowest:
@@ -31,7 +31,7 @@ def Elevation(self):
 
 def Height(self):
     highest = -9999999.9
-    vertices = cppyy.gbl.std.list[Vertex.Ptr]()
+    vertices = create_stl_list(Vertex)
     self.Vertices(vertices)
     for vertex in vertices:
         if vertex.Z() > highest:

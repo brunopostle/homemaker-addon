@@ -3,8 +3,7 @@ from topologic import Vertex, Edge, Wire, Face, Shell, Cell, CellComplex, Cluste
 import cppyy
 
 def create_stl_list(cppyy_data_type):
-    values = cppyy.gbl.std.list[cppyy_data_type]()
-    return values
+    return cppyy.gbl.std.list[cppyy_data_type.Ptr]()
 
 def convert_to_stl_list(py_list, cppyy_data_type):
     values = create_stl_list(cppyy_data_type)
@@ -95,18 +94,3 @@ def meshData(topology):
         faces.append(tuple(tempList))
     return [vertices, faces]
 
-def edgesByVertices(vertices):
-    edges = []
-    edges = cppyy.gbl.std.list[Edge.Ptr]()
-    for i in range(len(vertices)-1):
-        v1 = vertices[i]
-        v2 = vertices[i+1]
-        e1 = Edge.ByStartVertexEndVertex(v1, v2)
-        #edges.append(e1)
-        edges.push_back(e1)
-    # connect the last vertex to the first one
-    v1 = vertices[len(vertices)-1]
-    v2 = vertices[0]
-    e1 = Edge.ByStartVertexEndVertex(v1, v2)
-    edges.push_back(e1)
-    return edges
