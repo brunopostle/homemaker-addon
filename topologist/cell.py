@@ -5,7 +5,8 @@ from topologic import CellUtility
 def Volume(self):
     return CellUtility.Volume(self)
 
-def FacesTop(self, elements_ptr):
+def FacesTop(self):
+    elements_ptr = cppyy.gbl.std.list[topologic.Face.Ptr]()
     self.Faces(elements_ptr)
     faces_result = []
     for face in elements_ptr:
@@ -13,7 +14,8 @@ def FacesTop(self, elements_ptr):
             faces_result.append(face)
     return faces_result
 
-def FacesBottom(self, elements_ptr):
+def FacesBottom(self):
+    elements_ptr = cppyy.gbl.std.list[topologic.Face.Ptr]()
     self.Faces(elements_ptr)
     faces_result = []
     for face in elements_ptr:
@@ -21,10 +23,10 @@ def FacesBottom(self, elements_ptr):
             faces_result.append(face)
     return faces_result
 
-def CellsAbove(self, elements_ptr):
+def CellsAbove(self):
     """Cells (excluding self) connected to top faces of this cell"""
-    faces_ptr = cppyy.gbl.std.list[topologic.Face.Ptr]()
-    faces_top = self.FacesTop(faces_ptr)
+    faces_top = self.FacesTop()
+    elements_ptr = cppyy.gbl.std.list[topologic.Cell.Ptr]()
     self.Cells(elements_ptr)
     cells_result = []
     for cell in elements_ptr:
@@ -33,10 +35,10 @@ def CellsAbove(self, elements_ptr):
                 cells_result.append(cell)
     return cells_result
 
-def CellsBelow(self, elements_ptr):
+def CellsBelow(self):
     """Cells (excluding self) connected to bottom faces of this cell"""
-    faces_ptr = cppyy.gbl.std.list[topologic.Face.Ptr]()
-    faces_bottom = self.FacesBottom(faces_ptr)
+    faces_bottom = self.FacesBottom()
+    elements_ptr = cppyy.gbl.std.list[topologic.Cell.Ptr]()
     self.Cells(elements_ptr)
     cells_result = []
     for cell in elements_ptr:

@@ -93,12 +93,10 @@ class Tests(unittest.TestCase):
             self.assertEqual(cell.Elevation(), 0.0)
             self.assertEqual(cell.Height(), 10.0)
 
-            faces_ptr = cppyy.gbl.std.list[Face.Ptr]()
-            faces_top = cell.FacesTop(faces_ptr)
+            faces_top = cell.FacesTop()
             self.assertEqual(len(faces_top), 1)
 
-            faces_ptr2 = cppyy.gbl.std.list[Face.Ptr]()
-            faces_bottom = cell.FacesBottom(faces_ptr2)
+            faces_bottom = cell.FacesBottom()
             self.assertEqual(len(faces_bottom), 1)
             self.assertTrue(faces_top[0].IsHorizontal())
             self.assertEqual(faces_top[0].Elevation(), 10.0)
