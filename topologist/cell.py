@@ -43,8 +43,26 @@ def CellsBelow(self, topology, cells_result):
 
 def IsOutside(self):
     """Cell with outdoor type"""
-    # FIXME
+    # TODO
     return False
+
+def PlanArea(self):
+    # TODO
+    pass
+
+def ExternalWallArea(self):
+    # TODO
+    pass
+
+def Crinkliness(self):
+    if self.PlanArea() == 0.0:
+        return 0.0
+    return self.ExternalWallArea() / self.PlanArea()
+
+def Perimeter(self):
+    """2D outline of cell floor, closed, anti-clockwise"""
+    # TODO
+    pass
 
 setattr(topologic.Cell, 'Volume', Volume)
 setattr(topologic.Cell, 'FacesTop', FacesTop)
@@ -52,3 +70,7 @@ setattr(topologic.Cell, 'FacesBottom', FacesBottom)
 setattr(topologic.Cell, 'CellsAbove', CellsAbove)
 setattr(topologic.Cell, 'CellsBelow', CellsBelow)
 setattr(topologic.Cell, 'IsOutside', IsOutside)
+setattr(topologic.Cell, 'PlanArea', PlanArea)
+setattr(topologic.Cell, 'ExternalWallArea', ExternalWallArea)
+setattr(topologic.Cell, 'Crinkliness', Crinkliness)
+setattr(topologic.Cell, 'Perimeter', Perimeter)

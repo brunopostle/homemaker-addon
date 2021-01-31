@@ -21,6 +21,26 @@ def ByVertices(vertices):
 
 setattr(topologic.Face, 'ByVertices', ByVertices)
 
+def AxisOuter(self):
+    """2D bottom edge of a vertical face, for external walls, anti-clockwise in plan"""
+    # TODO
+    pass
+
+def AxisOuterTop(self):
+    """2D top edge of a vertical face, for external walls, anti-clockwise in plan"""
+    # TODO
+    pass
+
+def Types(self):
+    """Cell types associated with this face, 1 or 2 items"""
+    # TODO
+    pass
+
+def TypeInside(self):
+    """Inside cell type associated with this face, otherwise 'Outside'"""
+    # TODO
+    pass
+
 def IsVertical(self):
     normal = self.Normal()
     if abs(normal.Z()) < 0.0001:
@@ -79,13 +99,35 @@ def IsOpen(self):
                 return True
     return False
 
+def IsFaceAbove(self):
+    """Does vertical face have a vertical face attached to a horizontal top?"""
+    # TODO
+    pass
+
+def IsFaceBelow(self):
+    """Does vertical face have a vertical face attached to a horizontal bottom?"""
+    # TODO
+    pass
+
+def HorizontalFacesSideways(self):
+    """Which horizontal faces are attached to the bottom of this vertical face?"""
+    # TODO
+    pass
+
 def Normal(self):
     return FaceUtility.NormalAtParameters(self, 0.5, 0.5)
 
+setattr(topologic.Face, 'AxisOuter', AxisOuter)
+setattr(topologic.Face, 'AxisOuterTop', AxisOuterTop)
+setattr(topologic.Face, 'Types', Types)
+setattr(topologic.Face, 'TypeInside', TypeInside)
 setattr(topologic.Face, 'IsVertical', IsVertical)
 setattr(topologic.Face, 'IsHorizontal', IsHorizontal)
 setattr(topologic.Face, 'IsInternal', IsInternal)
 setattr(topologic.Face, 'IsExternal', IsExternal)
 setattr(topologic.Face, 'IsWorld', IsWorld)
 setattr(topologic.Face, 'IsOpen', IsOpen)
+setattr(topologic.Face, 'IsFaceAbove', IsFaceAbove)
+setattr(topologic.Face, 'IsFaceBelow', IsFaceBelow)
+setattr(topologic.Face, 'HorizontalFacesSideways', HorizontalFacesSideways)
 setattr(topologic.Face, 'Normal', Normal)
