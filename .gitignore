@@ -50,3 +50,5 @@ Thumbs.db
 
 # build dir
 build/
+
+*.egg-info/
