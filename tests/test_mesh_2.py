@@ -4,7 +4,7 @@ import os
 import sys
 import unittest
 
-from topologic import Vertex, Face, Cell, CellComplex, Topology
+from topologic import Vertex, Edge, Face, Cell, CellComplex, Topology
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from topologist.helpers import create_stl_list
@@ -91,6 +91,21 @@ class Tests(unittest.TestCase):
                 self.assertAlmostEqual(cell.Volume(), 500.0)
             elif len(cells_above) == 0:
                 self.assertAlmostEqual(cell.Volume(), 1000.0)
+
+                faces_vertical = create_stl_list(Face)
+                cell.FacesVertical(faces_vertical)
+
+                for face in faces_vertical:
+                    top_edges = create_stl_list(Edge)
+                    bottom_edges = create_stl_list(Edge)
+
+                    face.EdgesTop(top_edges)
+                    face.EdgesBottom(bottom_edges)
+                    self.assertEqual(len(top_edges), 1)
+                    self.assertEqual(len(bottom_edges), 1)
+
+                    self.assertFalse(face.IsFaceAbove())
+                    self.assertTrue(face.IsFaceBelow())
 
             cells_below = create_stl_list(Cell)
             cell.CellsBelow(cc, cells_below)

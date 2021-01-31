@@ -99,15 +99,51 @@ def IsOpen(self):
                 return True
     return False
 
+def EdgesTop(self, edges_result):
+    """A list of horizontal edges at the highest level of this face"""
+    edges = create_stl_list(Edge)
+    self.Edges(edges)
+    for edge in edges:
+        vertex_start = edge.StartVertex()
+        vertex_end = edge.EndVertex()
+        level = self.Elevation() + self.Height()
+        if vertex_start.Z() == level and vertex_end.Z() == level:
+            edges_result.push_back(edge)
+
+def EdgesBottom(self, edges_result):
+    """A list of horizontal edges at the lowest level of this face"""
+    edges = create_stl_list(Edge)
+    self.Edges(edges)
+    for edge in edges:
+        vertex_start = edge.StartVertex()
+        vertex_end = edge.EndVertex()
+        level = self.Elevation()
+        if vertex_start.Z() == level and vertex_end.Z() == level:
+            edges_result.push_back(edge)
+
 def IsFaceAbove(self):
     """Does vertical face have a vertical face attached to a horizontal top?"""
-    # TODO
-    pass
+    edges = create_stl_list(Edge)
+    self.EdgesTop(edges)
+    for edge in edges:
+        faces = create_stl_list(Face)
+        edge.Faces(faces)
+        for face in faces:
+            if face.IsVertical() and not face.IsSame(self):
+                return True
+    return False
 
 def IsFaceBelow(self):
     """Does vertical face have a vertical face attached to a horizontal bottom?"""
-    # TODO
-    pass
+    edges = create_stl_list(Edge)
+    self.EdgesBottom(edges)
+    for edge in edges:
+        faces = create_stl_list(Face)
+        edge.Faces(faces)
+        for face in faces:
+            if face.IsVertical() and not face.IsSame(self):
+                return True
+    return False
 
 def HorizontalFacesSideways(self):
     """Which horizontal faces are attached to the bottom of this vertical face?"""
@@ -127,6 +163,8 @@ setattr(topologic.Face, 'IsInternal', IsInternal)
 setattr(topologic.Face, 'IsExternal', IsExternal)
 setattr(topologic.Face, 'IsWorld', IsWorld)
 setattr(topologic.Face, 'IsOpen', IsOpen)
+setattr(topologic.Face, 'EdgesTop', EdgesTop)
+setattr(topologic.Face, 'EdgesBottom', EdgesBottom)
 setattr(topologic.Face, 'IsFaceAbove', IsFaceAbove)
 setattr(topologic.Face, 'IsFaceBelow', IsFaceBelow)
 setattr(topologic.Face, 'HorizontalFacesSideways', HorizontalFacesSideways)
