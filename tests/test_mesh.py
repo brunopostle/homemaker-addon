@@ -99,6 +99,8 @@ class Tests(unittest.TestCase):
 
             cell_adjacent = False
             nowt_adjacent = False
+            horiz_1 = False
+            horiz_2 = False
             face_internal = False
             face_world = False
             for face in faces_vertical:
@@ -108,12 +110,24 @@ class Tests(unittest.TestCase):
                     cell_adjacent = True
                 elif len(cells_adjacent) == 1:
                     nowt_adjacent = True
+
+                horiz_faces = create_stl_list(Face)
+                face.HorizontalFacesSideways(horiz_faces)
+                if len(horiz_faces) == 1:
+                    horiz_1 = True
+                elif len(horiz_faces) == 2:
+                    horiz_2 = True
+                for horiz_face in horiz_faces:
+                    self.assertTrue(horiz_face.IsHorizontal())
+
                 if face.IsInternal():
                     face_internal = True
                 elif face.IsWorld():
                     face_world = True
             self.assertTrue(cell_adjacent)
             self.assertTrue(nowt_adjacent)
+            self.assertTrue(horiz_1)
+            self.assertTrue(horiz_2)
             self.assertTrue(face_internal)
             self.assertTrue(face_world)
 

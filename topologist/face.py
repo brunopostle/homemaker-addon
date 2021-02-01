@@ -113,10 +113,17 @@ def IsFaceBelow(self):
                 return True
     return False
 
-def HorizontalFacesSideways(self):
+def HorizontalFacesSideways(self, faces_result):
     """Which horizontal faces are attached to the bottom of this vertical face?"""
-    # TODO
-    pass
+    edges = create_stl_list(Edge)
+    self.EdgesBottom(edges)
+    for edge in edges:
+        faces = create_stl_list(Face)
+        edge.Faces(faces)
+        for face in faces:
+            if face.IsHorizontal() and not face.IsSame(self):
+                faces_result.push_back(face)
+    return faces_result
 
 def Normal(self):
     return FaceUtility.NormalAtParameters(self, 0.5, 0.5)
