@@ -13,28 +13,46 @@ def PruneGraph(self):
     pass
 
 def FacesVerticalInternal(self, faces_result):
-    # TODO
-    pass
+    faces = create_stl_list(Face)
+    self.FacesVertical(faces)
+    for face in faces:
+        if face.IsInternal():
+            faces_result.push_back(face)
 
 def FacesVerticalExternal(self, faces_result):
-    # TODO
-    pass
+    faces = create_stl_list(Face)
+    self.FacesVertical(faces)
+    for face in faces:
+        if face.IsExternal():
+            faces_result.push_back(face)
 
 def FacesVerticalWorld(self, faces_result):
-    # TODO
-    pass
+    faces = create_stl_list(Face)
+    self.FacesVertical(faces)
+    for face in faces:
+        if face.IsWorld():
+            faces_result.push_back(face)
 
 def FacesVerticalOpen(self, faces_result):
-    # TODO
-    pass
+    faces = create_stl_list(Face)
+    self.FacesVertical(faces)
+    for face in faces:
+        if face.IsOpen():
+            faces_result.push_back(face)
 
 def FacesHorizontalInternal(self, faces_result):
-    # TODO
-    pass
+    faces = create_stl_list(Face)
+    self.FacesHorizontal(faces)
+    for face in faces:
+        if face.IsInternal():
+            faces_result.push_back(face)
 
 def FacesHorizontalExternal(self, faces_result):
-    # TODO
-    pass
+    faces = create_stl_list(Face)
+    self.FacesHorizontal(faces)
+    for face in faces:
+        if face.IsExternal():
+            faces_result.push_back(face)
 
 def WallsExternal(self):
     """Construct a graph of external vertical faces for each elevation and height"""
