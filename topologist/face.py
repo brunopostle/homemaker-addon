@@ -1,5 +1,5 @@
 import topologic
-from topologic import Vertex, Edge, Wire, Face, FaceUtility, Cell
+from topologic import Edge, Face, FaceUtility, Cell
 from topologist.helpers import create_stl_list
 
 def ByVertices(vertices):
@@ -20,26 +20,6 @@ def ByVertices(vertices):
     return Face.ByEdges(edges_ptr)
 
 setattr(topologic.Face, 'ByVertices', ByVertices)
-
-def AxisOuter(self):
-    """2D bottom edge of a vertical face, for external walls, anti-clockwise in plan"""
-    edges = create_stl_list(Edge)
-    self.EdgesBottom(edges)
-    wire = Wire.ByEdges(edges)
-    vertices_stl = create_stl_list(Vertex)
-    wire.Vertices(vertices_stl)
-    vertices = list(vertices_stl)
-    return Edge.ByStartVertexEndVertex(vertices[0], vertices[-1])
-
-def AxisOuterTop(self):
-    """2D top edge of a vertical face, for external walls, anti-clockwise in plan"""
-    edges = create_stl_list(Edge)
-    self.EdgesTop(edges)
-    wire = Wire.ByEdges(edges)
-    vertices_stl = create_stl_list(Vertex)
-    wire.Vertices(vertices_stl)
-    vertices = list(vertices_stl)
-    return Edge.ByStartVertexEndVertex(vertices[-1], vertices[0])
 
 def Types(self):
     """Cell types associated with this face, 1 or 2 items"""
@@ -109,28 +89,6 @@ def IsOpen(self):
                 return True
     return False
 
-def EdgesTop(self, edges_result):
-    """A list of horizontal edges at the highest level of this face"""
-    edges = create_stl_list(Edge)
-    self.Edges(edges)
-    for edge in edges:
-        vertex_start = edge.StartVertex()
-        vertex_end = edge.EndVertex()
-        level = self.Elevation() + self.Height()
-        if vertex_start.Z() == level and vertex_end.Z() == level:
-            edges_result.push_back(edge)
-
-def EdgesBottom(self, edges_result):
-    """A list of horizontal edges at the lowest level of this face"""
-    edges = create_stl_list(Edge)
-    self.Edges(edges)
-    for edge in edges:
-        vertex_start = edge.StartVertex()
-        vertex_end = edge.EndVertex()
-        level = self.Elevation()
-        if vertex_start.Z() == level and vertex_end.Z() == level:
-            edges_result.push_back(edge)
-
 def IsFaceAbove(self):
     """Does vertical face have a vertical face attached to a horizontal top?"""
     edges = create_stl_list(Edge)
@@ -163,8 +121,6 @@ def HorizontalFacesSideways(self):
 def Normal(self):
     return FaceUtility.NormalAtParameters(self, 0.5, 0.5)
 
-setattr(topologic.Face, 'AxisOuter', AxisOuter)
-setattr(topologic.Face, 'AxisOuterTop', AxisOuterTop)
 setattr(topologic.Face, 'Types', Types)
 setattr(topologic.Face, 'TypeInside', TypeInside)
 setattr(topologic.Face, 'IsVertical', IsVertical)
@@ -173,8 +129,6 @@ setattr(topologic.Face, 'IsInternal', IsInternal)
 setattr(topologic.Face, 'IsExternal', IsExternal)
 setattr(topologic.Face, 'IsWorld', IsWorld)
 setattr(topologic.Face, 'IsOpen', IsOpen)
-setattr(topologic.Face, 'EdgesTop', EdgesTop)
-setattr(topologic.Face, 'EdgesBottom', EdgesBottom)
 setattr(topologic.Face, 'IsFaceAbove', IsFaceAbove)
 setattr(topologic.Face, 'IsFaceBelow', IsFaceBelow)
 setattr(topologic.Face, 'HorizontalFacesSideways', HorizontalFacesSideways)
