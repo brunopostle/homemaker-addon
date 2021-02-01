@@ -147,6 +147,22 @@ class Tests(unittest.TestCase):
         cc.FacesHorizontalExternal(faces_horizontal_external)
         self.assertEqual(len(faces_horizontal_external), 3)
 
+    def test_wires(self):
+        walls_external = cc.WallsExternal()
+        self.assertEqual(len(walls_external), 2)
+        self.assertEqual(len(walls_external[0.0]), 1)
+        self.assertEqual(len(walls_external[10.0]), 1)
+
+        wire_lower = walls_external[0.0][10.0]
+        vertices_lower = create_stl_list(Vertex)
+        wire_lower.Vertices(vertices_lower)
+        self.assertEqual(len(vertices_lower), 4)
+
+        wire_upper = walls_external[10.0][10.0]
+        vertices_upper = create_stl_list(Vertex)
+        wire_upper.Vertices(vertices_upper)
+        self.assertEqual(len(vertices_upper), 4)
+
 output = Topology.Analyze(cc)
 #print(output)
 

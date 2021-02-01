@@ -1,5 +1,5 @@
 import topologic
-from topologic import Face, CellComplex
+from topologic import Edge, Wire, Face
 from topologist.helpers import create_stl_list
 
 def AllocateCells(self, widgets):
@@ -56,8 +56,29 @@ def FacesHorizontalExternal(self, faces_result):
 
 def WallsExternal(self):
     """Construct a graph of external vertical faces for each elevation and height"""
-    # TODO
-    pass
+    walls_external = {}
+    faces = create_stl_list(Face)
+    self.FacesVerticalExternal(faces)
+
+    for face in faces:
+        edge = face.AxisOuter()
+        if not edge: continue
+        elevation = face.Elevation()
+        height = face.Height()
+        if not elevation in walls_external:
+            walls_external[elevation] = {}
+        if not height in walls_external[elevation]:
+            walls_external[elevation][height] = create_stl_list(Edge)
+        walls_external[elevation][height].push_back(edge)
+
+    # convert lists of edges into wires
+    for elevation in walls_external:
+        for height in walls_external[elevation]:
+            edges = walls_external[elevation][height]
+            walls_external[elevation][height] = Wire.ByEdges(edges)
+            # TODO wire links need references to original faces
+            # though vertices are still associated with original faces
+    return walls_external
 
 def WallsExternalUnsupported(self):
     """Construct a graph of unsupported external vertical faces for each elevation"""

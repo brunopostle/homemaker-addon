@@ -1,5 +1,5 @@
 import topologic
-from topologic import Edge, Face, FaceUtility, Cell
+from topologic import Vertex, Edge, Wire, Face, FaceUtility, Cell
 from topologist.helpers import create_stl_list
 
 def ByVertices(vertices):
@@ -42,6 +42,28 @@ def IsHorizontal(self):
     if abs(normal.Z()) > 0.9999:
         return True
     return False
+
+def AxisOuter(self):
+    """2D bottom edge of a vertical face, for external walls, anti-clockwise in plan"""
+    edges = create_stl_list(Edge)
+    self.EdgesBottom(edges)
+    if len(edges) == 0: return None
+    wire = Wire.ByEdges(edges)
+    vertices_stl = create_stl_list(Vertex)
+    wire.Vertices(vertices_stl)
+    vertices = list(vertices_stl)
+    return Edge.ByStartVertexEndVertex(vertices[0], vertices[-1])
+
+def AxisOuterTop(self):
+    """2D top edge of a vertical face, for external walls, anti-clockwise in plan"""
+    edges = create_stl_list(Edge)
+    self.EdgesTop(edges)
+    if len(edges) == 0: return None
+    wire = Wire.ByEdges(edges)
+    vertices_stl = create_stl_list(Vertex)
+    wire.Vertices(vertices_stl)
+    vertices = list(vertices_stl)
+    return Edge.ByStartVertexEndVertex(vertices[-1], vertices[0])
 
 def IsInternal(self):
     """Face between two indoor cells"""
@@ -132,6 +154,8 @@ setattr(topologic.Face, 'Types', Types)
 setattr(topologic.Face, 'TypeInside', TypeInside)
 setattr(topologic.Face, 'IsVertical', IsVertical)
 setattr(topologic.Face, 'IsHorizontal', IsHorizontal)
+setattr(topologic.Face, 'AxisOuter', AxisOuter)
+setattr(topologic.Face, 'AxisOuterTop', AxisOuterTop)
 setattr(topologic.Face, 'IsInternal', IsInternal)
 setattr(topologic.Face, 'IsExternal', IsExternal)
 setattr(topologic.Face, 'IsWorld', IsWorld)
