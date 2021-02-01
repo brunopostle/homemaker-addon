@@ -1,5 +1,5 @@
 import topologic
-from topologic import Edge, Face, FaceUtility, Cell
+from topologic import Vertex, Edge, Wire, Face, FaceUtility, Cell
 from topologist.helpers import create_stl_list
 
 def ByVertices(vertices):
@@ -23,13 +23,23 @@ setattr(topologic.Face, 'ByVertices', ByVertices)
 
 def AxisOuter(self):
     """2D bottom edge of a vertical face, for external walls, anti-clockwise in plan"""
-    # TODO
-    pass
+    edges = create_stl_list(Edge)
+    self.EdgesBottom(edges)
+    wire = Wire.ByEdges(edges)
+    vertices_stl = create_stl_list(Vertex)
+    wire.Vertices(vertices_stl)
+    vertices = list(vertices_stl)
+    return Edge.ByStartVertexEndVertex(vertices[0], vertices[-1])
 
 def AxisOuterTop(self):
     """2D top edge of a vertical face, for external walls, anti-clockwise in plan"""
-    # TODO
-    pass
+    edges = create_stl_list(Edge)
+    self.EdgesTop(edges)
+    wire = Wire.ByEdges(edges)
+    vertices_stl = create_stl_list(Vertex)
+    wire.Vertices(vertices_stl)
+    vertices = list(vertices_stl)
+    return Edge.ByStartVertexEndVertex(vertices[-1], vertices[0])
 
 def Types(self):
     """Cell types associated with this face, 1 or 2 items"""

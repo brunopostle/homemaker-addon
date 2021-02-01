@@ -88,9 +88,9 @@ class Tests(unittest.TestCase):
             cells_above = create_stl_list(Cell)
             cell.CellsAbove(cc, cells_above)
             if len(cells_above) == 1:
-                self.assertAlmostEqual(cell.Volume(), 500.0)
+                self.assertAlmostEqual(volume, 500.0)
             elif len(cells_above) == 0:
-                self.assertAlmostEqual(cell.Volume(), 1000.0)
+                self.assertAlmostEqual(volume, 1000.0)
 
                 faces_vertical = create_stl_list(Face)
                 cell.FacesVertical(faces_vertical)
@@ -110,9 +110,9 @@ class Tests(unittest.TestCase):
             cells_below = create_stl_list(Cell)
             cell.CellsBelow(cc, cells_below)
             if len(cells_below) == 2:
-                self.assertAlmostEqual(cell.Volume(), 1000.0)
+                self.assertAlmostEqual(volume, 1000.0)
             elif len(cells_below) == 0:
-                self.assertAlmostEqual(cell.Volume(), 500.0)
+                self.assertAlmostEqual(volume, 500.0)
 
 output = Topology.Analyze(cc)
 #print(output)
