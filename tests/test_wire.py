@@ -7,7 +7,7 @@ import unittest
 from topologic import Vertex, Edge, Wire
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from topologist.helpers import create_stl_list
+from topologist.helpers import create_stl_list, vertex_index
 
 points = [[0.0, 0.0, 0.0], [10.0, 0.0, 0.0], [10.0, 10.0, 0.0], [0.0, 10.0, 0.0]]
 
@@ -49,6 +49,12 @@ class Tests(unittest.TestCase):
         self.assertEqual(vertices[2].Y(), 10.0)
         self.assertEqual(vertices[3].X(), 0.0)
         self.assertEqual(vertices[3].Y(), 10.0)
+
+        i = 0
+        for v in vertices:
+            index = vertex_index(v, vertices)
+            self.assertEqual(i, index)
+            i += 1
 
     def test_clockwise(self):
         """Four points, three segments, clockwise"""

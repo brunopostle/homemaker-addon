@@ -1,4 +1,4 @@
-from topologic import Vertex, Edge, Wire, Face, Shell, Cell, CellComplex, Cluster, Topology, VertexUtility
+from topologic import Vertex, Edge, Wire, Face, Shell, Cell, CellComplex, Cluster, Topology
 
 import cppyy
 
@@ -60,36 +60,12 @@ def getSubTopologies(topology, subTopologyClass):
         _ = i.__preinc__()
     return py_list
 
-def vertexIndex(v, vertices, tolerance):
+def vertex_index(v, vertices):
     index = None
-    v._class__ = Vertex
-    for i in range(len(vertices)):
-        vertices[i].__class__ = Vertex
-        d = VertexUtility.Distance(v, vertices[i])
-        if d <= tolerance:
+    i = 0
+    for vertex in vertices:
+        if v.IsSame(vertex):
             index = i
             break
+        i += 1
     return index
-
-def meshData(topology):
-    type = classByType(topology.GetType())
-    if type == Cluster or type == CellComplex or type == Cell or type == Shell:
-        topFaces = getSubTopologies(topology, Face)
-        topVertices = getSubTopologies(topology, Vertex)
-    else:
-        topFaces = []
-        topVertices = []
-    vertices = []
-    for aVertex in topVertices:
-        vertices.append(tuple([aVertex.X(), aVertex.Y(), aVertex.Z()]))
-    faces = []
-    for aFace in topFaces:
-        wires = getSubTopologies(aFace, Wire)
-        wire = wires[0]
-        faceVertices = getSubTopologies(wire, Vertex)
-        tempList = []
-        for aVertex in faceVertices:
-            index = vertexIndex(aVertex, topVertices, 0.0001)
-            tempList.append(index)
-        faces.append(tuple(tempList))
-    return [vertices, faces]
