@@ -163,6 +163,13 @@ class Tests(unittest.TestCase):
         wire_upper.Vertices(vertices_upper)
         self.assertEqual(len(vertices_upper), 4)
 
+    def test_elevations(self):
+        elevations = cc.Elevations()
+        self.assertEqual(len(elevations), 3)
+        self.assertEqual(elevations[0.0], 0)
+        self.assertEqual(elevations[10.0], 1)
+        self.assertEqual(elevations[20.0], 2)
+
 output = Topology.Analyze(cc)
 #print(output)
 

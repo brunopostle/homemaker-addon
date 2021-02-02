@@ -4,4 +4,4 @@ test :
 lint :
 	pyflakes *.py */*.py || true
 
-.PHONY : test
+.PHONY : test lint

@@ -107,8 +107,21 @@ def WallsInternalUnsupported(self):
 
 def Elevations(self):
     """Identify all unique elevations, allocate level index"""
-    # TODO
-    pass
+    elevations = {}
+
+    faces = create_stl_list(Face)
+    self.Faces(faces)
+    for face in faces:
+        elevation = face.Elevation()
+        elevations[float(elevation)] = 0
+
+    level = 0
+    keys = list(elevations.keys())
+    keys.sort()
+    for elevation in keys:
+        elevations[elevation] = level
+        level += 1
+    return elevations
 
 setattr(topologic.CellComplex, 'AllocateCells', AllocateCells)
 setattr(topologic.CellComplex, 'PruneGraph', PruneGraph)
