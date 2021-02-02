@@ -1,6 +1,6 @@
 import topologic
 from topologic import Vertex, Edge, Face
-from topologist.helpers import create_stl_list
+from topologist.helpers import create_stl_list, el
 
 def FacesVertical(self, faces_result):
     elements_ptr = create_stl_list(Face)
@@ -23,7 +23,7 @@ def Elevation(self):
     for vertex in vertices:
         if vertex.Z() < lowest:
             lowest = vertex.Z()
-    return lowest
+    return el(lowest)
 
 def Height(self):
     highest = -9999999.9
@@ -32,7 +32,7 @@ def Height(self):
     for vertex in vertices:
         if vertex.Z() > highest:
             highest = vertex.Z()
-    return highest - self.Elevation()
+    return el(highest - self.Elevation())
 
 def EdgesTop(self, edges_result):
     """A list of horizontal edges at the highest level of this face"""
@@ -42,7 +42,7 @@ def EdgesTop(self, edges_result):
     for edge in edges:
         vertex_start = edge.StartVertex()
         vertex_end = edge.EndVertex()
-        if vertex_start.Z() == level and vertex_end.Z() == level:
+        if el(vertex_start.Z()) == level and el(vertex_end.Z()) == level:
             edges_result.push_back(edge)
 
 def EdgesBottom(self, edges_result):
@@ -53,7 +53,7 @@ def EdgesBottom(self, edges_result):
     for edge in edges:
         vertex_start = edge.StartVertex()
         vertex_end = edge.EndVertex()
-        if vertex_start.Z() == level and vertex_end.Z() == level:
+        if el(vertex_start.Z()) == level and el(vertex_end.Z()) == level:
             edges_result.push_back(edge)
 
 setattr(topologic.Topology, 'FacesVertical', FacesVertical)

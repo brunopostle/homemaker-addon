@@ -69,3 +69,8 @@ def vertex_index(v, vertices):
             break
         i += 1
     return index
+
+def el(elevation):
+    if elevation >= 0.0:
+        return int((elevation * 1000) +0.5) /1000
+    return int((elevation * 1000) -0.5) /1000

@@ -7,7 +7,7 @@ import unittest
 from topologic import Vertex, Edge, Wire
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from topologist.helpers import create_stl_list, vertex_index
+from topologist.helpers import create_stl_list, vertex_index, el
 
 points = [[0.0, 0.0, 0.0], [10.0, 0.0, 0.0], [10.0, 10.0, 0.0], [0.0, 10.0, 0.0]]
 
@@ -98,6 +98,14 @@ class Tests(unittest.TestCase):
         self.assertEqual(vertices[2].Y(), 10.0)
         self.assertEqual(vertices[3].X(), 10.0)
         self.assertEqual(vertices[3].Y(), 10.0)
+
+    def test_el(self):
+        self.assertEqual(el(3.99999), 4.0)
+        self.assertEqual(el(-3.99999), -4.0)
+        self.assertEqual(el(4.00001), 4.0)
+        self.assertEqual(el(-4.00001), -4.0)
+        self.assertEqual(el(0.00001), 0.0)
+        self.assertEqual(el(-0.00001), 0.0)
 
 if __name__ == '__main__':
     unittest.main()
