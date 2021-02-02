@@ -38,10 +38,10 @@ def EdgesTop(self, edges_result):
     """A list of horizontal edges at the highest level of this face"""
     edges = create_stl_list(Edge)
     self.Edges(edges)
+    level = self.Elevation() + self.Height()
     for edge in edges:
         vertex_start = edge.StartVertex()
         vertex_end = edge.EndVertex()
-        level = self.Elevation() + self.Height()
         if vertex_start.Z() == level and vertex_end.Z() == level:
             edges_result.push_back(edge)
 
@@ -49,10 +49,10 @@ def EdgesBottom(self, edges_result):
     """A list of horizontal edges at the lowest level of this face"""
     edges = create_stl_list(Edge)
     self.Edges(edges)
+    level = self.Elevation()
     for edge in edges:
         vertex_start = edge.StartVertex()
         vertex_end = edge.EndVertex()
-        level = self.Elevation()
         if vertex_start.Z() == level and vertex_end.Z() == level:
             edges_result.push_back(edge)
 
