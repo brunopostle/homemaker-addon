@@ -3,11 +3,12 @@ import sys
 sys.path.append('/home/bruno/src/topologicPy/cpython')
 sys.path.append('/home/bruno/src/homemaker-addon')
 
-from topologic import Vertex, Face, CellComplex, Topology
-from topologist.helpers import create_stl_list
+from topologic import Vertex, Edge, Face, CellComplex
+from topologist.helpers import create_stl_list, vertex_index, el
 
 import bpy
 import bmesh
+from bpy_extras.object_utils import object_data_add
 
 bl_info = {
     "name": "Homemaker Topologise",
@@ -37,7 +38,7 @@ class ObjectHomemaker(bpy.types.Operator):
 
             for v in bm.verts:
                 coor = v.co[:]
-                vertex = Vertex.ByCoordinates(coor[0], coor[1], coor[2])
+                vertex = Vertex.ByCoordinates(coor[0], coor[1], el(coor[2]))
                 vertices.append(vertex)
 
             faces = []
@@ -54,8 +55,29 @@ class ObjectHomemaker(bpy.types.Operator):
             for face in faces:
                 faces_ptr.push_back(face)
             cc = CellComplex.ByFaces(faces_ptr, 0.0001)
-            output = Topology.Analyze(cc)
-            print(output)
+
+            walls_external = cc.WallsExternal()
+            for elevation in walls_external:
+                for height in walls_external[elevation]:
+                    wire = walls_external[elevation][height]
+                    vertices_stl = create_stl_list(Vertex)
+                    wire.Vertices(vertices_stl)
+                    edges_stl = create_stl_list(Edge)
+                    wire.Edges(edges_stl)
+
+                    vertices = []
+                    for vertex in vertices_stl:
+                        vertices.append([vertex.X(), vertex.Y(), vertex.Z()])
+
+                    edges = []
+                    for edge in edges_stl:
+                        edges.append([vertex_index(edge.StartVertex(), vertices_stl),
+                                      vertex_index(edge.EndVertex(), vertices_stl)])
+
+                    my_name = 'Wire ' + str(elevation) + '+' + str(height)
+                    mesh = bpy.data.meshes.new(name =  my_name)
+                    mesh.from_pydata(vertices, edges, [])
+                    object_data_add(context, mesh)
 
         return {'FINISHED'}
 
