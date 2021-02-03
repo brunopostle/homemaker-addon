@@ -3,9 +3,10 @@ import sys
 sys.path.append('/home/bruno/src/topologicPy/cpython')
 sys.path.append('/home/bruno/src/homemaker-addon')
 
-from topologic import Vertex, Edge, Face, CellComplex
-from topologist.helpers import create_stl_list, vertex_index, el
+from topologic import Vertex, Face, CellComplex
+from topologist.helpers import create_stl_list, string_to_coor, el
 
+import networkx as nx
 import bpy
 import bmesh
 from bpy_extras.object_utils import object_data_add
@@ -59,25 +60,23 @@ class ObjectHomemaker(bpy.types.Operator):
             walls_external = cc.WallsExternal()
             for elevation in walls_external:
                 for height in walls_external[elevation]:
-                    wire = walls_external[elevation][height]
-                    vertices_stl = create_stl_list(Vertex)
-                    wire.Vertices(vertices_stl)
-                    edges_stl = create_stl_list(Edge)
-                    wire.Edges(edges_stl)
+                    graph = walls_external[elevation][height]
 
-                    vertices = []
-                    for vertex in vertices_stl:
-                        vertices.append([vertex.X(), vertex.Y(), vertex.Z()])
+                    cycles = nx.simple_cycles(graph)
+                    for cycle in cycles:
+                        vertices = []
+                        for node in cycle:
+                            vertices.append(string_to_coor(node))
 
-                    edges = []
-                    for edge in edges_stl:
-                        edges.append([vertex_index(edge.StartVertex(), vertices_stl),
-                                      vertex_index(edge.EndVertex(), vertices_stl)])
+                        edges = []
+                        for index in range(len(vertices) -2):
+                            edges.append([index, index +1])
+                        edges.append([len(vertices) -1, 0])
 
-                    my_name = 'Wire ' + str(elevation) + '+' + str(height)
-                    mesh = bpy.data.meshes.new(name =  my_name)
-                    mesh.from_pydata(vertices, edges, [])
-                    object_data_add(context, mesh)
+                        my_name = 'Wire ' + str(elevation) + '+' + str(height)
+                        mesh = bpy.data.meshes.new(name =  my_name)
+                        mesh.from_pydata(vertices, edges, [])
+                        object_data_add(context, mesh)
 
         return {'FINISHED'}
 

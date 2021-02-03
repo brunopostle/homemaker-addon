@@ -1,6 +1,7 @@
 import topologic
-from topologic import Edge, Wire, Face
-from topologist.helpers import create_stl_list
+import networkx
+from topologic import Face
+from topologist.helpers import create_stl_list, vertex_string
 
 def AllocateCells(self, widgets):
     """Set cell types using widgets, or default to 'Living'"""
@@ -60,24 +61,20 @@ def WallsExternal(self):
     faces = create_stl_list(Face)
     self.FacesVerticalExternal(faces)
 
-    for face in faces:
-        edge = face.AxisOuter()
+    for myface in faces:
+        edge = myface.AxisOuter()
         if not edge: continue
-        elevation = face.Elevation()
-        height = face.Height()
+        elevation = myface.Elevation()
+        height = myface.Height()
         if not elevation in walls_external:
             walls_external[elevation] = {}
         if not height in walls_external[elevation]:
-            walls_external[elevation][height] = create_stl_list(Edge)
-        walls_external[elevation][height].push_back(edge)
+            walls_external[elevation][height] = networkx.DiGraph()
 
-    # convert lists of edges into wires
-    for elevation in walls_external:
-        for height in walls_external[elevation]:
-            edges = walls_external[elevation][height]
-            walls_external[elevation][height] = Wire.ByEdges(edges)
-            # TODO wire links need references to original faces
-            # though vertices are still associated with original faces
+        start_coor = vertex_string(edge.StartVertex())
+        end_coor = vertex_string(edge.EndVertex())
+        walls_external[elevation][height].add_edge(start_coor, end_coor, face=myface)
+
     return walls_external
 
 def WallsExternalUnsupported(self):

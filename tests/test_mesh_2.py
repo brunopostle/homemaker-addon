@@ -3,11 +3,12 @@
 import os
 import sys
 import unittest
+import networkx as nx
 
 from topologic import Vertex, Edge, Face, Cell, CellComplex, Topology
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from topologist.helpers import create_stl_list
+from topologist.helpers import create_stl_list, string_to_coor
 
 points = [[0.0, 0.0, 0.0], [10.0, 0.0, 0.0], [10.0, 10.0, 0.0], [0.0, 10.0, 0.0],
           [0.0, 0.0, 10.0], [10.0, 0.0, 10.0], [10.0, 10.0, 10.0], [0.0, 10.0, 10.0]]
@@ -147,21 +148,26 @@ class Tests(unittest.TestCase):
         cc.FacesHorizontalExternal(faces_horizontal_external)
         self.assertEqual(len(faces_horizontal_external), 3)
 
-    def test_wires(self):
+    def test_graph(self):
         walls_external = cc.WallsExternal()
         self.assertEqual(len(walls_external), 2)
         self.assertEqual(len(walls_external[0.0]), 1)
         self.assertEqual(len(walls_external[10.0]), 1)
 
-        wire_lower = walls_external[0.0][10.0]
-        vertices_lower = create_stl_list(Vertex)
-        wire_lower.Vertices(vertices_lower)
-        self.assertEqual(len(vertices_lower), 4)
+        lower = walls_external[0.0][10.0]
+        self.assertEqual(len(lower.nodes()), 4)
+        self.assertEqual(len(lower.edges()), 4)
+        cycles = nx.simple_cycles(lower)
+        for cycle in cycles:
+            self.assertEqual(len(cycle), 4)
+            for node in cycle:
+                self.assertEqual(string_to_coor(node)[2], 0.0)
+            attributes = lower.get_edge_data('0.0__10.0__0.0','0.0__0.0__0.0')
+            face = attributes['face']
 
-        wire_upper = walls_external[10.0][10.0]
-        vertices_upper = create_stl_list(Vertex)
-        wire_upper.Vertices(vertices_upper)
-        self.assertEqual(len(vertices_upper), 4)
+        upper = walls_external[10.0][10.0]
+        self.assertEqual(len(upper.nodes()), 4)
+        self.assertEqual(len(upper.edges()), 4)
 
     def test_elevations(self):
         elevations = cc.Elevations()
