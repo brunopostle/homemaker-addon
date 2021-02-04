@@ -164,10 +164,16 @@ class Tests(unittest.TestCase):
                 self.assertEqual(string_to_coor(node)[2], 0.0)
             attributes = lower.get_edge_data('0.0__10.0__0.0','0.0__0.0__0.0')
             face = attributes['face']
+            self.assertTrue(face)
 
         upper = walls_external[10.0][10.0]
         self.assertEqual(len(upper.nodes()), 4)
         self.assertEqual(len(upper.edges()), 4)
+
+        nodes = upper.nodes()
+        for node in nodes:
+            # a four element loop, each has exactly one predecessor
+            self.assertEqual(len(list(upper.predecessors(node))), 1)
 
     def test_elevations(self):
         elevations = cc.Elevations()

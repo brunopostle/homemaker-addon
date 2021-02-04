@@ -47,3 +47,19 @@ def string_to_coor(string):
     for num in string.split('__'):
         coor.append(float(num))
     return coor
+
+def nx_acycles(digraph):
+    """return all the acyclic chains in this digraph"""
+    acycles = []
+    for node in digraph.nodes():
+        if len(list(digraph.predecessors(node))) == 0:
+            acycle = [node]
+            nx_successors(digraph, node, acycle)
+            acycles.append(acycle)
+    return acycles
+
+def nx_successors(digraph, node, results):
+    successors = digraph.successors(node)
+    for successor in successors:
+        results.append(successor)
+        nx_successors(digraph, successor, results)

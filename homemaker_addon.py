@@ -4,7 +4,7 @@ sys.path.append('/home/bruno/src/topologicPy/cpython')
 sys.path.append('/home/bruno/src/homemaker-addon')
 
 from topologic import Vertex, Face, CellComplex
-from topologist.helpers import create_stl_list, string_to_coor, el
+from topologist.helpers import create_stl_list, string_to_coor, el, nx_acycles
 
 import networkx as nx
 import bpy
@@ -69,12 +69,26 @@ class ObjectHomemaker(bpy.types.Operator):
                             vertices.append(string_to_coor(node))
 
                         edges = []
-                        for index in range(len(vertices) -2):
+                        for index in range(len(vertices) -1):
                             edges.append([index, index +1])
                         edges.append([len(vertices) -1, 0])
 
-                        my_name = 'Wire ' + str(elevation) + '+' + str(height)
-                        mesh = bpy.data.meshes.new(name =  my_name)
+                        my_name = str(elevation) + '+' + str(height) + ' Cycle'
+                        mesh = bpy.data.meshes.new(name=my_name)
+                        mesh.from_pydata(vertices, edges, [])
+                        object_data_add(context, mesh)
+
+                    for acycle in nx_acycles(graph):
+                        vertices = []
+                        for node in acycle:
+                            vertices.append(string_to_coor(node))
+
+                        edges = []
+                        for index in range(len(vertices) -1):
+                            edges.append([index, index +1])
+
+                        my_name = str(elevation) + '+' + str(height) + ' Acycle'
+                        mesh = bpy.data.meshes.new(name=my_name)
                         mesh.from_pydata(vertices, edges, [])
                         object_data_add(context, mesh)
 
