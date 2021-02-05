@@ -78,6 +78,23 @@ class ObjectHomemaker(bpy.types.Operator):
                         mesh.from_pydata(vertices, edges, [])
                         object_data_add(context, mesh)
 
+                        # copied from blenderbim 'dumb wall'
+                        mesh = bpy.data.meshes.new(name="Dumb Wall")
+                        mesh.from_pydata(vertices, edges, [])
+                        obj = object_data_add(context, mesh)
+                        modifier = obj.modifiers.new("Wall Height", "SCREW")
+                        modifier.angle = 0
+                        modifier.screw_offset = height
+                        modifier.use_smooth_shade = False
+                        modifier.use_normal_calculate = True
+                        modifier.use_normal_flip = False
+                        modifier.steps = 1
+                        modifier.render_steps = 1
+                        modifier = obj.modifiers.new("Wall Width", "SOLIDIFY")
+                        modifier.use_even_offset = True
+                        modifier.thickness = 0.37
+                        obj.name = "Wall"
+
                     for acycle in nx_acycles(graph):
                         vertices = []
                         for node in acycle:
