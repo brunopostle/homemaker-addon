@@ -93,7 +93,8 @@ class ObjectHomemaker(bpy.types.Operator):
                         modifier.render_steps = 1
                         modifier = obj.modifiers.new("Wall Width", "SOLIDIFY")
                         modifier.use_even_offset = True
-                        modifier.thickness = 0.37
+                        modifier.thickness = 0.33
+                        modifier.offset = -0.48484848
                         obj.name = "Wall"
 
                     for acycle in nx_acycles(graph):
@@ -109,6 +110,31 @@ class ObjectHomemaker(bpy.types.Operator):
                         mesh = bpy.data.meshes.new(name=my_name)
                         mesh.from_pydata(vertices, edges, [])
                         object_data_add(context, mesh)
+
+            walls_internal = walls['internal']
+            for elevation in walls_internal:
+                for height in walls_internal[elevation]:
+                    graph = walls_internal[elevation][height]
+
+                    for edge in graph.edges:
+
+                        # copied from blenderbim 'dumb wall'
+                        mesh = bpy.data.meshes.new(name="Dumb Wall")
+                        mesh.from_pydata([string_to_coor(edge[0]), string_to_coor(edge[1])], [[0, 1]], [])
+                        obj = object_data_add(context, mesh)
+                        modifier = obj.modifiers.new("Wall Height", "SCREW")
+                        modifier.angle = 0
+                        modifier.screw_offset = height
+                        modifier.use_smooth_shade = False
+                        modifier.use_normal_calculate = True
+                        modifier.use_normal_flip = False
+                        modifier.steps = 1
+                        modifier.render_steps = 1
+                        modifier = obj.modifiers.new("Wall Width", "SOLIDIFY")
+                        modifier.use_even_offset = True
+                        modifier.thickness = 0.16
+                        modifier.offset = 0.0
+                        obj.name = "Wall"
 
         return {'FINISHED'}
 

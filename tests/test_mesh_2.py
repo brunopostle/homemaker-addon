@@ -152,6 +152,12 @@ class Tests(unittest.TestCase):
             # a four element loop, each has exactly one predecessor
             self.assertEqual(len(list(upper.predecessors(node))), 1)
 
+        walls_internal = walls['internal']
+        graph = walls_internal[0.0][10.0]
+        for edge in graph.edges:
+            self.assertEqual(edge[0], '10.0__10.0__0.0')
+            self.assertEqual(edge[1], '0.0__0.0__0.0')
+
     def test_elevations(self):
         elevations = cc.Elevations()
         self.assertEqual(len(elevations), 3)
