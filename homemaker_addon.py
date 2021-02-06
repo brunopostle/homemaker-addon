@@ -3,7 +3,7 @@ import sys
 sys.path.append('/home/bruno/src/topologicPy/cpython')
 sys.path.append('/home/bruno/src/homemaker-addon')
 
-from topologic import Vertex, Face, CellComplex
+from topologic import Vertex, Edge, Face, CellComplex, Graph
 from topologist.helpers import create_stl_list, string_to_coor, el, nx_acycles
 
 import networkx as nx
@@ -135,6 +135,20 @@ class ObjectHomemaker(bpy.types.Operator):
                         modifier.thickness = 0.16
                         modifier.offset = 0.0
                         obj.name = "Wall"
+
+            graph = Graph.ByTopology(cc, True, False, False, False, False, False, 0.0001)
+            topology = graph.Topology()
+            edges = create_stl_list(Edge)
+            topology.Edges(edges)
+            for edge in edges:
+                start = edge.StartVertex()
+                end = edge.EndVertex()
+                vertices = [[start.X(), start.Y(), start.Z()],
+                            [end.X(), end.Y(), end.Z()]]
+
+                mesh = bpy.data.meshes.new(name='Graph')
+                mesh.from_pydata(vertices, [[0, 1]], [])
+                object_data_add(context, mesh)
 
         return {'FINISHED'}
 

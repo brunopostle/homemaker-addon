@@ -5,7 +5,7 @@ import sys
 import unittest
 import networkx as nx
 
-from topologic import Vertex, Edge, Face, Cell, CellComplex, Topology
+from topologic import Vertex, Edge, Face, Cell, CellComplex, Topology, Graph
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from topologist.helpers import create_stl_list, string_to_coor
@@ -164,6 +164,13 @@ class Tests(unittest.TestCase):
         self.assertEqual(elevations[0.0], 0)
         self.assertEqual(elevations[10.0], 1)
         self.assertEqual(elevations[20.0], 2)
+
+    def test_connectivity(self):
+        graph = Graph.ByTopology(cc, True, False, False, False, False, False, 0.0001)
+        topology = graph.Topology()
+        edges = create_stl_list(Edge)
+        topology.Edges(edges)
+        self.assertEqual(len(edges), 3)
 
 output = Topology.Analyze(cc)
 #print(output)
