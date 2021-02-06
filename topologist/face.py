@@ -111,7 +111,7 @@ def IsOpen(self):
                 return True
     return False
 
-def IsFaceAbove(self):
+def FaceAbove(self):
     """Does vertical face have a vertical face attached to a horizontal top?"""
     edges = create_stl_list(Edge)
     self.EdgesTop(edges)
@@ -121,9 +121,9 @@ def IsFaceAbove(self):
         for face in faces:
             if face.IsVertical() and not face.IsSame(self):
                 return face
-    return False
+    return None
 
-def IsFaceBelow(self):
+def FaceBelow(self):
     """Does vertical face have a vertical face attached to a horizontal bottom?"""
     edges = create_stl_list(Edge)
     self.EdgesBottom(edges)
@@ -133,7 +133,7 @@ def IsFaceBelow(self):
         for face in faces:
             if face.IsVertical() and not face.IsSame(self):
                 return face
-    return False
+    return None
 
 def HorizontalFacesSideways(self, faces_result):
     """Which horizontal faces are attached to the bottom of this vertical face?"""
@@ -160,7 +160,7 @@ setattr(topologic.Face, 'IsInternal', IsInternal)
 setattr(topologic.Face, 'IsExternal', IsExternal)
 setattr(topologic.Face, 'IsWorld', IsWorld)
 setattr(topologic.Face, 'IsOpen', IsOpen)
-setattr(topologic.Face, 'IsFaceAbove', IsFaceAbove)
-setattr(topologic.Face, 'IsFaceBelow', IsFaceBelow)
+setattr(topologic.Face, 'FaceAbove', FaceAbove)
+setattr(topologic.Face, 'FaceBelow', FaceBelow)
 setattr(topologic.Face, 'HorizontalFacesSideways', HorizontalFacesSideways)
 setattr(topologic.Face, 'Normal', Normal)

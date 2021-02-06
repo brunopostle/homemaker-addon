@@ -105,8 +105,8 @@ class Tests(unittest.TestCase):
                     self.assertEqual(len(top_edges), 1)
                     self.assertEqual(len(bottom_edges), 1)
 
-                    self.assertFalse(face.IsFaceAbove())
-                    self.assertTrue(face.IsFaceBelow())
+                    self.assertFalse(face.FaceAbove())
+                    self.assertTrue(face.FaceBelow())
 
             cells_below = create_stl_list(Cell)
             cell.CellsBelow(cc, cells_below)

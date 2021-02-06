@@ -39,14 +39,14 @@ def Walls(self):
                     add_axis(walls['external'], elevation, height, axis, face)
 
                     # collect foundation strips
-                    if not face.IsFaceBelow():
+                    if not face.FaceBelow():
                         add_axis(walls['external_unsupported'], elevation, 0.0, axis, face)
 
                 if face.IsInternal():
                     add_axis(walls['internal'], elevation, height, axis, face)
 
                     # collect foundation strips
-                    if not face.IsFaceBelow():
+                    if not face.FaceBelow():
                         add_axis(walls['internal_unsupported'], elevation, 0.0, axis, face)
 
             axis_top = face.AxisOuterTop()
@@ -55,7 +55,7 @@ def Walls(self):
                 if face.IsWorld():
 
                     # collect eaves line
-                    face_above = face.IsFaceAbove()
+                    face_above = face.FaceAbove()
                     # either there is nothing above or it is an open space
                     if not (face_above and not face_above.IsOpen()):
                         add_axis(walls['eaves'], elevation + height, 0.0, axis_top, face)
