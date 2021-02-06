@@ -57,7 +57,8 @@ class ObjectHomemaker(bpy.types.Operator):
                 faces_ptr.push_back(face)
             cc = CellComplex.ByFaces(faces_ptr, 0.0001)
 
-            walls_external = cc.WallsExternal()
+            walls = cc.Walls()
+            walls_external = walls['external']
             for elevation in walls_external:
                 for height in walls_external[elevation]:
                     graph = walls_external[elevation][height]

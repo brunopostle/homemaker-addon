@@ -120,36 +120,13 @@ class Tests(unittest.TestCase):
         cc.FacesVertical(faces_vertical)
         self.assertEqual(len(faces_vertical), 9)
 
-        faces_vertical_internal = create_stl_list(Face)
-        cc.FacesVerticalInternal(faces_vertical_internal)
-        self.assertEqual(len(faces_vertical_internal), 1)
-
-        faces_vertical_external = create_stl_list(Face)
-        cc.FacesVerticalExternal(faces_vertical_external)
-        self.assertEqual(len(faces_vertical_external), 8)
-
-        faces_vertical_world = create_stl_list(Face)
-        cc.FacesVerticalWorld(faces_vertical_world)
-        self.assertEqual(len(faces_vertical_world), 8)
-
-        faces_vertical_open = create_stl_list(Face)
-        cc.FacesVerticalOpen(faces_vertical_open)
-        self.assertEqual(len(faces_vertical_open), 0)
-
         faces_horizontal = create_stl_list(Face)
         cc.FacesHorizontal(faces_horizontal)
         self.assertEqual(len(faces_horizontal), 5)
 
-        faces_horizontal_internal = create_stl_list(Face)
-        cc.FacesHorizontalInternal(faces_horizontal_internal)
-        self.assertEqual(len(faces_horizontal_internal), 2)
-
-        faces_horizontal_external = create_stl_list(Face)
-        cc.FacesHorizontalExternal(faces_horizontal_external)
-        self.assertEqual(len(faces_horizontal_external), 3)
-
     def test_graph(self):
-        walls_external = cc.WallsExternal()
+        walls = cc.Walls()
+        walls_external = walls['external']
         self.assertEqual(len(walls_external), 2)
         self.assertEqual(len(walls_external[0.0]), 1)
         self.assertEqual(len(walls_external[10.0]), 1)

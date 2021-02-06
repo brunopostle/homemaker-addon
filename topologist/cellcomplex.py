@@ -13,94 +13,34 @@ def PruneGraph(self):
     # TODO
     pass
 
-def FacesVerticalInternal(self, faces_result):
-    faces = create_stl_list(Face)
-    self.FacesVertical(faces)
-    for face in faces:
-        if face.IsInternal():
-            faces_result.push_back(face)
-
-def FacesVerticalExternal(self, faces_result):
-    faces = create_stl_list(Face)
-    self.FacesVertical(faces)
-    for face in faces:
-        if face.IsExternal():
-            faces_result.push_back(face)
-
-def FacesVerticalWorld(self, faces_result):
-    faces = create_stl_list(Face)
-    self.FacesVertical(faces)
-    for face in faces:
-        if face.IsWorld():
-            faces_result.push_back(face)
-
-def FacesVerticalOpen(self, faces_result):
-    faces = create_stl_list(Face)
-    self.FacesVertical(faces)
-    for face in faces:
-        if face.IsOpen():
-            faces_result.push_back(face)
-
-def FacesHorizontalInternal(self, faces_result):
-    faces = create_stl_list(Face)
-    self.FacesHorizontal(faces)
-    for face in faces:
-        if face.IsInternal():
-            faces_result.push_back(face)
-
-def FacesHorizontalExternal(self, faces_result):
-    faces = create_stl_list(Face)
-    self.FacesHorizontal(faces)
-    for face in faces:
-        if face.IsExternal():
-            faces_result.push_back(face)
-
-def WallsExternal(self):
+def Walls(self):
     """Construct a graph of external vertical faces for each elevation and height"""
-    walls_external = {}
+    walls = {'external': {},
+             'external_unsupported': {},
+             'eaves': {},
+             'open': {},
+             'internal': {},
+             'internal_unsupported': {}}
     faces = create_stl_list(Face)
-    self.FacesVerticalExternal(faces)
+    self.Faces(faces)
 
-    for myface in faces:
-        edge = myface.AxisOuter()
-        if not edge: continue
-        elevation = myface.Elevation()
-        height = myface.Height()
-        if not elevation in walls_external:
-            walls_external[elevation] = {}
-        if not height in walls_external[elevation]:
-            walls_external[elevation][height] = networkx.DiGraph()
+    for face in faces:
+        if face.IsVertical():
+            if face.IsExternal():
+                edge = face.AxisOuter()
+                if not edge: continue
+                elevation = face.Elevation()
+                height = face.Height()
+                if not elevation in walls['external']:
+                    walls['external'][elevation] = {}
+                if not height in walls['external'][elevation]:
+                    walls['external'][elevation][height] = networkx.DiGraph()
 
-        start_coor = vertex_string(edge.StartVertex())
-        end_coor = vertex_string(edge.EndVertex())
-        walls_external[elevation][height].add_edge(start_coor, end_coor, face=myface)
+                start_coor = vertex_string(edge.StartVertex())
+                end_coor = vertex_string(edge.EndVertex())
+                walls['external'][elevation][height].add_edge(start_coor, end_coor, face=face)
 
-    return walls_external
-
-def WallsExternalUnsupported(self):
-    """Construct a graph of unsupported external vertical faces for each elevation"""
-    # TODO
-    pass
-
-def WallsEaves(self):
-    """Construct a graph of external vertical faces with no solid wall above for each elevation"""
-    # TODO
-    pass
-
-def WallsOpen(self):
-    """"Construct a graph of open vertical faces"""
-    # TODO
-    pass
-
-def WallsInternal(self):
-    """"Construct a graph of internal vertical faces for each elevation and height"""
-    # TODO
-    pass
-
-def WallsInternalUnsupported(self):
-    """Construct a graph of unsupported internal vertical faces for each elevation"""
-    # TODO
-    pass
+    return walls
 
 def Elevations(self):
     """Identify all unique elevations, allocate level index"""
@@ -122,16 +62,5 @@ def Elevations(self):
 
 setattr(topologic.CellComplex, 'AllocateCells', AllocateCells)
 setattr(topologic.CellComplex, 'PruneGraph', PruneGraph)
-setattr(topologic.CellComplex, 'FacesVerticalInternal', FacesVerticalInternal)
-setattr(topologic.CellComplex, 'FacesVerticalExternal', FacesVerticalExternal)
-setattr(topologic.CellComplex, 'FacesVerticalWorld', FacesVerticalWorld)
-setattr(topologic.CellComplex, 'FacesVerticalOpen', FacesVerticalOpen)
-setattr(topologic.CellComplex, 'FacesHorizontalInternal', FacesHorizontalInternal)
-setattr(topologic.CellComplex, 'FacesHorizontalExternal', FacesHorizontalExternal)
-setattr(topologic.CellComplex, 'WallsExternal', WallsExternal)
-setattr(topologic.CellComplex, 'WallsExternalUnsupported', WallsExternalUnsupported)
-setattr(topologic.CellComplex, 'WallsEaves', WallsEaves)
-setattr(topologic.CellComplex, 'WallsOpen', WallsOpen)
-setattr(topologic.CellComplex, 'WallsInternal', WallsInternal)
-setattr(topologic.CellComplex, 'WallsInternalUnsupported', WallsInternalUnsupported)
+setattr(topologic.CellComplex, 'Walls', Walls)
 setattr(topologic.CellComplex, 'Elevations', Elevations)
