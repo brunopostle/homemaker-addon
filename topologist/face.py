@@ -120,7 +120,7 @@ def IsFaceAbove(self):
         edge.Faces(faces)
         for face in faces:
             if face.IsVertical() and not face.IsSame(self):
-                return True
+                return face
     return False
 
 def IsFaceBelow(self):
@@ -132,7 +132,7 @@ def IsFaceBelow(self):
         edge.Faces(faces)
         for face in faces:
             if face.IsVertical() and not face.IsSame(self):
-                return True
+                return face
     return False
 
 def HorizontalFacesSideways(self, faces_result):

@@ -26,21 +26,52 @@ def Walls(self):
 
     for face in faces:
         if face.IsVertical():
-            if face.IsExternal():
-                edge = face.AxisOuter()
-                if not edge: continue
-                elevation = face.Elevation()
-                height = face.Height()
-                if not elevation in walls['external']:
-                    walls['external'][elevation] = {}
-                if not height in walls['external'][elevation]:
-                    walls['external'][elevation][height] = networkx.DiGraph()
+            elevation = face.Elevation()
+            height = face.Height()
 
-                start_coor = vertex_string(edge.StartVertex())
-                end_coor = vertex_string(edge.EndVertex())
-                walls['external'][elevation][height].add_edge(start_coor, end_coor, face=face)
+            axis = face.AxisOuter()
+            # wall face may be triangular and not have a bottom edge
+            if axis:
+                if face.IsOpen():
+                    add_axis(walls['open'], elevation, height, axis, face)
+
+                if face.IsExternal():
+                    add_axis(walls['external'], elevation, height, axis, face)
+
+                    # collect foundation strips
+                    if not face.IsFaceBelow():
+                        add_axis(walls['external_unsupported'], elevation, 0.0, axis, face)
+
+                if face.IsInternal():
+                    add_axis(walls['internal'], elevation, height, axis, face)
+
+                    # collect foundation strips
+                    if not face.IsFaceBelow():
+                        add_axis(walls['internal_unsupported'], elevation, 0.0, axis, face)
+
+            axis_top = face.AxisOuterTop()
+            # wall face may be triangular and not have a top edge
+            if axis_top:
+                if face.IsWorld():
+
+                    # collect eaves line
+                    face_above = face.IsFaceAbove()
+                    # either there is nothing above or it is an open space
+                    if not (face_above and not face_above.IsOpen()):
+                        add_axis(walls['eaves'], elevation + height, 0.0, axis_top, face)
 
     return walls
+
+def add_axis(wall_type, elevation, height, edge, face):
+   """helper function to isolate graph library related code"""
+   if not elevation in wall_type:
+       wall_type[elevation] = {}
+   if not height in wall_type[elevation]:
+       wall_type[elevation][height] = networkx.DiGraph()
+
+   start_coor = vertex_string(edge.StartVertex())
+   end_coor = vertex_string(edge.EndVertex())
+   wall_type[elevation][height].add_edge(start_coor, end_coor, face=face)
 
 def Elevations(self):
     """Identify all unique elevations, allocate level index"""
