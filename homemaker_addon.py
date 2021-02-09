@@ -4,9 +4,9 @@ sys.path.append('/home/bruno/src/topologicPy/cpython')
 sys.path.append('/home/bruno/src/homemaker-addon')
 
 from topologic import Vertex, Edge, Face, CellComplex, Graph
-from topologist.helpers import create_stl_list, string_to_coor, el, nx_acycles
+from topologist.helpers import create_stl_list, string_to_coor, el
 
-import networkx as nx
+import datetime
 import bpy
 import bmesh
 from bpy_extras.object_utils import object_data_add
@@ -26,6 +26,7 @@ class ObjectHomemaker(bpy.types.Operator):
     def execute(self, context):
         for bl_object in context.selected_objects:
 
+            print('start ' + str(datetime.datetime.now()))
             bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
             depsgraph = bpy.context.evaluated_depsgraph_get()
             bl_object = bl_object.evaluated_get(depsgraph)
@@ -55,18 +56,34 @@ class ObjectHomemaker(bpy.types.Operator):
             faces_ptr = create_stl_list(Face)
             for face in faces:
                 faces_ptr.push_back(face)
+            print('cellcomplex start ' + str(datetime.datetime.now()))
             cc = CellComplex.ByFaces(faces_ptr, 0.0001)
+            print('cellcomplex created ' + str(datetime.datetime.now()))
 
             walls = cc.Walls()
+            print('wall graphs created ' + str(datetime.datetime.now()))
             walls_external = walls['external']
             for elevation in walls_external:
                 for height in walls_external[elevation]:
                     graph = walls_external[elevation][height]
 
-                    cycles = nx.simple_cycles(graph)
-                    for cycle in cycles:
+                    for acycle in graph.find_chains():
                         vertices = []
-                        for node in cycle:
+                        for node in acycle.nodes():
+                            vertices.append(string_to_coor(node))
+
+                        edges = []
+                        for index in range(len(vertices) -1):
+                            edges.append([index, index +1])
+
+                        my_name = str(elevation) + '+' + str(height) + ' Acycle'
+                        mesh = bpy.data.meshes.new(name=my_name)
+                        mesh.from_pydata(vertices, edges, [])
+                        object_data_add(context, mesh)
+
+                    for cycle in graph.find_cycles():
+                        vertices = []
+                        for node in cycle.nodes():
                             vertices.append(string_to_coor(node))
 
                         edges = []
@@ -97,26 +114,13 @@ class ObjectHomemaker(bpy.types.Operator):
                         modifier.offset = -0.48484848
                         obj.name = "Wall"
 
-                    for acycle in nx_acycles(graph):
-                        vertices = []
-                        for node in acycle:
-                            vertices.append(string_to_coor(node))
-
-                        edges = []
-                        for index in range(len(vertices) -1):
-                            edges.append([index, index +1])
-
-                        my_name = str(elevation) + '+' + str(height) + ' Acycle'
-                        mesh = bpy.data.meshes.new(name=my_name)
-                        mesh.from_pydata(vertices, edges, [])
-                        object_data_add(context, mesh)
-
+            print('external walls created ' + str(datetime.datetime.now()))
             walls_internal = walls['internal']
             for elevation in walls_internal:
                 for height in walls_internal[elevation]:
-                    graph = walls_internal[elevation][height]
+                    simple = walls_internal[elevation][height]
 
-                    for edge in graph.edges:
+                    for edge in simple:
 
                         # copied from blenderbim 'dumb wall'
                         mesh = bpy.data.meshes.new(name="Dumb Wall")
@@ -136,6 +140,7 @@ class ObjectHomemaker(bpy.types.Operator):
                         modifier.offset = 0.0
                         obj.name = "Wall"
 
+            print('internal walls created ' + str(datetime.datetime.now()))
             graph = Graph.ByTopology(cc, True, False, False, False, False, False, 0.0001)
             topology = graph.Topology()
             edges = create_stl_list(Edge)
@@ -149,6 +154,7 @@ class ObjectHomemaker(bpy.types.Operator):
                 mesh = bpy.data.meshes.new(name='Graph')
                 mesh.from_pydata(vertices, [[0, 1]], [])
                 object_data_add(context, mesh)
+            print('blender connectivity created ' + str(datetime.datetime.now()))
 
         return {'FINISHED'}
 

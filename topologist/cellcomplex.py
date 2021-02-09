@@ -1,7 +1,7 @@
 import topologic
-import networkx
 from topologic import Face
 from topologist.helpers import create_stl_list, vertex_string
+from topologist import ugraph
 
 def AllocateCells(self, widgets):
     """Set cell types using widgets, or default to 'Living'"""
@@ -43,11 +43,11 @@ def Walls(self):
                         add_axis(walls['external_unsupported'], elevation, 0.0, axis, face)
 
                 if face.IsInternal():
-                    add_axis(walls['internal'], elevation, height, axis, face)
+                    add_axis_simple(walls['internal'], elevation, height, axis, face)
 
                     # collect foundation strips
                     if not face.FaceBelow():
-                        add_axis(walls['internal_unsupported'], elevation, 0.0, axis, face)
+                        add_axis_simple(walls['internal_unsupported'], elevation, 0.0, axis, face)
 
             axis_top = face.AxisOuterTop()
             # wall face may be triangular and not have a top edge
@@ -67,11 +67,22 @@ def add_axis(wall_type, elevation, height, edge, face):
    if not elevation in wall_type:
        wall_type[elevation] = {}
    if not height in wall_type[elevation]:
-       wall_type[elevation][height] = networkx.DiGraph()
+       wall_type[elevation][height] = ugraph.graph()
 
    start_coor = vertex_string(edge.StartVertex())
    end_coor = vertex_string(edge.EndVertex())
-   wall_type[elevation][height].add_edge(start_coor, end_coor, face=face)
+   wall_type[elevation][height].add_edge({start_coor: [end_coor, face]})
+
+def add_axis_simple(wall_type, elevation, height, edge, face):
+   """helper function for walls that don't form chains or loops"""
+   if not elevation in wall_type:
+       wall_type[elevation] = {}
+   if not height in wall_type[elevation]:
+       wall_type[elevation][height] = []
+
+   start_coor = vertex_string(edge.StartVertex())
+   end_coor = vertex_string(edge.EndVertex())
+   wall_type[elevation][height].append([start_coor, end_coor, face])
 
 def Elevations(self):
     """Identify all unique elevations, allocate level index"""

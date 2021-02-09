@@ -3,7 +3,6 @@
 import os
 import sys
 import unittest
-import networkx as nx
 
 from topologic import Vertex, Edge, Face, Cell, CellComplex, Topology, Graph
 
@@ -134,13 +133,12 @@ class Tests(unittest.TestCase):
         lower = walls_external[0.0][10.0]
         self.assertEqual(len(lower.nodes()), 4)
         self.assertEqual(len(lower.edges()), 4)
-        cycles = nx.simple_cycles(lower)
-        for cycle in cycles:
-            self.assertEqual(len(cycle), 4)
-            for node in cycle:
+        for cycle in lower.find_cycles():
+            self.assertEqual(len(cycle.nodes()), 4)
+            for node in cycle.nodes():
                 self.assertEqual(string_to_coor(node)[2], 0.0)
-            attributes = lower.get_edge_data('0.0__10.0__0.0','0.0__0.0__0.0')
-            face = attributes['face']
+            attributes = cycle.get_edge_data(['0.0__10.0__0.0','0.0__0.0__0.0'])
+            face = attributes
             self.assertTrue(face)
 
         upper = walls_external[10.0][10.0]
@@ -149,12 +147,10 @@ class Tests(unittest.TestCase):
 
         nodes = upper.nodes()
         for node in nodes:
-            # a four element loop, each has exactly one predecessor
-            self.assertEqual(len(list(upper.predecessors(node))), 1)
+            self.assertEqual(string_to_coor(node)[2], 10.0)
 
         walls_internal = walls['internal']
-        graph = walls_internal[0.0][10.0]
-        for edge in graph.edges:
+        for edge in walls_internal[0.0][10.0]:
             self.assertEqual(edge[0], '10.0__10.0__0.0')
             self.assertEqual(edge[1], '0.0__0.0__0.0')
 
