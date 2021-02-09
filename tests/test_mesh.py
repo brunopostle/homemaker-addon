@@ -4,7 +4,7 @@ import os
 import sys
 import unittest
 
-from topologic import Vertex, Face, Cell, CellComplex, Topology
+from topologic import Vertex, Face, Cell, CellComplex, CellUtility, Topology
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from topologist.helpers import create_stl_list
@@ -88,7 +88,7 @@ class Tests(unittest.TestCase):
         for cell in cells:
             centroid = cell.Centroid()
             self.assertEqual(centroid.Z(), 5.0)
-            volume = cell.Volume()
+            volume = CellUtility.Volume(cell)
             self.assertAlmostEqual(volume, 500.0)
             self.assertEqual(cell.Elevation(), 0.0)
             self.assertEqual(cell.Height(), 10.0)

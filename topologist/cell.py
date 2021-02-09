@@ -1,9 +1,6 @@
 import topologic
-from topologic import Face, Cell, FaceUtility, CellUtility
+from topologic import Face, Cell, FaceUtility
 from topologist.helpers import create_stl_list
-
-def Volume(self):
-    return CellUtility.Volume(self)
 
 def FacesTop(self, faces_result):
     elements_ptr = create_stl_list(Face)
@@ -17,6 +14,13 @@ def FacesBottom(self, faces_result):
     self.Faces(elements_ptr)
     for face in elements_ptr:
         if(face.Elevation() == self.Elevation() and face.Height() == 0.0):
+            faces_result.push_back(face)
+
+def FacesVerticalExternal(self, faces_result):
+    elements_ptr = create_stl_list(Face)
+    self.Faces(elements_ptr)
+    for face in elements_ptr:
+        if face.IsVertical() and face.IsExternal():
             faces_result.push_back(face)
 
 def CellsAbove(self, topology, cells_result):
@@ -47,12 +51,20 @@ def IsOutside(self):
     return False
 
 def PlanArea(self):
-    # TODO
-    pass
+    result = 0.0;
+    faces = create_stl_list(Face)
+    self.FacesBottom(faces)
+    for face in faces:
+        result += FaceUtility.Area(face)
+    return result
 
 def ExternalWallArea(self):
-    # TODO
-    pass
+    result = 0.0;
+    faces = create_stl_list(Face)
+    self.FacesVerticalExternal(faces)
+    for face in faces:
+        result += FaceUtility.Area(face)
+    return result
 
 def Crinkliness(self):
     if self.PlanArea() == 0.0:
@@ -64,9 +76,9 @@ def Perimeter(self):
     # TODO
     pass
 
-setattr(topologic.Cell, 'Volume', Volume)
 setattr(topologic.Cell, 'FacesTop', FacesTop)
 setattr(topologic.Cell, 'FacesBottom', FacesBottom)
+setattr(topologic.Cell, 'FacesVerticalExternal', FacesVerticalExternal)
 setattr(topologic.Cell, 'CellsAbove', CellsAbove)
 setattr(topologic.Cell, 'CellsBelow', CellsBelow)
 setattr(topologic.Cell, 'IsOutside', IsOutside)

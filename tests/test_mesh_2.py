@@ -4,7 +4,7 @@ import os
 import sys
 import unittest
 
-from topologic import Vertex, Edge, Face, Cell, CellComplex, Topology, Graph
+from topologic import Vertex, Edge, Face, Cell, CellComplex, CellUtility, Topology, Graph
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from topologist.helpers import create_stl_list, string_to_coor
@@ -77,7 +77,10 @@ class Tests(unittest.TestCase):
 
         for cell in cells:
             centroid = cell.Centroid()
-            volume = cell.Volume()
+            volume = CellUtility.Volume(cell)
+            planarea = cell.PlanArea()
+            externalwallarea = cell.ExternalWallArea()
+            crinkliness = cell.Crinkliness()
 
             faces_vertical = create_stl_list(Face)
             cell.FacesVertical(faces_vertical)
@@ -89,8 +92,14 @@ class Tests(unittest.TestCase):
             cell.CellsAbove(cc, cells_above)
             if len(cells_above) == 1:
                 self.assertAlmostEqual(volume, 500.0)
+                self.assertAlmostEqual(planarea, 50.0)
+                self.assertAlmostEqual(externalwallarea, 200.0)
+                self.assertAlmostEqual(crinkliness, 4.0)
             elif len(cells_above) == 0:
                 self.assertAlmostEqual(volume, 1000.0)
+                self.assertAlmostEqual(planarea, 100.0)
+                self.assertAlmostEqual(externalwallarea, 400.0)
+                self.assertAlmostEqual(crinkliness, 4.0)
 
                 faces_vertical = create_stl_list(Face)
                 cell.FacesVertical(faces_vertical)
