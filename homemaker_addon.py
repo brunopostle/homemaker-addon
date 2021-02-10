@@ -52,6 +52,7 @@ class ObjectHomemaker(bpy.types.Operator):
                     vertices_face.append(vertex)
                 face = Face.ByVertices(vertices_face)
                 faces.append(face)
+            bpy.ops.object.hide_view_set(unselected=False)
 
             faces_ptr = create_stl_list(Face)
             for face in faces:
@@ -77,24 +78,6 @@ class ObjectHomemaker(bpy.types.Operator):
                             edges.append([index, index +1])
 
                         my_name = str(elevation) + '+' + str(height) + ' Acycle'
-                        mesh = bpy.data.meshes.new(name=my_name)
-                        mesh.from_pydata(vertices, edges, [])
-                        object_data_add(context, mesh)
-
-                    for cycle in graph.find_cycles():
-                        vertices = []
-                        for node in cycle.nodes():
-                            vertices.append(string_to_coor(node))
-
-                        edges = []
-                        for index in range(len(vertices) -1):
-                            edges.append([index, index +1])
-                        edges.append([len(vertices) -1, 0])
-
-                        my_name = str(elevation) + '+' + str(height) + ' Cycle'
-                        mesh = bpy.data.meshes.new(name=my_name)
-                        mesh.from_pydata(vertices, edges, [])
-                        object_data_add(context, mesh)
 
                         # copied from blenderbim 'dumb wall'
                         mesh = bpy.data.meshes.new(name="Dumb Wall")
@@ -112,7 +95,37 @@ class ObjectHomemaker(bpy.types.Operator):
                         modifier.use_even_offset = True
                         modifier.thickness = 0.33
                         modifier.offset = -0.48484848
-                        obj.name = "Wall"
+                        obj.name = "Wall " + my_name
+
+                    for cycle in graph.find_cycles():
+                        vertices = []
+                        for node in cycle.nodes():
+                            vertices.append(string_to_coor(node))
+
+                        edges = []
+                        for index in range(len(vertices) -1):
+                            edges.append([index, index +1])
+                        edges.append([len(vertices) -1, 0])
+
+                        my_name = str(elevation) + '+' + str(height) + ' Cycle'
+
+                        # copied from blenderbim 'dumb wall'
+                        mesh = bpy.data.meshes.new(name="Dumb Wall")
+                        mesh.from_pydata(vertices, edges, [])
+                        obj = object_data_add(context, mesh)
+                        modifier = obj.modifiers.new("Wall Height", "SCREW")
+                        modifier.angle = 0
+                        modifier.screw_offset = height
+                        modifier.use_smooth_shade = False
+                        modifier.use_normal_calculate = True
+                        modifier.use_normal_flip = False
+                        modifier.steps = 1
+                        modifier.render_steps = 1
+                        modifier = obj.modifiers.new("Wall Width", "SOLIDIFY")
+                        modifier.use_even_offset = True
+                        modifier.thickness = 0.33
+                        modifier.offset = -0.48484848
+                        obj.name = "Wall " + my_name
 
             print('external walls created ' + str(datetime.datetime.now()))
             walls_internal = walls['internal']
@@ -121,6 +134,7 @@ class ObjectHomemaker(bpy.types.Operator):
                     simple = walls_internal[elevation][height]
 
                     for edge in simple:
+                        my_name = str(elevation) + '+' + str(height) + ' Internal'
 
                         # copied from blenderbim 'dumb wall'
                         mesh = bpy.data.meshes.new(name="Dumb Wall")
@@ -138,7 +152,7 @@ class ObjectHomemaker(bpy.types.Operator):
                         modifier.use_even_offset = True
                         modifier.thickness = 0.16
                         modifier.offset = 0.0
-                        obj.name = "Wall"
+                        obj.name = "Wall " + my_name
 
             print('internal walls created ' + str(datetime.datetime.now()))
             cells = create_stl_list(Cell)
@@ -169,7 +183,7 @@ class ObjectHomemaker(bpy.types.Operator):
                 mesh = bpy.data.meshes.new(name='Graph')
                 mesh.from_pydata(vertices, [[0, 1]], [])
                 object_data_add(context, mesh)
-            print('blender connectivity created ' + str(datetime.datetime.now()))
+            print('internal connectivity created ' + str(datetime.datetime.now()))
 
         return {'FINISHED'}
 
