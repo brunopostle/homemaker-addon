@@ -80,11 +80,15 @@ def Crinkliness(self):
 
 def Perimeter(self):
     """2D outline of cell floor, closed, anti-clockwise"""
+    elevation = self.Elevation()
     faces = create_stl_list(Face)
     self.FacesVertical(faces)
     edges = create_stl_list(Edge)
     for face in faces:
-        edges.push_back(face.AxisOuter())
+        if face.Elevation() == elevation:
+            edge = face.AxisOuter()
+            if edge:
+                edges.push_back(edge)
     floor = Face.ByEdges(edges)
     normal = floor.Normal()
 

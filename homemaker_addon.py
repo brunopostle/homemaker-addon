@@ -3,7 +3,7 @@ import sys
 sys.path.append('/home/bruno/src/topologicPy/cpython')
 sys.path.append('/home/bruno/src/homemaker-addon')
 
-from topologic import Vertex, Edge, Face, CellComplex, Graph
+from topologic import Vertex, Edge, Cell, Face, CellComplex, Graph
 from topologist.helpers import create_stl_list, string_to_coor, el
 
 import datetime
@@ -141,6 +141,21 @@ class ObjectHomemaker(bpy.types.Operator):
                         obj.name = "Wall"
 
             print('internal walls created ' + str(datetime.datetime.now()))
+            cells = create_stl_list(Cell)
+            cc.Cells(cells)
+            for cell in cells:
+                perimeter = cell.Perimeter()
+                vertices = []
+                for v in perimeter:
+                    vertices.append([v.X(), v.Y(), v.Z()])
+                mesh = bpy.data.meshes.new(name="Floor")
+                mesh.from_pydata(vertices, [], [list(range(len(vertices)))])
+                obj = object_data_add(context, mesh)
+                modifier = obj.modifiers.new("Floor Thickness", "SOLIDIFY")
+                modifier.use_even_offset = True
+                modifier.thickness = 0.2
+
+            print('floors created' + str(datetime.datetime.now()))
             graph = Graph.ByTopology(cc, True, False, False, False, False, False, 0.0001)
             topology = graph.Topology()
             edges = create_stl_list(Edge)
