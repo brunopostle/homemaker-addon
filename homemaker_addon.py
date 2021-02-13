@@ -40,7 +40,7 @@ class ObjectHomemaker(bpy.types.Operator):
 
             for v in bm.verts:
                 coor = v.co[:]
-                vertex = Vertex.ByCoordinates(coor[0], coor[1], el(coor[2]))
+                vertex = Vertex.ByCoordinates(coor[0], coor[1], coor[2])
                 vertices.append(vertex)
 
             faces = []

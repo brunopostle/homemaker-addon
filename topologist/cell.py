@@ -98,7 +98,9 @@ def Perimeter(self):
     for wire in wires:
         vertices = create_stl_list(Vertex)
         wire.Vertices(vertices)
-        if normal.Z() > 0.9999:
+        if len(vertices) < 3:
+            continue
+        elif normal.Z() > 0.9999:
             # good, loop is anticlockwise
             return vertices
         elif normal.Z() < -0.9999:
