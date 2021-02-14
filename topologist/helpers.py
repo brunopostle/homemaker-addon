@@ -31,3 +31,13 @@ def string_to_coor(string):
     for num in string.split('__'):
         coor.append(float(num))
     return coor
+
+def vertex_id(topology, vertex):
+    i = 0
+    vertices = create_stl_list(Vertex)
+    topology.Vertices(vertices)
+    for v in vertices:
+        if v.IsSame(vertex):
+            return i
+        i += 1
+    return None

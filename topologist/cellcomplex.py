@@ -1,5 +1,5 @@
 import topologic
-from topologic import Face
+from topologic import Face, Cluster, Cell
 from topologist.helpers import create_stl_list, vertex_string
 from topologist import ugraph
 
@@ -12,6 +12,18 @@ def PruneGraph(self):
     """Reduce circulation graph"""
     # TODO
     pass
+
+def Roof(self):
+    faces = create_stl_list(Face)
+    self.Faces(faces)
+    roof_faces = create_stl_list(Face)
+    for face in faces:
+        if not face.IsVertical() and not face.IsHorizontal():
+            cells = create_stl_list(Cell)
+            face.Cells(cells)
+            if len(list(cells)) == 1:
+                roof_faces.push_back(face)
+    return Cluster.ByFaces(roof_faces)
 
 def Walls(self):
     """Construct a graph of external vertical faces for each elevation and height"""
@@ -104,5 +116,6 @@ def Elevations(self):
 
 setattr(topologic.CellComplex, 'AllocateCells', AllocateCells)
 setattr(topologic.CellComplex, 'PruneGraph', PruneGraph)
+setattr(topologic.CellComplex, 'Roof', Roof)
 setattr(topologic.CellComplex, 'Walls', Walls)
 setattr(topologic.CellComplex, 'Elevations', Elevations)

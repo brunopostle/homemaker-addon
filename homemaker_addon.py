@@ -4,7 +4,7 @@ sys.path.append('/home/bruno/src/topologicPy/cpython')
 sys.path.append('/home/bruno/src/homemaker-addon')
 
 from topologic import Vertex, Edge, Cell, Face, CellComplex, Graph
-from topologist.helpers import create_stl_list, string_to_coor, el
+from topologist.helpers import create_stl_list, string_to_coor, vertex_id
 
 import datetime
 import bpy
@@ -60,6 +60,35 @@ class ObjectHomemaker(bpy.types.Operator):
             print('cellcomplex start ' + str(datetime.datetime.now()))
             cc = CellComplex.ByFaces(faces_ptr, 0.0001)
             print('cellcomplex created ' + str(datetime.datetime.now()))
+
+            roof = cc.Roof()
+
+            vertices_stl = create_stl_list(Vertex)
+            roof.Vertices(vertices_stl)
+            vertices = []
+            for vertex in vertices_stl:
+                vertices.append([vertex.X(), vertex.Y(), vertex.Z()])
+
+            faces_stl = create_stl_list(Face)
+            roof.Faces(faces_stl)
+            faces = []
+
+            for face in faces_stl:
+                wire = face.ExternalBoundary()
+                vertices_wire = create_stl_list(Vertex)
+                wire.Vertices(vertices_wire)
+                face_tmp = []
+                for vertex in vertices_wire:
+                    face_tmp.append(vertex_id(roof, vertex))
+                faces.append(face_tmp)
+
+            mesh = bpy.data.meshes.new(name="Roof")
+            mesh.from_pydata(vertices, [], faces)
+            obj = object_data_add(context, mesh)
+            modifier = obj.modifiers.new("Floor Thickness", "SOLIDIFY")
+            modifier.use_even_offset = True
+            modifier.thickness = -0.2
+            print('roof created ' + str(datetime.datetime.now()))
 
             walls = cc.Walls()
             print('wall graphs created ' + str(datetime.datetime.now()))
