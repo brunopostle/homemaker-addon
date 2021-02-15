@@ -89,6 +89,8 @@ def Perimeter(self):
             edge = face.AxisOuter()
             if edge:
                 edges.push_back(edge)
+    if len(edges) < 3:
+        return []
     floor = Face.ByEdges(edges)
     normal = floor.Normal()
 
@@ -111,7 +113,7 @@ def Perimeter(self):
                 vertices_reversed.push_back(vertex)
             return vertices_reversed
         else:
-            return None
+            return []
 
 setattr(topologic.Cell, 'FacesTop', FacesTop)
 setattr(topologic.Cell, 'FacesBottom', FacesBottom)
