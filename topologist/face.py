@@ -3,6 +3,7 @@ from topologic import Vertex, Edge, Wire, Face, FaceUtility, Cell
 from topologist.helpers import create_stl_list
 
 def ByVertices(vertices):
+    """Create a Face from an ordered set of Vertices"""
     edges = []
     for i in range(len(vertices)-1):
         v1 = vertices[i]
@@ -28,8 +29,8 @@ def Types(self):
 
 def TypeInside(self):
     """Inside cell type associated with this face, otherwise 'Outside'"""
-    # TODO
-    pass
+    # FIXME should retrieve this from cell attached to face
+    return 'Living'
 
 def IsVertical(self):
     normal = self.Normal()

@@ -23,6 +23,7 @@ def Roof(self):
             face.Cells(cells)
             if len(list(cells)) == 1:
                 roof_faces.push_back(face)
+    # FIXME normals are not automatically unified facing up
     return Cluster.ByFaces(roof_faces)
 
 def Walls(self):
@@ -72,6 +73,10 @@ def Walls(self):
                     if not (face_above and not face_above.IsOpen()):
                         add_axis(walls['eaves'], elevation + height, 0.0, axis_top, face)
 
+    # FIXME each leaf in 'walls' is a ugraph (for external walls) or a list of
+    # single axes (internal walls).  Should be converted to lists of Topologic
+    # Wire and Edge entities, with each Edge containing a Dictionary reference
+    # to a Face
     return walls
 
 def add_axis(wall_type, elevation, height, edge, face):
@@ -83,7 +88,7 @@ def add_axis(wall_type, elevation, height, edge, face):
 
    start_coor = vertex_string(edge.StartVertex())
    end_coor = vertex_string(edge.EndVertex())
-   wall_type[elevation][height].add_edge({start_coor: [end_coor, face]})
+   wall_type[elevation][height].add_edge({start_coor: [end_coor, edge, face]})
 
 def add_axis_simple(wall_type, elevation, height, edge, face):
    """helper function for walls that don't form chains or loops"""
@@ -94,7 +99,7 @@ def add_axis_simple(wall_type, elevation, height, edge, face):
 
    start_coor = vertex_string(edge.StartVertex())
    end_coor = vertex_string(edge.EndVertex())
-   wall_type[elevation][height].append([start_coor, end_coor, face])
+   wall_type[elevation][height].append([start_coor, end_coor, edge, face])
 
 def Elevations(self):
     """Identify all unique elevations, allocate level index"""
