@@ -32,6 +32,12 @@ def string_to_coor(string):
         coor.append(float(num))
     return coor
 
+def string_to_coor_2d(string):
+    coor = []
+    split = string.split('__')
+    coor.extend([float(split[0]), float(split[1])])
+    return coor
+
 def vertex_id(topology, vertex):
     i = 0
     vertices = create_stl_list(Vertex)

@@ -3,10 +3,16 @@ import sys
 sys.path.append('/home/bruno/src/topologicPy/cpython')
 sys.path.append('/home/bruno/src/homemaker-addon')
 
-from topologic import Vertex, Edge, Cell, Face, CellComplex, Graph
-from topologist.helpers import create_stl_list, string_to_coor, vertex_id
+from topologic import Vertex, Cell, Face, CellComplex
+from topologist.helpers import create_stl_list, string_to_coor_2d, vertex_id
+from molior import Wall
 
 import datetime
+import tempfile
+import yaml
+import subprocess
+import logging
+from blenderbim import import_ifc
 import bpy
 import bmesh
 from bpy_extras.object_utils import object_data_add
@@ -36,6 +42,7 @@ class ObjectHomemaker(bpy.types.Operator):
             bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.001)
             bm.verts.ensure_lookup_table()
 
+            # Topologic model
             vertices = []
 
             for v in bm.verts:
@@ -57,133 +64,96 @@ class ObjectHomemaker(bpy.types.Operator):
             faces_ptr = create_stl_list(Face)
             for face in faces:
                 faces_ptr.push_back(face)
-            print('cellcomplex start ' + str(datetime.datetime.now()))
+
             cc = CellComplex.ByFaces(faces_ptr, 0.0001)
-            print('cellcomplex created ' + str(datetime.datetime.now()))
+            elevations = cc.Elevations()
 
-            roof = cc.Roof()
+            # molior
+            molior = []
+            molior_tmp = tempfile.NamedTemporaryFile(mode='w+b', suffix='.molior', delete=False)
+            ifc_tmp = tempfile.NamedTemporaryFile(mode='w+b', suffix='.ifc', delete=False)
 
-            vertices_stl = create_stl_list(Vertex)
-            roof.Vertices(vertices_stl)
-            vertices = []
-            for vertex in vertices_stl:
-                vertices.append([vertex.X(), vertex.Y(), vertex.Z()])
+            # roof
+            #roof = cc.Roof()
 
-            faces_stl = create_stl_list(Face)
-            roof.Faces(faces_stl)
-            faces = []
+            #vertices_stl = create_stl_list(Vertex)
+            #roof.Vertices(vertices_stl)
+            #vertices = []
+            #for vertex in vertices_stl:
+            #    vertices.append([vertex.X(), vertex.Y(), vertex.Z()])
 
-            for face in faces_stl:
-                wire = face.ExternalBoundary()
-                vertices_wire = create_stl_list(Vertex)
-                wire.Vertices(vertices_wire)
-                face_tmp = []
-                for vertex in vertices_wire:
-                    face_tmp.append(vertex_id(roof, vertex))
-                faces.append(face_tmp)
+            #faces_stl = create_stl_list(Face)
+            #roof.Faces(faces_stl)
+            #faces = []
 
-            mesh = bpy.data.meshes.new(name="Roof")
-            mesh.from_pydata(vertices, [], faces)
-            obj = object_data_add(context, mesh)
-            modifier = obj.modifiers.new("Floor Thickness", "SOLIDIFY")
-            modifier.use_even_offset = True
-            modifier.thickness = -0.2
-            print('roof created ' + str(datetime.datetime.now()))
+            #for face in faces_stl:
+            #    wire = face.ExternalBoundary()
+            #    vertices_wire = create_stl_list(Vertex)
+            #    wire.Vertices(vertices_wire)
+            #    face_tmp = []
+            #    for vertex in vertices_wire:
+            #        face_tmp.append(vertex_id(roof, vertex))
+            #    faces.append(face_tmp)
 
+            #mesh = bpy.data.meshes.new(name="Roof")
+            #mesh.from_pydata(vertices, [], faces)
+            #obj = object_data_add(context, mesh)
+            #modifier = obj.modifiers.new("Floor Thickness", "SOLIDIFY")
+            #modifier.use_even_offset = True
+            #modifier.thickness = -0.2
+
+            # walls
             walls = cc.Walls()
-            print('wall graphs created ' + str(datetime.datetime.now()))
+
+            # external walls
             walls_external = walls['external']
             for elevation in walls_external:
                 for height in walls_external[elevation]:
                     graph = walls_external[elevation][height]
 
-                    for acycle in graph.find_chains():
-                        vertices = []
-                        for node in acycle.nodes():
-                            vertices.append(string_to_coor(node))
+                    for chain in graph.find_chains():
+                        path = []
+                        for node in chain.nodes():
+                            path.append(string_to_coor_2d(node))
+                        wall = Wall({'closed': 0,
+                                       'path': path,
+                                       'name': 'exterior',
+                                  'elevation': elevation,
+                                     'height': height,
+                                  'extension': 0.25,
+                                      'level': elevations[elevation]})
 
-                        edges = []
-                        for index in range(len(vertices) -1):
-                            edges.append([index, index +1])
+                        for segment in range(len(wall.openings)):
+                            interior_type = 'Living' # FIXME
+                            wall.populate_exterior_openings(segment, interior_type, 0)
+                        molior.append(wall.__dict__)
 
-                        my_name = str(elevation) + '+' + str(height) + ' Acycle'
+                    for chain in graph.find_cycles():
+                        path = []
+                        for node in chain.nodes():
+                            path.append(string_to_coor_2d(node))
+                        wall = Wall({'closed': 1,
+                                       'path': path,
+                                       'name': 'exterior',
+                                  'elevation': elevation,
+                                     'height': height,
+                                  'extension': 0.25,
+                                      'level': elevations[elevation]})
+                        for segment in range(len(wall.openings)):
+                            interior_type = 'Living' # FIXME
+                            wall.populate_exterior_openings(segment, interior_type, 0)
+                        molior.append(wall.__dict__)
 
-                        # copied from blenderbim 'dumb wall'
-                        mesh = bpy.data.meshes.new(name="Dumb Wall")
-                        mesh.from_pydata(vertices, edges, [])
-                        obj = object_data_add(context, mesh)
-                        modifier = obj.modifiers.new("Wall Height", "SCREW")
-                        modifier.angle = 0
-                        modifier.screw_offset = height
-                        modifier.use_smooth_shade = False
-                        modifier.use_normal_calculate = True
-                        modifier.use_normal_flip = False
-                        modifier.steps = 1
-                        modifier.render_steps = 1
-                        modifier = obj.modifiers.new("Wall Width", "SOLIDIFY")
-                        modifier.use_even_offset = True
-                        modifier.thickness = 0.33
-                        modifier.offset = -0.48484848
-                        obj.name = "Wall " + my_name
-
-                    for cycle in graph.find_cycles():
-                        vertices = []
-                        for node in cycle.nodes():
-                            vertices.append(string_to_coor(node))
-
-                        edges = []
-                        for index in range(len(vertices) -1):
-                            edges.append([index, index +1])
-                        edges.append([len(vertices) -1, 0])
-
-                        my_name = str(elevation) + '+' + str(height) + ' Cycle'
-
-                        # copied from blenderbim 'dumb wall'
-                        mesh = bpy.data.meshes.new(name="Dumb Wall")
-                        mesh.from_pydata(vertices, edges, [])
-                        obj = object_data_add(context, mesh)
-                        modifier = obj.modifiers.new("Wall Height", "SCREW")
-                        modifier.angle = 0
-                        modifier.screw_offset = height
-                        modifier.use_smooth_shade = False
-                        modifier.use_normal_calculate = True
-                        modifier.use_normal_flip = False
-                        modifier.steps = 1
-                        modifier.render_steps = 1
-                        modifier = obj.modifiers.new("Wall Width", "SOLIDIFY")
-                        modifier.use_even_offset = True
-                        modifier.thickness = 0.33
-                        modifier.offset = -0.48484848
-                        obj.name = "Wall " + my_name
-
-            print('external walls created ' + str(datetime.datetime.now()))
+            # internal walls
             walls_internal = walls['internal']
             for elevation in walls_internal:
                 for height in walls_internal[elevation]:
                     simple = walls_internal[elevation][height]
 
                     for edge in simple:
-                        my_name = str(elevation) + '+' + str(height) + ' Internal'
+                        pass
 
-                        # copied from blenderbim 'dumb wall'
-                        mesh = bpy.data.meshes.new(name="Dumb Wall")
-                        mesh.from_pydata([string_to_coor(edge[0]), string_to_coor(edge[1])], [[0, 1]], [])
-                        obj = object_data_add(context, mesh)
-                        modifier = obj.modifiers.new("Wall Height", "SCREW")
-                        modifier.angle = 0
-                        modifier.screw_offset = height
-                        modifier.use_smooth_shade = False
-                        modifier.use_normal_calculate = True
-                        modifier.use_normal_flip = False
-                        modifier.steps = 1
-                        modifier.render_steps = 1
-                        modifier = obj.modifiers.new("Wall Width", "SOLIDIFY")
-                        modifier.use_even_offset = True
-                        modifier.thickness = 0.16
-                        modifier.offset = 0.0
-                        obj.name = "Wall " + my_name
-
-            print('internal walls created ' + str(datetime.datetime.now()))
+            # rooms
             cells = create_stl_list(Cell)
             cc.Cells(cells)
             for cell in cells:
@@ -198,22 +168,15 @@ class ObjectHomemaker(bpy.types.Operator):
                 modifier.use_even_offset = True
                 modifier.thickness = 0.2
 
-            print('floors created' + str(datetime.datetime.now()))
-            graph = Graph.ByTopology(cc, True, False, False, False, False, False, 0.0001)
-            topology = graph.Topology()
-            edges = create_stl_list(Edge)
-            topology.Edges(edges)
-            for edge in edges:
-                start = edge.StartVertex()
-                end = edge.EndVertex()
-                vertices = [[start.X(), start.Y(), start.Z()],
-                            [end.X(), end.Y(), end.Z()]]
+        # molior
+        with open(molior_tmp.name, 'w') as outfile:
+            yaml.dump_all(molior, outfile)
+        subprocess.call(['molior-ifc.pl', molior_tmp.name, ifc_tmp.name])
+        logger = logging.getLogger('ImportIFC')
 
-                mesh = bpy.data.meshes.new(name='Graph')
-                mesh.from_pydata(vertices, [[0, 1]], [])
-                object_data_add(context, mesh)
-            print('internal connectivity created ' + str(datetime.datetime.now()))
-
+        ifc_import_settings = import_ifc.IfcImportSettings.factory(bpy.context, ifc_tmp.name, logger)
+        ifc_importer = import_ifc.IfcImporter(ifc_import_settings)
+        ifc_importer.execute()
         return {'FINISHED'}
 
 def menu_func(self, context):

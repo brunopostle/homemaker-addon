@@ -11,6 +11,6 @@ setup(
     classifiers=[
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     ],
-    packages=find_packages(include=['topologist', 'topologist.*']),
-    install_requires=['topologicPy'],
+    packages=find_packages(include=['topologist', 'topologist.*', 'molior', 'molior.*']),
+    install_requires=['topologicPy', 'yaml'],
 )

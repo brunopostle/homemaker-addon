@@ -7,7 +7,7 @@ import unittest
 from topologic import Vertex, Edge, Face, Cell, CellComplex, CellUtility, Topology, Graph
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from topologist.helpers import create_stl_list, string_to_coor
+from topologist.helpers import create_stl_list, string_to_coor, string_to_coor_2d
 
 points = [[0.0, 0.0, 0.0], [10.0, 0.0, 0.0], [10.0, 10.0, 0.0], [0.0, 10.0, 0.0],
           [0.0, 0.0, 10.0], [10.0, 0.0, 10.0], [10.0, 10.0, 10.0], [0.0, 10.0, 10.0]]
@@ -157,6 +157,7 @@ class Tests(unittest.TestCase):
         nodes = upper.nodes()
         for node in nodes:
             self.assertEqual(string_to_coor(node)[2], 10.0)
+            self.assertEqual(len(string_to_coor_2d(node)), 2)
 
         walls_internal = walls['internal']
         for edge in walls_internal[0.0][10.0]:
