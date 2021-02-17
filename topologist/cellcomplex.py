@@ -1,6 +1,6 @@
 import topologic
 from topologic import Face, Cluster, Cell
-from topologist.helpers import create_stl_list, vertex_string
+from topologist.helpers import create_stl_list, vertex_string, el
 from topologist import ugraph
 
 def AllocateCells(self, widgets):
@@ -71,7 +71,7 @@ def Walls(self):
                     face_above = face.FaceAbove()
                     # either there is nothing above or it is an open space
                     if not (face_above and not face_above.IsOpen()):
-                        add_axis(walls['eaves'], elevation + height, 0.0, axis_top, face)
+                        add_axis(walls['eaves'], el(elevation + height), 0.0, axis_top, face)
 
     # FIXME each leaf in 'walls' is a ugraph (for external walls) or a list of
     # single axes (internal walls).  Should be converted to lists of Topologic

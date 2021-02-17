@@ -38,7 +38,7 @@ def EdgesTop(self, edges_result):
     """A list of horizontal edges at the highest level of this face"""
     edges = create_stl_list(Edge)
     self.Edges(edges)
-    level = self.Elevation() + self.Height()
+    level = el(self.Elevation() + self.Height())
     for edge in edges:
         vertex_start = edge.StartVertex()
         vertex_end = edge.EndVertex()
