@@ -32,7 +32,6 @@ class ObjectHomemaker(bpy.types.Operator):
     def execute(self, context):
         for bl_object in context.selected_objects:
 
-            print('start ' + str(datetime.datetime.now()))
             bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
             depsgraph = bpy.context.evaluated_depsgraph_get()
             bl_object = bl_object.evaluated_get(depsgraph)
@@ -77,33 +76,33 @@ class ObjectHomemaker(bpy.types.Operator):
             ifc_tmp = tempfile.NamedTemporaryFile(mode='w+b', suffix='.ifc', delete=False)
 
             # roof
-            #roof = cc.Roof()
+            roof = cc.Roof()
+            if roof:
+                vertices_stl = create_stl_list(Vertex)
+                roof.Vertices(vertices_stl)
+                vertices = []
+                for vertex in vertices_stl:
+                    vertices.append([vertex.X(), vertex.Y(), vertex.Z()])
 
-            #vertices_stl = create_stl_list(Vertex)
-            #roof.Vertices(vertices_stl)
-            #vertices = []
-            #for vertex in vertices_stl:
-            #    vertices.append([vertex.X(), vertex.Y(), vertex.Z()])
+                faces_stl = create_stl_list(Face)
+                roof.Faces(faces_stl)
+                faces = []
 
-            #faces_stl = create_stl_list(Face)
-            #roof.Faces(faces_stl)
-            #faces = []
+                for face in faces_stl:
+                    wire = face.ExternalBoundary()
+                    vertices_wire = create_stl_list(Vertex)
+                    wire.Vertices(vertices_wire)
+                    face_tmp = []
+                    for vertex in vertices_wire:
+                        face_tmp.append(vertex_id(roof, vertex))
+                    faces.append(face_tmp)
 
-            #for face in faces_stl:
-            #    wire = face.ExternalBoundary()
-            #    vertices_wire = create_stl_list(Vertex)
-            #    wire.Vertices(vertices_wire)
-            #    face_tmp = []
-            #    for vertex in vertices_wire:
-            #        face_tmp.append(vertex_id(roof, vertex))
-            #    faces.append(face_tmp)
-
-            #mesh = bpy.data.meshes.new(name="Roof")
-            #mesh.from_pydata(vertices, [], faces)
-            #obj = object_data_add(context, mesh)
-            #modifier = obj.modifiers.new("Floor Thickness", "SOLIDIFY")
-            #modifier.use_even_offset = True
-            #modifier.thickness = -0.2
+                mesh = bpy.data.meshes.new(name="Roof")
+                mesh.from_pydata(vertices, [], faces)
+                obj = object_data_add(context, mesh)
+                modifier = obj.modifiers.new("Roof Thickness", "SOLIDIFY")
+                modifier.use_even_offset = True
+                modifier.thickness = -0.2
 
             # walls
             walls = cc.Walls()
@@ -222,6 +221,8 @@ class ObjectHomemaker(bpy.types.Operator):
             cc.Cells(cells)
             for cell in cells:
                 perimeter = cell.Perimeter()
+                if len(perimeter) == 0:
+                    continue
                 vertices = []
                 for v in perimeter:
                     vertices.append([v.X(), v.Y(), v.Z()])

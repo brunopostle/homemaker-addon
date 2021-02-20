@@ -25,6 +25,8 @@ def Roof(self):
                 roof_faces.push_back(face)
     # FIXME normals are not automatically unified facing up
     cluster = Cluster.ByTopologies(roof_faces)
+    if len(list(roof_faces)) == 0:
+        return None
     return cluster.SelfMerge()
 
 def Walls(self):
