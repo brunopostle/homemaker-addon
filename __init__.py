@@ -4,7 +4,7 @@ sys.path.append('/home/bruno/src/topologicPy/cpython')
 sys.path.append('/home/bruno/src/homemaker-addon')
 
 from topologic import Vertex, Cell, Face, CellComplex
-from topologist.helpers import create_stl_list, string_to_coor_2d, vertex_id
+from topologist.helpers import create_stl_list, init_stl_list, string_to_coor_2d, vertex_id
 from molior import Wall, Extrusion
 
 import datetime
@@ -60,6 +60,9 @@ class ObjectHomemaker(bpy.types.Operator):
                 face = Face.ByVertices(vertices_face)
                 faces.append(face)
             bpy.ops.object.hide_view_set(unselected=False)
+
+            # start using Topologic
+            init_stl_lists()
 
             faces_ptr = create_stl_list(Face)
             for face in faces:
@@ -194,6 +197,25 @@ class ObjectHomemaker(bpy.types.Operator):
                                        'elevation': elevation,
                                            'level': elevations[elevation]})
                         molior.append(wall.__dict__)
+
+            # open walls, where both sides are 'outside'
+            walls_open = walls['open']
+            for elevation in walls_open:
+                for height in walls_open[elevation]:
+                    graph = walls_open[elevation][height]
+
+                    for chain in graph.find_chains():
+                        path = []
+                        for node in chain.nodes():
+                            path.append(string_to_coor_2d(node))
+                        wall = Extrusion({'closed': 0,
+                                            'path': path,
+                                            'name': 'external-beam',
+                                          'height': height,
+                                       'elevation': elevation,
+                                           'level': elevations[elevation]})
+                        molior.append(wall.__dict__)
+
 
             # rooms
             cells = create_stl_list(Cell)
