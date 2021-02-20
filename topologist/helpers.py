@@ -1,4 +1,4 @@
-from topologic import Vertex, Edge, Wire, Face, Shell, Cell, CellComplex, Cluster, Topology
+from topologic import Aperture, Cell, CellComplex, Cluster, Edge, Face, Shell, Vertex, Wire, Topology
 
 import cppyy
 

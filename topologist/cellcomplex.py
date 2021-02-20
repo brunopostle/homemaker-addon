@@ -1,5 +1,5 @@
 import topologic
-from topologic import Face, Cluster, Cell
+from topologic import Face, Cluster, Cell, Topology
 from topologist.helpers import create_stl_list, vertex_string, el
 from topologist import ugraph
 
@@ -16,7 +16,7 @@ def PruneGraph(self):
 def Roof(self):
     faces = create_stl_list(Face)
     self.Faces(faces)
-    roof_faces = create_stl_list(Face)
+    roof_faces = create_stl_list(Topology)
     for face in faces:
         if not face.IsVertical() and not face.IsHorizontal():
             cells = create_stl_list(Cell)
@@ -24,7 +24,8 @@ def Roof(self):
             if len(list(cells)) == 1:
                 roof_faces.push_back(face)
     # FIXME normals are not automatically unified facing up
-    return Cluster.ByFaces(roof_faces)
+    cluster = Cluster.ByTopologies(roof_faces)
+    return cluster.SelfMerge()
 
 def Walls(self):
     """Construct a graph of external vertical faces for each elevation and height"""
