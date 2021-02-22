@@ -160,9 +160,30 @@ class Tests(unittest.TestCase):
             self.assertEqual(len(string_to_coor_2d(node)), 2)
 
         walls_internal = walls['internal']
-        for edge in walls_internal[0.0][10.0]:
-            self.assertEqual(edge[0], '10.0__10.0__0.0')
-            self.assertEqual(edge[1], '0.0__0.0__0.0')
+        edges = create_stl_list(Edge)
+        walls_internal[0.0][10.0].Edges(edges)
+        for edge in edges:
+            edge.__class__ = Edge
+            start = edge.StartVertex()
+            end = edge.EndVertex()
+            self.assertEqual(start.X(), 10.0)
+            self.assertEqual(start.Y(), 10.0)
+            self.assertEqual(start.Z(), 0.0)
+            self.assertEqual(end.X(), 0.0)
+            self.assertEqual(end.Y(), 0.0)
+            self.assertEqual(end.Z(), 0.0)
+
+            # read Contents from the Edge
+            contents = create_stl_list(Topology)
+            edge.Contents(contents)
+
+            for topology in contents:
+                centroid = topology.Centroid()
+                self.assertEqual(centroid.X(), 5.0)
+                self.assertEqual(centroid.Y(), 5.0)
+                self.assertEqual(centroid.Z(), 5.0)
+                topology.__class__ = Face
+                self.assertEqual(topology.Type(), 8)
 
     def test_elevations(self):
         elevations = cc.Elevations()

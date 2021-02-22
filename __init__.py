@@ -3,7 +3,7 @@ import sys
 sys.path.append('/home/bruno/src/topologicPy/cpython')
 sys.path.append('/home/bruno/src/homemaker-addon')
 
-from topologic import Vertex, Cell, Face, CellComplex
+from topologic import Vertex, Edge, Cell, Face, CellComplex
 from topologist.helpers import create_stl_list, init_stl_lists, string_to_coor_2d, vertex_id
 from molior import Wall, Extrusion
 
@@ -149,10 +149,13 @@ class ObjectHomemaker(bpy.types.Operator):
             walls_internal = walls['internal']
             for elevation in walls_internal:
                 for height in walls_internal[elevation]:
-                    simple = walls_internal[elevation][height]
+                    edges = create_stl_list(Edge)
+                    walls_internal[elevation][height].Edges(edges)
 
-                    for edge in simple:
-                        path = [string_to_coor_2d(edge[0]), string_to_coor_2d(edge[1])]
+                    for edge in edges:
+                        start = edge.StartVertex()
+                        end = edge.EndVertex()
+                        path = [[start.X(), start.Y()], [end.X(), end.Y()]]
                         wall = Wall({'closed': 0,
                                        'path': path,
                                        'name': 'interior',

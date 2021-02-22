@@ -76,6 +76,12 @@ def Walls(self):
                     if not (face_above and not face_above.IsOpen()):
                         add_axis(walls['eaves'], el(elevation + height), 0.0, axis_top, face)
 
+    for elevation in walls['internal']:
+        for height in walls['internal'][elevation]:
+            edges = walls['internal'][elevation][height]
+            cluster = Cluster.ByTopologies(edges)
+            walls['internal'][elevation][height] = cluster.SelfMerge()
+
     # FIXME each leaf in 'walls' is a ugraph (for external walls) or a list of
     # single axes (internal walls).  Should be converted to lists of Topologic
     # Wire and Edge entities, with each Edge containing a Dictionary reference
@@ -98,11 +104,8 @@ def add_axis_simple(wall_type, elevation, height, edge, face):
    if not elevation in wall_type:
        wall_type[elevation] = {}
    if not height in wall_type[elevation]:
-       wall_type[elevation][height] = []
-
-   start_coor = vertex_string(edge.StartVertex())
-   end_coor = vertex_string(edge.EndVertex())
-   wall_type[elevation][height].append([start_coor, end_coor, edge, face])
+       wall_type[elevation][height] = create_stl_list(Topology)
+   wall_type[elevation][height].push_back(edge)
 
 def Elevations(self):
     """Identify all unique elevations, allocate level index"""

@@ -1,5 +1,5 @@
 import topologic
-from topologic import Vertex, Edge, Wire, Face, FaceUtility, Cell
+from topologic import Topology, Vertex, Edge, Wire, Face, FaceUtility, Cell
 from topologist.helpers import create_stl_list
 
 def ByVertices(vertices):
@@ -53,7 +53,13 @@ def AxisOuter(self):
     vertices_stl = create_stl_list(Vertex)
     wire.Vertices(vertices_stl)
     vertices = list(vertices_stl)
-    return Edge.ByStartVertexEndVertex(vertices[0], vertices[-1])
+    # Edge Content will be this Face
+    ptr = create_stl_list(Topology)
+    ptr.push_back(self)
+    edge = Edge.ByStartVertexEndVertex(vertices[0], vertices[-1])
+    edge = edge.AddContents(ptr, 0)
+    edge.__class__ = Edge
+    return edge
 
 def AxisOuterTop(self):
     """2D top edge of a vertical face, for external walls, anti-clockwise in plan"""
@@ -64,7 +70,13 @@ def AxisOuterTop(self):
     vertices_stl = create_stl_list(Vertex)
     wire.Vertices(vertices_stl)
     vertices = list(vertices_stl)
-    return Edge.ByStartVertexEndVertex(vertices[-1], vertices[0])
+    # Edge Content will be this Face
+    ptr = create_stl_list(Topology)
+    ptr.push_back(self)
+    edge = Edge.ByStartVertexEndVertex(vertices[-1], vertices[0])
+    edge = edge.AddContents(ptr, 0)
+    edge.__class__ = Edge
+    return edge
 
 def IsInternal(self):
     """Face between two indoor cells"""
