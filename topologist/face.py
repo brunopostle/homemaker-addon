@@ -1,6 +1,6 @@
 import topologic
 from topologic import Topology, Vertex, Edge, Wire, Face, FaceUtility, Cell
-from topologist.helpers import create_stl_list
+from topologist.helpers import create_stl_list, fixTopologyClass
 
 def ByVertices(vertices):
     """Create a Face from an ordered set of Vertices"""
@@ -58,7 +58,7 @@ def AxisOuter(self):
     ptr.push_back(self)
     edge = Edge.ByStartVertexEndVertex(vertices[0], vertices[-1])
     edge = edge.AddContents(ptr, 0)
-    edge.__class__ = Edge
+    fixTopologyClass(edge)
     return edge
 
 def AxisOuterTop(self):
@@ -75,7 +75,7 @@ def AxisOuterTop(self):
     ptr.push_back(self)
     edge = Edge.ByStartVertexEndVertex(vertices[-1], vertices[0])
     edge = edge.AddContents(ptr, 0)
-    edge.__class__ = Edge
+    fixTopologyClass(edge)
     return edge
 
 def IsInternal(self):

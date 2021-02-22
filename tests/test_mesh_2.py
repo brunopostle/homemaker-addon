@@ -7,7 +7,7 @@ import unittest
 from topologic import Vertex, Edge, Face, Cell, CellComplex, CellUtility, Topology, Graph
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from topologist.helpers import create_stl_list, string_to_coor, string_to_coor_2d
+from topologist.helpers import create_stl_list, string_to_coor, string_to_coor_2d, fixTopologyClass
 
 points = [[0.0, 0.0, 0.0], [10.0, 0.0, 0.0], [10.0, 10.0, 0.0], [0.0, 10.0, 0.0],
           [0.0, 0.0, 10.0], [10.0, 0.0, 10.0], [10.0, 10.0, 10.0], [0.0, 10.0, 10.0]]
@@ -163,7 +163,7 @@ class Tests(unittest.TestCase):
         edges = create_stl_list(Edge)
         walls_internal[0.0][10.0].Edges(edges)
         for edge in edges:
-            edge.__class__ = Edge
+            fixTopologyClass(edge)
             start = edge.StartVertex()
             end = edge.EndVertex()
             self.assertEqual(start.X(), 10.0)
@@ -182,7 +182,7 @@ class Tests(unittest.TestCase):
                 self.assertEqual(centroid.X(), 5.0)
                 self.assertEqual(centroid.Y(), 5.0)
                 self.assertEqual(centroid.Z(), 5.0)
-                topology.__class__ = Face
+                fixTopologyClass(topology)
                 self.assertEqual(topology.Type(), 8)
 
     def test_elevations(self):

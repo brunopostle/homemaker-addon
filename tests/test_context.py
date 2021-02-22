@@ -7,7 +7,7 @@ import unittest
 from topologic import Vertex, Edge, Face, Topology
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from topologist.helpers import create_stl_list, init_stl_lists
+from topologist.helpers import create_stl_list, init_stl_lists, fixTopologyClass
 
 init_stl_lists()
 
@@ -42,7 +42,7 @@ class Tests(unittest.TestCase):
         edge.Contents(contents)
 
         for topology in contents:
-            topology.__class__ = Face
+            fixTopologyClass(topology)
             self.assertEqual(topology.Type(), 8)
 
 if __name__ == '__main__':
