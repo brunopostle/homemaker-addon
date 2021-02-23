@@ -7,7 +7,7 @@ import unittest
 from topologic import Vertex, Edge, Face, Cell, CellComplex, CellUtility, Topology, Graph
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from topologist.helpers import create_stl_list, string_to_coor, string_to_coor_2d, fixTopologyClass
+from topologist.helpers import create_stl_list, string_to_coor, string_to_coor_2d
 
 points = [[0.0, 0.0, 0.0], [10.0, 0.0, 0.0], [10.0, 10.0, 0.0], [0.0, 10.0, 0.0],
           [0.0, 0.0, 10.0], [10.0, 0.0, 10.0], [10.0, 10.0, 10.0], [0.0, 10.0, 10.0]]
@@ -140,50 +140,49 @@ class Tests(unittest.TestCase):
         self.assertEqual(len(walls_external[10.0]), 1)
 
         lower = walls_external[0.0][10.0]
-        self.assertEqual(len(lower.nodes()), 4)
-        self.assertEqual(len(lower.edges()), 4)
-        for cycle in lower.find_cycles():
-            self.assertEqual(len(cycle.nodes()), 4)
-            for node in cycle.nodes():
-                self.assertEqual(string_to_coor(node)[2], 0.0)
-            attributes = cycle.get_edge_data(['0.0__10.0__0.0','0.0__0.0__0.0'])
-            face = attributes
-            self.assertTrue(face)
+        self.assertEqual(len(lower), 1)
+        self.assertEqual(len(lower[0].nodes()), 4)
+        self.assertEqual(len(lower[0].edges()), 4)
+        cycle = lower[0]
+        self.assertTrue(cycle.is_simple_cycle())
+        for node in cycle.nodes():
+            self.assertEqual(string_to_coor(node)[2], 0.0)
+        data = cycle.get_edge_data(['0.0__10.0__0.0','0.0__0.0__0.0'])
+        self.assertEqual(len(data), 3)
+        self.assertEqual(data[0].GetType(), 1) # Vertex == 1
+        self.assertEqual(data[1].GetType(), 1) # Vertex == 1
+        self.assertEqual(data[2].GetType(), 8) # Face == 8
 
         upper = walls_external[10.0][10.0]
-        self.assertEqual(len(upper.nodes()), 4)
-        self.assertEqual(len(upper.edges()), 4)
+        self.assertEqual(len(upper[0].nodes()), 4)
+        self.assertEqual(len(upper[0].edges()), 4)
 
-        nodes = upper.nodes()
+        nodes = upper[0].nodes()
         for node in nodes:
             self.assertEqual(string_to_coor(node)[2], 10.0)
             self.assertEqual(len(string_to_coor_2d(node)), 2)
 
-        walls_internal = walls['internal']
-        edges = create_stl_list(Edge)
-        walls_internal[0.0][10.0].Edges(edges)
-        for edge in edges:
-            fixTopologyClass(edge)
-            start = edge.StartVertex()
-            end = edge.EndVertex()
-            self.assertEqual(start.X(), 10.0)
-            self.assertEqual(start.Y(), 10.0)
-            self.assertEqual(start.Z(), 0.0)
-            self.assertEqual(end.X(), 0.0)
-            self.assertEqual(end.Y(), 0.0)
-            self.assertEqual(end.Z(), 0.0)
+        walls_internal = walls['internal'][0.0][10.0]
+        for graph in walls_internal:
+            self.assertEqual(len(graph.nodes()), 2)
+            self.assertEqual(len(graph.edges()), 1)
+            for edge in graph.edges():
+                data = graph.get_edge_data(edge)
+                start = data[0]
+                end = data[1]
+                face = data[2]
+                self.assertEqual(start.X(), 10.0)
+                self.assertEqual(start.Y(), 10.0)
+                self.assertEqual(start.Z(), 0.0)
+                self.assertEqual(end.X(), 0.0)
+                self.assertEqual(end.Y(), 0.0)
+                self.assertEqual(end.Z(), 0.0)
 
-            # read Contents from the Edge
-            contents = create_stl_list(Topology)
-            edge.Contents(contents)
-
-            for topology in contents:
-                centroid = topology.Centroid()
+                centroid = face.Centroid()
                 self.assertEqual(centroid.X(), 5.0)
                 self.assertEqual(centroid.Y(), 5.0)
                 self.assertEqual(centroid.Z(), 5.0)
-                fixTopologyClass(topology)
-                self.assertEqual(topology.Type(), 8)
+                self.assertEqual(face.Type(), 8)
 
     def test_elevations(self):
         elevations = cc.Elevations()

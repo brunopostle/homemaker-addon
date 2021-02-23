@@ -3,7 +3,7 @@ import sys
 sys.path.append('/home/bruno/src/topologicPy/cpython')
 sys.path.append('/home/bruno/src/homemaker-addon')
 
-from topologic import Vertex, Edge, Cell, Face, CellComplex
+from topologic import Vertex, Cell, Face, CellComplex
 from topologist.helpers import create_stl_list, init_stl_lists, string_to_coor_2d, vertex_id
 from molior import Wall, Extrusion
 
@@ -111,13 +111,13 @@ class ObjectHomemaker(bpy.types.Operator):
             walls_external = walls['external']
             for elevation in walls_external:
                 for height in walls_external[elevation]:
-                    graph = walls_external[elevation][height]
-
-                    for chain in graph.find_chains():
+                    for chain in walls_external[elevation][height]:
+                        closed = 0
+                        if chain.is_simple_cycle(): closed = 1
                         path = []
                         for node in chain.nodes():
                             path.append(string_to_coor_2d(node))
-                        wall = Wall({'closed': 0,
+                        wall = Wall({'closed': closed,
                                        'path': path,
                                        'name': 'exterior',
                                   'elevation': elevation,
@@ -130,32 +130,14 @@ class ObjectHomemaker(bpy.types.Operator):
                             wall.populate_exterior_openings(segment, interior_type, 0)
                         molior.append(wall.__dict__)
 
-                    for chain in graph.find_cycles():
-                        path = []
-                        for node in chain.nodes():
-                            path.append(string_to_coor_2d(node))
-                        wall = Wall({'closed': 1,
-                                       'path': path,
-                                       'name': 'exterior',
-                                  'elevation': elevation,
-                                     'height': height,
-                                      'level': elevations[elevation]})
-                        for segment in range(len(wall.openings)):
-                            interior_type = 'Living' # FIXME
-                            wall.populate_exterior_openings(segment, interior_type, 0)
-                        molior.append(wall.__dict__)
-
             # internal walls
             walls_internal = walls['internal']
             for elevation in walls_internal:
                 for height in walls_internal[elevation]:
-                    edges = create_stl_list(Edge)
-                    walls_internal[elevation][height].Edges(edges)
-
-                    for edge in edges:
-                        start = edge.StartVertex()
-                        end = edge.EndVertex()
-                        path = [[start.X(), start.Y()], [end.X(), end.Y()]]
+                    for chain in walls_internal[elevation][height]:
+                        path = []
+                        for node in chain.nodes():
+                            path.append(string_to_coor_2d(node))
                         wall = Wall({'closed': 0,
                                        'path': path,
                                        'name': 'interior',
@@ -176,26 +158,18 @@ class ObjectHomemaker(bpy.types.Operator):
             walls_eaves = walls['eaves']
             for elevation in walls_eaves:
                 for height in walls_eaves[elevation]:
-                    graph = walls_eaves[elevation][height]
-
-                    for chain in graph.find_chains():
+                    for chain in walls_eaves[elevation][height]:
+                        closed = 0
+                        name = 'parapet'
+                        if chain.is_simple_cycle():
+                            closed = 1
+                            name = 'eaves'
                         path = []
                         for node in chain.nodes():
                             path.append(string_to_coor_2d(node))
-                        wall = Extrusion({'closed': 0,
+                        wall = Extrusion({'closed': closed,
                                             'path': path,
-                                            'name': 'parapet',
-                                       'elevation': elevation,
-                                           'level': elevations[elevation]})
-                        molior.append(wall.__dict__)
-
-                    for chain in graph.find_cycles():
-                        path = []
-                        for node in chain.nodes():
-                            path.append(string_to_coor_2d(node))
-                        wall = Extrusion({'closed': 1,
-                                            'path': path,
-                                            'name': 'eaves',
+                                            'name': name,
                                        'elevation': elevation,
                                            'level': elevations[elevation]})
                         molior.append(wall.__dict__)
@@ -204,20 +178,19 @@ class ObjectHomemaker(bpy.types.Operator):
             walls_open = walls['open']
             for elevation in walls_open:
                 for height in walls_open[elevation]:
-                    graph = walls_open[elevation][height]
-
-                    for chain in graph.find_chains():
+                    for chain in walls_open[elevation][height]:
+                        closed = 0
+                        if chain.is_simple_cycle(): closed = 1
                         path = []
                         for node in chain.nodes():
                             path.append(string_to_coor_2d(node))
-                        wall = Extrusion({'closed': 0,
+                        wall = Extrusion({'closed': closed,
                                             'path': path,
                                             'name': 'external-beam',
                                           'height': height,
                                        'elevation': elevation,
                                            'level': elevations[elevation]})
                         molior.append(wall.__dict__)
-
 
             # rooms
             cells = create_stl_list(Cell)

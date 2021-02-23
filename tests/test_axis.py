@@ -54,8 +54,8 @@ class Tests(unittest.TestCase):
             axis_outer = face.AxisOuter()
             axis_outer_top = face.AxisOuterTop()
 
-            edges_outer.push_back(axis_outer)
-            edges_outer_top.push_back(axis_outer_top)
+            edges_outer.push_back(Edge.ByStartVertexEndVertex(axis_outer[0], axis_outer[1]))
+            edges_outer_top.push_back(Edge.ByStartVertexEndVertex(axis_outer_top[0], axis_outer_top[1]))
 
         # construct four sided wires for top and bottom
         wire_axis = Wire.ByEdges(edges_outer)

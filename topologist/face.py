@@ -1,6 +1,6 @@
 import topologic
-from topologic import Topology, Vertex, Edge, Wire, Face, FaceUtility, Cell
-from topologist.helpers import create_stl_list, fixTopologyClass
+from topologic import Vertex, Edge, Wire, Face, FaceUtility, Cell
+from topologist.helpers import create_stl_list
 
 def ByVertices(vertices):
     """Create a Face from an ordered set of Vertices"""
@@ -46,6 +46,7 @@ def IsHorizontal(self):
 
 def AxisOuter(self):
     """2D bottom edge of a vertical face, for external walls, anti-clockwise in plan"""
+    # FIXME process of creating Wire results in disconnected Vertices, use ugraph instead
     edges = create_stl_list(Edge)
     self.EdgesBottom(edges)
     if len(edges) == 0: return None
@@ -53,16 +54,11 @@ def AxisOuter(self):
     vertices_stl = create_stl_list(Vertex)
     wire.Vertices(vertices_stl)
     vertices = list(vertices_stl)
-    # Edge Content will be this Face
-    ptr = create_stl_list(Topology)
-    ptr.push_back(self)
-    edge = Edge.ByStartVertexEndVertex(vertices[0], vertices[-1])
-    edge = edge.AddContents(ptr, 0)
-    fixTopologyClass(edge)
-    return edge
+    return [vertices[0], vertices[-1]]
 
 def AxisOuterTop(self):
     """2D top edge of a vertical face, for external walls, anti-clockwise in plan"""
+    # FIXME process of creating Wire results in disconnected Vertices, use ugraph instead
     edges = create_stl_list(Edge)
     self.EdgesTop(edges)
     if len(edges) == 0: return None
@@ -70,13 +66,7 @@ def AxisOuterTop(self):
     vertices_stl = create_stl_list(Vertex)
     wire.Vertices(vertices_stl)
     vertices = list(vertices_stl)
-    # Edge Content will be this Face
-    ptr = create_stl_list(Topology)
-    ptr.push_back(self)
-    edge = Edge.ByStartVertexEndVertex(vertices[-1], vertices[0])
-    edge = edge.AddContents(ptr, 0)
-    fixTopologyClass(edge)
-    return edge
+    return [vertices[-1], vertices[0]]
 
 def IsInternal(self):
     """Face between two indoor cells"""

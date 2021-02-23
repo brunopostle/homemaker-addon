@@ -76,36 +76,39 @@ def Walls(self):
                     if not (face_above and not face_above.IsOpen()):
                         add_axis(walls['eaves'], el(elevation + height), 0.0, axis_top, face)
 
-    for elevation in walls['internal']:
-        for height in walls['internal'][elevation]:
-            edges = walls['internal'][elevation][height]
-            cluster = Cluster.ByTopologies(edges)
-            walls['internal'][elevation][height] = cluster.SelfMerge()
+    for usage in walls:
+        for elevation in walls[usage]:
+            for height in walls[usage][elevation]:
+                if usage == 'internal' or usage == 'internal_unsupported':
+                    continue
+                graphs = walls[usage][elevation][height].find_paths()
+                walls[usage][elevation][height] = graphs
 
-    # FIXME each leaf in 'walls' is a ugraph (for external walls) or a list of
-    # single axes (internal walls).  Should be converted to lists of Topologic
-    # Wire and Edge entities, with each Edge containing a Dictionary reference
-    # to a Face
     return walls
 
 def add_axis(wall_type, elevation, height, edge, face):
-   """helper function to isolate graph library related code"""
-   if not elevation in wall_type:
-       wall_type[elevation] = {}
-   if not height in wall_type[elevation]:
-       wall_type[elevation][height] = ugraph.graph()
+    """helper function to isolate graph library related code"""
+    if not elevation in wall_type:
+        wall_type[elevation] = {}
+    if not height in wall_type[elevation]:
+        wall_type[elevation][height] = ugraph.graph()
 
-   start_coor = vertex_string(edge.StartVertex())
-   end_coor = vertex_string(edge.EndVertex())
-   wall_type[elevation][height].add_edge({start_coor: [end_coor, edge, face]})
+    start_coor = vertex_string(edge[0])
+    end_coor = vertex_string(edge[1])
+    wall_type[elevation][height].add_edge({start_coor: [end_coor, [edge[0], edge[1], face]]})
 
 def add_axis_simple(wall_type, elevation, height, edge, face):
-   """helper function for walls that don't form chains or loops"""
-   if not elevation in wall_type:
-       wall_type[elevation] = {}
-   if not height in wall_type[elevation]:
-       wall_type[elevation][height] = create_stl_list(Topology)
-   wall_type[elevation][height].push_back(edge)
+    """helper function for walls that don't form chains or loops"""
+    if not elevation in wall_type:
+        wall_type[elevation] = {}
+    if not height in wall_type[elevation]:
+        wall_type[elevation][height] = []
+
+    start_coor = vertex_string(edge[0])
+    end_coor = vertex_string(edge[1])
+    graph = ugraph.graph()
+    graph.add_edge({start_coor: [end_coor, [edge[0], edge[1], face]]})
+    wall_type[elevation][height].append(graph)
 
 def Elevations(self):
     """Identify all unique elevations, allocate level index"""

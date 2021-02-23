@@ -40,6 +40,12 @@ class graph:
             result.append(self.graph[vertex_a][0])
         return result
 
+    def is_simple_cycle(self):
+        """does the last node connect to the first node?"""
+        if self.starts()[0] == self.ends()[-1]:
+            return True
+        return False
+
     def source_vertices(self):
         result = []
         start_list = self.starts()
@@ -87,3 +93,7 @@ class graph:
                     todo = False
             result.append(cycle)
         return result
+
+    def find_paths(self):
+        """return result of find_chains() and find_cycles() as a single list"""
+        return self.find_chains() + self.find_cycles()

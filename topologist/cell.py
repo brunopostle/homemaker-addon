@@ -80,6 +80,8 @@ def Crinkliness(self):
 
 def Perimeter(self):
     """2D outline of cell floor, closed, anti-clockwise"""
+    # FIXME process of creating floor-Face/Wire loses valid wall Vertices and Faces
+    # this needs to return a ugraph instead of a list of unconnected Vertices
     elevation = self.Elevation()
     faces = create_stl_list(Face)
     self.FacesVertical(faces)
@@ -88,7 +90,7 @@ def Perimeter(self):
         if face.Elevation() == elevation:
             edge = face.AxisOuter()
             if edge:
-                edges.push_back(edge)
+                edges.push_back(Edge.ByStartVertexEndVertex(edge[0], edge[1]))
     if len(edges) < 3:
         return []
     floor = Face.ByEdges(edges)
