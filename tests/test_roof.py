@@ -7,7 +7,9 @@ import unittest
 from topologic import Vertex, Face, CellComplex
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from topologist.helpers import create_stl_list, vertex_id
+from topologist.helpers import create_stl_list, init_stl_lists, vertex_id
+
+init_stl_lists()
 
 points = [[0.0, 0.0, 0.0], [10.0, 0.0, 0.0], [10.0, 10.0, 0.0], [0.0, 10.0, 0.0],
           [5.0, 0.0, 3.0], [5.0, 10.0, 3.0]]
