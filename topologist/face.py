@@ -1,6 +1,7 @@
 import topologic
-from topologic import Vertex, Edge, Wire, Face, FaceUtility, Cell
-from topologist.helpers import create_stl_list
+from topologic import Edge, Face, FaceUtility, Cell
+from topologist.helpers import create_stl_list, vertex_string
+from topologist import ugraph
 
 def ByVertices(vertices):
     """Create a Face from an ordered set of Vertices"""
@@ -46,27 +47,35 @@ def IsHorizontal(self):
 
 def AxisOuter(self):
     """2D bottom edge of a vertical face, for external walls, anti-clockwise in plan"""
-    # FIXME process of creating Wire results in disconnected Vertices, use ugraph instead
     edges = create_stl_list(Edge)
     self.EdgesBottom(edges)
     if len(edges) == 0: return None
-    wire = Wire.ByEdges(edges)
-    vertices_stl = create_stl_list(Vertex)
-    wire.Vertices(vertices_stl)
-    vertices = list(vertices_stl)
-    return [vertices[0], vertices[-1]]
+    unordered = ugraph.graph()
+    for edge in edges:
+        start_coor = vertex_string(edge.StartVertex())
+        end_coor = vertex_string(edge.EndVertex())
+        unordered.add_edge({start_coor: [end_coor, [edge.StartVertex(), edge.EndVertex(), self]]})
+    ordered = unordered.find_chains()[0]
+    ordered_edges = ordered.edges()
+    first_edge = ordered_edges[0][0]
+    last_edge = ordered_edges[-1][0]
+    return [ordered.graph[first_edge][1][0], ordered.graph[last_edge][1][1]]
 
 def AxisOuterTop(self):
     """2D top edge of a vertical face, for external walls, anti-clockwise in plan"""
-    # FIXME process of creating Wire results in disconnected Vertices, use ugraph instead
     edges = create_stl_list(Edge)
     self.EdgesTop(edges)
     if len(edges) == 0: return None
-    wire = Wire.ByEdges(edges)
-    vertices_stl = create_stl_list(Vertex)
-    wire.Vertices(vertices_stl)
-    vertices = list(vertices_stl)
-    return [vertices[-1], vertices[0]]
+    unordered = ugraph.graph()
+    for edge in edges:
+        start_coor = vertex_string(edge.StartVertex())
+        end_coor = vertex_string(edge.EndVertex())
+        unordered.add_edge({start_coor: [end_coor, [edge.StartVertex(), edge.EndVertex(), self]]})
+    ordered = unordered.find_chains()[0]
+    ordered_edges = ordered.edges()
+    first_edge = ordered_edges[0][0]
+    last_edge = ordered_edges[-1][0]
+    return [ordered.graph[last_edge][1][1], ordered.graph[first_edge][1][0]]
 
 def IsInternal(self):
     """Face between two indoor cells"""
