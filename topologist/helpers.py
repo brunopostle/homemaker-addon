@@ -7,17 +7,15 @@ def create_stl_list(cppyy_data_type):
 
 def init_stl_lists():
     """workaround cppyy problem"""
-    create_stl_list(Aperture)
-    create_stl_list(Cell)
-    create_stl_list(CellComplex)
-    create_stl_list(Cluster)
-    create_stl_list(Edge)
-    create_stl_list(Face)
-    create_stl_list(Shell)
-    create_stl_list(Vertex)
-    create_stl_list(Wire)
-    # do this last otherwise everything ends up as Topology
-    create_stl_list(Topology)
+    cppyy.gbl.TopologicCore.Aperture.Ptr = cppyy.gbl.TopologicCore.Aperture.__class__.Ptr
+    cppyy.gbl.TopologicCore.Cell.Ptr = cppyy.gbl.TopologicCore.Cell.__class__.Ptr
+    cppyy.gbl.TopologicCore.CellComplex.Ptr = cppyy.gbl.TopologicCore.CellComplex.__class__.Ptr
+    cppyy.gbl.TopologicCore.Cluster.Ptr = cppyy.gbl.TopologicCore.Cluster.__class__.Ptr
+    cppyy.gbl.TopologicCore.Edge.Ptr = cppyy.gbl.TopologicCore.Edge.__class__.Ptr
+    cppyy.gbl.TopologicCore.Face.Ptr = cppyy.gbl.TopologicCore.Face.__class__.Ptr
+    cppyy.gbl.TopologicCore.Shell.Ptr = cppyy.gbl.TopologicCore.Shell.__class__.Ptr
+    cppyy.gbl.TopologicCore.Vertex.Ptr = cppyy.gbl.TopologicCore.Vertex.__class__.Ptr
+    cppyy.gbl.TopologicCore.Wire.Ptr = cppyy.gbl.TopologicCore.Wire.__class__.Ptr
 
 def classByType(argument):
     switcher = {
