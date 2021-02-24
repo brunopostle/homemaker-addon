@@ -52,6 +52,11 @@ def CellsBelow(self, topology, cells_result):
             if not cell.IsSame(self):
                 cells_result.push_back(cell)
 
+def Usage(self):
+    """Type() is taken by Topologic"""
+    # TODO
+    return 'Living'
+
 def IsOutside(self):
     """Cell with outdoor type"""
     # TODO
@@ -123,6 +128,7 @@ setattr(topologic.Cell, 'FacesVertical', FacesVertical)
 setattr(topologic.Cell, 'FacesVerticalExternal', FacesVerticalExternal)
 setattr(topologic.Cell, 'CellsAbove', CellsAbove)
 setattr(topologic.Cell, 'CellsBelow', CellsBelow)
+setattr(topologic.Cell, 'Usage', Usage)
 setattr(topologic.Cell, 'IsOutside', IsOutside)
 setattr(topologic.Cell, 'PlanArea', PlanArea)
 setattr(topologic.Cell, 'ExternalWallArea', ExternalWallArea)

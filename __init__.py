@@ -5,7 +5,7 @@ sys.path.append('/home/bruno/src/homemaker-addon')
 
 from topologic import Vertex, Cell, Face, CellComplex
 from topologist.helpers import create_stl_list, string_to_coor_2d, vertex_id
-from molior import Wall, Extrusion
+from molior import Wall, Extrusion, Space, Stair, Floor, Ceiling
 
 import datetime
 import tempfile
@@ -227,19 +227,63 @@ class ObjectHomemaker(bpy.types.Operator):
             # rooms
             cells = create_stl_list(Cell)
             cc.Cells(cells)
+            number = 0
             for cell in cells:
                 perimeter = cell.Perimeter()
-                if len(perimeter) == 0:
+                if perimeter == None or len(perimeter) == 0:
                     continue
-                vertices = []
-                for v in perimeter:
-                    vertices.append([v.X(), v.Y(), v.Z()])
-                mesh = bpy.data.meshes.new(name="Floor")
-                mesh.from_pydata(vertices, [], [list(range(len(vertices)))])
-                obj = object_data_add(context, mesh)
-                modifier = obj.modifiers.new("Floor Thickness", "SOLIDIFY")
-                modifier.use_even_offset = True
-                modifier.thickness = 0.2
+                colour = 0
+                if not cell.IsOutside():
+                    crinkliness = cell.Crinkliness()
+                    colour = (int(crinkliness*16)-7)*10
+                    if colour > 170: colour = 170
+                    if colour < 10: colour = 10
+                elevation = cell.Elevation()
+                height = cell.Height()
+                usage = cell.Usage()
+                path = []
+                for vertex in perimeter:
+                    path.append([vertex.X(), vertex.Y()])
+
+                part = Space({'path': path,
+                                'id': number,
+                              'name': 'my room',
+                         'elevation': elevation,
+                            'height': height,
+                             'level': elevations[elevation],
+                            'colour': colour,
+                             'usage': usage})
+                molior.append(part.__dict__)
+
+                part = Stair({'path': path,
+                                'id': number,
+                              'name': 'my room',
+                         'elevation': elevation,
+                            'height': height,
+                             'level': elevations[elevation],
+                            'risers': int(height/0.19)+1,
+                             'usage': usage})
+                if usage == 'circulation_stair' and len(path) == 4 and cell.CellsAbove():
+                    molior.append(part.__dict__)
+
+                part = Floor({'path': path,
+                                'id': number,
+                              'name': 'my room',
+                         'elevation': elevation,
+                             'level': elevations[elevation]})
+                if not (usage == 'circulation_stair' and cell.CellsBelow()):
+                    molior.append(part.__dict__)
+
+                part = Ceiling({'path': path,
+                                  'id': number,
+                                'name': 'my room',
+                           'elevation': elevation,
+                              'height': height,
+                               'level': elevations[elevation]})
+                if not (usage == 'circulation_stair' and cell.CellsAbove()):
+                    molior.append(part.__dict__)
+
+                number += 1
 
         # molior
         with open(molior_tmp.name, 'w') as outfile:

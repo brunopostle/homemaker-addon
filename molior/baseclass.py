@@ -1,6 +1,7 @@
 class Molior():
     """A generic building object"""
     def __init__(self, args = {}):
+        self.closed = 1
         self.elevation = 0.0
         self.guid = 'my building'
         self.height = 0.0
