@@ -4,7 +4,7 @@ sys.path.append('/home/bruno/src/topologicPy/cpython')
 sys.path.append('/home/bruno/src/homemaker-addon')
 
 from topologic import Vertex, Cell, Face, CellComplex
-from topologist.helpers import create_stl_list, init_stl_lists, string_to_coor_2d, vertex_id
+from topologist.helpers import create_stl_list, string_to_coor_2d, vertex_id
 from molior import Wall, Extrusion
 
 import datetime
@@ -61,8 +61,6 @@ class ObjectHomemaker(bpy.types.Operator):
             bpy.ops.object.hide_view_set(unselected=False)
 
             # start using Topologic
-            init_stl_lists()
-
             faces_ptr = create_stl_list(Face)
             for face in faces:
                 faces_ptr.push_back(face)

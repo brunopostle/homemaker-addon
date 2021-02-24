@@ -7,9 +7,7 @@ import unittest
 from topologic import Topology, Vertex, Edge, Wire, Cluster
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from topologist.helpers import create_stl_list, init_stl_lists, el
-
-init_stl_lists()
+from topologist.helpers import create_stl_list, el
 
 # a closed loop
 points = [[0.0, 0.0, 0.0], [10.0, 0.0, 0.0], [10.0, 10.0, 0.0], [0.0, 10.0, 0.0]]
