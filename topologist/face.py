@@ -23,15 +23,23 @@ def ByVertices(vertices):
 
 setattr(topologic.Face, 'ByVertices', ByVertices)
 
-def Types(self):
+def Usages(self):
     """Cell types associated with this face, 1 or 2 items"""
-    # TODO
-    pass
+    results = []
+    cells = create_stl_list(Cell)
+    self.Cells(cells)
+    for cell in cells:
+        results.append(cell.Usage())
+    return results
 
-def TypeInside(self):
+def UsageInside(self):
     """Inside cell type associated with this face, otherwise 'Outside'"""
-    # FIXME should retrieve this from cell attached to face
-    return 'Living'
+    cells = create_stl_list(Cell)
+    self.Cells(cells)
+    for cell in cells:
+        if not cell.IsOutside():
+            return cell.Usage()
+    return 'Outside'
 
 def IsVertical(self):
     normal = self.Normal()
@@ -162,8 +170,8 @@ def HorizontalFacesSideways(self, faces_result):
 def Normal(self):
     return FaceUtility.NormalAtParameters(self, 0.5, 0.5)
 
-setattr(topologic.Face, 'Types', Types)
-setattr(topologic.Face, 'TypeInside', TypeInside)
+setattr(topologic.Face, 'Usages', Usages)
+setattr(topologic.Face, 'UsageInside', UsageInside)
 setattr(topologic.Face, 'IsVertical', IsVertical)
 setattr(topologic.Face, 'IsHorizontal', IsHorizontal)
 setattr(topologic.Face, 'AxisOuter', AxisOuter)

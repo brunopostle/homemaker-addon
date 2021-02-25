@@ -95,11 +95,13 @@ class Tests(unittest.TestCase):
                 self.assertAlmostEqual(planarea, 50.0)
                 self.assertAlmostEqual(externalwallarea, 200.0)
                 self.assertAlmostEqual(crinkliness, 4.0)
+                cell.Set('usage', 'Kitchen')
             elif len(cells_above) == 0:
                 self.assertAlmostEqual(volume, 1000.0)
                 self.assertAlmostEqual(planarea, 100.0)
                 self.assertAlmostEqual(externalwallarea, 400.0)
                 self.assertAlmostEqual(crinkliness, 4.0)
+                cell.Set('usage', 'Bedroom')
 
                 faces_vertical = create_stl_list(Face)
                 cell.FacesVertical(faces_vertical)
@@ -120,8 +122,21 @@ class Tests(unittest.TestCase):
             cell.CellsBelow(cc, cells_below)
             if len(cells_below) == 2:
                 self.assertAlmostEqual(volume, 1000.0)
+                self.assertEqual(cell.Usage(), 'Bedroom')
             elif len(cells_below) == 0:
                 self.assertAlmostEqual(volume, 500.0)
+                self.assertEqual(cell.Usage(), 'Kitchen')
+
+    def test_xcells(self):
+        cells = create_stl_list(Cell)
+        cc.Cells(cells)
+        has_kitchen = False
+        has_bedroom = False
+        for cell in cells:
+            if cell.Usage() == 'Bedroom': has_bedroom = True
+            if cell.Usage() == 'Kitchen': has_kitchen = True
+        self.assertTrue(has_bedroom)
+        self.assertTrue(has_kitchen)
 
     def test_faces(self):
         faces_vertical = create_stl_list(Face)

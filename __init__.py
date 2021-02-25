@@ -60,6 +60,8 @@ class ObjectHomemaker(bpy.types.Operator):
                 faces.append(face)
             bpy.ops.object.hide_view_set(unselected=False)
 
+            # TODO assign room usages
+
             # start using Topologic
             faces_ptr = create_stl_list(Face)
             for face in faces:
@@ -67,6 +69,11 @@ class ObjectHomemaker(bpy.types.Operator):
 
             cc = CellComplex.ByFaces(faces_ptr, 0.0001)
             elevations = cc.Elevations()
+
+            # TODO build and prune circulation graph
+
+            # TODO read MOLIOR_STYLE from env
+            style = 'default'
 
             # molior
             molior = []
@@ -121,10 +128,14 @@ class ObjectHomemaker(bpy.types.Operator):
                                   'elevation': elevation,
                                      'height': height,
                                   'extension': 0.25,
+                                      'style': style,
                                       'level': elevations[elevation]})
 
+                        edges = chain.edges()
                         for segment in range(len(part.openings)):
-                            interior_type = 'Living' # FIXME
+                            edge = chain.graph[edges[segment][0]]
+                            face = edge[1][2]
+                            interior_type = face.UsageInside()
                             part.populate_exterior_openings(segment, interior_type, 0)
                         molior.append(part.__dict__)
 
@@ -143,6 +154,7 @@ class ObjectHomemaker(bpy.types.Operator):
                                             'name': 'ground beam',
                                        'elevation': elevation,
                                           'height': 0.0,
+                                           'style': style,
                                            'level': elevations[elevation]})
                         molior.append(part.__dict__)
 
@@ -163,11 +175,12 @@ class ObjectHomemaker(bpy.types.Operator):
                                       'outer': 0.08,
                                      'height': height,
                                   'extension': 0.0,
+                                      'style': style,
                                       'level': elevations[elevation]})
-                        for segment in range(len(part.openings)):
-                            type_a = 'Living' # FIXME
-                            type_b = 'Living' # FIXME
-                            part.populate_interior_openings(segment, type_a, type_b, 0)
+                        edge = chain.graph[chain.edges()[0][0]]
+                        face = edge[1][2]
+                        usages = face.Usages()
+                        part.populate_interior_openings(0, usages[0], usages[1], 0)
                         molior.append(part.__dict__)
 
             # internal walls unsupported
@@ -183,10 +196,12 @@ class ObjectHomemaker(bpy.types.Operator):
                                             'name': 'ground beam',
                                        'elevation': elevation,
                                           'height': 0.0,
+                                           'style': style,
                                            'level': elevations[elevation]})
                         molior.append(part.__dict__)
 
             # eaves
+            # TODO need separate parapet chain where roof is flat
             chains = walls['eaves']
             for elevation in chains:
                 for height in chains[elevation]:
@@ -203,6 +218,7 @@ class ObjectHomemaker(bpy.types.Operator):
                                             'path': path,
                                             'name': name,
                                        'elevation': elevation,
+                                           'style': style,
                                            'level': elevations[elevation]})
                         molior.append(part.__dict__)
 
@@ -221,8 +237,10 @@ class ObjectHomemaker(bpy.types.Operator):
                                             'name': 'external beam',
                                           'height': height,
                                        'elevation': elevation,
+                                           'style': style,
                                            'level': elevations[elevation]})
                         molior.append(part.__dict__)
+                        # TODO corner and intermediate beam columns
 
             # rooms
             cells = create_stl_list(Cell)
@@ -260,18 +278,20 @@ class ObjectHomemaker(bpy.types.Operator):
                               'name': 'my room',
                          'elevation': elevation,
                             'height': height,
+                             'style': style,
                              'level': elevations[elevation],
                             'risers': int(height/0.19)+1,
                              'usage': usage})
-                if usage == 'circulation_stair' and len(path) == 4 and cell.CellsAbove():
+                if usage == 'Circulation_Stair' and len(path) == 4 and cell.CellsAbove():
                     molior.append(part.__dict__)
 
                 part = Floor({'path': path,
                                 'id': number,
                               'name': 'my room',
                          'elevation': elevation,
+                             'style': style,
                              'level': elevations[elevation]})
-                if not (usage == 'circulation_stair' and cell.CellsBelow()):
+                if not (usage == 'Circulation_Stair' and cell.CellsBelow()):
                     molior.append(part.__dict__)
 
                 part = Ceiling({'path': path,
@@ -279,8 +299,9 @@ class ObjectHomemaker(bpy.types.Operator):
                                 'name': 'my room',
                            'elevation': elevation,
                               'height': height,
+                               'style': style,
                                'level': elevations[elevation]})
-                if not (usage == 'circulation_stair' and cell.CellsAbove()):
+                if not (usage == 'Circulation_Stair' and cell.CellsAbove()):
                     molior.append(part.__dict__)
 
                 number += 1

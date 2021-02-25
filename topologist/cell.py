@@ -54,12 +54,16 @@ def CellsBelow(self, topology, cells_result):
 
 def Usage(self):
     """Type() is taken by Topologic"""
-    # TODO
+    usage = self.Get('usage')
+    if usage:
+        return usage
     return 'Living'
 
 def IsOutside(self):
     """Cell with outdoor type"""
-    # TODO
+    usage = self.Usage()
+    if usage == 'Outdoor' or usage == 'Outside' or usage == 'Sahn':
+        return True
     return False
 
 def PlanArea(self):
