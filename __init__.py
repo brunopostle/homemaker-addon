@@ -100,7 +100,7 @@ class ObjectHomemaker(bpy.types.Operator):
                 obj = object_data_add(context, mesh)
                 modifier = obj.modifiers.new("Roof Thickness", "SOLIDIFY")
                 modifier.use_even_offset = True
-                modifier.thickness = -0.2
+                modifier.thickness = -0.1
 
             # walls
             walls = cc.Walls()

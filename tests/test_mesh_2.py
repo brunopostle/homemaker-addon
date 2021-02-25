@@ -152,6 +152,12 @@ class Tests(unittest.TestCase):
         self.assertEqual(data[0].GetType(), 1) # Vertex == 1
         self.assertEqual(data[1].GetType(), 1) # Vertex == 1
         self.assertEqual(data[2].GetType(), 8) # Face == 8
+        faces2 = create_stl_list(Face)
+        data[0].Faces(faces2)
+        self.assertEqual(len(faces2), 3) # vertex is connected to 3 faces
+        faces3 = create_stl_list(Face)
+        data[2].AdjacentFaces(faces3)
+        self.assertEqual(len(faces3), 6) # face is connected to 6 faces
 
         upper = walls_external[10.0][10.0]
         self.assertEqual(len(upper[0].nodes()), 4)
