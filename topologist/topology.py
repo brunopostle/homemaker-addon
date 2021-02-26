@@ -63,9 +63,9 @@ def Set(self, key, value):
     dictionary = self.GetDictionary()
     existing_keys = dictionary.Keys()
     for existing_key in existing_keys:
-        if existing_key == key:
-            dictionary.Remove(string(key))
-    dictionary.Add(string(key), StringAttribute(value))
+        if existing_key == str(key):
+            dictionary.Remove(string(str(key)))
+    dictionary.Add(string(str(key)), StringAttribute(str(value)))
     self.SetDictionary(dictionary)
 
 def Get(self, key):
@@ -73,8 +73,8 @@ def Get(self, key):
     dictionary = self.GetDictionary()
     existing_keys = dictionary.Keys()
     for existing_key in existing_keys:
-        if existing_key == key:
-            value = dictionary.ValueAtKey(key)
+        if existing_key == str(key):
+            value = dictionary.ValueAtKey(str(key))
             string_struct = cppyy.bind_object(value.Value(), 'StringStruct')
             return string_struct.getString
     return None
