@@ -44,26 +44,28 @@ def Walls(self):
         if face.IsVertical():
             elevation = face.Elevation()
             height = face.Height()
+            style = face.Get('style')
+            if not style: style = 'default'
 
             axis = face.AxisOuter()
             # wall face may be triangular and not have a bottom edge
             if axis:
                 if face.IsOpen():
-                    add_axis(walls['open'], elevation, height, axis, face)
+                    add_axis(walls['open'], elevation, height, style, axis, face)
 
                 if face.IsExternal():
-                    add_axis(walls['external'], elevation, height, axis, face)
+                    add_axis(walls['external'], elevation, height, style, axis, face)
 
                     # collect foundation strips
                     if not face.FaceBelow():
-                        add_axis(walls['external_unsupported'], elevation, 0.0, axis, face)
+                        add_axis(walls['external_unsupported'], elevation, 0.0, style, axis, face)
 
                 if face.IsInternal():
-                    add_axis_simple(walls['internal'], elevation, height, axis, face)
+                    add_axis_simple(walls['internal'], elevation, height, style, axis, face)
 
                     # collect foundation strips
                     if not face.FaceBelow():
-                        add_axis_simple(walls['internal_unsupported'], elevation, 0.0, axis, face)
+                        add_axis_simple(walls['internal_unsupported'], elevation, 0.0, style, axis, face)
 
             axis_top = face.AxisOuterTop()
             # wall face may be triangular and not have a top edge
@@ -74,41 +76,46 @@ def Walls(self):
                     face_above = face.FaceAbove()
                     # either there is nothing above or it is an open space
                     if not (face_above and not face_above.IsOpen()):
-                        add_axis(walls['eaves'], el(elevation + height), 0.0, axis_top, face)
+                        add_axis(walls['eaves'], el(elevation + height), 0.0, style, axis_top, face)
 
     for usage in walls:
         for elevation in walls[usage]:
             for height in walls[usage][elevation]:
-                if usage == 'internal' or usage == 'internal_unsupported':
-                    continue
-                graphs = walls[usage][elevation][height].find_paths()
-                walls[usage][elevation][height] = graphs
+                for style in walls[usage][elevation][height]:
+                    if usage == 'internal' or usage == 'internal_unsupported':
+                        continue
+                    graphs = walls[usage][elevation][height][style].find_paths()
+                    walls[usage][elevation][height][style] = graphs
 
     return walls
 
-def add_axis(wall_type, elevation, height, edge, face):
+def add_axis(wall_type, elevation, height, style, edge, face):
     """helper function to isolate graph library related code"""
     if not elevation in wall_type:
         wall_type[elevation] = {}
     if not height in wall_type[elevation]:
-        wall_type[elevation][height] = ugraph.graph()
+        wall_type[elevation][height] = {}
+    if not style in wall_type[elevation][height]:
+        wall_type[elevation][height][style] = ugraph.graph()
 
     start_coor = vertex_string(edge[0])
     end_coor = vertex_string(edge[1])
-    wall_type[elevation][height].add_edge({start_coor: [end_coor, [edge[0], edge[1], face]]})
+    wall_type[elevation][height][style].add_edge({start_coor: [end_coor, [edge[0], edge[1], face]]})
 
-def add_axis_simple(wall_type, elevation, height, edge, face):
+def add_axis_simple(wall_type, elevation, height, style, edge, face):
     """helper function for walls that don't form chains or loops"""
     if not elevation in wall_type:
         wall_type[elevation] = {}
     if not height in wall_type[elevation]:
-        wall_type[elevation][height] = []
+        wall_type[elevation][height] = {}
+    if not style in wall_type[elevation][height]:
+        wall_type[elevation][height][style] = []
 
     start_coor = vertex_string(edge[0])
     end_coor = vertex_string(edge[1])
     graph = ugraph.graph()
     graph.add_edge({start_coor: [end_coor, [edge[0], edge[1], face]]})
-    wall_type[elevation][height].append(graph)
+    wall_type[elevation][height][style].append(graph)
 
 def Elevations(self):
     """Identify all unique elevations, allocate level index"""

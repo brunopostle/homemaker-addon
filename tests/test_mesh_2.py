@@ -154,7 +154,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(len(walls_external[0.0]), 1)
         self.assertEqual(len(walls_external[10.0]), 1)
 
-        lower = walls_external[0.0][10.0]
+        lower = walls_external[0.0][10.0]['default']
         self.assertEqual(len(lower), 1)
         self.assertEqual(len(lower[0].nodes()), 4)
         self.assertEqual(len(lower[0].edges()), 4)
@@ -174,7 +174,7 @@ class Tests(unittest.TestCase):
         data[2].AdjacentFaces(faces3)
         self.assertEqual(len(faces3), 6) # face is connected to 6 faces
 
-        upper = walls_external[10.0][10.0]
+        upper = walls_external[10.0][10.0]['default']
         self.assertEqual(len(upper[0].nodes()), 4)
         self.assertEqual(len(upper[0].edges()), 4)
 
@@ -183,7 +183,7 @@ class Tests(unittest.TestCase):
             self.assertEqual(string_to_coor(node)[2], 10.0)
             self.assertEqual(len(string_to_coor_2d(node)), 2)
 
-        walls_internal = walls['internal'][0.0][10.0]
+        walls_internal = walls['internal'][0.0][10.0]['default']
         for graph in walls_internal:
             self.assertEqual(len(graph.nodes()), 2)
             self.assertEqual(len(graph.edges()), 1)
