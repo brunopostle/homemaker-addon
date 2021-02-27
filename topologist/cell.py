@@ -57,12 +57,12 @@ def Usage(self):
     usage = self.Get('usage')
     if usage:
         return usage
-    return 'Living'
+    return 'living'
 
 def IsOutside(self):
     """Cell with outdoor type"""
     usage = self.Usage()
-    if usage == 'Outdoor' or usage == 'Outside' or usage == 'Sahn':
+    if usage == 'outdoor' or usage == 'outside' or usage == 'sahn':
         return True
     return False
 

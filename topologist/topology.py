@@ -76,7 +76,7 @@ def Get(self, key):
         if existing_key == str(key):
             value = dictionary.ValueAtKey(str(key))
             string_struct = cppyy.bind_object(value.Value(), 'StringStruct')
-            return string_struct.getString
+            return str(string_struct.getString)
     return None
 
 setattr(topologic.Topology, 'FacesVertical', FacesVertical)

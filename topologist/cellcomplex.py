@@ -1,12 +1,18 @@
 import topologic
-from topologic import Face, Cluster, Cell, Topology, FaceUtility
+from topologic import Face, Cluster, Cell, Topology, FaceUtility, CellUtility
 from topologist.helpers import create_stl_list, vertex_string, el
 from topologist import ugraph
 
 def AllocateCells(self, widgets):
-    """Set cell types using widgets, or default to 'Living'"""
-    # TODO
-    pass
+    """Set cell types using widgets, or default to 'Outside'"""
+    if len(widgets) == 0: return
+    cells = create_stl_list(Cell)
+    self.Cells(cells)
+    for cell in cells:
+        cell.Set('usage', 'outside')
+        for widget in widgets:
+            if CellUtility.Contains(cell, widget[1], 0.001):
+                cell.Set('usage', widget[0].lower())
 
 def PruneGraph(self):
     """Reduce circulation graph"""

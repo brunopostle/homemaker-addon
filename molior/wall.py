@@ -32,21 +32,21 @@ class Wall(Molior):
             self.openings.append([])
 
     def populate_exterior_openings(self, segment_id, interior_type, access):
-        if interior_type == 'Living' or interior_type == 'Retail':
+        if interior_type == 'living' or interior_type == 'retail':
             self.openings[segment_id].append({'name': 'living outside window', 'along': 0.5, 'size': 0})
-        if interior_type == 'Toilet':
+        if interior_type == 'toilet':
             self.openings[segment_id].append({'name': 'toilet outside window', 'along': 0.5, 'size': 0})
-        if interior_type == 'Kitchen':
+        if interior_type == 'kitchen':
             self.openings[segment_id].append({'name': 'kitchen outside window', 'along': 0.5, 'size': 0})
-        if interior_type == 'Bedroom':
+        if interior_type == 'bedroom':
             self.openings[segment_id].append({'name': 'bedroom outside window', 'along': 0.5, 'size': 0})
-        if interior_type == 'Circulation' or interior_type == 'Circulation_stair':
+        if interior_type == 'circulation' or interior_type == 'stair':
             self.openings[segment_id].append({'name': 'circulation outside window', 'along': 0.5, 'size': 0})
-        if interior_type == 'Retail' and self.level == 0:
+        if interior_type == 'retail' and self.level == 0:
             self.openings[segment_id].append({'name': 'retail entrance', 'along': 0.5, 'size': 0})
-        if interior_type == 'Circulation' and self.level == 0:
+        if interior_type == 'circulation' and self.level == 0:
             self.openings[segment_id].append({'name': 'house entrance', 'along': 0.5, 'size': 0})
-        if interior_type != 'Toilet' and access == 1:
+        if interior_type != 'toilet' and access == 1:
             self.openings[segment_id].append({'name': 'living outside door', 'along': 0.5, 'size': 0})
 
     def populate_interior_openings(self, segment_id, type_a, type_b, access):

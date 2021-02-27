@@ -33,7 +33,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(len(wall4.openings), 3)
         self.assertEqual(wall4.path[2], [10.0, 5.0])
 
-        wall4.populate_exterior_openings(2, 'Kitchen', 0)
+        wall4.populate_exterior_openings(2, 'kitchen', 0)
         self.assertEqual(wall4.openings[2][0], {'name': 'kitchen outside window', 'along': 0.5, 'size': 0})
 
         self.assertEqual(wall4.__dict__['guid'], 'my building')
