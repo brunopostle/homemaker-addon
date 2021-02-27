@@ -72,6 +72,7 @@ class ObjectHomemaker(bpy.types.Operator):
                 faces_ptr.push_back(face)
 
             cc = CellComplex.ByFaces(faces_ptr, 0.0001)
+            cc.ApplyDictionary(faces_ptr)
             elevations = cc.Elevations()
 
             # TODO build and prune circulation graph

@@ -1,5 +1,5 @@
 import topologic
-from topologic import Face, Cluster, Cell, Topology
+from topologic import Face, Cluster, Cell, Topology, FaceUtility
 from topologist.helpers import create_stl_list, vertex_string, el
 from topologist import ugraph
 
@@ -135,8 +135,21 @@ def Elevations(self):
         level += 1
     return elevations
 
+def ApplyDictionary(self, source_faces):
+    """Copy Dictionary items from a collection of faces"""
+    faces = create_stl_list(Face)
+    self.Faces(faces)
+    for face in faces:
+        vertex = FaceUtility.InternalVertex(face)
+        for source_face in source_faces:
+            if FaceUtility.IsInside(source_face, vertex, 0.001):
+                dictionary = source_face.GetDictionary()
+                for key in dictionary.Keys():
+                    face.Set(key, source_face.Get(key))
+
 setattr(topologic.CellComplex, 'AllocateCells', AllocateCells)
 setattr(topologic.CellComplex, 'PruneGraph', PruneGraph)
 setattr(topologic.CellComplex, 'Roof', Roof)
 setattr(topologic.CellComplex, 'Walls', Walls)
 setattr(topologic.CellComplex, 'Elevations', Elevations)
+setattr(topologic.CellComplex, 'ApplyDictionary', ApplyDictionary)
