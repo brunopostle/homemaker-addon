@@ -31,7 +31,7 @@ class ObjectHomemaker(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        #bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
         bl_object = None
         widgets = []
 
@@ -43,17 +43,17 @@ class ObjectHomemaker(bpy.types.Operator):
                 depsgraph = bpy.context.evaluated_depsgraph_get()
                 blender_object = blender_object.evaluated_get(depsgraph)
                 bm = bmesh.new()   # create an empty BMesh
-                bm.from_mesh(bl_object.data)   # fill it in from a Mesh
+                bm.from_mesh(blender_object.data)   # fill it in from a Mesh
                 bm.verts.ensure_lookup_table()
 
-                centre = [0.0, 0.0, 0.2]
+                centre = [0.0, 0.0, 0.0]
                 total = len(bm.verts)
                 for v in bm.verts:
                     coor = v.co[:]
-                    centre[0] += coor[0]/total
-                    centre[1] += coor[1]/total
-                    centre[2] += coor[2]/total
-                vertex = Vertex.ByCoordinates(centre[0], centre[1], centre[2])
+                    centre[0] += coor[0]
+                    centre[1] += coor[1]
+                    centre[2] += coor[2]
+                vertex = Vertex.ByCoordinates(centre[0]/total, centre[1]/total, centre[2]/total)
                 widgets.append([label[0], vertex])
             else:
                 bl_object = blender_object
@@ -315,7 +315,6 @@ class ObjectHomemaker(bpy.types.Operator):
                           'name': 'my room',
                      'elevation': elevation,
                         'height': height,
-                         'style': style,
                          'level': elevations[elevation],
                         'risers': int(height/0.19)+1,
                          'usage': usage})
@@ -326,7 +325,6 @@ class ObjectHomemaker(bpy.types.Operator):
                             'id': number,
                           'name': 'my room',
                      'elevation': elevation,
-                         'style': style,
                          'level': elevations[elevation]})
             if not (usage == 'stair' and cell.CellsBelow()):
                 molior.append(part.__dict__)
@@ -336,7 +334,6 @@ class ObjectHomemaker(bpy.types.Operator):
                             'name': 'my room',
                        'elevation': elevation,
                           'height': height,
-                           'style': style,
                            'level': elevations[elevation]})
             if not (usage == 'stair' and cell.CellsAbove()):
                 molior.append(part.__dict__)

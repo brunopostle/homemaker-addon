@@ -11,7 +11,7 @@ def AllocateCells(self, widgets):
     for cell in cells:
         cell.Set('usage', 'outside')
         for widget in widgets:
-            if CellUtility.Contains(cell, widget[1], 0.001):
+            if CellUtility.Contains(cell, widget[1]):
                 cell.Set('usage', widget[0].lower())
 
 def PruneGraph(self):
