@@ -299,6 +299,10 @@ class ObjectHomemaker(bpy.types.Operator):
             path = []
             for vertex in perimeter:
                 path.append([vertex.X(), vertex.Y()])
+            cells_above = create_stl_list(Cell)
+            cells_below = create_stl_list(Cell)
+            cell.CellsAbove(cc, cells_above)
+            cell.CellsBelow(cc, cells_below)
 
             part = Space({'path': path,
                             'id': number,
@@ -318,7 +322,7 @@ class ObjectHomemaker(bpy.types.Operator):
                          'level': elevations[elevation],
                         'risers': int(height/0.19)+1,
                          'usage': usage})
-            if usage == 'stair' and len(path) == 4 and cell.CellsAbove():
+            if usage == 'stair' and len(path) == 4 and len(cells_above) > 0:
                 molior.append(part.__dict__)
 
             part = Floor({'path': path,
@@ -326,7 +330,7 @@ class ObjectHomemaker(bpy.types.Operator):
                           'name': 'my room',
                      'elevation': elevation,
                          'level': elevations[elevation]})
-            if not (usage == 'stair' and cell.CellsBelow()):
+            if not (usage == 'stair' and len(cells_below) > 0):
                 molior.append(part.__dict__)
 
             part = Ceiling({'path': path,
@@ -335,7 +339,7 @@ class ObjectHomemaker(bpy.types.Operator):
                        'elevation': elevation,
                           'height': height,
                            'level': elevations[elevation]})
-            if not (usage == 'stair' and cell.CellsAbove()):
+            if not (usage == 'stair' and len(cells_above) > 0):
                 molior.append(part.__dict__)
 
             number += 1

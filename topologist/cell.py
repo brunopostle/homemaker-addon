@@ -1,12 +1,12 @@
 import topologic
 from topologic import Vertex, Edge, Wire, Face, Cell, FaceUtility
-from topologist.helpers import create_stl_list
+from topologist.helpers import create_stl_list, el
 
 def FacesTop(self, faces_result):
     elements_ptr = create_stl_list(Face)
     self.Faces(elements_ptr)
     for face in elements_ptr:
-        if(face.Elevation() == self.Elevation() + self.Height() and face.Height() == 0.0):
+        if(face.Elevation() == el(self.Elevation() + self.Height()) and face.Height() == 0.0):
             faces_result.push_back(face)
 
 def FacesBottom(self, faces_result):
