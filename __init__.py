@@ -4,7 +4,7 @@ import re
 sys.path.append('/home/bruno/src/topologicPy/cpython')
 sys.path.append('/home/bruno/src/homemaker-addon')
 
-from topologic import Vertex, Cell, Face, CellComplex
+from topologic import Vertex, Cell, Face, CellComplex, Graph
 from topologist.helpers import create_stl_list, string_to_coor_2d, vertex_id
 from molior import Wall, Extrusion, Space, Stair, Floor, Ceiling
 
@@ -101,8 +101,8 @@ class ObjectHomemaker(bpy.types.Operator):
         cc.ApplyDictionary(faces_ptr)
         cc.AllocateCells(widgets)
         elevations = cc.Elevations()
-
-        # TODO build and prune circulation graph
+        circulation = Graph.Adjacency(cc)
+        circulation.Circulation(cc)
 
         style = 'default'
 
@@ -213,8 +213,11 @@ class ObjectHomemaker(bpy.types.Operator):
                                       'level': elevations[elevation]})
                         edge = chain.graph[chain.edges()[0][0]]
                         face = edge[1][2]
-                        usages = face.Usages()
-                        part.populate_interior_openings(0, usages[0], usages[1], 0)
+
+                        vertex = face.GraphVertex(circulation)
+                        if vertex != None:
+                            usages = face.Usages()
+                            part.populate_interior_openings(0, usages[0], usages[1], 0)
                         molior.append(part.__dict__)
 
         # internal walls unsupported
@@ -303,6 +306,7 @@ class ObjectHomemaker(bpy.types.Operator):
             cells_below = create_stl_list(Cell)
             cell.CellsAbove(cc, cells_above)
             cell.CellsBelow(cc, cells_below)
+            # FIXME use circulation graph to indicate stair
 
             part = Space({'path': path,
                             'id': number,
@@ -322,6 +326,7 @@ class ObjectHomemaker(bpy.types.Operator):
                          'level': elevations[elevation],
                         'risers': int(height/0.19)+1,
                          'usage': usage})
+            print(usage, str(len(path)), str(len(cells_above)))
             if usage == 'stair' and len(path) == 4 and len(cells_above) > 0:
                 molior.append(part.__dict__)
 

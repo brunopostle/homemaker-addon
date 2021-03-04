@@ -102,6 +102,7 @@ def Perimeter(self):
                 edges.push_back(Edge.ByStartVertexEndVertex(edge[0], edge[1]))
     if len(edges) < 3:
         return []
+    # FIXME molior stair requires a four sided space, but Perimeter can have colinear edges
     floor = Face.ByEdges(edges)
     normal = floor.Normal()
 

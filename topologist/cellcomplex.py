@@ -14,11 +14,6 @@ def AllocateCells(self, widgets):
             if CellUtility.Contains(cell, widget[1]) == 0:
                 cell.Set('usage', widget[0].lower())
 
-def PruneGraph(self):
-    """Reduce circulation graph"""
-    # TODO
-    pass
-
 def Roof(self):
     faces = create_stl_list(Face)
     self.Faces(faces)
@@ -154,7 +149,6 @@ def ApplyDictionary(self, source_faces):
                     face.Set(key, source_face.Get(key))
 
 setattr(topologic.CellComplex, 'AllocateCells', AllocateCells)
-setattr(topologic.CellComplex, 'PruneGraph', PruneGraph)
 setattr(topologic.CellComplex, 'Roof', Roof)
 setattr(topologic.CellComplex, 'Walls', Walls)
 setattr(topologic.CellComplex, 'Elevations', Elevations)

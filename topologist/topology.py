@@ -1,7 +1,7 @@
 import cppyy
 from cppyy.gbl.std import string
 import topologic
-from topologic import Vertex, Edge, Face, StringAttribute
+from topologic import Vertex, Edge, Face, Cell, StringAttribute
 from topologist.helpers import create_stl_list, el
 
 def FacesVertical(self, faces_result):
@@ -79,6 +79,18 @@ def Get(self, key):
             return str(string_struct.getString)
     return None
 
+def GraphVertex(self, graph):
+    index = self.Get('index')
+    if self.__class__ == Face: myclass = 'Face'
+    if self.__class__ == Cell: myclass = 'Cell'
+    if index == None: return None
+    vertices = create_stl_list(Vertex)
+    graph.Vertices(vertices)
+    for vertex in vertices:
+        if vertex.Get('index') == index and vertex.Get('class') == myclass:
+            return vertex
+    return None
+
 setattr(topologic.Topology, 'FacesVertical', FacesVertical)
 setattr(topologic.Topology, 'FacesHorizontal', FacesHorizontal)
 setattr(topologic.Topology, 'Elevation', Elevation)
@@ -87,3 +99,4 @@ setattr(topologic.Topology, 'EdgesTop', EdgesTop)
 setattr(topologic.Topology, 'EdgesBottom', EdgesBottom)
 setattr(topologic.Topology, 'Set', Set)
 setattr(topologic.Topology, 'Get', Get)
+setattr(topologic.Topology, 'GraphVertex', GraphVertex)
