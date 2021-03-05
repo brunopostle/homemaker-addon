@@ -69,13 +69,12 @@ def IsConnected(self):
     connected = True
     vertices = create_stl_list(Vertex)
     self.Vertices(vertices)
-    for vertex_a in vertices:
-        if vertex_a.Get('class') == 'Face': continue
-        for vertex_b in vertices:
-            if vertex_b.Get('class') == 'Face': continue
-            if vertex_a.IsSame(vertex_b): continue
-            distance = self.TopologicalDistance(vertex_a, vertex_b)
-            if distance > 255: connected = False
+    vertex_a = list(vertices)[0]
+    for vertex_b in vertices:
+        if vertex_b.Get('class') == 'Face': continue
+        if vertex_a.IsSame(vertex_b): continue
+        distance = self.TopologicalDistance(vertex_a, vertex_b)
+        if distance > 255: connected = False
     return connected
 
 def Faces(self, cellcomplex):
