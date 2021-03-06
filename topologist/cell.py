@@ -16,13 +16,6 @@ def FacesBottom(self, faces_result):
         if(face.Elevation() == self.Elevation() and face.Height() == 0.0):
             faces_result.push_back(face)
 
-def FacesVertical(self, faces_result):
-    elements_ptr = create_stl_list(Face)
-    self.Faces(elements_ptr)
-    for face in elements_ptr:
-        if face.IsVertical():
-            faces_result.push_back(face)
-
 def FacesVerticalExternal(self, faces_result):
     elements_ptr = create_stl_list(Face)
     self.Faces(elements_ptr)
@@ -129,7 +122,6 @@ def Perimeter(self):
 
 setattr(topologic.Cell, 'FacesTop', FacesTop)
 setattr(topologic.Cell, 'FacesBottom', FacesBottom)
-setattr(topologic.Cell, 'FacesVertical', FacesVertical)
 setattr(topologic.Cell, 'FacesVerticalExternal', FacesVerticalExternal)
 setattr(topologic.Cell, 'CellsAbove', CellsAbove)
 setattr(topologic.Cell, 'CellsBelow', CellsBelow)
