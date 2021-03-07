@@ -30,12 +30,38 @@ def Roof(self):
         return None
     return cluster.SelfMerge()
 
+# TODO walls
+# graph of external walls
+# graph of external open walls
+# graph of internal walls
+
+# TODO horizontal details
+# graph of internal horizontal edges at bottom level (ground beams)
+# graph of internal horizontal edges with no support (internal beams)
+# various graphs for external wall top and bottom details
+
+# TODO non-horizontal details (gables, arches)
+
 def Walls(self):
     """Construct a graph of external vertical faces for each elevation and height"""
     walls = {'external': {},
              'external_unsupported': {},
              'eaves': {},
              'open': {},
+             'top-vertical-up': {},
+             'top-backward-level': {},
+             'top-backward-up': {},
+             'top-backward-down': {},
+             'top-forward-level': {},
+             'top-forward-up': {},
+             'top-forward-down': {},
+             'bottom-vertical-down': {},
+             'bottom-backward-level': {},
+             'bottom-backward-up': {},
+             'bottom-backward-down': {},
+             'bottom-forward-level': {},
+             'bottom-forward-up': {},
+             'bottom-forward-down': {},
              'internal': {},
              'internal_unsupported': {}}
     faces = create_stl_list(Face)
@@ -68,16 +94,16 @@ def Walls(self):
                     if not face.FaceBelow():
                         add_axis_simple(walls['internal_unsupported'], elevation, 0.0, style, axis, face)
 
-            axis_top = face.AxisOuterTop()
-            # wall face may be triangular and not have a top edge
-            if axis_top:
-                if face.IsWorld():
+            if not face.IsExternal(): continue
+            for condition in face.TopLevelConditions():
+                edge = condition[0]
+                label = condition[1]
+                add_axis(walls[label], el(elevation + height), 0.0, style, [edge.EndVertex(), edge.StartVertex()], face)
 
-                    # collect eaves line
-                    face_above = face.FaceAbove()
-                    # either there is nothing above or it is an open space
-                    if not (face_above and not face_above.IsOpen()):
-                        add_axis(walls['eaves'], el(elevation + height), 0.0, style, axis_top, face)
+            for condition in face.BottomLevelConditions():
+                edge = condition[0]
+                label = condition[1]
+                add_axis(walls[label], el(elevation), 0.0, style, [edge.StartVertex(), edge.EndVertex()], face)
 
     for usage in walls:
         for elevation in walls[usage]:

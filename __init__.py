@@ -239,23 +239,38 @@ class ObjectHomemaker(bpy.types.Operator):
                         molior.append(part.__dict__)
 
         # eaves
-        # TODO need separate parapet chain where roof is flat
-        chains = walls['eaves']
+        chains = walls['top-backward-up']
         for elevation in chains:
             for height in chains[elevation]:
                 for style in chains[elevation][height]:
                     for chain in chains[elevation][height][style]:
                         closed = 0
-                        name = 'parapet'
-                        if chain.is_simple_cycle():
-                            closed = 1
-                            name = 'eaves'
+                        if chain.is_simple_cycle(): closed = 1
                         path = []
                         for node in chain.nodes():
                             path.append(string_to_coor_2d(node))
                         part = Extrusion({'closed': closed,
                                             'path': path,
-                                            'name': name,
+                                            'name': 'eaves',
+                                       'elevation': elevation,
+                                           'style': style,
+                                           'level': elevations[elevation]})
+                        molior.append(part.__dict__)
+
+        # parapet
+        chains = walls['top-backward-level']
+        for elevation in chains:
+            for height in chains[elevation]:
+                for style in chains[elevation][height]:
+                    for chain in chains[elevation][height][style]:
+                        closed = 0
+                        if chain.is_simple_cycle(): closed = 1
+                        path = []
+                        for node in chain.nodes():
+                            path.append(string_to_coor_2d(node))
+                        part = Extrusion({'closed': closed,
+                                            'path': path,
+                                            'name': 'parapet',
                                        'elevation': elevation,
                                            'style': style,
                                            'level': elevations[elevation]})

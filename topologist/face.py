@@ -170,6 +170,64 @@ def HorizontalFacesSideways(self, faces_result):
 def Normal(self):
     return FaceUtility.NormalAtParameters(self, 0.5, 0.5)
 
+def TopLevelConditions(self):
+    """Assuming this is a vertical external wall, how do the top edges continue?"""
+    result = []
+    edges = create_stl_list(Edge)
+    self.EdgesTop(edges)
+    for edge in edges:
+        faces = create_stl_list(Face)
+        edge.FacesExternal(faces)
+        for face in faces: # there should only be one external face (not including self)
+            if face.IsSame(self): continue
+            # top face tilts backward (roof) if normal faces up, forward (soffit) if faces down
+            normal = face.Normal()
+            condition = 'top'
+            if abs(normal.Z()) < 0.0001:
+                condition += '-vertical'
+            elif normal.Z() > 0.0:
+                condition += '-backward'
+            else:
+                condition += '-forward'
+            # top face can be above or below top edge
+            if abs(normal.Z()) > 0.9999:
+                condition += '-level'
+            elif face.Centroid().Z() > edge.Centroid().Z():
+                condition += '-up'
+            else:
+                condition += '-down'
+            result.append([edge, condition])
+    return result
+
+def BottomLevelConditions(self):
+    """Assuming this is a vertical external wall, how do the bottom edges continue?"""
+    result = []
+    edges = create_stl_list(Edge)
+    self.EdgesBottom(edges)
+    for edge in edges:
+        faces = create_stl_list(Face)
+        edge.FacesExternal(faces)
+        for face in faces: # there should only be one external face (not including self)
+            if face.IsSame(self): continue
+            # bottom face tilts forward (roof) if normal faces up, backward (soffit) if faces down
+            normal = face.Normal()
+            condition = 'bottom'
+            if abs(normal.Z()) < 0.0001:
+                condition += '-vertical'
+            elif normal.Z() > 0.0:
+                condition += '-forward'
+            else:
+                condition += '-backward'
+            # bottom face can be above or below bottom edge
+            if abs(normal.Z()) > 0.9999:
+                condition += '-level'
+            elif face.Centroid().Z() > edge.Centroid().Z():
+                condition += '-up'
+            else:
+                condition += '-down'
+            result.append([edge, condition])
+    return result
+
 setattr(topologic.Face, 'Usages', Usages)
 setattr(topologic.Face, 'UsageInside', UsageInside)
 setattr(topologic.Face, 'IsVertical', IsVertical)
@@ -184,3 +242,5 @@ setattr(topologic.Face, 'FaceAbove', FaceAbove)
 setattr(topologic.Face, 'FaceBelow', FaceBelow)
 setattr(topologic.Face, 'HorizontalFacesSideways', HorizontalFacesSideways)
 setattr(topologic.Face, 'Normal', Normal)
+setattr(topologic.Face, 'TopLevelConditions', TopLevelConditions)
+setattr(topologic.Face, 'BottomLevelConditions', BottomLevelConditions)

@@ -18,6 +18,14 @@ def FacesHorizontal(self, faces_result):
         if face.IsHorizontal():
             faces_result.push_back(face)
 
+def FacesExternal(self, faces_result):
+    elements_ptr = create_stl_list(Face)
+    self.Faces(elements_ptr)
+    for face in elements_ptr:
+        if face.IsExternal():
+            faces_result.push_back(face)
+    return faces_result
+
 def Elevation(self):
     lowest = 9999999.9
     vertices = create_stl_list(Vertex)
@@ -93,6 +101,7 @@ def GraphVertex(self, graph):
 
 setattr(topologic.Topology, 'FacesVertical', FacesVertical)
 setattr(topologic.Topology, 'FacesHorizontal', FacesHorizontal)
+setattr(topologic.Topology, 'FacesExternal', FacesExternal)
 setattr(topologic.Topology, 'Elevation', Elevation)
 setattr(topologic.Topology, 'Height', Height)
 setattr(topologic.Topology, 'EdgesTop', EdgesTop)
