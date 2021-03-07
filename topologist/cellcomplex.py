@@ -30,23 +30,15 @@ def Roof(self):
         return None
     return cluster.SelfMerge()
 
-# TODO walls
-# graph of external walls
-# graph of external open walls
-# graph of internal walls
-
 # TODO horizontal details
 # graph of internal horizontal edges at bottom level (ground beams)
 # graph of internal horizontal edges with no support (internal beams)
-# various graphs for external wall top and bottom details
 
-# TODO non-horizontal details (gables, arches)
+# TODO non-horizontal details (gables, arches, ridges and valleys)
 
 def Walls(self):
     """Construct a graph of external vertical faces for each elevation and height"""
     walls = {'external': {},
-             'external_unsupported': {},
-             'eaves': {},
              'open': {},
              'top-vertical-up': {},
              'top-backward-level': {},
@@ -80,13 +72,14 @@ def Walls(self):
                 if face.IsOpen():
                     add_axis(walls['open'], elevation, height, style, axis, face)
 
-                if face.IsExternal():
+                elif face.IsExternal():
                     add_axis(walls['external'], elevation, height, style, axis, face)
 
-                if face.IsInternal():
+                elif face.IsInternal():
                     add_axis_simple(walls['internal'], elevation, height, style, axis, face)
 
                     # collect foundation strips
+                    # FIXME should be a per-horizontal-face unsupported-edge condition rather than per vertical face axis
                     if not face.FaceBelow():
                         add_axis_simple(walls['internal_unsupported'], elevation, 0.0, style, axis, face)
 
