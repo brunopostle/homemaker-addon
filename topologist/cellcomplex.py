@@ -83,10 +83,6 @@ def Walls(self):
                 if face.IsExternal():
                     add_axis(walls['external'], elevation, height, style, axis, face)
 
-                    # collect foundation strips
-                    if not face.FaceBelow():
-                        add_axis(walls['external_unsupported'], elevation, 0.0, style, axis, face)
-
                 if face.IsInternal():
                     add_axis_simple(walls['internal'], elevation, height, style, axis, face)
 

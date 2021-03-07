@@ -172,7 +172,7 @@ class ObjectHomemaker(bpy.types.Operator):
                         molior.append(part.__dict__)
 
         # external walls unsupported
-        chains = walls['external_unsupported']
+        chains = walls['bottom-backward-level']
         for elevation in chains:
             for height in chains[elevation]:
                 for style in chains[elevation][height]:
