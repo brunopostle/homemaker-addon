@@ -1,5 +1,5 @@
 import topologic
-from topologic import Face, Cluster, Cell, Topology, FaceUtility, CellUtility
+from topologic import Edge, Face, Cluster, Cell, Topology, FaceUtility, CellUtility
 from topologist.helpers import create_stl_list, vertex_string, el
 from topologist import ugraph
 
@@ -30,10 +30,6 @@ def Roof(self):
         return None
     return cluster.SelfMerge()
 
-# TODO horizontal details
-# graph of internal horizontal edges at bottom level (ground beams)
-# graph of internal horizontal edges with no support (internal beams)
-
 # TODO non-horizontal details (gables, arches, ridges and valleys)
 
 def Walls(self):
@@ -55,7 +51,8 @@ def Walls(self):
              'bottom-forward-up': {},
              'bottom-forward-down': {},
              'internal': {},
-             'internal_unsupported': {}}
+             'ceiling-unsupported': {},
+             'internal-unsupported': {}}
     faces = create_stl_list(Face)
     self.Faces(faces)
 
@@ -78,27 +75,36 @@ def Walls(self):
                 elif face.IsInternal():
                     add_axis_simple(walls['internal'], elevation, height, style, axis, face)
 
-                    # collect foundation strips
-                    # FIXME should be a per-horizontal-face unsupported-edge condition rather than per vertical face axis
-                    if not face.FaceBelow():
-                        add_axis_simple(walls['internal_unsupported'], elevation, 0.0, style, axis, face)
+            if face.IsExternal():
+                for condition in face.TopLevelConditions():
+                    edge = condition[0]
+                    label = condition[1]
+                    add_axis(walls[label], el(elevation + height), 0.0, style, [edge.EndVertex(), edge.StartVertex()], face)
 
-            if not face.IsExternal(): continue
-            for condition in face.TopLevelConditions():
-                edge = condition[0]
-                label = condition[1]
-                add_axis(walls[label], el(elevation + height), 0.0, style, [edge.EndVertex(), edge.StartVertex()], face)
+                for condition in face.BottomLevelConditions():
+                    edge = condition[0]
+                    label = condition[1]
+                    add_axis(walls[label], el(elevation), 0.0, style, [edge.StartVertex(), edge.EndVertex()], face)
 
-            for condition in face.BottomLevelConditions():
-                edge = condition[0]
-                label = condition[1]
-                add_axis(walls[label], el(elevation), 0.0, style, [edge.StartVertex(), edge.EndVertex()], face)
+    edges = create_stl_list(Edge)
+    self.Edges(edges)
+
+    for edge in edges:
+        if edge.IsHorizontal() and not edge.FaceBelow(): # an unsupported horizontal edge
+            elevation = edge.Elevation()
+            face_above = edge.FaceAbove()
+            style = 'default'
+            if not face_above or not face_above.IsExternal(): # not an outside wall
+                if len(list(edge.CellsBelow())) == 0: # under the building
+                    add_axis_simple(walls['internal-unsupported'], elevation, 0.0, style, [edge.StartVertex(), edge.EndVertex()], face_above)
+                else: # room ceiling
+                    add_axis_simple(walls['ceiling-unsupported'], elevation, 0.0, style, [edge.StartVertex(), edge.EndVertex()], face_above)
 
     for usage in walls:
         for elevation in walls[usage]:
             for height in walls[usage][elevation]:
                 for style in walls[usage][elevation][height]:
-                    if usage == 'internal' or usage == 'internal_unsupported':
+                    if usage == 'internal' or usage == 'internal-unsupported' or usage == 'ceiling-unsupported':
                         continue
                     graphs = walls[usage][elevation][height][style].find_paths()
                     walls[usage][elevation][height][style] = graphs
