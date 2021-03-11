@@ -1,5 +1,5 @@
 import topologic
-from topologic import Vertex, Face, Cell, Graph, VertexUtility
+from topologic import Vertex, Edge, Face, Cell, Graph, VertexUtility
 from topologist.helpers import create_stl_list
 
 def Adjacency(cellcomplex):
@@ -113,9 +113,32 @@ def GetEntity(self, cellcomplex, vertex):
         if entity.Get('index') == index:
             return entity
 
+def Dot(self, cellcomplex):
+    """A generic GraphViz .dot file"""
+    # neato -Tpng < graph.dot > graph.png
+    string = "strict graph G {\n"
+    string += "graph [overlap=false];\n"
+
+    vertices = create_stl_list(Vertex)
+    self.Vertices(vertices)
+
+    edges = create_stl_list(Edge)
+    self.Edges(edges)
+
+    for vertex in vertices:
+        text = str(self.GetEntity(cellcomplex, vertex).DumpDictionary())
+        string += '"' + text + '" [color="#666666",style=filled];\n'
+    for edge in edges:
+        text0 = str(self.GetEntity(cellcomplex, edge.StartVertex()).DumpDictionary())
+        text1 = str(self.GetEntity(cellcomplex, edge.EndVertex()).DumpDictionary())
+        string += '"' + text0 + '"--"' + text1 + '"\n'
+    string += '}'
+    return string
+
 setattr(topologic.Graph, 'Adjacency', Adjacency)
 setattr(topologic.Graph, 'Circulation', Circulation)
 setattr(topologic.Graph, 'IsConnected', IsConnected)
 setattr(topologic.Graph, 'Faces', Faces)
 setattr(topologic.Graph, 'Cells', Cells)
 setattr(topologic.Graph, 'GetEntity', GetEntity)
+setattr(topologic.Graph, 'Dot', Dot)

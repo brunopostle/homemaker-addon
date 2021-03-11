@@ -103,6 +103,7 @@ class ObjectHomemaker(bpy.types.Operator):
         elevations = cc.Elevations()
         circulation = Graph.Adjacency(cc)
         circulation.Circulation(cc)
+        #print(circulation.Dot(cc))
 
         style = 'default'
 

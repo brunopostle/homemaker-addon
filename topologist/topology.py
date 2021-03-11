@@ -87,6 +87,15 @@ def Get(self, key):
             return str(string_struct.getString)
     return None
 
+def DumpDictionary(self):
+    dictionary = self.GetDictionary()
+    keys = dictionary.Keys()
+    result = {}
+    for key in keys:
+        value = self.Get(str(key))
+        result[str(key)] = value
+    return result
+
 def GraphVertex(self, graph):
     index = self.Get('index')
     if self.__class__ == Face: myclass = 'Face'
@@ -108,4 +117,5 @@ setattr(topologic.Topology, 'EdgesTop', EdgesTop)
 setattr(topologic.Topology, 'EdgesBottom', EdgesBottom)
 setattr(topologic.Topology, 'Set', Set)
 setattr(topologic.Topology, 'Get', Get)
+setattr(topologic.Topology, 'DumpDictionary', DumpDictionary)
 setattr(topologic.Topology, 'GraphVertex', GraphVertex)
