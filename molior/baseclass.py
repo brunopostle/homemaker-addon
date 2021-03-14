@@ -1,4 +1,4 @@
-class Molior():
+class BaseClass():
     """A generic building object"""
     def __init__(self, args = {}):
         self.closed = 1

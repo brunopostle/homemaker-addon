@@ -1,9 +1,9 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from molior.baseclass import Molior
+from molior.baseclass import BaseClass
 
-class Space(Molior):
+class Space(BaseClass):
     """A room or outdoor volume, as a 2D path extruded vertically"""
     def __init__(self, args = {}):
         super().__init__(args)

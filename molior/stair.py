@@ -1,9 +1,9 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from molior.baseclass import Molior
+from molior.baseclass import BaseClass
 
-class Stair(Molior):
+class Stair(BaseClass):
     """a stair filling a single storey extruded space"""
     def __init__(self, args = {}):
         super().__init__(args)
