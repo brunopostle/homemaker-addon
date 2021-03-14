@@ -154,42 +154,6 @@ class ObjectHomemaker(bpy.types.Operator):
                             for item in molior_object.GetMolior(style, condition, level, elevation, height, chain, circulation):
                                 molior.append(item.__dict__)
 
-        # internal walls unsupported
-        chains = walls['internal-unsupported']
-        for elevation in chains:
-            for height in chains[elevation]:
-                for style in chains[elevation][height]:
-                    for chain in chains[elevation][height][style]:
-                        path = []
-                        for node in chain.nodes():
-                            path.append(string_to_coor_2d(node))
-                        part = Extrusion({'closed': 0,
-                                            'path': path,
-                                            'name': 'ground beam',
-                                       'elevation': elevation,
-                                          'height': 0.0,
-                                           'style': style,
-                                           'level': elevations[elevation]})
-                        molior.append(part.__dict__)
-
-        # ceiling beams
-        chains = walls['ceiling-unsupported']
-        for elevation in chains:
-            for height in chains[elevation]:
-                for style in chains[elevation][height]:
-                    for chain in chains[elevation][height][style]:
-                        path = []
-                        for node in chain.nodes():
-                            path.append(string_to_coor_2d(node))
-                        part = Extrusion({'closed': 0,
-                                            'path': path,
-                                            'name': 'ground beam',
-                                       'elevation': elevation,
-                                          'height': 0.0,
-                                           'style': style,
-                                           'level': elevations[elevation]})
-                        molior.append(part.__dict__)
-
         # rooms
         cells = create_stl_list(Cell)
         cc.Cells(cells)
