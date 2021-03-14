@@ -5,8 +5,8 @@ sys.path.append('/home/bruno/src/topologicPy/cpython')
 sys.path.append('/home/bruno/src/homemaker-addon')
 
 from topologic import Vertex, Cell, Face, CellComplex, Graph
-from topologist.helpers import create_stl_list, string_to_coor_2d, vertex_id
-from molior import Molior, Extrusion, Space, Stair, Floor, Ceiling
+from topologist.helpers import create_stl_list, vertex_id
+from molior import Molior, Space, Stair, Floor, Ceiling
 
 import datetime
 import tempfile

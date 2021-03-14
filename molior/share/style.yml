@@ -41,15 +41,6 @@ internal ground beam:
     height: 0.0
     extension: 0.0
     cycles: 0
-interior ceiling beam:
-    class: Extrusion
-    ifc: IFCBUILDINGELEMENTPROXY
-    profile: beam_ground.dxf
-    condition: ceiling-unsupported
-    outer: 0.0
-    height: 0.0
-    extension: 0.0
-    cycles: 0
 eaves:
     class: Extrusion
     ifc: IFCROOF
