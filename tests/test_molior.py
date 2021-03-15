@@ -5,7 +5,7 @@ import sys
 import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from molior import Wall, Ceiling
+from molior import Wall, Ceiling, Molior
 
 class Tests(unittest.TestCase):
     """Wall subclasses Molior"""
@@ -41,6 +41,10 @@ class Tests(unittest.TestCase):
     def test_ceiling(self):
         ceiling = Ceiling()
         self.assertEqual(ceiling.type, 'molior-ceiling')
+
+    def test_molior(self):
+        molior = Molior()
+        self.assertEqual(molior.config['exterior']['condition'], 'external')
 
 if __name__ == '__main__':
     unittest.main()

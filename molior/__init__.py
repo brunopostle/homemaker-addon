@@ -26,7 +26,9 @@ class Molior():
         share_dir_path = os.path.abspath(os.path.join(os.path.dirname(__file__), self.share_dir))
         # FIXME needs method to assemble and cache a style config from style name using inheritance
         style_path = os.path.join(share_dir_path, 'style.yml')
-        self.config = yaml.safe_load(open(style_path, 'rb').read())
+        style_fh = open(style_path, 'rb')
+        self.config = yaml.safe_load(style_fh.read())
+        style_fh.close()
 
     def GetMolior(self, style, condition, level, elevation, height, chain, circulation):
         """Retrieves a struct that can be passed to the molior-ifc.pl command-line tool to generate an IFC file"""
