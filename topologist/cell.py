@@ -1,6 +1,7 @@
 import topologic
 from topologic import Vertex, Edge, Wire, Face, Cell, FaceUtility
-from topologist.helpers import create_stl_list, el
+from topologist.helpers import create_stl_list, el, vertex_string
+from topologist import ugraph
 
 def FacesTop(self, faces_result):
     elements_ptr = create_stl_list(Face)
@@ -82,43 +83,51 @@ def Crinkliness(self):
 
 def Perimeter(self):
     """2D outline of cell floor, closed, anti-clockwise"""
-    # FIXME process of creating floor-Face/Wire loses valid wall Vertices and Faces
-    # this needs to return a ugraph instead of a list of unconnected Vertices
     elevation = self.Elevation()
     faces = create_stl_list(Face)
     self.FacesVertical(faces)
     edges = create_stl_list(Edge)
+    lookup = {}
     for face in faces:
         if face.Elevation() == elevation:
             edge = face.AxisOuter()
             if edge:
                 edges.push_back(Edge.ByStartVertexEndVertex(edge[0], edge[1]))
-    if len(edges) < 3:
-        return []
-    # FIXME molior stair requires a four sided space, but Perimeter can have colinear edges
+                # process of creating a wire loses all references to original cellcomplex, stash
+                lookup[vertex_string(edge[0]) + ' ' + vertex_string(edge[1])] = [edge[0], edge[1], face]
+                lookup[vertex_string(edge[1]) + ' ' + vertex_string(edge[0])] = [edge[1], edge[0], face]
+
+    graph = ugraph.graph()
+
+    # edges are in no particular order or direction
+    if len(list(edges)) < 3: return graph
     floor = Face.ByEdges(edges)
     normal = floor.Normal()
-
-    # FIXME should support doughnut shaped rooms
     wires = create_stl_list(Wire)
     floor.Wires(wires)
-    for wire in wires:
-        vertices = create_stl_list(Vertex)
-        wire.Vertices(vertices)
-        if len(vertices) < 3:
-            continue
-        elif normal.Z() > 0.9999:
-            # good, loop is anticlockwise
-            return vertices
-        elif normal.Z() < -0.9999:
-            vertices_reversed = create_stl_list(Vertex)
-            vertices_list = list(vertices)
-            vertices_list.reverse()
-            for vertex in vertices_list:
-                vertices_reversed.push_back(vertex)
-            return vertices_reversed
-        else:
-            return []
+    wire = list(wires)[0]
+    vertices = create_stl_list(Vertex)
+    wire.Vertices(vertices)
+    vertices_list = list(vertices)
+
+    if normal.Z() > 0.9999:
+        # good, loop is anticlockwise
+        for i in range(len(vertices_list)):
+            start = vertices_list[i-1]
+            end = vertices_list[i]
+            start_coor = vertex_string(start)
+            end_coor = vertex_string(end)
+            graph.add_edge({start_coor: [end_coor, lookup[start_coor + ' ' + end_coor]]})
+    elif normal.Z() < -0.9999:
+        # loop is clockwise
+        for i in range(len(vertices_list)):
+            start = vertices_list[i]
+            end = vertices_list[i-1]
+            start_coor = vertex_string(start)
+            end_coor = vertex_string(end)
+            graph.add_edge({start_coor: [end_coor, lookup[start_coor + ' ' + end_coor]]})
+    return graph
+
 
 setattr(topologic.Cell, 'FacesTop', FacesTop)
 setattr(topologic.Cell, 'FacesBottom', FacesBottom)

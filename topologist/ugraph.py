@@ -42,7 +42,7 @@ class graph:
 
     def is_simple_cycle(self):
         """does the last node connect to the first node?"""
-        if self.starts()[0] == self.ends()[-1]:
+        if len(self.graph) > 0 and self.starts()[0] == self.ends()[-1]:
             return True
         return False
 

@@ -160,7 +160,7 @@ class ObjectHomemaker(bpy.types.Operator):
         number = 0
         for cell in cells:
             perimeter = cell.Perimeter()
-            if perimeter == None or len(perimeter) == 0:
+            if not perimeter.is_simple_cycle():
                 continue
             colour = 0
             if not cell.IsOutside():
@@ -172,8 +172,8 @@ class ObjectHomemaker(bpy.types.Operator):
             height = cell.Height()
             usage = cell.Usage()
             path = []
-            for vertex in perimeter:
-                path.append([vertex.X(), vertex.Y()])
+            for vertex in perimeter.nodes():
+                path.append([perimeter.graph[vertex][1][0].X(), perimeter.graph[vertex][1][0].Y()])
             cells_above = create_stl_list(Cell)
             cells_below = create_stl_list(Cell)
             cell.CellsAbove(cc, cells_above)

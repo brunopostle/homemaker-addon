@@ -46,12 +46,14 @@ class Tests(unittest.TestCase):
         cc.Cells(cells)
         for cell in cells:
             perimeter = cell.Perimeter()
-            if len(list(perimeter)) == 3:
-                for vertex in perimeter:
-                    self.assertEqual(vertex.Z(), 0.0)
-            if len(list(perimeter)) == 4:
-                for vertex in perimeter:
-                    self.assertEqual(vertex.Z(), 10.0)
+            if len(perimeter.nodes()) == 3:
+                self.assertEqual(len(perimeter.edges()), 3)
+                for vertex in perimeter.nodes():
+                    self.assertEqual(perimeter.graph[vertex][1][0].Z(), 0.0)
+            if len(perimeter.nodes()) == 4:
+                self.assertEqual(len(perimeter.edges()), 4)
+                for vertex in perimeter.nodes():
+                    self.assertEqual(perimeter.graph[vertex][1][0].Z(), 10.0)
 
 if __name__ == '__main__':
     unittest.main()
