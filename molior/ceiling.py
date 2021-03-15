@@ -7,7 +7,7 @@ class Ceiling(BaseClass):
     """A ceiling filling a room or space"""
     def __init__(self, args = {}):
         super().__init__(args)
-        self.ceiling = 0.02
+        self.ceiling = 0.2
         self.id = ''
         self.inner = 0.08
         self.path = []
