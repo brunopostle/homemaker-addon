@@ -89,11 +89,32 @@ def Walls(self):
                     label = condition[1]
                     add_axis(walls[label], el(elevation), 0.0, style, [edge.StartVertex(), edge.EndVertex()], face)
 
+    cells = create_stl_list(Cell)
+    self.Cells(cells)
+    for cell in cells:
+        perimeter = cell.Perimeter()
+        if not perimeter.is_simple_cycle():
+                continue
+        elevation = cell.Elevation()
+        height = cell.Height()
+        style = 'default'
+
+        usage = cell.Usage()
+        if not usage in walls:
+            walls[usage] = {}
+        if not elevation in walls[usage]:
+            walls[usage][elevation] = {}
+        if not height in walls[usage][elevation]:
+            walls[usage][elevation][height] = {}
+        if not style in walls[usage][elevation][height]:
+            walls[usage][elevation][height][style] = []
+        walls[usage][elevation][height][style].append(perimeter)
+
     for usage in walls:
         for elevation in walls[usage]:
             for height in walls[usage][elevation]:
                 for style in walls[usage][elevation][height]:
-                    if usage == 'internal' or usage == 'internal-unsupported':
+                    if walls[usage][elevation][height][style].__class__ == [].__class__:
                         continue
                     graphs = walls[usage][elevation][height][style].find_paths()
                     walls[usage][elevation][height][style] = graphs
