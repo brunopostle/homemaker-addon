@@ -6,7 +6,7 @@ import unittest
 
 from topologic import Topology, Vertex, Edge, Wire, Cluster
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from topologist.helpers import create_stl_list, el
 
 # a closed loop
@@ -34,6 +34,7 @@ edge_7 = Edge.ByStartVertexEndVertex(vertices[0], vertices[3])
 # open chain
 edge_8 = Edge.ByStartVertexEndVertex(vertices[4], vertices[5])
 edge_9 = Edge.ByStartVertexEndVertex(vertices[5], vertices[6])
+
 
 class Tests(unittest.TestCase):
     def test_cluster(self):
@@ -65,7 +66,7 @@ class Tests(unittest.TestCase):
         edges.push_back(edge_0)
         wire = Wire.ByEdges(edges)
         self.assertFalse(wire.IsClosed())
-  
+
         vertices_stl = create_stl_list(Vertex)
         wire.Vertices(vertices_stl)
         vertices = list(vertices_stl)
@@ -86,7 +87,7 @@ class Tests(unittest.TestCase):
         edges.push_back(edge_5)
         wire = Wire.ByEdges(edges)
         self.assertFalse(wire.IsClosed())
-  
+
         vertices_stl = create_stl_list(Vertex)
         wire.Vertices(vertices_stl)
         vertices = list(vertices_stl)
@@ -108,7 +109,7 @@ class Tests(unittest.TestCase):
         edges.push_back(edge_5)
         wire = Wire.ByEdges(edges)
         self.assertTrue(wire.IsClosed())
-  
+
         vertices_stl = create_stl_list(Vertex)
         wire.Vertices(vertices_stl)
         vertices = list(vertices_stl)
@@ -129,5 +130,6 @@ class Tests(unittest.TestCase):
         self.assertEqual(el(0.00001), 0.0)
         self.assertEqual(el(-0.00001), 0.0)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

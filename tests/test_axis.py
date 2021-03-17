@@ -6,11 +6,19 @@ import unittest
 
 from topologic import Vertex, Edge, Wire, Face, CellComplex
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from topologist.helpers import create_stl_list
 
-points = [[0.0, 0.0, 0.0], [10.0, 0.0, 0.0], [10.0, 10.0, 0.0], [0.0, 10.0, 0.0],
-          [0.0, 0.0, 10.0], [10.0, 0.0, 10.0], [10.0, 10.0, 10.0], [0.0, 10.0, 10.0]]
+points = [
+    [0.0, 0.0, 0.0],
+    [10.0, 0.0, 0.0],
+    [10.0, 10.0, 0.0],
+    [0.0, 10.0, 0.0],
+    [0.0, 0.0, 10.0],
+    [10.0, 0.0, 10.0],
+    [10.0, 10.0, 10.0],
+    [0.0, 10.0, 10.0],
+]
 
 vertices = []
 for point in points:
@@ -18,8 +26,14 @@ for point in points:
     vertices.append(vertex)
 
 # faces have mixed normals
-faces_by_vertex_id = [[0, 1, 2, 3], [5, 6, 2, 1], [6, 7, 3, 2], [0, 4, 7, 3],
-                      [0, 1, 5, 4], [4, 5, 6, 7]]
+faces_by_vertex_id = [
+    [0, 1, 2, 3],
+    [5, 6, 2, 1],
+    [6, 7, 3, 2],
+    [0, 4, 7, 3],
+    [0, 1, 5, 4],
+    [4, 5, 6, 7],
+]
 
 faces = []
 for face_by_id in faces_by_vertex_id:
@@ -35,8 +49,10 @@ for face in faces:
     faces_ptr.push_back(face)
 cc = CellComplex.ByFaces(faces_ptr, 0.0001)
 
+
 class Tests(unittest.TestCase):
     """A simple cube"""
+
     def test_faces_cc(self):
 
         faces_vertical = create_stl_list(Face)
@@ -54,8 +70,12 @@ class Tests(unittest.TestCase):
             axis_outer = face.AxisOuter()
             axis_outer_top = face.AxisOuterTop()
 
-            edges_outer.push_back(Edge.ByStartVertexEndVertex(axis_outer[0], axis_outer[1]))
-            edges_outer_top.push_back(Edge.ByStartVertexEndVertex(axis_outer_top[0], axis_outer_top[1]))
+            edges_outer.push_back(
+                Edge.ByStartVertexEndVertex(axis_outer[0], axis_outer[1])
+            )
+            edges_outer_top.push_back(
+                Edge.ByStartVertexEndVertex(axis_outer_top[0], axis_outer_top[1])
+            )
 
         # construct four sided wires for top and bottom
         wire_axis = Wire.ByEdges(edges_outer)
@@ -74,8 +94,8 @@ class Tests(unittest.TestCase):
         face_axis_top = Face.ByVertices(list(vertices_axis_top))
 
         # this should work ??!?
-        #face_axis = Face.ByWire(wire_axis)
-        #face_axis_top = Face.ByWire(wire_axis_top)
+        # face_axis = Face.ByWire(wire_axis)
+        # face_axis_top = Face.ByWire(wire_axis_top)
 
         normal = face_axis.Normal()
         normal_top = face_axis_top.Normal()
@@ -84,8 +104,9 @@ class Tests(unittest.TestCase):
         self.assertEqual(normal.Z(), 1.0)
         self.assertEqual(normal_top.Z(), 1.0)
 
-#output = Topology.Analyze(cc)
-#print(output)
 
-if __name__ == '__main__':
+# output = Topology.Analyze(cc)
+# print(output)
+
+if __name__ == "__main__":
     unittest.main()

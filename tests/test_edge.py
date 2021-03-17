@@ -4,7 +4,8 @@ import os
 import sys
 import unittest
 from topologic import Vertex, Edge, Face, Cell, CellUtility
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from topologist.helpers import create_stl_list
 
 v1 = Vertex.ByCoordinates(-0.58055890, -3.2437859, 2.1412814)
@@ -19,11 +20,13 @@ edge_a = Edge.ByStartVertexEndVertex(point1, point2)
 edge_b = Edge.ByStartVertexEndVertex(point3, point2)
 edge_c = Edge.ByStartVertexEndVertex(point1, point3)
 
+
 class Tests(unittest.TestCase):
     def test_horizontal(self):
         self.assertTrue(edge_a.IsHorizontal())
         self.assertFalse(edge_b.IsHorizontal())
         self.assertFalse(edge_c.IsHorizontal())
+
     def test_vertical(self):
         self.assertFalse(edge_a.IsVertical())
         self.assertTrue(edge_b.IsVertical())
@@ -50,5 +53,6 @@ class Tests(unittest.TestCase):
         self.assertEqual(faces_below, 4)
         self.assertEqual(cells_below, 4)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

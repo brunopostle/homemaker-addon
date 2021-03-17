@@ -6,19 +6,36 @@ import unittest
 
 from topologic import Vertex, Face, Cell, CellComplex, CellUtility, Topology
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from topologist.helpers import create_stl_list
 
-points = [[0.0, 0.0, 0.0], [10.0, 0.0, 0.0], [10.0, 10.0, 0.0], [0.0, 10.0, 0.0],
-          [0.0, 0.0, 10.0], [10.0, 0.0, 10.0], [10.0, 10.0, 10.0], [0.0, 10.0, 10.0]]
+points = [
+    [0.0, 0.0, 0.0],
+    [10.0, 0.0, 0.0],
+    [10.0, 10.0, 0.0],
+    [0.0, 10.0, 0.0],
+    [0.0, 0.0, 10.0],
+    [10.0, 0.0, 10.0],
+    [10.0, 10.0, 10.0],
+    [0.0, 10.0, 10.0],
+]
 
 vertices = []
 for point in points:
     vertex = Vertex.ByCoordinates(point[0], point[1], point[2])
     vertices.append(vertex)
 
-faces_by_vertex_id = [[0, 1, 2], [0, 2, 3], [1, 2, 6, 5], [2, 3, 7, 6], [0, 4, 7, 3],
-                      [0, 1, 5, 4], [4, 5, 6], [4, 6, 7], [0, 2, 6, 4]]
+faces_by_vertex_id = [
+    [0, 1, 2],
+    [0, 2, 3],
+    [1, 2, 6, 5],
+    [2, 3, 7, 6],
+    [0, 4, 7, 3],
+    [0, 1, 5, 4],
+    [4, 5, 6],
+    [4, 6, 7],
+    [0, 2, 6, 4],
+]
 
 faces = []
 for face_by_id in faces_by_vertex_id:
@@ -34,16 +51,20 @@ for face in faces:
     faces_ptr.push_back(face)
 cc = CellComplex.ByFaces(faces_ptr, 0.0001)
 
+
 class Tests(unittest.TestCase):
     """Nine faces and two cells formed by a cube sliced on the diagonal"""
+
     def test_vertices(self):
         self.assertEqual(points[0][0], 0.0)
         self.assertEqual(points[1][0], 10.0)
+
     def test_vertices_cc(self):
         self.assertEqual(len(points), len(vertices))
         self.assertEqual(vertices[0].X(), 0.0)
         self.assertEqual(vertices[1].X(), 10.0)
         self.assertEqual(vertices[-1].Y(), 10.0)
+
     def test_faces(self):
         self.assertEqual(len(faces_by_vertex_id), len(faces))
         self.assertEqual(faces_by_vertex_id[0][2], 2.0)
@@ -51,6 +72,7 @@ class Tests(unittest.TestCase):
         self.assertFalse(faces[0].IsVertical())
         self.assertTrue(faces[2].IsVertical())
         self.assertTrue(faces[-1].IsVertical())
+
     def test_faces_cc(self):
 
         faces_all = create_stl_list(Face)
@@ -151,8 +173,9 @@ class Tests(unittest.TestCase):
                 self.assertEqual(face.Elevation(), 0.0)
                 self.assertEqual(face.Height(), 0.0)
 
-output = Topology.Analyze(cc)
-#print(output)
 
-if __name__ == '__main__':
+output = Topology.Analyze(cc)
+# print(output)
+
+if __name__ == "__main__":
     unittest.main()

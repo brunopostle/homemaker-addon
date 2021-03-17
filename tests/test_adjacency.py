@@ -6,24 +6,44 @@ import unittest
 
 from topologic import Vertex, Edge, Face, Cell, CellComplex, Topology, Graph
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from topologist.helpers import create_stl_list
 
-points = [[0.0, 0.0, 0.0], [10.0, 0.0, 0.0], [10.0, 10.0, 0.0], [0.0, 10.0, 0.0],
-          [0.0, 0.0, 10.0], [10.0, 0.0, 10.0], [10.0, 10.0, 10.0], [0.0, 10.0, 10.0]]
+points = [
+    [0.0, 0.0, 0.0],
+    [10.0, 0.0, 0.0],
+    [10.0, 10.0, 0.0],
+    [0.0, 10.0, 0.0],
+    [0.0, 0.0, 10.0],
+    [10.0, 0.0, 10.0],
+    [10.0, 10.0, 10.0],
+    [0.0, 10.0, 10.0],
+]
 
-points.extend([[0.0, 0.0, 20.0], [10.0, 0.0, 20.0], [10.0, 10.0, 20.0], [0.0, 10.0, 20.0]])
+points.extend(
+    [[0.0, 0.0, 20.0], [10.0, 0.0, 20.0], [10.0, 10.0, 20.0], [0.0, 10.0, 20.0]]
+)
 
 vertices = []
 for point in points:
     vertex = Vertex.ByCoordinates(point[0], point[1], point[2])
     vertices.append(vertex)
 
-faces_by_vertex_id = [[0, 1, 2], [0, 2, 3], [1, 2, 6, 5], [2, 3, 7, 6], [0, 4, 7, 3],
-                      [0, 1, 5, 4], [4, 5, 6], [4, 6, 7], [0, 2, 6, 4]]
+faces_by_vertex_id = [
+    [0, 1, 2],
+    [0, 2, 3],
+    [1, 2, 6, 5],
+    [2, 3, 7, 6],
+    [0, 4, 7, 3],
+    [0, 1, 5, 4],
+    [4, 5, 6],
+    [4, 6, 7],
+    [0, 2, 6, 4],
+]
 
-faces_by_vertex_id.extend([[4, 5, 9, 8], [5, 6, 10, 9], [6, 7, 11, 10], [7, 4, 8, 11],
-                           [8, 9, 10, 11]])
+faces_by_vertex_id.extend(
+    [[4, 5, 9, 8], [5, 6, 10, 9], [6, 7, 11, 10], [7, 4, 8, 11], [8, 9, 10, 11]]
+)
 
 faces = []
 for face_by_id in faces_by_vertex_id:
@@ -39,8 +59,10 @@ for face in faces:
     faces_ptr.push_back(face)
 cc = CellComplex.ByFaces(faces_ptr, 0.0001)
 
+
 class Tests(unittest.TestCase):
     """14 faces and three cells formed by a cube sliced on the diagonal"""
+
     def test_vertices(self):
         graph = Graph.Adjacency(cc)
 
@@ -48,10 +70,10 @@ class Tests(unittest.TestCase):
         graph.Vertices(vertices)
         self.assertEqual(len(vertices), 6)
         for vertex in vertices:
-            if vertex.Get('class') == 'Face':
-                self.assertFalse(vertex.Get('index') == None)
-            elif vertex.Get('class') == 'Cell':
-                self.assertFalse(vertex.Get('index') == None)
+            if vertex.Get("class") == "Face":
+                self.assertFalse(vertex.Get("index") == None)
+            elif vertex.Get("class") == "Cell":
+                self.assertFalse(vertex.Get("index") == None)
             else:
                 self.assertTrue(False)
 
@@ -65,7 +87,7 @@ class Tests(unittest.TestCase):
             # this Face has to have a Vertex in the Graph, that represents a Face
             vertex = face.GraphVertex(graph)
             self.assertEqual(vertex.__class__, Vertex)
-            self.assertEqual(vertex.Get('class'), 'Face')
+            self.assertEqual(vertex.Get("class"), "Face")
             # it should be the same Face
             entity = graph.GetEntity(cc, vertex)
             self.assertTrue(face.IsSame(entity))
@@ -87,7 +109,7 @@ class Tests(unittest.TestCase):
             vertex = cell.GraphVertex(graph)
             # it should be a Vertex, representing a Cell
             self.assertEqual(vertex.__class__, Vertex)
-            self.assertEqual(vertex.Get('class'), 'Cell')
+            self.assertEqual(vertex.Get("class"), "Cell")
             # the equivalent entity in the CellComplex, should be a Cell
             entity = graph.GetEntity(cc, vertex)
             self.assertEqual(entity.__class__, Cell)
@@ -103,10 +125,11 @@ class Tests(unittest.TestCase):
             # vertex is the node in the Graph that corresponds to this Face
             vertex = face.GraphVertex(graph)
             # the Graph may not have a node for this Face (e.g. purged, external wall)
-            if vertex == None: continue
+            if vertex == None:
+                continue
             # it should be a Vertex, representing a Face
             self.assertEqual(vertex.__class__, Vertex)
-            self.assertEqual(vertex.Get('class'), 'Face')
+            self.assertEqual(vertex.Get("class"), "Face")
             # the equivalent entity in the CellComplex, should be a Face
             entity = graph.GetEntity(cc, vertex)
             self.assertEqual(entity.__class__, Face)
@@ -142,8 +165,9 @@ class Tests(unittest.TestCase):
 
         self.assertFalse(graph.IsConnected())
 
-output = Topology.Analyze(cc)
-#print(output)
 
-if __name__ == '__main__':
+output = Topology.Analyze(cc)
+# print(output)
+
+if __name__ == "__main__":
     unittest.main()

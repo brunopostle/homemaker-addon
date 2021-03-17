@@ -3,16 +3,19 @@ from topologic import Face, Cluster, Cell, Topology, FaceUtility, CellUtility
 from topologist.helpers import create_stl_list, vertex_string, el
 from topologist import ugraph
 
+
 def AllocateCells(self, widgets):
     """Set cell types using widgets, or default to 'Outside'"""
-    if len(widgets) == 0: return
+    if len(widgets) == 0:
+        return
     cells = create_stl_list(Cell)
     self.Cells(cells)
     for cell in cells:
-        cell.Set('usage', 'outside')
+        cell.Set("usage", "outside")
         for widget in widgets:
             if CellUtility.Contains(cell, widget[1]) == 0:
-                cell.Set('usage', widget[0].lower())
+                cell.Set("usage", widget[0].lower())
+
 
 def Roof(self):
     faces = create_stl_list(Face)
@@ -30,28 +33,32 @@ def Roof(self):
         return None
     return cluster.SelfMerge()
 
+
 # TODO non-horizontal details (gables, arches, ridges and valleys)
+
 
 def Walls(self):
     """Construct a graph of external vertical faces for each elevation and height"""
-    walls = {'external': {},
-             'open': {},
-             'top-vertical-up': {},
-             'top-backward-level': {},
-             'top-backward-up': {},
-             'top-backward-down': {},
-             'top-forward-level': {},
-             'top-forward-up': {},
-             'top-forward-down': {},
-             'bottom-vertical-down': {},
-             'bottom-backward-level': {},
-             'bottom-backward-up': {},
-             'bottom-backward-down': {},
-             'bottom-forward-level': {},
-             'bottom-forward-up': {},
-             'bottom-forward-down': {},
-             'internal': {},
-             'internal-unsupported': {}}
+    walls = {
+        "external": {},
+        "open": {},
+        "top-vertical-up": {},
+        "top-backward-level": {},
+        "top-backward-up": {},
+        "top-backward-down": {},
+        "top-forward-level": {},
+        "top-forward-up": {},
+        "top-forward-down": {},
+        "bottom-vertical-down": {},
+        "bottom-backward-level": {},
+        "bottom-backward-up": {},
+        "bottom-backward-down": {},
+        "bottom-forward-level": {},
+        "bottom-forward-up": {},
+        "bottom-forward-down": {},
+        "internal": {},
+        "internal-unsupported": {},
+    }
     faces = create_stl_list(Face)
     self.Faces(faces)
 
@@ -59,45 +66,69 @@ def Walls(self):
         if face.IsVertical():
             elevation = face.Elevation()
             height = face.Height()
-            style = face.Get('style')
-            if not style: style = 'default'
+            style = face.Get("style")
+            if not style:
+                style = "default"
 
             axis = face.AxisOuter()
             # wall face may be triangular and not have a bottom edge
             if axis:
                 if face.IsOpen():
-                    add_axis(walls['open'], elevation, height, style, axis, face)
+                    add_axis(walls["open"], elevation, height, style, axis, face)
 
                 elif face.IsExternal():
-                    add_axis(walls['external'], elevation, height, style, axis, face)
+                    add_axis(walls["external"], elevation, height, style, axis, face)
 
                 elif face.IsInternal():
-                    add_axis_simple(walls['internal'], elevation, height, style, axis, face)
+                    add_axis_simple(
+                        walls["internal"], elevation, height, style, axis, face
+                    )
 
                     # collect foundation strips
                     if not face.FaceBelow():
-                        add_axis_simple(walls['internal-unsupported'], elevation, 0.0, style, axis, face)
+                        add_axis_simple(
+                            walls["internal-unsupported"],
+                            elevation,
+                            0.0,
+                            style,
+                            axis,
+                            face,
+                        )
 
             if face.IsExternal():
                 for condition in face.TopLevelConditions():
                     edge = condition[0]
                     label = condition[1]
-                    add_axis(walls[label], el(elevation + height), 0.0, style, [edge.EndVertex(), edge.StartVertex()], face)
+                    add_axis(
+                        walls[label],
+                        el(elevation + height),
+                        0.0,
+                        style,
+                        [edge.EndVertex(), edge.StartVertex()],
+                        face,
+                    )
 
                 for condition in face.BottomLevelConditions():
                     edge = condition[0]
                     label = condition[1]
-                    add_axis(walls[label], el(elevation), 0.0, style, [edge.StartVertex(), edge.EndVertex()], face)
+                    add_axis(
+                        walls[label],
+                        el(elevation),
+                        0.0,
+                        style,
+                        [edge.StartVertex(), edge.EndVertex()],
+                        face,
+                    )
 
     cells = create_stl_list(Cell)
     self.Cells(cells)
     for cell in cells:
         perimeter = cell.Perimeter()
         if not perimeter.is_simple_cycle():
-                continue
+            continue
         elevation = cell.Elevation()
         height = cell.Height()
-        style = 'default'
+        style = "default"
 
         usage = cell.Usage()
         if not usage in walls:
@@ -121,6 +152,7 @@ def Walls(self):
 
     return walls
 
+
 def add_axis(wall_type, elevation, height, style, edge, face):
     """helper function to isolate graph library related code"""
     if not elevation in wall_type:
@@ -132,7 +164,10 @@ def add_axis(wall_type, elevation, height, style, edge, face):
 
     start_coor = vertex_string(edge[0])
     end_coor = vertex_string(edge[1])
-    wall_type[elevation][height][style].add_edge({start_coor: [end_coor, [edge[0], edge[1], face]]})
+    wall_type[elevation][height][style].add_edge(
+        {start_coor: [end_coor, [edge[0], edge[1], face]]}
+    )
+
 
 def add_axis_simple(wall_type, elevation, height, style, edge, face):
     """helper function for walls that don't form chains or loops"""
@@ -148,6 +183,7 @@ def add_axis_simple(wall_type, elevation, height, style, edge, face):
     graph = ugraph.graph()
     graph.add_edge({start_coor: [end_coor, [edge[0], edge[1], face]]})
     wall_type[elevation][height][style].append(graph)
+
 
 def Elevations(self):
     """Identify all unique elevations, allocate level index"""
@@ -167,6 +203,7 @@ def Elevations(self):
         level += 1
     return elevations
 
+
 def ApplyDictionary(self, source_faces):
     """Copy Dictionary items from a collection of faces"""
     faces = create_stl_list(Face)
@@ -179,8 +216,9 @@ def ApplyDictionary(self, source_faces):
                 for key in dictionary.Keys():
                     face.Set(key, source_face.Get(key))
 
-setattr(topologic.CellComplex, 'AllocateCells', AllocateCells)
-setattr(topologic.CellComplex, 'Roof', Roof)
-setattr(topologic.CellComplex, 'Walls', Walls)
-setattr(topologic.CellComplex, 'Elevations', Elevations)
-setattr(topologic.CellComplex, 'ApplyDictionary', ApplyDictionary)
+
+setattr(topologic.CellComplex, "AllocateCells", AllocateCells)
+setattr(topologic.CellComplex, "Roof", Roof)
+setattr(topologic.CellComplex, "Walls", Walls)
+setattr(topologic.CellComplex, "Elevations", Elevations)
+setattr(topologic.CellComplex, "ApplyDictionary", ApplyDictionary)

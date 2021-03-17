@@ -1,8 +1,8 @@
 import sys
 import re
 
-sys.path.append('/home/bruno/src/topologicPy/cpython')
-sys.path.append('/home/bruno/src/homemaker-addon')
+sys.path.append("/home/bruno/src/topologicPy/cpython")
+sys.path.append("/home/bruno/src/homemaker-addon")
 
 from topologic import Vertex, Face, CellComplex, Graph
 from topologist.helpers import create_stl_list, vertex_id
@@ -24,11 +24,13 @@ bl_info = {
     "category": "Object",
 }
 
+
 class ObjectHomemaker(bpy.types.Operator):
     """Object Homemaker Topologise"""
+
     bl_idname = "object.homemaker"
     bl_label = "Homemaker Topologise"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
@@ -36,14 +38,18 @@ class ObjectHomemaker(bpy.types.Operator):
         widgets = []
 
         for blender_object in context.selected_objects:
-            if not blender_object.type == 'MESH':
+            if not blender_object.type == "MESH":
                 continue
-            label = re.match('(bedroom|circulation|circulation_stair|stair|kitchen|living|retail|sahn|toilet)', blender_object.name, flags=re.IGNORECASE)
+            label = re.match(
+                "(bedroom|circulation|circulation_stair|stair|kitchen|living|retail|sahn|toilet)",
+                blender_object.name,
+                flags=re.IGNORECASE,
+            )
             if label:
                 depsgraph = bpy.context.evaluated_depsgraph_get()
                 blender_object = blender_object.evaluated_get(depsgraph)
-                bm = bmesh.new()   # create an empty BMesh
-                bm.from_mesh(blender_object.data)   # fill it in from a Mesh
+                bm = bmesh.new()  # create an empty BMesh
+                bm.from_mesh(blender_object.data)  # fill it in from a Mesh
                 bm.verts.ensure_lookup_table()
 
                 centre = [0.0, 0.0, 0.0]
@@ -53,19 +59,21 @@ class ObjectHomemaker(bpy.types.Operator):
                     centre[0] += coor[0]
                     centre[1] += coor[1]
                     centre[2] += coor[2]
-                vertex = Vertex.ByCoordinates(centre[0]/total, centre[1]/total, centre[2]/total)
+                vertex = Vertex.ByCoordinates(
+                    centre[0] / total, centre[1] / total, centre[2] / total
+                )
                 widgets.append([label[0], vertex])
             else:
                 bl_object = blender_object
 
         if not bl_object:
-            return {'FINISHED'}
+            return {"FINISHED"}
 
         depsgraph = bpy.context.evaluated_depsgraph_get()
         bl_object = bl_object.evaluated_get(depsgraph)
         # Get a BMesh representation
-        bm = bmesh.new()   # create an empty BMesh
-        bm.from_mesh(bl_object.data)   # fill it in from a Mesh
+        bm = bmesh.new()  # create an empty BMesh
+        bm.from_mesh(bl_object.data)  # fill it in from a Mesh
         bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.001)
         bm.verts.ensure_lookup_table()
 
@@ -80,7 +88,7 @@ class ObjectHomemaker(bpy.types.Operator):
         faces = []
 
         for f in bm.faces:
-            style = 'default'
+            style = "default"
             if len(bl_object.material_slots) > 0:
                 style = bl_object.material_slots[f.material_index].material.name
             vertices_face = []
@@ -88,7 +96,7 @@ class ObjectHomemaker(bpy.types.Operator):
                 vertex = vertices[v.index]
                 vertices_face.append(vertex)
             face = Face.ByVertices(vertices_face)
-            face.Set('style', style)
+            face.Set("style", style)
             faces.append(face)
         bpy.ops.object.hide_view_set(unselected=False)
 
@@ -103,14 +111,16 @@ class ObjectHomemaker(bpy.types.Operator):
         elevations = cc.Elevations()
         circulation = Graph.Adjacency(cc)
         circulation.Circulation(cc)
-        #print(circulation.Dot(cc))
+        # print(circulation.Dot(cc))
 
-        style = 'default'
+        style = "default"
 
         # molior
         molior = []
-        molior_tmp = tempfile.NamedTemporaryFile(mode='w+b', suffix='.molior', delete=False)
-        ifc_tmp = tempfile.NamedTemporaryFile(mode='w+b', suffix='.ifc', delete=False)
+        molior_tmp = tempfile.NamedTemporaryFile(
+            mode="w+b", suffix=".molior", delete=False
+        )
+        ifc_tmp = tempfile.NamedTemporaryFile(mode="w+b", suffix=".ifc", delete=False)
 
         # roof
         roof = cc.Roof()
@@ -151,30 +161,44 @@ class ObjectHomemaker(bpy.types.Operator):
                 for height in walls[condition][elevation]:
                     for style in walls[condition][elevation][height]:
                         for chain in walls[condition][elevation][height][style]:
-                            for item in molior_object.GetMolior(style, condition, level, elevation, height, chain, circulation):
+                            for item in molior_object.GetMolior(
+                                style,
+                                condition,
+                                level,
+                                elevation,
+                                height,
+                                chain,
+                                circulation,
+                            ):
                                 molior.append(item.__dict__)
 
         # molior
-        with open(molior_tmp.name, 'w') as outfile:
+        with open(molior_tmp.name, "w") as outfile:
             yaml.dump_all(molior, outfile)
-        subprocess.call(['molior-ifc.pl', molior_tmp.name, ifc_tmp.name])
-        logger = logging.getLogger('ImportIFC')
+        subprocess.call(["molior-ifc.pl", molior_tmp.name, ifc_tmp.name])
+        logger = logging.getLogger("ImportIFC")
 
-        ifc_import_settings = import_ifc.IfcImportSettings.factory(bpy.context, ifc_tmp.name, logger)
+        ifc_import_settings = import_ifc.IfcImportSettings.factory(
+            bpy.context, ifc_tmp.name, logger
+        )
         ifc_importer = import_ifc.IfcImporter(ifc_import_settings)
         ifc_importer.execute()
-        return {'FINISHED'}
+        return {"FINISHED"}
+
 
 def menu_func(self, context):
     self.layout.operator(ObjectHomemaker.bl_idname)
+
 
 def register():
     bpy.utils.register_class(ObjectHomemaker)
     bpy.types.VIEW3D_MT_object.append(menu_func)
 
+
 def unregister():
     bpy.utils.unregister_class(ObjectHomemaker)
     bpy.types.VIEW3D_MT_object.remove(menu_func)
+
 
 if __name__ == "__main__":
     register()

@@ -1,5 +1,6 @@
 class graph:
     """A simple directed graph that only supports linear chains and loops"""
+
     def __init__(self):
         self.graph = {}
 

@@ -1,4 +1,4 @@
-all : test lint todo
+all : test lint todo black
 
 test :
 	python3 -m unittest discover -v -s tests
@@ -9,4 +9,7 @@ lint :
 todo :
 	egrep 'FIXME|TODO' *.py */*.py
 
-.PHONY : all test lint todo
+black :
+	black --diff ./
+
+.PHONY : all test lint todo black
