@@ -13,11 +13,14 @@ class Stair(BaseClass):
         self.floor = 0.02
         self.going = 0.25
         self.id = ''
+        self.ifc = 'IFCSTAIR'
         self.inner = 0.08
         self.path = []
-        self.risers = 0
+        self.riser = 0.19
         self.type = 'molior-stair'
         self.usage = ''
         self.width = 1.0
         for arg in args:
             self.__dict__[arg] = args[arg]
+        self.risers = int(self.height/self.riser)+1,
+        # FIXME check circulation graph, only draw stair if cell above this cell is stair

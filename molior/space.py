@@ -11,9 +11,18 @@ class Space(BaseClass):
         self.colour = 255
         self.floor = 0.02
         self.id = ''
+        self.ifc = 'IFCSPACE'
         self.inner = 0.08
         self.path = []
         self.type = 'molior-space'
         self.usage = ''
         for arg in args:
             self.__dict__[arg] = args[arg]
+        self.usage = self.name
+        # FIXME identify cell and set colour
+        #if not cell.IsOutside():
+        #    crinkliness = cell.Crinkliness()
+        #    colour = (int(crinkliness*16)-7)*10
+        #    if colour > 170: colour = 170
+        #    if colour < 10: colour = 10
+        # FIXME cell[index] can be used for id

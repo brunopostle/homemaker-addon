@@ -9,8 +9,10 @@ class Floor(BaseClass):
         super().__init__(args)
         self.floor = 0.02
         self.id = ''
+        self.ifc = 'IFCSLAB'
         self.inner = 0.08
         self.path = []
         self.type = 'molior-floor'
         for arg in args:
             self.__dict__[arg] = args[arg]
+        # FIXME implement not_if_stair_below

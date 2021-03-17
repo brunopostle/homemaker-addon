@@ -9,8 +9,10 @@ class Ceiling(BaseClass):
         super().__init__(args)
         self.ceiling = 0.2
         self.id = ''
+        self.ifc = 'IFCSLAB'
         self.inner = 0.08
         self.path = []
         self.type = 'molior-ceiling'
         for arg in args:
             self.__dict__[arg] = args[arg]
+        # FIXME implement not_if_stair_above

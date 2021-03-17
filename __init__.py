@@ -4,9 +4,9 @@ import re
 sys.path.append('/home/bruno/src/topologicPy/cpython')
 sys.path.append('/home/bruno/src/homemaker-addon')
 
-from topologic import Vertex, Cell, Face, CellComplex, Graph
+from topologic import Vertex, Face, CellComplex, Graph
 from topologist.helpers import create_stl_list, vertex_id
-from molior import Molior, Space, Stair, Floor, Ceiling
+from molior import Molior
 
 import datetime
 import tempfile
@@ -153,73 +153,6 @@ class ObjectHomemaker(bpy.types.Operator):
                         for chain in walls[condition][elevation][height][style]:
                             for item in molior_object.GetMolior(style, condition, level, elevation, height, chain, circulation):
                                 molior.append(item.__dict__)
-
-        # rooms
-        cells = create_stl_list(Cell)
-        cc.Cells(cells)
-        number = 0
-        for cell in cells:
-            perimeter = cell.Perimeter()
-            if not perimeter.is_simple_cycle():
-                continue
-            colour = 0
-            if not cell.IsOutside():
-                crinkliness = cell.Crinkliness()
-                colour = (int(crinkliness*16)-7)*10
-                if colour > 170: colour = 170
-                if colour < 10: colour = 10
-            elevation = cell.Elevation()
-            height = cell.Height()
-            usage = cell.Usage()
-            path = []
-            for vertex in perimeter.nodes():
-                path.append([perimeter.graph[vertex][1][0].X(), perimeter.graph[vertex][1][0].Y()])
-            cells_above = create_stl_list(Cell)
-            cells_below = create_stl_list(Cell)
-            cell.CellsAbove(cc, cells_above)
-            cell.CellsBelow(cc, cells_below)
-            # FIXME use circulation graph to indicate stair
-
-            part = Space({'path': path,
-                            'id': number,
-                          'name': 'my room',
-                     'elevation': elevation,
-                        'height': height,
-                         'level': elevations[elevation],
-                        'colour': colour,
-                         'usage': usage})
-            molior.append(part.__dict__)
-
-            part = Stair({'path': path,
-                            'id': number,
-                          'name': 'my room',
-                     'elevation': elevation,
-                        'height': height,
-                         'level': elevations[elevation],
-                        'risers': int(height/0.19)+1,
-                         'usage': usage})
-            print(usage, str(len(path)), str(len(cells_above)))
-            if usage == 'stair' and len(path) == 4 and len(cells_above) > 0:
-                molior.append(part.__dict__)
-
-            part = Floor({'path': path,
-                            'id': number,
-                          'name': 'my room',
-                     'elevation': elevation,
-                         'level': elevations[elevation]})
-            if not (usage == 'stair' and len(cells_below) > 0):
-                molior.append(part.__dict__)
-
-            part = Ceiling({'path': path,
-                              'id': number,
-                            'name': 'my room',
-                       'elevation': elevation,
-                          'height': height,
-                           'level': elevations[elevation]})
-            if not (usage == 'stair' and len(cells_above) > 0):
-                molior.append(part.__dict__)
-
-            number += 1
 
         # molior
         with open(molior_tmp.name, 'w') as outfile:
