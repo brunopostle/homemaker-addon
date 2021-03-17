@@ -12,6 +12,9 @@ def AllocateCells(self, widgets):
     self.Cells(cells)
     for cell in cells:
         cell.Set("usage", "outside")
+        # a usable space has vertical faces on all sides
+        if not cell.Perimeter().is_simple_cycle():
+            cell.Set("usage", "void")
         for widget in widgets:
             if CellUtility.Contains(cell, widget[1]) == 0:
                 cell.Set("usage", widget[0].lower())
