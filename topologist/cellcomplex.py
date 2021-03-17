@@ -1,7 +1,7 @@
 import topologic
 from topologic import Face, Cluster, Cell, Topology, FaceUtility, CellUtility
-from topologist.helpers import create_stl_list, vertex_string, el
-from topologist import ugraph
+from topologist.helpers import create_stl_list, el
+from topologist import traces
 
 
 def AllocateCells(self, widgets):
@@ -40,28 +40,9 @@ def Roof(self):
 # TODO non-horizontal details (gables, arches, ridges and valleys)
 
 
-def Traces(self):
+def GetTraces(self):
     """Traces are 2D ugraph paths that define walls, extrusions and rooms"""
-    traces = {
-        "external": {},
-        "open": {},
-        "top-vertical-up": {},
-        "top-backward-level": {},
-        "top-backward-up": {},
-        "top-backward-down": {},
-        "top-forward-level": {},
-        "top-forward-up": {},
-        "top-forward-down": {},
-        "bottom-vertical-down": {},
-        "bottom-backward-level": {},
-        "bottom-backward-up": {},
-        "bottom-backward-down": {},
-        "bottom-forward-level": {},
-        "bottom-forward-up": {},
-        "bottom-forward-down": {},
-        "internal": {},
-        "internal-unsupported": {},
-    }
+    mytraces = traces.Traces()
     faces = create_stl_list(Face)
     self.Faces(faces)
 
@@ -77,20 +58,20 @@ def Traces(self):
             # wall face may be triangular and not have a bottom edge
             if axis:
                 if face.IsOpen():
-                    add_axis(traces["open"], elevation, height, style, axis, face)
+                    mytraces.add_axis("open", elevation, height, style, axis, face)
 
                 elif face.IsExternal():
-                    add_axis(traces["external"], elevation, height, style, axis, face)
+                    mytraces.add_axis("external", elevation, height, style, axis, face)
 
                 elif face.IsInternal():
-                    add_axis_simple(
-                        traces["internal"], elevation, height, style, axis, face
+                    mytraces.add_axis_simple(
+                        "internal", elevation, height, style, axis, face
                     )
 
                     # collect foundation strips
                     if not face.FaceBelow():
-                        add_axis_simple(
-                            traces["internal-unsupported"],
+                        mytraces.add_axis_simple(
+                            "internal-unsupported",
                             elevation,
                             0.0,
                             style,
@@ -102,8 +83,8 @@ def Traces(self):
                 for condition in face.TopLevelConditions():
                     edge = condition[0]
                     label = condition[1]
-                    add_axis(
-                        traces[label],
+                    mytraces.add_axis(
+                        label,
                         el(elevation + height),
                         0.0,
                         style,
@@ -114,9 +95,9 @@ def Traces(self):
                 for condition in face.BottomLevelConditions():
                     edge = condition[0]
                     label = condition[1]
-                    add_axis(
-                        traces[label],
-                        el(elevation),
+                    mytraces.add_axis(
+                        label,
+                        elevation,
                         0.0,
                         style,
                         [edge.StartVertex(), edge.EndVertex()],
@@ -134,58 +115,10 @@ def Traces(self):
         style = "default"
 
         usage = cell.Usage()
-        if not usage in traces:
-            traces[usage] = {}
-        if not elevation in traces[usage]:
-            traces[usage][elevation] = {}
-        if not height in traces[usage][elevation]:
-            traces[usage][elevation][height] = {}
-        if not style in traces[usage][elevation][height]:
-            traces[usage][elevation][height][style] = []
-        traces[usage][elevation][height][style].append(perimeter)
+        mytraces.add_trace(usage, elevation, height, style, perimeter)
 
-    for usage in traces:
-        for elevation in traces[usage]:
-            for height in traces[usage][elevation]:
-                for style in traces[usage][elevation][height]:
-                    if traces[usage][elevation][height][style].__class__ == [].__class__:
-                        continue
-                    graphs = traces[usage][elevation][height][style].find_paths()
-                    traces[usage][elevation][height][style] = graphs
-
-    return traces
-
-
-def add_axis(trace_type, elevation, height, style, edge, face):
-    """helper function to isolate graph library related code"""
-    if not elevation in trace_type:
-        trace_type[elevation] = {}
-    if not height in trace_type[elevation]:
-        trace_type[elevation][height] = {}
-    if not style in trace_type[elevation][height]:
-        trace_type[elevation][height][style] = ugraph.graph()
-
-    start_coor = vertex_string(edge[0])
-    end_coor = vertex_string(edge[1])
-    trace_type[elevation][height][style].add_edge(
-        {start_coor: [end_coor, [edge[0], edge[1], face]]}
-    )
-
-
-def add_axis_simple(trace_type, elevation, height, style, edge, face):
-    """helper function for traces that don't form chains or loops"""
-    if not elevation in trace_type:
-        trace_type[elevation] = {}
-    if not height in trace_type[elevation]:
-        trace_type[elevation][height] = {}
-    if not style in trace_type[elevation][height]:
-        trace_type[elevation][height][style] = []
-
-    start_coor = vertex_string(edge[0])
-    end_coor = vertex_string(edge[1])
-    graph = ugraph.graph()
-    graph.add_edge({start_coor: [end_coor, [edge[0], edge[1], face]]})
-    trace_type[elevation][height][style].append(graph)
+    mytraces.process()
+    return mytraces
 
 
 def Elevations(self):
@@ -222,6 +155,6 @@ def ApplyDictionary(self, source_faces):
 
 setattr(topologic.CellComplex, "AllocateCells", AllocateCells)
 setattr(topologic.CellComplex, "Roof", Roof)
-setattr(topologic.CellComplex, "Traces", Traces)
+setattr(topologic.CellComplex, "GetTraces", GetTraces)
 setattr(topologic.CellComplex, "Elevations", Elevations)
 setattr(topologic.CellComplex, "ApplyDictionary", ApplyDictionary)

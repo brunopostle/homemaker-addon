@@ -152,7 +152,7 @@ class ObjectHomemaker(bpy.types.Operator):
             modifier.thickness = -0.1
 
         # Traces are 2D paths that define walls, extrusions and rooms
-        traces = cc.Traces()
+        traces = cc.GetTraces().traces
 
         molior_object = Molior()
         for condition in traces:

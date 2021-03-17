@@ -181,7 +181,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(len(faces_horizontal), 5)
 
     def test_graph(self):
-        traces = cc.Traces()
+        traces = cc.GetTraces().traces
         traces_external = traces["external"]
         self.assertEqual(len(traces_external), 2)
         self.assertEqual(len(traces_external[0.0]), 1)
