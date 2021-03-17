@@ -196,10 +196,12 @@ class Tests(unittest.TestCase):
         for node in cycle.nodes():
             self.assertEqual(string_to_coor(node)[2], 0.0)
         data = cycle.get_edge_data(["0.0__10.0__0.0", "0.0__0.0__0.0"])
-        self.assertEqual(len(data), 3)
+        self.assertEqual(len(data), 5)
         self.assertEqual(data[0].GetType(), 1)  # Vertex == 1
         self.assertEqual(data[1].GetType(), 1)  # Vertex == 1
         self.assertEqual(data[2].GetType(), 8)  # Face == 8
+        self.assertEqual(data[3].GetType(), 32)  # Cell == 32
+        self.assertEqual(data[4], None)  # no outer Cell
         faces2 = create_stl_list(Face)
         data[0].Faces(faces2)
         self.assertEqual(len(faces2), 3)  # vertex is connected to 3 faces

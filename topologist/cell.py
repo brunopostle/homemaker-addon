@@ -133,26 +133,30 @@ def Perimeter(self):
     wire.Vertices(vertices)
     vertices_list = list(vertices)
 
-    if normal.Z() > 0.9999:
-        # good, loop is anticlockwise
-        for i in range(len(vertices_list)):
-            start = vertices_list[i - 1]
-            end = vertices_list[i]
-            start_coor = vertex_string(start)
-            end_coor = vertex_string(end)
-            graph.add_edge(
-                {start_coor: [end_coor, lookup[start_coor + " " + end_coor]]}
-            )
-    elif normal.Z() < -0.9999:
-        # loop is clockwise
-        for i in range(len(vertices_list)):
+    clockwise = False
+    if normal.Z() < 0.0:
+        clockwise = True
+    for i in range(len(vertices_list)):
+        if clockwise:
             start = vertices_list[i]
             end = vertices_list[i - 1]
-            start_coor = vertex_string(start)
-            end_coor = vertex_string(end)
-            graph.add_edge(
-                {start_coor: [end_coor, lookup[start_coor + " " + end_coor]]}
-            )
+        else:
+            start = vertices_list[i - 1]
+            end = vertices_list[i]
+        start_coor = vertex_string(start)
+        end_coor = vertex_string(end)
+        refs = lookup[start_coor + " " + end_coor]
+
+        outer_cell = None
+        face = refs[2]
+        cells = create_stl_list(Cell)
+        face.Cells(cells)
+        for cell in cells:
+            if not cell.IsSame(self):
+                outer_cell = cell
+        graph.add_edge(
+            {start_coor: [end_coor, [refs[0], refs[1], refs[2], self, outer_cell]]}
+        )
     return graph
 
 

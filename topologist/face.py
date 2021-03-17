@@ -1,5 +1,5 @@
 import topologic
-from topologic import Edge, Face, FaceUtility, Cell
+from topologic import Vertex, Edge, Face, FaceUtility, Cell, CellUtility
 from topologist.helpers import create_stl_list, vertex_string
 from topologist import ugraph
 
@@ -24,6 +24,32 @@ def ByVertices(vertices):
 
 
 setattr(topologic.Face, "ByVertices", ByVertices)
+
+
+def CellsOrdered(self):
+    """Front Cell and back Cell, can be None"""
+    centroid = list(self.Centroid().Coordinates())
+    normal = self.Normal()
+    vertex_front = Vertex.ByCoordinates(
+        centroid[0] + (normal.X() / 10),
+        centroid[1] + (normal.Y() / 10),
+        centroid[2] + (normal.Z() / 10),
+    )
+    vertex_back = Vertex.ByCoordinates(
+        centroid[0] - (normal.X() / 10),
+        centroid[1] - (normal.Y() / 10),
+        centroid[2] - (normal.Z() / 10),
+    )
+
+    cells = create_stl_list(Cell)
+    self.Cells(cells)
+    results = [None, None]
+    for cell in cells:
+        if CellUtility.Contains(cell, vertex_front) == 0:
+            results[0] = cell
+        elif CellUtility.Contains(cell, vertex_back) == 0:
+            results[1] = cell
+    return results
 
 
 def Usages(self):
@@ -259,6 +285,7 @@ def BottomLevelConditions(self):
     return result
 
 
+setattr(topologic.Face, "CellsOrdered", CellsOrdered)
 setattr(topologic.Face, "Usages", Usages)
 setattr(topologic.Face, "UsageInside", UsageInside)
 setattr(topologic.Face, "IsVertical", IsVertical)

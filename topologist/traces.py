@@ -20,18 +20,23 @@ class Traces:
         if not style in traces[label][elevation][height]:
             traces[label][elevation][height][style] = ugraph.graph()
 
+        cells = face.CellsOrdered()
         start_coor = vertex_string(edge[0])
         end_coor = vertex_string(edge[1])
+
         traces[label][elevation][height][style].add_edge(
-            {start_coor: [end_coor, [edge[0], edge[1], face]]}
+            {start_coor: [end_coor, [edge[0], edge[1], face, cells[1], cells[0]]]}
         )
 
     def add_axis_simple(self, label, elevation, height, style, edge, face):
         """edge is two vertices, add as a simple single edge graph"""
+        cells = face.CellsOrdered()
         start_coor = vertex_string(edge[0])
         end_coor = vertex_string(edge[1])
         graph = ugraph.graph()
-        graph.add_edge({start_coor: [end_coor, [edge[0], edge[1], face]]})
+        graph.add_edge(
+            {start_coor: [end_coor, [edge[0], edge[1], face, cells[1], cells[0]]]}
+        )
         self.add_trace(label, elevation, height, style, graph)
 
     def add_trace(self, label, elevation, height, style, graph):
