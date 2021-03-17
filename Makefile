@@ -1,7 +1,7 @@
 all : test lint todo black
 
 test :
-	python3 -m unittest discover -v -s tests
+	python3 -m unittest discover -s tests
 
 lint :
 	pyflakes *.py */*.py || true

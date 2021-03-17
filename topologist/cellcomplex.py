@@ -40,9 +40,9 @@ def Roof(self):
 # TODO non-horizontal details (gables, arches, ridges and valleys)
 
 
-def Walls(self):
-    """Construct a graph of external vertical faces for each elevation and height"""
-    walls = {
+def Traces(self):
+    """Traces are 2D ugraph paths that define walls, extrusions and rooms"""
+    traces = {
         "external": {},
         "open": {},
         "top-vertical-up": {},
@@ -77,20 +77,20 @@ def Walls(self):
             # wall face may be triangular and not have a bottom edge
             if axis:
                 if face.IsOpen():
-                    add_axis(walls["open"], elevation, height, style, axis, face)
+                    add_axis(traces["open"], elevation, height, style, axis, face)
 
                 elif face.IsExternal():
-                    add_axis(walls["external"], elevation, height, style, axis, face)
+                    add_axis(traces["external"], elevation, height, style, axis, face)
 
                 elif face.IsInternal():
                     add_axis_simple(
-                        walls["internal"], elevation, height, style, axis, face
+                        traces["internal"], elevation, height, style, axis, face
                     )
 
                     # collect foundation strips
                     if not face.FaceBelow():
                         add_axis_simple(
-                            walls["internal-unsupported"],
+                            traces["internal-unsupported"],
                             elevation,
                             0.0,
                             style,
@@ -103,7 +103,7 @@ def Walls(self):
                     edge = condition[0]
                     label = condition[1]
                     add_axis(
-                        walls[label],
+                        traces[label],
                         el(elevation + height),
                         0.0,
                         style,
@@ -115,7 +115,7 @@ def Walls(self):
                     edge = condition[0]
                     label = condition[1]
                     add_axis(
-                        walls[label],
+                        traces[label],
                         el(elevation),
                         0.0,
                         style,
@@ -134,58 +134,58 @@ def Walls(self):
         style = "default"
 
         usage = cell.Usage()
-        if not usage in walls:
-            walls[usage] = {}
-        if not elevation in walls[usage]:
-            walls[usage][elevation] = {}
-        if not height in walls[usage][elevation]:
-            walls[usage][elevation][height] = {}
-        if not style in walls[usage][elevation][height]:
-            walls[usage][elevation][height][style] = []
-        walls[usage][elevation][height][style].append(perimeter)
+        if not usage in traces:
+            traces[usage] = {}
+        if not elevation in traces[usage]:
+            traces[usage][elevation] = {}
+        if not height in traces[usage][elevation]:
+            traces[usage][elevation][height] = {}
+        if not style in traces[usage][elevation][height]:
+            traces[usage][elevation][height][style] = []
+        traces[usage][elevation][height][style].append(perimeter)
 
-    for usage in walls:
-        for elevation in walls[usage]:
-            for height in walls[usage][elevation]:
-                for style in walls[usage][elevation][height]:
-                    if walls[usage][elevation][height][style].__class__ == [].__class__:
+    for usage in traces:
+        for elevation in traces[usage]:
+            for height in traces[usage][elevation]:
+                for style in traces[usage][elevation][height]:
+                    if traces[usage][elevation][height][style].__class__ == [].__class__:
                         continue
-                    graphs = walls[usage][elevation][height][style].find_paths()
-                    walls[usage][elevation][height][style] = graphs
+                    graphs = traces[usage][elevation][height][style].find_paths()
+                    traces[usage][elevation][height][style] = graphs
 
-    return walls
+    return traces
 
 
-def add_axis(wall_type, elevation, height, style, edge, face):
+def add_axis(trace_type, elevation, height, style, edge, face):
     """helper function to isolate graph library related code"""
-    if not elevation in wall_type:
-        wall_type[elevation] = {}
-    if not height in wall_type[elevation]:
-        wall_type[elevation][height] = {}
-    if not style in wall_type[elevation][height]:
-        wall_type[elevation][height][style] = ugraph.graph()
+    if not elevation in trace_type:
+        trace_type[elevation] = {}
+    if not height in trace_type[elevation]:
+        trace_type[elevation][height] = {}
+    if not style in trace_type[elevation][height]:
+        trace_type[elevation][height][style] = ugraph.graph()
 
     start_coor = vertex_string(edge[0])
     end_coor = vertex_string(edge[1])
-    wall_type[elevation][height][style].add_edge(
+    trace_type[elevation][height][style].add_edge(
         {start_coor: [end_coor, [edge[0], edge[1], face]]}
     )
 
 
-def add_axis_simple(wall_type, elevation, height, style, edge, face):
-    """helper function for walls that don't form chains or loops"""
-    if not elevation in wall_type:
-        wall_type[elevation] = {}
-    if not height in wall_type[elevation]:
-        wall_type[elevation][height] = {}
-    if not style in wall_type[elevation][height]:
-        wall_type[elevation][height][style] = []
+def add_axis_simple(trace_type, elevation, height, style, edge, face):
+    """helper function for traces that don't form chains or loops"""
+    if not elevation in trace_type:
+        trace_type[elevation] = {}
+    if not height in trace_type[elevation]:
+        trace_type[elevation][height] = {}
+    if not style in trace_type[elevation][height]:
+        trace_type[elevation][height][style] = []
 
     start_coor = vertex_string(edge[0])
     end_coor = vertex_string(edge[1])
     graph = ugraph.graph()
     graph.add_edge({start_coor: [end_coor, [edge[0], edge[1], face]]})
-    wall_type[elevation][height][style].append(graph)
+    trace_type[elevation][height][style].append(graph)
 
 
 def Elevations(self):
@@ -222,6 +222,6 @@ def ApplyDictionary(self, source_faces):
 
 setattr(topologic.CellComplex, "AllocateCells", AllocateCells)
 setattr(topologic.CellComplex, "Roof", Roof)
-setattr(topologic.CellComplex, "Walls", Walls)
+setattr(topologic.CellComplex, "Traces", Traces)
 setattr(topologic.CellComplex, "Elevations", Elevations)
 setattr(topologic.CellComplex, "ApplyDictionary", ApplyDictionary)

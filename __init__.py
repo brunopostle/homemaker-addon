@@ -151,16 +151,16 @@ class ObjectHomemaker(bpy.types.Operator):
             modifier.use_even_offset = True
             modifier.thickness = -0.1
 
-        # walls
-        walls = cc.Walls()
+        # Traces are 2D paths that define walls, extrusions and rooms
+        traces = cc.Traces()
 
         molior_object = Molior()
-        for condition in walls:
-            for elevation in walls[condition]:
+        for condition in traces:
+            for elevation in traces[condition]:
                 level = elevations[elevation]
-                for height in walls[condition][elevation]:
-                    for style in walls[condition][elevation][height]:
-                        for chain in walls[condition][elevation][height][style]:
+                for height in traces[condition][elevation]:
+                    for style in traces[condition][elevation][height]:
+                        for chain in traces[condition][elevation][height][style]:
                             for item in molior_object.GetMolior(
                                 style,
                                 condition,
