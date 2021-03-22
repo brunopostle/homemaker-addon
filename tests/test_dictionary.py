@@ -11,39 +11,40 @@ from cppyy.gbl.std import string
 from topologic import Vertex, StringAttribute
 import topologist
 
-my_vertex = Vertex.ByCoordinates(0, 0, 0)
-my_key = string("message")
-my_value = StringAttribute("Hello World")
-
-# Copy a Dictionary (if any) from my_vertex
-my_dictionary = my_vertex.GetDictionary()
-# add some stuff
-my_dictionary.Add(my_key, my_value)
-# re-add a copy of this dictionary to my_vertex
-my_vertex.SetDictionary(my_dictionary)
-
-# fetch a copy of my_vertex dictionary
-retrieved_dictionary = my_vertex.GetDictionary()
-# add some more stuff
-other_key = string("usage")
-other_value = StringAttribute("Kitchen")
-retrieved_dictionary.Add(other_key, other_value)
-# add a copy of this amended dictionary to my_vertex
-my_vertex.SetDictionary(retrieved_dictionary)
-
 
 class Tests(unittest.TestCase):
+    def setUp(self):
+        self.my_vertex = Vertex.ByCoordinates(0, 0, 0)
+        self.my_key = string("message")
+        my_value = StringAttribute("Hello World")
+
+        # Copy a Dictionary (if any) from self.my_vertex
+        my_dictionary = self.my_vertex.GetDictionary()
+        # add some stuff
+        my_dictionary.Add(self.my_key, my_value)
+        # re-add a copy of this dictionary to self.my_vertex
+        self.my_vertex.SetDictionary(my_dictionary)
+
+        # fetch a copy of self.my_vertex dictionary
+        retrieved_dictionary = self.my_vertex.GetDictionary()
+        # add some more stuff
+        self.other_key = string("usage")
+        other_value = StringAttribute("Kitchen")
+        retrieved_dictionary.Add(self.other_key, other_value)
+        # add a copy of this amended dictionary to self.my_vertex
+        self.my_vertex.SetDictionary(retrieved_dictionary)
+
     def test_dictionary(self):
         """read"""
         # Retrieve Dictionary
-        dictionary = my_vertex.GetDictionary()
-        value = dictionary.ValueAtKey(my_key)
+        dictionary = self.my_vertex.GetDictionary()
+        value = dictionary.ValueAtKey(self.my_key)
 
         # Bind Retrieved String Value and Print It
         string_struct = cppyy.bind_object(value.Value(), "StringStruct")
         self.assertEqual(string_struct.getString, "Hello World")
 
-        retrieved_value = dictionary.ValueAtKey(other_key)
+        retrieved_value = dictionary.ValueAtKey(self.other_key)
         retrieved_string_struct = cppyy.bind_object(
             retrieved_value.Value(), "StringStruct"
         )

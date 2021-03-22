@@ -9,62 +9,64 @@ from topologic import Vertex, Edge, Face, Cell, CellComplex, Topology, Graph
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from topologist.helpers import create_stl_list
 
-points = [
-    [0.0, 0.0, 0.0],
-    [10.0, 0.0, 0.0],
-    [10.0, 10.0, 0.0],
-    [0.0, 10.0, 0.0],
-    [0.0, 0.0, 10.0],
-    [10.0, 0.0, 10.0],
-    [10.0, 10.0, 10.0],
-    [0.0, 10.0, 10.0],
-]
-
-points.extend(
-    [[0.0, 0.0, 20.0], [10.0, 0.0, 20.0], [10.0, 10.0, 20.0], [0.0, 10.0, 20.0]]
-)
-
-vertices = []
-for point in points:
-    vertex = Vertex.ByCoordinates(point[0], point[1], point[2])
-    vertices.append(vertex)
-
-faces_by_vertex_id = [
-    [0, 1, 2],
-    [0, 2, 3],
-    [1, 2, 6, 5],
-    [2, 3, 7, 6],
-    [0, 4, 7, 3],
-    [0, 1, 5, 4],
-    [4, 5, 6],
-    [4, 6, 7],
-    [0, 2, 6, 4],
-]
-
-faces_by_vertex_id.extend(
-    [[4, 5, 9, 8], [5, 6, 10, 9], [6, 7, 11, 10], [7, 4, 8, 11], [8, 9, 10, 11]]
-)
-
-faces = []
-for face_by_id in faces_by_vertex_id:
-    vertices_face = []
-    for point_id in face_by_id:
-        vertex = vertices[point_id]
-        vertices_face.append(vertex)
-    face_by_vertices = Face.ByVertices(vertices_face)
-    faces.append(face_by_vertices)
-
-faces_ptr = create_stl_list(Face)
-for face in faces:
-    faces_ptr.push_back(face)
-cc = CellComplex.ByFaces(faces_ptr, 0.0001)
-
 
 class Tests(unittest.TestCase):
     """14 faces and three cells formed by a cube sliced on the diagonal"""
 
+    def setUp(self):
+
+        points = [
+            [0.0, 0.0, 0.0],
+            [10.0, 0.0, 0.0],
+            [10.0, 10.0, 0.0],
+            [0.0, 10.0, 0.0],
+            [0.0, 0.0, 10.0],
+            [10.0, 0.0, 10.0],
+            [10.0, 10.0, 10.0],
+            [0.0, 10.0, 10.0],
+        ]
+
+        points.extend(
+            [[0.0, 0.0, 20.0], [10.0, 0.0, 20.0], [10.0, 10.0, 20.0], [0.0, 10.0, 20.0]]
+        )
+
+        vertices = []
+        for point in points:
+            vertex = Vertex.ByCoordinates(point[0], point[1], point[2])
+            vertices.append(vertex)
+
+        faces_by_vertex_id = [
+            [0, 1, 2],
+            [0, 2, 3],
+            [1, 2, 6, 5],
+            [2, 3, 7, 6],
+            [0, 4, 7, 3],
+            [0, 1, 5, 4],
+            [4, 5, 6],
+            [4, 6, 7],
+            [0, 2, 6, 4],
+        ]
+
+        faces_by_vertex_id.extend(
+            [[4, 5, 9, 8], [5, 6, 10, 9], [6, 7, 11, 10], [7, 4, 8, 11], [8, 9, 10, 11]]
+        )
+
+        faces = []
+        for face_by_id in faces_by_vertex_id:
+            vertices_face = []
+            for point_id in face_by_id:
+                vertex = vertices[point_id]
+                vertices_face.append(vertex)
+            face_by_vertices = Face.ByVertices(vertices_face)
+            faces.append(face_by_vertices)
+
+        faces_ptr = create_stl_list(Face)
+        for face in faces:
+            faces_ptr.push_back(face)
+        self.cc = CellComplex.ByFaces(faces_ptr, 0.0001)
+
     def test_vertices(self):
-        graph = Graph.Adjacency(cc)
+        graph = Graph.Adjacency(self.cc)
 
         vertices = create_stl_list(Vertex)
         graph.Vertices(vertices)
@@ -78,8 +80,8 @@ class Tests(unittest.TestCase):
                 self.assertTrue(False)
 
     def test_faces(self):
-        graph = Graph.Adjacency(cc)
-        faces = graph.Faces(cc)
+        graph = Graph.Adjacency(self.cc)
+        faces = graph.Faces(self.cc)
         # only three of the fourteen faces are represented in the graph
         self.assertEqual(len(faces), 3)
         for face in faces:
@@ -89,20 +91,20 @@ class Tests(unittest.TestCase):
             self.assertEqual(vertex.__class__, Vertex)
             self.assertEqual(vertex.Get("class"), "Face")
             # it should be the same Face
-            entity = graph.GetEntity(cc, vertex)
+            entity = graph.GetEntity(self.cc, vertex)
             self.assertTrue(face.IsSame(entity))
 
     def test_cells(self):
-        graph = Graph.Adjacency(cc)
-        cells = graph.Cells(cc)
+        graph = Graph.Adjacency(self.cc)
+        cells = graph.Cells(self.cc)
         self.assertEqual(len(cells), 3)
         for cell in cells:
             self.assertEqual(cell.__class__, Cell)
 
     def test_graphvertex(self):
-        graph = Graph.Adjacency(cc)
+        graph = Graph.Adjacency(self.cc)
         cells = create_stl_list(Cell)
-        cc.Cells(cells)
+        self.cc.Cells(cells)
         self.assertEqual(len(cells), 3)
         for cell in cells:
             # vertex is the node in the Graph that corresponds to this Cell
@@ -111,15 +113,15 @@ class Tests(unittest.TestCase):
             self.assertEqual(vertex.__class__, Vertex)
             self.assertEqual(vertex.Get("class"), "Cell")
             # the equivalent entity in the CellComplex, should be a Cell
-            entity = graph.GetEntity(cc, vertex)
+            entity = graph.GetEntity(self.cc, vertex)
             self.assertEqual(entity.__class__, Cell)
             # it should be the same Cell we started with
             self.assertTrue(cell.IsSame(entity))
 
     def test_graphvertex2(self):
-        graph = Graph.Adjacency(cc)
+        graph = Graph.Adjacency(self.cc)
         faces = create_stl_list(Face)
-        cc.Faces(faces)
+        self.cc.Faces(faces)
         self.assertEqual(len(faces), 14)
         for face in faces:
             # vertex is the node in the Graph that corresponds to this Face
@@ -131,17 +133,17 @@ class Tests(unittest.TestCase):
             self.assertEqual(vertex.__class__, Vertex)
             self.assertEqual(vertex.Get("class"), "Face")
             # the equivalent entity in the CellComplex, should be a Face
-            entity = graph.GetEntity(cc, vertex)
+            entity = graph.GetEntity(self.cc, vertex)
             self.assertEqual(entity.__class__, Face)
             # it should be the same Face we started with
             self.assertTrue(face.IsSame(entity))
 
     def test_isconnected(self):
-        graph = Graph.Adjacency(cc)
+        graph = Graph.Adjacency(self.cc)
         self.assertTrue(graph.IsConnected())
 
     def test_circulation(self):
-        graph = Graph.Adjacency(cc)
+        graph = Graph.Adjacency(self.cc)
 
         # 3 faces and 3 cells = 6 vertices
         vertices = create_stl_list(Vertex)
@@ -152,7 +154,7 @@ class Tests(unittest.TestCase):
         graph.Edges(edges)
         self.assertEqual(len(edges), 6)
 
-        graph.Circulation(cc)
+        graph.Circulation(self.cc)
 
         # 2 horizontal faces removed = 4 vertices
         vertices = create_stl_list(Vertex)
@@ -165,9 +167,6 @@ class Tests(unittest.TestCase):
 
         self.assertFalse(graph.IsConnected())
 
-
-output = Topology.Analyze(cc)
-# print(output)
 
 if __name__ == "__main__":
     unittest.main()
