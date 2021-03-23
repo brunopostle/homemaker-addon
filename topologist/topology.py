@@ -77,10 +77,8 @@ def EdgesBottom(self, edges_result):
 def Set(self, key, value):
     """Simple string value dictionary access"""
     dictionary = self.GetDictionary()
-    existing_keys = dictionary.Keys()
-    for existing_key in existing_keys:
-        if existing_key == str(key):
-            dictionary.Remove(string(str(key)))
+    if dictionary.ContainsKey(string(key)):
+        dictionary.Remove(string(key))
     dictionary.Add(string(str(key)), StringAttribute(str(value)))
     self.SetDictionary(dictionary)
 
@@ -88,12 +86,9 @@ def Set(self, key, value):
 def Get(self, key):
     """Simple string value dictionary access"""
     dictionary = self.GetDictionary()
-    existing_keys = dictionary.Keys()
-    for existing_key in existing_keys:
-        if existing_key == str(key):
-            value = dictionary.ValueAtKey(str(key))
-            string_struct = cppyy.bind_object(value.Value(), "StringStruct")
-            return str(string_struct.getString)
+    if dictionary.ContainsKey(string(key)):
+        value = dictionary.ValueAtKey(str(key))
+        return str(cppyy.bind_object(value.Value(), "std::string"))
     return None
 
 
