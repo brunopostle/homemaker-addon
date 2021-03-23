@@ -47,17 +47,12 @@ def vertex_string(vertex):
 
 
 def string_to_coor(string):
-    coor = []
-    for num in string.split("__"):
-        coor.append(float(num))
-    return coor
+    return [float(num) for num in string.split("__")]
 
 
 def string_to_coor_2d(string):
-    coor = []
     split = string.split("__")
-    coor.extend([float(split[0]), float(split[1])])
-    return coor
+    return [float(split[0]), float(split[1])]
 
 
 def vertex_id(topology, vertex):

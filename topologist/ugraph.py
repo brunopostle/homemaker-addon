@@ -24,22 +24,13 @@ class graph:
         return result
 
     def edges(self):
-        result = []
-        for vertex in self.graph:
-            result.append([vertex, self.graph[vertex][0]])
-        return result
+        return [[vertex, self.graph[vertex][0]] for vertex in self.graph]
 
     def starts(self):
-        result = []
-        for vertex_a in self.graph:
-            result.append(vertex_a)
-        return result
+        return [vertex_a for vertex_a in self.graph]
 
     def ends(self):
-        result = []
-        for vertex_a in self.graph:
-            result.append(self.graph[vertex_a][0])
-        return result
+        return [self.graph[vertex_a][0] for vertex_a in self.graph]
 
     def is_simple_cycle(self):
         """does the last node connect to the first node?"""
