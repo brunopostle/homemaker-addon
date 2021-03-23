@@ -13,11 +13,8 @@ class Wall(BaseClass):
         self.bounds = []
         self.ceiling = 0.35
         self.closed = 0
-        self.extension = 0.25
         self.floor = 0.02
-        self.inner = 0.08
         self.openings = []
-        self.outer = 0.25
         self.path = []
         self.type = "molior-wall"
         for arg in args:
@@ -25,13 +22,10 @@ class Wall(BaseClass):
         self.init_openings()
 
     def init_openings(self):
-        segments = len(self.path)
-        if not self.closed:
-            segments -= 1
-        if len(self.openings) == segments:
+        if len(self.openings) == self.segments():
             return
         self.openings = []
-        for index in range(segments):
+        for index in range(self.segments()):
             self.openings.append([])
 
     def populate_exterior_openings(self, segment_id, interior_type, access):
