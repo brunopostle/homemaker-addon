@@ -1,14 +1,14 @@
 import sys
+import os
 import re
 
-sys.path.append("/home/bruno/src/topologicPy/cpython")
 sys.path.append("/home/bruno/src/homemaker-addon")
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 from topologic import Vertex, Face, CellComplex, Graph
 from topologist.helpers import create_stl_list, vertex_id
 from molior import Molior
 
-import datetime
 import tempfile
 import yaml
 import subprocess
