@@ -65,7 +65,10 @@ class Molior:
                     for segment in range(len(part.openings)):
                         edge = chain.graph[edges[segment][0]]
                         face = edge[1][2]
-                        interior_type = face.UsageInside()
+                        try:
+                            interior_type = face.UsageInside()
+                        except:
+                            interior_type = "toilet"
                         part.populate_exterior_openings(segment, interior_type, 0)
                 elif "do_populate_interior_openings" in part.__dict__:
                     edge = chain.graph[chain.edges()[0][0]]

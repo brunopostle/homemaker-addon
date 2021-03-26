@@ -71,14 +71,35 @@ class Wall(BaseClass):
         return {
             "list": [
                 {
-                    "file": "error.dxf",
+                    "file": "error1.dxf",
                     "height": 1.0,
                     "width": 1.0,
                     "side": 0.1,
                     "end": 0.0,
-                }
+                },
+                {
+                    "file": "error2.dxf",
+                    "height": 2.0,
+                    "width": 1.0,
+                    "side": 0.1,
+                    "end": 0.0,
+                },
+                {
+                    "file": "error3.dxf",
+                    "height": 2.0,
+                    "width": 2.0,
+                    "side": 0.1,
+                    "end": 0.0,
+                },
+                {
+                    "file": "error4.dxf",
+                    "height": 1.0,
+                    "width": 2.0,
+                    "side": 0.1,
+                    "end": 0.0,
+                },
             ],
-            "type": "door",
+            "type": "window",
             "cill": 1.0,
         }
 
@@ -185,7 +206,7 @@ class Wall(BaseClass):
             return
 
         # fix underrun by sliding all but last opening forward by no more than amount of underrun or until spaced by border
-        for id_opening in range(len(openings) - 1).reverse():
+        for id_opening in reversed(range(len(openings) - 1)):
             # this opening has a width and side space
             opening = openings[id_opening]
             db = self.get_opening(opening["name"])
@@ -228,7 +249,7 @@ class Wall(BaseClass):
             )
             if angle_left < 0.0:
                 angle_left += 360.0
-            border_left = self["inner"]
+            border_left = self.inner
             if angle_left > 135.0 and angle_left < 315.0:
                 border_left = self.outer
 
@@ -294,8 +315,8 @@ class Wall(BaseClass):
         # this is the space we can use to fit windows and doors
         length = (
             self.length_segment(id_segment)
-            - self.border([id_segment])[0]
-            - self.border([id_segment])[1]
+            - self.border(id_segment)[0]
+            - self.border(id_segment)[1]
         )
 
         # reduce multiple windows to one, multiple doors to one
@@ -383,7 +404,7 @@ class Wall(BaseClass):
                         continue
                     opening["size"] = size
 
-                    if self.length_openings([id_segment]) < length:
+                    if self.length_openings(id_segment) < length:
                         break
 
                 # duplicate window if possible until filled
@@ -425,7 +446,7 @@ class Wall(BaseClass):
         return
 
     def align_openings(self, id_segment):
-        if self["name"] == "interior":
+        if self.name == "interior":
             return
         openings = self.openings[id_segment]
         if len(openings) == 0:
