@@ -37,8 +37,8 @@ class Molior:
     def GetMolior(self, style, condition, level, elevation, height, chain, circulation):
         """Retrieves a struct that can be passed to the molior-ifc.pl command-line tool to generate an IFC file"""
         results = []
-        for name in self.config:
-            config = self.config[name]
+        for name in self.config["trace"]:
+            config = self.config["trace"][name]
             if "condition" in config and config["condition"] == condition:
                 closed = 0
                 if chain.is_simple_cycle():
@@ -68,7 +68,7 @@ class Molior:
                         try:
                             interior_type = face.UsageInside()
                         except:
-                            interior_type = "toilet"
+                            interior_type = None
                         part.populate_exterior_openings(segment, interior_type, 0)
                 elif "do_populate_interior_openings" in part.__dict__:
                     edge = chain.graph[chain.edges()[0][0]]

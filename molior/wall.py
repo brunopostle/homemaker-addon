@@ -29,6 +29,10 @@ class Wall(BaseClass):
             self.openings.append([])
 
     def populate_exterior_openings(self, segment_id, interior_type, access):
+        if interior_type == None:
+            self.openings[segment_id].append(
+                {"name": "undefined outside window", "along": 0.5, "size": 0}
+            )
         if interior_type == "living" or interior_type == "retail":
             self.openings[segment_id].append(
                 {"name": "living outside window", "along": 0.5, "size": 0}
@@ -272,7 +276,7 @@ class Wall(BaseClass):
         return (border_left, border_right)
 
     def length_openings(self, id_segment):
-
+        """minimum wall length the currently defined openings require"""
         openings = self.openings[id_segment]
         if len(openings) == 0:
             return 0.0
@@ -437,8 +441,6 @@ class Wall(BaseClass):
             self.fix_segment(id_segment)
             return
 
-        # say STDERR "Id: $id_segment, Length: $length, Openings: $length_openings";
-
         self.align_openings(id_segment)
         self.fix_overlaps(id_segment)
         self.fix_overrun(id_segment)
@@ -446,6 +448,7 @@ class Wall(BaseClass):
         return
 
     def align_openings(self, id_segment):
+        """equally space openings along the wall"""
         if self.name == "interior":
             return
         openings = self.openings[id_segment]
