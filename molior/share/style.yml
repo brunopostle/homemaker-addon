@@ -1,160 +1,160 @@
 ---
 trace:
-    roof:
-        class: Shell
-        ifc: IFCROOF
-        shell: roof
-        inner: 0.08
-        outer: 0.25
-        extension: 0.25
-    exterior:
-        class: Wall
-        ifc: IFCWALL
-        condition: external
-        inner: 0.08
-        outer: 0.25
-        extension: 0.25
-        do_populate_exterior_openings: 1
-    ground beam:
-        class: Extrusion
-        ifc: IFCBUILDINGELEMENTPROXY
-        profile: beam_ground.dxf
-        condition: bottom-backward-level
-        outer: 0.0
-        height: 0.0
-        extension: 0.25
-    interior:
-        class: Wall
-        ifc: IFCWALL
-        condition: internal
-        inner: 0.08
-        outer: 0.08
-        extension: 0.0
-        ceiling: 0.2
-        floor: 0.02
-        cycles: 0
-        do_populate_interior_openings: 1
-    internal ground beam:
-        class: Extrusion
-        ifc: IFCBUILDINGELEMENTPROXY
-        profile: beam_ground.dxf
-        condition: internal-unsupported
-        outer: 0.0
-        height: 0.0
-        extension: 0.0
-        cycles: 0
-    eaves:
-        class: Extrusion
-        ifc: IFCROOF
-        profile: eaves.dxf
-        condition: top-backward-up
-        outer: 0.25
-        height: 0.0
-        extension: 0.25
-    parapet:
-        class: Extrusion
-        ifc: IFCWALL
-        profile: parapet.dxf
-        condition: top-backward-level
-        outer: 0.0
-        height: 0.0
-        extension: 0.0
-    external beam:
-        class: Extrusion
-        ifc: IFCBEAM
-        profile: beam.dxf
-        condition: open
-        outer: 0.0
-        height: 0.0
-        extension: 0.0
-    bedroom-space:
-        class: Space
-        condition: bedroom
-    circulation-space:
-        class: Space
-        condition: circulation
-    kitchen-space:
-        class: Space
-        condition: kitchen
-    living-space:
-        class: Space
-        condition: living
-    outside-space:
-        class: Space
-        condition: outside
-        inner: 0.25
-    retail-space:
-        class: Space
-        condition: retail
-    sahn-space:
-        class: Space
-        condition: sahn
-        inner: 0.25
-    stair-space:
-        class: Space
-        condition: stair
-    toilet-space:
-        class: Space
-        condition: toilet
-    stair:
-        class: Stair
-        condition: stair
-    bedroom-floor:
-        class: Floor
-        condition: bedroom
-    circulation-floor:
-        class: Floor
-        condition: circulation
-    kitchen-floor:
-        class: Floor
-        condition: kitchen
-    living-floor:
-        class: Floor
-        condition: living
-    outside-floor:
-        class: Floor
-        condition: outside
-    retail-floor:
-        class: Floor
-        condition: retail
-    sahn-floor:
-        class: Floor
-        condition: sahn
-    stair-floor:
-        class: Floor
-        condition: stair
-        not_if_stair_below: 1
-    toilet-floor:
-        class: Floor
-        condition: toilet
-    bedroom-ceiling:
-        class: Ceiling
-        condition: bedroom
-    circulation-ceiling:
-        class: Ceiling
-        condition: circulation
-    kitchen-ceiling:
-        class: Ceiling
-        condition: kitchen
-    living-ceiling:
-        class: Ceiling
-        condition: living
-    outside-ceiling:
-        class: Ceiling
-        condition: outside
-    retail-ceiling:
-        class: Ceiling
-        condition: retail
-    sahn-ceiling:
-        class: Ceiling
-        condition: sahn
-    stair-ceiling:
-        class: Ceiling
-        condition: stair
-        not_if_stair_above: 1
-    toilet-ceiling:
-        class: Ceiling
-        condition: toilet
+  roof:
+    class: Shell
+    ifc: IFCROOF
+    shell: roof
+    inner: 0.08
+    outer: 0.25
+    extension: 0.25
+  exterior:
+    class: Wall
+    ifc: IFCWALL
+    condition: external
+    inner: 0.08
+    outer: 0.25
+    extension: 0.25
+    do_populate_exterior_openings: 1
+  ground beam:
+    class: Extrusion
+    ifc: IFCBUILDINGELEMENTPROXY
+    profile: beam_ground.dxf
+    condition: bottom-backward-level
+    outer: 0.0
+    height: 0.0
+    extension: 0.25
+  interior:
+    class: Wall
+    ifc: IFCWALL
+    condition: internal
+    inner: 0.08
+    outer: 0.08
+    extension: 0.0
+    ceiling: 0.2
+    floor: 0.02
+    cycles: 0
+    do_populate_interior_openings: 1
+  internal ground beam:
+    class: Extrusion
+    ifc: IFCBUILDINGELEMENTPROXY
+    profile: beam_ground.dxf
+    condition: internal-unsupported
+    outer: 0.0
+    height: 0.0
+    extension: 0.0
+    cycles: 0
+  eaves:
+    class: Extrusion
+    ifc: IFCROOF
+    profile: eaves.dxf
+    condition: top-backward-up
+    outer: 0.25
+    height: 0.0
+    extension: 0.25
+  parapet:
+    class: Extrusion
+    ifc: IFCWALL
+    profile: parapet.dxf
+    condition: top-backward-level
+    outer: 0.0
+    height: 0.0
+    extension: 0.0
+  external beam:
+    class: Extrusion
+    ifc: IFCBEAM
+    profile: beam.dxf
+    condition: open
+    outer: 0.0
+    height: 0.0
+    extension: 0.0
+  bedroom-space:
+    class: Space
+    condition: bedroom
+  circulation-space:
+    class: Space
+    condition: circulation
+  kitchen-space:
+    class: Space
+    condition: kitchen
+  living-space:
+    class: Space
+    condition: living
+  outside-space:
+    class: Space
+    condition: outside
+    inner: 0.25
+  retail-space:
+    class: Space
+    condition: retail
+  sahn-space:
+    class: Space
+    condition: sahn
+    inner: 0.25
+  stair-space:
+    class: Space
+    condition: stair
+  toilet-space:
+    class: Space
+    condition: toilet
+  stair:
+    class: Stair
+    condition: stair
+  bedroom-floor:
+    class: Floor
+    condition: bedroom
+  circulation-floor:
+    class: Floor
+    condition: circulation
+  kitchen-floor:
+    class: Floor
+    condition: kitchen
+  living-floor:
+    class: Floor
+    condition: living
+  outside-floor:
+    class: Floor
+    condition: outside
+  retail-floor:
+    class: Floor
+    condition: retail
+  sahn-floor:
+    class: Floor
+    condition: sahn
+  stair-floor:
+    class: Floor
+    condition: stair
+    not_if_stair_below: 1
+  toilet-floor:
+    class: Floor
+    condition: toilet
+  bedroom-ceiling:
+    class: Ceiling
+    condition: bedroom
+  circulation-ceiling:
+    class: Ceiling
+    condition: circulation
+  kitchen-ceiling:
+    class: Ceiling
+    condition: kitchen
+  living-ceiling:
+    class: Ceiling
+    condition: living
+  outside-ceiling:
+    class: Ceiling
+    condition: outside
+  retail-ceiling:
+    class: Ceiling
+    condition: retail
+  sahn-ceiling:
+    class: Ceiling
+    condition: sahn
+  stair-ceiling:
+    class: Ceiling
+    condition: stair
+    not_if_stair_above: 1
+  toilet-ceiling:
+    class: Ceiling
+    condition: toilet
 opening:
   house entrance:
     name: entrance door

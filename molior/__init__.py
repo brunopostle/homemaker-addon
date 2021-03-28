@@ -34,6 +34,11 @@ class Molior:
         self.config = yaml.safe_load(style_fh.read())
         style_fh.close()
 
+        db_path = os.path.join(share_dir_path, "openings.yml")
+        db_fh = open(db_path, "rb")
+        self.db = yaml.safe_load(db_fh.read())
+        db_fh.close()
+
     def GetMolior(self, style, condition, level, elevation, height, chain, circulation):
         """Retrieves a struct that can be passed to the molior-ifc.pl command-line tool to generate an IFC file"""
         results = []
