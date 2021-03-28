@@ -27,6 +27,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(angle_2d([2, 0], [5, 0]), 0)
         self.assertAlmostEqual(angle_2d([5, 0], [2, 0]), 3.14159265)
         self.assertAlmostEqual(angle_2d([2, -5], [2, 7]), 1.57079632)
+        self.assertAlmostEqual(angle_2d([2, 7], [2, -5]), -1.57079632)
 
     def test_distance_2d(self):
         self.assertEqual(distance_2d([0, 0], [3, 4]), 5)
@@ -38,6 +39,8 @@ class Tests(unittest.TestCase):
 
     def test_normalise_2d(self):
         self.assertEqual(normalise_2d([3, 4]), [0.6, 0.8])
+        self.assertEqual(normalise_2d([-3, 4]), [-0.6, 0.8])
+        self.assertEqual(normalise_2d([0, 0]), [1, 0])
 
     def test_points_2line(self):
         line = points_2line([1, 1], [2, 2])
@@ -48,6 +51,10 @@ class Tests(unittest.TestCase):
         point = line_intersection(line, line2)
         self.assertAlmostEqual(point[0], 3)
         self.assertAlmostEqual(point[1], 3)
+
+        line3 = points_2line([4, 0], [4, 5])
+        point = line_intersection(line2, line3)
+        self.assertEqual(point, None)
 
 
 if __name__ == "__main__":
