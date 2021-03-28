@@ -15,5 +15,6 @@ black :
 coverage :
 	coverage run --source=molior,topologist -m unittest discover -s tests
 	coverage html
+	coverage report
 
-.PHONY : all test lint todo black
+.PHONY : all test lint todo black coverage

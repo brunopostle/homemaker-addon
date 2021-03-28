@@ -78,12 +78,12 @@ class BaseClass:
             return add_2d(self.corner_coor(index), offset_a)
 
         line_a = points_2line(
-            add_2d(self.coorner_coor(index - 1), offset_a),
-            add_2d(self.coorner_coor(index), offset_a),
+            add_2d(self.corner_coor(index - 1), offset_a),
+            add_2d(self.corner_coor(index), offset_a),
         )
         line_b = points_2line(
-            add_2d(self.coorner_coor(index), offset_b),
-            add_2d(self.coorner_coor(index + 1), offset_b),
+            add_2d(self.corner_coor(index), offset_b),
+            add_2d(self.corner_coor(index + 1), offset_b),
         )
         return line_intersection(line_a, line_b)
 
