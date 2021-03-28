@@ -52,26 +52,6 @@ def CellsOrdered(self):
     return results
 
 
-def Usages(self):
-    """Cell types associated with this face, 1 or 2 items"""
-    results = []
-    cells = create_stl_list(Cell)
-    self.Cells(cells)
-    for cell in cells:
-        results.append(cell.Usage())
-    return results
-
-
-def UsageInside(self):
-    """Inside cell type associated with this face, otherwise 'Outside'"""
-    cells = create_stl_list(Cell)
-    self.Cells(cells)
-    for cell in cells:
-        if not cell.IsOutside():
-            return cell.Usage()
-    return "Outside"
-
-
 def IsVertical(self):
     normal = self.Normal()
     if abs(normal.Z()) < 0.0001:
@@ -286,8 +266,6 @@ def BottomLevelConditions(self):
 
 
 setattr(topologic.Face, "CellsOrdered", CellsOrdered)
-setattr(topologic.Face, "Usages", Usages)
-setattr(topologic.Face, "UsageInside", UsageInside)
 setattr(topologic.Face, "IsVertical", IsVertical)
 setattr(topologic.Face, "IsHorizontal", IsHorizontal)
 setattr(topologic.Face, "AxisOuter", AxisOuter)

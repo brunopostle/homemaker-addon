@@ -64,9 +64,10 @@ class Molior:
                     edges = chain.edges()
                     for segment in range(len(part.openings)):
                         edge = chain.graph[edges[segment][0]]
+                        # edge = {string_coor_start: [string_coor_end, [Vertex_start, Vertex_end, Face, Cell_left, Cell_right]]}
                         face = edge[1][2]
                         try:
-                            interior_type = face.UsageInside()
+                            interior_type = edge[1][3].Usage()
                         except:
                             interior_type = None
                         part.populate_exterior_openings(segment, interior_type, 0)
@@ -75,13 +76,12 @@ class Molior:
                     face = edge[1][2]
                     vertex = face.GraphVertex(circulation)
                     if vertex != None:
-                        usages = face.Usages()
-                        part.populate_interior_openings(0, usages[0], usages[1], 0)
+                        part.populate_interior_openings(0, edge[1][3].Usage(), edge[1][4].Usage(), 0)
 
                 results.append(part)
         return results
 
-    def GetIfc(style, condition, level, elevation, height, chain):
+    def GetIfc(self, style, condition, level, elevation, height, chain, circulation):
         """Retrieves IFC data directly without using molior-ifc.pl"""
         # TODO
         pass
