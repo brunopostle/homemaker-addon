@@ -12,4 +12,8 @@ todo :
 black :
 	black --diff ./
 
+coverage :
+	coverage run --source=molior,topologist -m unittest discover -s tests
+	coverage html
+
 .PHONY : all test lint todo black

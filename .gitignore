@@ -52,3 +52,5 @@ Thumbs.db
 build/
 
 *.egg-info/
+.coverage
+htmlcov/

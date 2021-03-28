@@ -76,7 +76,9 @@ class Molior:
                     face = edge[1][2]
                     vertex = face.GraphVertex(circulation)
                     if vertex != None:
-                        part.populate_interior_openings(0, edge[1][3].Usage(), edge[1][4].Usage(), 0)
+                        part.populate_interior_openings(
+                            0, edge[1][3].Usage(), edge[1][4].Usage(), 0
+                        )
 
                 results.append(part)
         return results

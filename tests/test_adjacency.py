@@ -166,6 +166,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(len(edges), 2)
 
         self.assertFalse(graph.IsConnected())
+        dot = graph.Dot(self.cc)
 
 
 if __name__ == "__main__":

@@ -99,6 +99,11 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.wall.openings[1][0]["along"], 0.25)
         self.assertEqual(self.wall.openings[1][1]["along"], 2.75)
 
+    def test_fix_heights(self):
+        self.assertEqual(self.wall.openings[0][0]["size"], 0)
+        self.wall.fix_heights(0)
+        self.assertEqual(self.wall.openings[0][0]["size"], 3)
+
 
 if __name__ == "__main__":
     unittest.main()
