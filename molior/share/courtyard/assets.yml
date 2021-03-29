@@ -1,0 +1,185 @@
+---
+tunis entry:
+  -
+    file: tunis_entry_tall.dxf
+    height: 2.545
+    width: 1.22
+    side: 0.8
+    end: 0.2
+  -
+    file: tunis_entry_short.dxf
+    height: 2.2
+    width: 1.22
+    side: 0.8
+    end: 0.2
+tunis entry short:
+  -
+    file: tunis_entry_short.dxf
+    height: 2.2
+    width: 1.22
+    side: 0.8
+    end: 0.2
+tunis entry no roof:
+  -
+    file: tunis_entry_noroof.dxf
+    height: 2.2
+    width: 1.22
+    side: 0.8
+    end: 0.2
+tunis shopfront:
+  -
+    file: shopfront.dxf
+    height: 2.545
+    width: 5.0
+    side: 0.8
+    end: 0.4
+  -
+    file: shopfront_smaller.dxf
+    height: 2.545
+    width: 3.98
+    side: 0.8
+    end: 0.4
+  -
+    file: shopfront_smallest.dxf
+    height: 2.545
+    width: 2.96
+    side: 0.8
+    end: 0.4
+  -
+    file: tunis_entry_tall.dxf
+    height: 2.545
+    width: 1.22
+    side: 0.8
+    end: 0.2
+  -
+    file: tunis_entry_short.dxf
+    height: 2.2
+    width: 1.22
+    side: 0.8
+    end: 0.2
+single inside door:
+  -
+    file: door-three-panel.dxf
+    height: 2.075
+    width: 0.8
+    side: 0.1
+    end: 0.1
+  -
+    file: door-three-panel-taller.dxf
+    height: 2.4
+    width: 0.8
+    side: 0.1
+    end: 0.1
+arch:
+  -
+    file: arch-1800x2300.dxf
+    height: 2.3
+    width: 1.8
+    side: 1.9
+    end: 0.95
+  -
+    file: arch-1500x2300.dxf
+    height: 2.3
+    width: 1.5
+    side: 1.6
+    end: 0.8
+  -
+    file: arch-1200x2300.dxf
+    height: 2.3
+    width: 1.2
+    side: 1.3
+    end: 0.65
+  -
+    file: arch-900x2300.dxf
+    height: 2.3
+    width: 0.9
+    side: 1.0
+    end: 0.5
+  -
+    file: arch-800x2300.dxf
+    height: 2.3
+    width: 0.8
+    side: 0.6
+    end: 0.05
+arch thin:
+  -
+    file: arch-2400x2300-thin.dxf
+    height: 2.3
+    width: 2.4
+    side: 0.2
+    end: 0.1
+  -
+    file: arch-2100x2300-thin.dxf
+    height: 2.3
+    width: 2.1
+    side: 0.2
+    end: 0.1
+  -
+    file: arch-1800x2300-thin.dxf
+    height: 2.3
+    width: 1.8
+    side: 0.2
+    end: 0.1
+  -
+    file: arch-1500x2300-thin.dxf
+    height: 2.3
+    width: 1.5
+    side: 0.2
+    end: 0.1
+  -
+    file: arch-1200x2300-thin.dxf
+    height: 2.3
+    width: 1.2
+    side: 0.2
+    end: 0.1
+  -
+    file: arch-900x2300-thin.dxf
+    height: 2.3
+    width: 0.9
+    side: 0.2
+    end: 0.1
+shuttered window:
+  -
+    file: shuttered_big.dxf
+    height: 1.82
+    width: 0.91
+    side: 0.8
+    end: 0.2
+  -
+    file: shuttered_shorter.dxf
+    height: 1.445
+    width: 0.91
+    side: 0.8
+    end: 0.2
+  -
+    file: shuttered_big_narrow.dxf
+    height: 1.82
+    width: 0.61
+    side: 0.65
+    end: 0.2
+  -
+    file: shuttered_shorter_narrow.dxf
+    height: 1.445
+    width: 0.61
+    side: 0.65
+    end: 0.2
+fancy shuttered window:
+  -
+    file: shuttered_big_fancy.dxf
+    height: 1.82
+    width: 0.91
+    side: 0.8
+    end: 0.3
+  -
+    file: shuttered_shorter_fancy.dxf
+    height: 1.445
+    width: 0.91
+    side: 0.8
+    end: 0.3
+tiny window:
+  -
+    file: barred_window.dxf
+    height: 0.4
+    width: 0.4
+    side: 3.0
+    end: 0.1

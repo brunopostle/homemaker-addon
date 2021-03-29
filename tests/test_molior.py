@@ -81,7 +81,9 @@ class Tests(unittest.TestCase):
 
     def test_molior(self):
         molior = Molior()
-        self.assertEqual(molior.config["trace"]["exterior"]["condition"], "external")
+        self.assertEqual(
+            molior.style.get("default")["traces"]["exterior"]["condition"], "external"
+        )
 
 
 if __name__ == "__main__":

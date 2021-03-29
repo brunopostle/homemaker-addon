@@ -1,6 +1,3 @@
-import os
-import yaml
-
 from molior.ceiling import Ceiling
 from molior.extrusion import Extrusion
 from molior.floor import Floor
@@ -8,6 +5,7 @@ from molior.insert import Insert
 from molior.space import Space
 from molior.stair import Stair
 from molior.wall import Wall
+from molior.style import Style
 from topologist.helpers import string_to_coor_2d
 
 
@@ -25,25 +23,14 @@ class Molior:
         self.Wall = Wall
         for arg in args:
             self.__dict__[arg] = args[arg]
-        share_dir_path = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), self.share_dir)
-        )
-        # FIXME needs method to assemble and cache a style config from style name using inheritance
-        style_path = os.path.join(share_dir_path, "style.yml")
-        style_fh = open(style_path, "rb")
-        self.config = yaml.safe_load(style_fh.read())
-        style_fh.close()
-
-        db_path = os.path.join(share_dir_path, "openings.yml")
-        db_fh = open(db_path, "rb")
-        self.db = yaml.safe_load(db_fh.read())
-        db_fh.close()
+        self.style = Style()
 
     def GetMolior(self, style, condition, level, elevation, height, chain, circulation):
         """Retrieves a struct that can be passed to the molior-ifc.pl command-line tool to generate an IFC file"""
         results = []
-        for name in self.config["trace"]:
-            config = self.config["trace"][name]
+        myconfig = self.style.get(style)
+        for name in myconfig["traces"]:
+            config = myconfig["traces"][name]
             if "condition" in config and config["condition"] == condition:
                 closed = 0
                 if chain.is_simple_cycle():

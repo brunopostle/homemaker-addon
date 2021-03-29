@@ -1,7 +1,7 @@
 import os, yaml
 
 
-class style:
+class Style:
     def __init__(self, args={}):
         self.share_dir = "share"
         self.data = {}
@@ -31,7 +31,21 @@ class style:
                     data = yaml.safe_load(fh.read())
                     fh.close()
 
-                    data["ancestors"] = ancestors
                     if not stylename in self.data:
                         self.data[stylename] = {}
                     self.data[stylename][prefix] = data
+                    self.data[stylename]["ancestors"] = ancestors
+
+    def get(self, stylename):
+        """retrieves a style definition with ancestors filling in the gaps"""
+        if not stylename in self.data:
+            return self.get("default")
+        mydata = self.data[stylename].copy()
+        if len(mydata["ancestors"]) == 0:
+            return mydata
+        ancestor = self.get(mydata["ancestors"][0])
+        for key in ancestor:
+            if not key == "ancestors":
+                if key in mydata:
+                    ancestor[key].update(mydata[key])
+        return ancestor

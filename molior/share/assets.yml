@@ -1,0 +1,162 @@
+---
+entrance door:
+  -
+    file: door_panelled_tall.dxf
+    height: 2.545
+    width: 0.91
+    side: 0.8
+    end: 0.4
+  -
+    file: door_panelled_short.dxf
+    height: 2.08
+    width: 0.91
+    side: 0.8
+    end: 0.1
+flat entrance door:
+  -
+    file: door_panelled_tall_flat.dxf
+    height: 2.545
+    width: 0.91
+    side: 0.8
+    end: 0.4
+  -
+    file: door_panelled_short_flat.dxf
+    height: 2.08
+    width: 0.91
+    side: 0.8
+    end: 0.1
+single storey entrance door:
+  -
+    file: door_panelled_short_flat.dxf
+    height: 2.08
+    width: 0.91
+    side: 0.8
+    end: 0.1
+wider back door:
+   -
+    file: door_panelled.dxf
+    height: 2.08
+    width: 0.91
+    side: 0.6
+    end: 0.1
+   -
+    file: door_panelled_double.dxf
+    height: 2.08
+    width: 1.8
+    side: 0.6
+    end: 0.1
+   -
+    file: door_panelled_double_tall.dxf
+    height: 2.545
+    width: 1.8
+    side: 0.6
+    end: 0.1
+back door:
+   -
+    file: door_panelled.dxf
+    height: 2.08
+    width: 0.91
+    side: 0.6
+    end: 0.1
+single inside door:
+  -
+    file: door_inside.dxf
+    height: 2.1
+    width: 0.8
+    side: 0.1
+    end: 0.1
+double inside door:
+  -
+    file: door_inside_double.dxf
+    height: 2.1
+    width: 1.6
+    side: 0.1
+    end: 0.1
+  -
+    file: door_inside.dxf
+    height: 2.1
+    width: 0.8
+    side: 0.1
+    end: 0.1
+entrance gate:
+  -
+    file: gate.dxf
+    height: 2.08
+    width: 1.41
+    side: 0.8
+    end: 0.4
+shopfront:
+  -
+    file: shopfront.dxf
+    height: 2.545
+    width: 5.0
+    side: 0.8
+    end: 0.4
+  -
+    file: shopfront_smaller.dxf
+    height: 2.545
+    width: 3.98
+    side: 0.8
+    end: 0.4
+  -
+    file: shopfront_smallest.dxf
+    height: 2.545
+    width: 2.96
+    side: 0.8
+    end: 0.4
+  -
+    file: door_panelled_tall.dxf
+    height: 2.545
+    width: 0.91
+    side: 0.8
+    end: 0.4
+sash window:
+  -
+    file: sash_big.dxf
+    height: 1.82
+    width: 0.91
+    side: 0.8
+    end: 0.3
+  -
+    file: sash_narrow.dxf
+    height: 1.82
+    width: 0.625
+    side: 0.8
+    end: 0.3
+  -
+    file: sash_shorter.dxf
+    height: 1.445
+    width: 0.91
+    side: 0.8
+    end: 0.3
+  -
+    file: sash_narrow_shorter.dxf
+    height: 1.445
+    width: 0.625
+    side: 0.8
+    end: 0.3
+  -
+    file: sash_small.dxf
+    height: 0.995
+    width: 0.625
+    side: 0.8
+    end: 0.3
+  -
+    file: sash_big_taller.dxf
+    height: 2.23
+    width: 0.91
+    side: 0.8
+    end: 0.3
+  -
+    file: sash_shortest.dxf
+    height: 1.025
+    width: 0.91
+    side: 0.8
+    end: 0.3
+fancy sash window:
+  -
+    file: sash_big_fancy.dxf
+    height: 1.82
+    width: 0.91
+    side: 0.8
+    end: 0.3
