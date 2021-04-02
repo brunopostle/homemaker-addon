@@ -23,7 +23,7 @@ class Tests(unittest.TestCase):
         fancy = mystyle.get("fancy")
         self.assertTrue("traces" in fancy)
         default = mystyle.get("default")
-        courtyard = mystyle.get("courtyard")
+        mystyle.get("courtyard")
         default2 = mystyle.get("nonsuch")
         self.assertEqual(default, default2)
 

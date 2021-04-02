@@ -11,7 +11,6 @@ from topologic import (
     Cell,
     CellComplex,
     CellUtility,
-    Topology,
     Graph,
 )
 

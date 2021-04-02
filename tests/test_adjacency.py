@@ -4,7 +4,7 @@ import os
 import sys
 import unittest
 
-from topologic import Vertex, Edge, Face, Cell, CellComplex, Topology, Graph
+from topologic import Vertex, Edge, Face, Cell, CellComplex, Graph
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from topologist.helpers import create_stl_list
@@ -167,6 +167,7 @@ class Tests(unittest.TestCase):
 
         self.assertFalse(graph.IsConnected())
         dot = graph.Dot(self.cc)
+        self.assertTrue(dot.__class__ == str)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-import os
-import sys
 import unittest
 import numpy
 import ifcopenshell.api
@@ -13,14 +11,8 @@ class Tests(unittest.TestCase):
 
         ifc = run("project.create_file")
 
-        myperson = run("owner.add_person", ifc)
-        myorganisation = run("owner.add_organisation", ifc)
-        ownerhistory = run(
-            "owner.create_owner_history",
-            ifc,
-            person=myperson,
-            organisation=myorganisation,
-        )  # doesn't seem to do anything
+        run("owner.add_person", ifc)
+        run("owner.add_organisation", ifc)
 
         project = run(
             "root.create_entity",
@@ -31,7 +23,7 @@ class Tests(unittest.TestCase):
 
         run("unit.assign_unit", ifc, length={"is_metric": True, "raw": "METERS"})
 
-        mycontext = run("context.add_context", ifc)
+        run("context.add_context", ifc)
         subcontext = run(
             "context.add_context",
             ifc,
@@ -76,13 +68,6 @@ class Tests(unittest.TestCase):
         shape = ifc.createIfcShapeRepresentation(
             subcontext, "Body", "SweptSolid", [solid]
         )
-
-        # localplacement? this isn't used
-        # how do we use the storey origin?
-        shift = ifc.createIfcAxis2Placement3D(
-            ifc.createIfcCartesianPoint((0.0, 0.0, 3.0)), None, None
-        )
-        localplacement = ifc.createIfcLocalPlacement(axis, shift)
 
         slab = run("root.create_entity", ifc, ifc_class="IfcSlab", name="My Slab")
         run("geometry.assign_representation", ifc, product=slab, representation=shape)
