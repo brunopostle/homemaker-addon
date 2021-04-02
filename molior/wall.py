@@ -3,6 +3,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from molior.baseclass import BaseClass
+import molior
 
 
 class Wall(BaseClass):
@@ -72,6 +73,15 @@ class Wall(BaseClass):
         )
 
     def get_opening(self, usage):
+        style = molior.Molior.style.get(self.style)
+        if usage in style["openings"]:
+            opening = style["openings"][usage]
+            if opening["name"] in style["assets"]:
+                return {
+                    "list": style["assets"][opening["name"]],
+                    "type": opening["type"],
+                    "cill": opening["cill"],
+                }
         return {
             "list": [
                 {

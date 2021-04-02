@@ -81,8 +81,9 @@ class Tests(unittest.TestCase):
 
     def test_molior(self):
         molior = Molior()
+        self.assertEqual(molior.share_dir, "share")
         self.assertEqual(
-            molior.style.get("default")["traces"]["exterior"]["condition"], "external"
+            Molior.style.get("default")["traces"]["exterior"]["condition"], "external"
         )
 
 

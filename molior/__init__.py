@@ -23,12 +23,12 @@ class Molior:
         self.Wall = Wall
         for arg in args:
             self.__dict__[arg] = args[arg]
-        self.style = Style()
+        Molior.style = Style({"share_dir": self.share_dir})
 
     def GetMolior(self, style, condition, level, elevation, height, chain, circulation):
         """Retrieves a struct that can be passed to the molior-ifc.pl command-line tool to generate an IFC file"""
         results = []
-        myconfig = self.style.get(style)
+        myconfig = Molior.style.get(style)
         for name in myconfig["traces"]:
             config = myconfig["traces"][name]
             if "condition" in config and config["condition"] == condition:
@@ -63,6 +63,8 @@ class Molior:
                         except:
                             interior_type = None
                         part.populate_exterior_openings(segment, interior_type, 0)
+                        part.fix_heights(segment)
+                        part.fix_segment(segment)
                 elif "do_populate_interior_openings" in part.__dict__:
                     edge = chain.graph[chain.edges()[0][0]]
                     face = edge[1][2]
@@ -71,6 +73,8 @@ class Molior:
                         part.populate_interior_openings(
                             0, edge[1][3].Usage(), edge[1][4].Usage(), 0
                         )
+                        part.fix_heights(0)
+                        part.fix_segment(0)
 
                 results.append(part)
         return results
