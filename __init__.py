@@ -98,7 +98,8 @@ class ObjectHomemaker(bpy.types.Operator):
             face = Face.ByVertices(vertices_face)
             face.Set("style", style)
             faces.append(face)
-        bpy.ops.object.hide_view_set(unselected=False)
+        for blender_object in context.selected_objects:
+            blender_object.hide_set(True)
 
         # start using Topologic
         faces_ptr = create_stl_list(Face)
