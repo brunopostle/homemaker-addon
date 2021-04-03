@@ -1,8 +1,13 @@
 #!/usr/bin/python3
 
+import os
+import sys
 import unittest
 import numpy
 import ifcopenshell.api
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+import molior.ifc
 
 
 class Tests(unittest.TestCase):
@@ -44,41 +49,18 @@ class Tests(unittest.TestCase):
         run("aggregate.assign_object", ifc, product=building, relating_object=site)
         run("aggregate.assign_object", ifc, product=storey, relating_object=building)
 
-        # SLAB
-
-        # create a sweptsolid:
-        profile = ifc.createIfcArbitraryClosedProfileDef(
-            "AREA",
-            None,
-            ifc.createIfcPolyline(
-                [
-                    ifc.createIfcCartesianPoint((1.0, 0.1)),
-                    ifc.createIfcCartesianPoint((4.0, 0.2)),
-                    ifc.createIfcCartesianPoint((4.0, 3.1)),
-                    ifc.createIfcCartesianPoint((1.0, 3.1)),
-                    ifc.createIfcCartesianPoint((1.0, 0.1)),
-                ]
-            ),
+        shape = ifc.createSweptSolid(
+            subcontext, [[0.0, 0.0], [5.0, 0.0], [5.0, 4.0]], 3.0
         )
-        axis = ifc.createIfcAxis2Placement3D(
-            ifc.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
-        )
-        direction = ifc.createIfcDirection([0.0, 0.0, 1.0])
-        solid = ifc.createIfcExtrudedAreaSolid(profile, axis, direction, 0.5)
-        shape = ifc.createIfcShapeRepresentation(
-            subcontext, "Body", "SweptSolid", [solid]
-        )
-
         slab = run("root.create_entity", ifc, ifc_class="IfcSlab", name="My Slab")
         run("geometry.assign_representation", ifc, product=slab, representation=shape)
         run("geometry.edit_object_placement", ifc, product=slab, matrix=numpy.eye(4))
-
         run("spatial.assign_container", ifc, product=slab, relating_structure=storey)
 
         self.ifc = ifc
 
     def test_write(self):
-        # self.ifc.write("test.ifc")
+        self.ifc.write("_test.ifc")
         pass
 
 
