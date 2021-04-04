@@ -34,7 +34,7 @@ class ObjectHomemaker(bpy.types.Operator):
 
     def execute(self, context):
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-        bl_object = None
+        bl_objects = []
         widgets = []
 
         for blender_object in context.selected_objects:
@@ -64,126 +64,125 @@ class ObjectHomemaker(bpy.types.Operator):
                 )
                 widgets.append([label[0], vertex])
             else:
-                bl_object = blender_object
+                bl_objects.append(blender_object)
 
-        if not bl_object:
-            return {"FINISHED"}
+        for bl_object in bl_objects:
+            depsgraph = bpy.context.evaluated_depsgraph_get()
+            bl_object = bl_object.evaluated_get(depsgraph)
+            # Get a BMesh representation
+            bm = bmesh.new()  # create an empty BMesh
+            bm.from_mesh(bl_object.data)  # fill it in from a Mesh
+            bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.001)
+            bm.verts.ensure_lookup_table()
 
-        depsgraph = bpy.context.evaluated_depsgraph_get()
-        bl_object = bl_object.evaluated_get(depsgraph)
-        # Get a BMesh representation
-        bm = bmesh.new()  # create an empty BMesh
-        bm.from_mesh(bl_object.data)  # fill it in from a Mesh
-        bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.001)
-        bm.verts.ensure_lookup_table()
-
-        # Topologic model
-        vertices = []
-
-        for v in bm.verts:
-            coor = v.co[:]
-            vertex = Vertex.ByCoordinates(coor[0], coor[1], coor[2])
-            vertices.append(vertex)
-
-        faces = []
-
-        for f in bm.faces:
-            style = "default"
-            if len(bl_object.material_slots) > 0:
-                style = bl_object.material_slots[f.material_index].material.name
-            vertices_face = []
-            for v in f.verts:
-                vertex = vertices[v.index]
-                vertices_face.append(vertex)
-            face = Face.ByVertices(vertices_face)
-            face.Set("style", style)
-            faces.append(face)
-        for blender_object in context.selected_objects:
-            blender_object.hide_set(True)
-
-        # start using Topologic
-        faces_ptr = create_stl_list(Face)
-        for face in faces:
-            faces_ptr.push_back(face)
-
-        cc = CellComplex.ByFaces(faces_ptr, 0.0001)
-        cc.ApplyDictionary(faces_ptr)
-        cc.AllocateCells(widgets)
-        elevations = cc.Elevations()
-        circulation = Graph.Adjacency(cc)
-        circulation.Circulation(cc)
-        # print(circulation.Dot(cc))
-
-        style = "default"
-
-        # molior
-        molior = []
-        molior_tmp = tempfile.NamedTemporaryFile(
-            mode="w+b", suffix=".molior", delete=False
-        )
-        ifc_tmp = tempfile.NamedTemporaryFile(mode="w+b", suffix=".ifc", delete=False)
-
-        # roof
-        roof = cc.Roof()
-        if roof:
-            vertices_stl = create_stl_list(Vertex)
-            roof.Vertices(vertices_stl)
+            # Topologic model
             vertices = []
-            for vertex in vertices_stl:
-                vertices.append([vertex.X(), vertex.Y(), vertex.Z()])
 
-            faces_stl = create_stl_list(Face)
-            roof.Faces(faces_stl)
+            for v in bm.verts:
+                coor = v.co[:]
+                vertex = Vertex.ByCoordinates(coor[0], coor[1], coor[2])
+                vertices.append(vertex)
+
             faces = []
 
-            for face in faces_stl:
-                wire = face.ExternalBoundary()
-                vertices_wire = create_stl_list(Vertex)
-                wire.Vertices(vertices_wire)
-                face_tmp = []
-                for vertex in vertices_wire:
-                    face_tmp.append(vertex_id(roof, vertex))
-                faces.append(face_tmp)
+            for f in bm.faces:
+                style = "default"
+                if len(bl_object.material_slots) > 0:
+                    style = bl_object.material_slots[f.material_index].material.name
+                vertices_face = []
+                for v in f.verts:
+                    vertex = vertices[v.index]
+                    vertices_face.append(vertex)
+                face = Face.ByVertices(vertices_face)
+                face.Set("style", style)
+                faces.append(face)
+            bl_object.hide_viewport = True
 
-            mesh = bpy.data.meshes.new(name="Roof")
-            mesh.from_pydata(vertices, [], faces)
-            obj = object_data_add(context, mesh)
-            modifier = obj.modifiers.new("Roof Thickness", "SOLIDIFY")
-            modifier.use_even_offset = True
-            modifier.thickness = -0.1
+            # start using Topologic
+            faces_ptr = create_stl_list(Face)
+            for face in faces:
+                faces_ptr.push_back(face)
 
-        # Traces are 2D paths that define walls, extrusions and rooms
-        traces = cc.GetTraces().traces
+            cc = CellComplex.ByFaces(faces_ptr, 0.0001)
+            cc.ApplyDictionary(faces_ptr)
+            cc.AllocateCells(widgets)
+            elevations = cc.Elevations()
+            circulation = Graph.Adjacency(cc)
+            circulation.Circulation(cc)
+            # print(circulation.Dot(cc))
 
-        molior_object = Molior()
-        for condition in traces:
-            for elevation in traces[condition]:
-                level = elevations[elevation]
-                for height in traces[condition][elevation]:
-                    for style in traces[condition][elevation][height]:
-                        for chain in traces[condition][elevation][height][style]:
-                            for item in molior_object.GetMolior(
-                                style,
-                                condition,
-                                level,
-                                elevation,
-                                height,
-                                chain,
-                                circulation,
-                            ):
-                                molior.append(item.__dict__)
+            style = "default"
 
-        # molior
-        with open(molior_tmp.name, "w") as outfile:
-            yaml.dump_all(molior, outfile)
-        subprocess.call(["molior-ifc.pl", molior_tmp.name, ifc_tmp.name])
-        logger = logging.getLogger("ImportIFC")
+            # molior
+            molior = []
+            molior_tmp = tempfile.NamedTemporaryFile(
+                mode="w+b", suffix=".molior", delete=False
+            )
+            ifc_tmp = tempfile.NamedTemporaryFile(
+                mode="w+b", suffix=".ifc", delete=False
+            )
 
-        ifc_import_settings = import_ifc.IfcImportSettings.factory(
-            bpy.context, ifc_tmp.name, logger
-        )
-        ifc_importer = import_ifc.IfcImporter(ifc_import_settings)
-        ifc_importer.execute()
+            # roof
+            roof = cc.Roof()
+            if roof:
+                vertices_stl = create_stl_list(Vertex)
+                roof.Vertices(vertices_stl)
+                vertices = []
+                for vertex in vertices_stl:
+                    vertices.append([vertex.X(), vertex.Y(), vertex.Z()])
+
+                faces_stl = create_stl_list(Face)
+                roof.Faces(faces_stl)
+                faces = []
+
+                for face in faces_stl:
+                    wire = face.ExternalBoundary()
+                    vertices_wire = create_stl_list(Vertex)
+                    wire.Vertices(vertices_wire)
+                    face_tmp = []
+                    for vertex in vertices_wire:
+                        face_tmp.append(vertex_id(roof, vertex))
+                    faces.append(face_tmp)
+
+                mesh = bpy.data.meshes.new(name="Roof")
+                mesh.from_pydata(vertices, [], faces)
+                obj = object_data_add(context, mesh)
+                modifier = obj.modifiers.new("Roof Thickness", "SOLIDIFY")
+                modifier.use_even_offset = True
+                modifier.thickness = -0.1
+
+            # Traces are 2D paths that define walls, extrusions and rooms
+            traces = cc.GetTraces().traces
+
+            molior_object = Molior()
+            for condition in traces:
+                for elevation in traces[condition]:
+                    level = elevations[elevation]
+                    for height in traces[condition][elevation]:
+                        for style in traces[condition][elevation][height]:
+                            for chain in traces[condition][elevation][height][style]:
+                                for item in molior_object.GetMolior(
+                                    style,
+                                    condition,
+                                    level,
+                                    elevation,
+                                    height,
+                                    chain,
+                                    circulation,
+                                ):
+                                    molior.append(item.__dict__)
+
+            # molior
+            with open(molior_tmp.name, "w") as outfile:
+                yaml.dump_all(molior, outfile)
+            subprocess.call(["molior-ifc.pl", molior_tmp.name, ifc_tmp.name])
+            logger = logging.getLogger("ImportIFC")
+
+            ifc_import_settings = import_ifc.IfcImportSettings.factory(
+                bpy.context, ifc_tmp.name, logger
+            )
+            ifc_importer = import_ifc.IfcImporter(ifc_import_settings)
+            ifc_importer.execute()
         return {"FINISHED"}
 
 
