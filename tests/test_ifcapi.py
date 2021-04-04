@@ -57,6 +57,21 @@ class Tests(unittest.TestCase):
         run("geometry.edit_object_placement", ifc, product=slab, matrix=numpy.eye(4))
         run("spatial.assign_container", ifc, product=slab, relating_structure=storey)
 
+        shape2 = ifc.createAdvancedSweptSolid(
+            subcontext,
+            [[0.0, 0.0], [0.5, 0.0], [0.5, 1.0]],
+            [[5.0, 1.0], [8.0, 1.0], [5.0, 5.0]],
+        )
+        loft = run(
+            "root.create_entity",
+            ifc,
+            ifc_class="IfcBuildingElementProxy",
+            name="My Extrusion",
+        )
+        run("geometry.assign_representation", ifc, product=loft, representation=shape2)
+        run("geometry.edit_object_placement", ifc, product=loft, matrix=numpy.eye(4))
+        run("spatial.assign_container", ifc, product=loft, relating_structure=storey)
+
         self.ifc = ifc
 
     def test_write(self):
