@@ -72,6 +72,22 @@ class Tests(unittest.TestCase):
         run("geometry.edit_object_placement", ifc, product=loft, matrix=numpy.eye(4))
         run("spatial.assign_container", ifc, product=loft, relating_structure=storey)
 
+        shape3 = ifc.createBrep_fromDXF(
+            subcontext,
+            "molior/share/shopfront.dxf",
+        )
+        window = run(
+            "root.create_entity",
+            ifc,
+            ifc_class="IfcWindow",
+            name="My Window",
+        )
+        run(
+            "geometry.assign_representation", ifc, product=window, representation=shape3
+        )
+        run("geometry.edit_object_placement", ifc, product=window, matrix=numpy.eye(4))
+        run("spatial.assign_container", ifc, product=window, relating_structure=storey)
+
         self.ifc = ifc
 
     def test_write(self):

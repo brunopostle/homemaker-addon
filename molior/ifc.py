@@ -1,4 +1,5 @@
 from ifcopenshell.file import file as ifcfile
+import ezdxf
 
 
 def createSweptSolid(self, context, profile, height):
@@ -60,5 +61,38 @@ def createAdvancedSweptSolid(self, context, profile, directrix):
     )
 
 
+def createBrep_fromDXF(self, context, path_dxf):
+    doc = ezdxf.readfile(path_dxf)
+    model = doc.modelspace()
+    for entity in model:
+        if entity.get_mode() == "AcDbPolyFaceMesh":
+            ifc_faces = []
+            for face in entity.faces():
+                ifc_faces.append(
+                    self.createIfcFace(
+                        [
+                            self.createIfcFaceOuterBound(
+                                self.createIfcPolyLoop(
+                                    [
+                                        self.createIfcCartesianPoint(
+                                            (face[index].dxf.location)
+                                        )
+                                        for index in range(len(face) - 1)
+                                    ]
+                                ),
+                                True,
+                            )
+                        ]
+                    )
+                )
+            return self.createIfcShapeRepresentation(
+                context,
+                "Body",
+                "Brep",
+                [self.createIfcFacetedBrep(self.createIfcClosedShell(ifc_faces))],
+            )
+
+
 setattr(ifcfile, "createSweptSolid", createSweptSolid)
 setattr(ifcfile, "createAdvancedSweptSolid", createAdvancedSweptSolid)
+setattr(ifcfile, "createBrep_fromDXF", createBrep_fromDXF)
