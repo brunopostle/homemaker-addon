@@ -1,4 +1,17 @@
-from math import sqrt, pi, atan
+from math import sqrt, pi, atan, cos, sin
+import numpy
+
+
+def matrix_transform(theta, coor):
+    """A transform matrix from a rotation in the XY plane and an XYZ shift"""
+    return numpy.array(
+        [
+            [cos(theta), 0 - sin(theta), 0.0, coor[0]],
+            [sin(theta), cos(theta), 0.0, coor[1]],
+            [0.0, 0.0, 1.0, coor[2]],
+            [0.0, 0.0, 0.0, 1.0],
+        ]
+    )
 
 
 def add_2d(A, B):
