@@ -8,6 +8,7 @@ import ifcopenshell.api
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior.ifc
+from molior.geometry_2d import matrix_transform
 
 
 class Tests(unittest.TestCase):
@@ -49,6 +50,11 @@ class Tests(unittest.TestCase):
         run("aggregate.assign_object", ifc, product=building, relating_object=site)
         run("aggregate.assign_object", ifc, product=storey, relating_object=building)
 
+        poly = ifc.createCurve2D(subcontext, [[1.0, 0.0], [1.0, -3.0], [3.0, -3.0]])
+        wall = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
+        run("geometry.assign_representation", ifc, product=wall, representation=poly)
+        run("spatial.assign_container", ifc, product=wall, relating_structure=storey)
+
         shape = ifc.createSweptSolid(
             subcontext, [[0.0, 0.0], [5.0, 0.0], [5.0, 4.0]], 3.0
         )
@@ -85,7 +91,33 @@ class Tests(unittest.TestCase):
         run(
             "geometry.assign_representation", ifc, product=window, representation=shape3
         )
-        run("geometry.edit_object_placement", ifc, product=window, matrix=numpy.eye(4))
+        run(
+            "geometry.edit_object_placement",
+            ifc,
+            product=window,
+            matrix=matrix_transform(1.57079, [0.0, 0.0, 3.0]),
+        )
+        run("spatial.assign_container", ifc, product=window, relating_structure=storey)
+
+        shape4 = ifc.createTessellation_fromDXF(
+            subcontext,
+            "molior/share/shopfront.dxf",
+        )
+        window = run(
+            "root.create_entity",
+            ifc,
+            ifc_class="IfcWindow",
+            name="My Window",
+        )
+        run(
+            "geometry.assign_representation", ifc, product=window, representation=shape4
+        )
+        run(
+            "geometry.edit_object_placement",
+            ifc,
+            product=window,
+            matrix=matrix_transform(0.0, [5.0, 0.0, 0.0]),
+        )
         run("spatial.assign_container", ifc, product=window, relating_structure=storey)
 
         self.ifc = ifc
