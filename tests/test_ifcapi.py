@@ -8,7 +8,7 @@ import ifcopenshell.api
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior.ifc
-from molior.geometry_2d import matrix_transform
+from molior.geometry_2d import matrix_transform, matrix_align
 
 
 class Tests(unittest.TestCase):
@@ -60,7 +60,12 @@ class Tests(unittest.TestCase):
         )
         slab = run("root.create_entity", ifc, ifc_class="IfcSlab", name="My Slab")
         run("geometry.assign_representation", ifc, product=slab, representation=shape)
-        run("geometry.edit_object_placement", ifc, product=slab, matrix=numpy.eye(4))
+        run(
+            "geometry.edit_object_placement",
+            ifc,
+            product=slab,
+            matrix=matrix_align([3.0, 0.0, 3.0], [4.0, 1.0, 3.0]),
+        )
         run("spatial.assign_container", ifc, product=slab, relating_structure=storey)
 
         shape2 = ifc.createAdvancedSweptSolid(

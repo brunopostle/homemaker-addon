@@ -14,6 +14,19 @@ def matrix_transform(theta, coor):
     )
 
 
+def matrix_align(A, B):
+    """A transform matrix that moves to A and 2D rotates to align the X axis to B"""
+    v = normalise_2d(subtract_2d(B, A))
+    return numpy.array(
+        [
+            [v[0], 0 - v[1], 0.0, A[0]],
+            [v[1], v[0], 0.0, A[1]],
+            [0.0, 0.0, 1.0, A[2]],
+            [0.0, 0.0, 0.0, 1.0],
+        ]
+    )
+
+
 def add_2d(A, B):
     return [A[0] + B[0], A[1] + B[1]]
 
