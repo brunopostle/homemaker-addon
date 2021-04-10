@@ -10,11 +10,11 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 import molior.ifc
 from molior.geometry_2d import matrix_transform, matrix_align
 
+run = ifcopenshell.api.run
+
 
 class Tests(unittest.TestCase):
     def setUp(self):
-        run = ifcopenshell.api.run
-
         ifc = run("project.create_file")
 
         run("owner.add_person", ifc)
@@ -99,7 +99,7 @@ class Tests(unittest.TestCase):
                 "root.create_entity",
                 ifc,
                 ifc_class="IfcTypeProduct",
-                name="shopfront.dxf",
+                name="my shopfront",
             ),
             representation=brep,
         )
@@ -111,6 +111,12 @@ class Tests(unittest.TestCase):
             ifc,
             ifc_class="IfcWindow",
             name="My Window",
+        )
+        run(
+            "attribute.edit_attributes",
+            ifc,
+            product=window,
+            attributes={"OverallHeight": 2.545, "OverallWidth": 5.0},
         )
         run(
             "geometry.assign_representation",
@@ -132,7 +138,13 @@ class Tests(unittest.TestCase):
             "root.create_entity",
             ifc,
             ifc_class="IfcWindow",
-            name="Another Window",
+            name="My Window",
+        )
+        run(
+            "attribute.edit_attributes",
+            ifc,
+            product=window2,
+            attributes={"OverallHeight": 2.545, "OverallWidth": 5.0},
         )
         run(
             "geometry.assign_representation",
@@ -159,7 +171,7 @@ class Tests(unittest.TestCase):
             "root.create_entity",
             ifc,
             ifc_class="IfcWindow",
-            name="My Window",
+            name="Another Window",
         )
         run(
             "geometry.assign_representation",
@@ -177,10 +189,56 @@ class Tests(unittest.TestCase):
 
         # make the ifc model available to other test methods
         self.ifc = ifc
+        self.storey = storey
 
     def test_write(self):
+        ifc = self.ifc
+        # find the mapped windows and store by name
+        lookup = {}
+        windows = self.ifc.by_type("IfcWindow")
+        # there should be two mapped and one unmapped window
+        self.assertEqual(len(windows), 3)
+        for entity in windows:
+            mapped = True
+            representations = entity.Representation.Representations
+            for representation in representations:
+                # all representations should be mapped
+                if not representation.RepresentationType == "MappedRepresentation":
+                    mapped = False
+            if mapped:
+                lookup[entity.Name] = entity
+        self.assertEqual(len(lookup), 1)
+
+        template = lookup["My Window"]
+
+        # create another window using the mapped item as a template
+        myproduct = run(
+            "root.copy_class",
+            ifc,
+            product=template,
+        )
+        for subrepresentation in template.Representation.Representations:
+            run(
+                "geometry.assign_representation",
+                ifc,
+                product=myproduct,
+                representation=subrepresentation,
+            )
+        # place it in space and assign to storey
+        run(
+            "geometry.edit_object_placement",
+            ifc,
+            product=myproduct,
+            matrix=matrix_align([11.0, 0.0, 3.0], [11.0, 2.0, 0.0]),
+        )
+        run(
+            "spatial.assign_container",
+            ifc,
+            product=myproduct,
+            relating_structure=self.storey,
+        )
+
         self.ifc.write("_test.ifc")
-        pass
 
 
 if __name__ == "__main__":
