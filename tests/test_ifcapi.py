@@ -30,11 +30,11 @@ class Tests(unittest.TestCase):
         run("unit.assign_unit", ifc, length={"is_metric": True, "raw": "METERS"})
 
         run("context.add_context", ifc)
-        subcontext = run(
+        bodycontext = run(
             "context.add_context",
             ifc,
             context="Model",
-            subcontext="Body",
+            bodycontext="Body",
             target_view="MODEL_VIEW",
         )
 
@@ -51,14 +51,14 @@ class Tests(unittest.TestCase):
         run("aggregate.assign_object", ifc, product=storey, relating_object=building)
 
         # a centreline axis
-        poly = ifc.createCurve2D(subcontext, [[1.0, 0.0], [1.0, -3.0], [3.0, -3.0]])
+        poly = ifc.createCurve2D(bodycontext, [[1.0, 0.0], [1.0, -3.0], [3.0, -3.0]])
         wall = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
         run("geometry.assign_representation", ifc, product=wall, representation=poly)
         run("spatial.assign_container", ifc, product=wall, relating_structure=storey)
 
         # a vertically extruded solid
         shape = ifc.createSweptSolid(
-            subcontext, [[0.0, 0.0], [5.0, 0.0], [5.0, 4.0]], 3.0
+            bodycontext, [[0.0, 0.0], [5.0, 0.0], [5.0, 4.0]], 3.0
         )
         slab = run("root.create_entity", ifc, ifc_class="IfcSlab", name="My Slab")
         run("geometry.assign_representation", ifc, product=slab, representation=shape)
@@ -72,7 +72,7 @@ class Tests(unittest.TestCase):
 
         # an extrusion that follows a 2D directrix
         shape2 = ifc.createAdvancedSweptSolid(
-            subcontext,
+            bodycontext,
             [[0.0, 0.0], [0.5, 0.0], [0.5, 1.0]],
             [[5.0, 1.0], [8.0, 1.0], [5.0, 5.0]],
         )
@@ -88,7 +88,7 @@ class Tests(unittest.TestCase):
 
         # load a DXF polyface mesh as a Brep
         brep = ifc.createBrep_fromDXF(
-            subcontext,
+            bodycontext,
             "molior/share/shopfront.dxf",
         )
         # create a mapped item that can be reused
@@ -99,7 +99,7 @@ class Tests(unittest.TestCase):
                 "root.create_entity",
                 ifc,
                 ifc_class="IfcTypeProduct",
-                name="my shopfront",
+                name="shopfront.dxf",
             ),
             representation=brep,
         )
@@ -163,7 +163,7 @@ class Tests(unittest.TestCase):
 
         # load a DXF polyface mesh as a Tessellation
         tessellation = ifc.createTessellation_fromDXF(
-            subcontext,
+            bodycontext,
             "molior/share/shopfront.dxf",
         )
         # create a window using the tessellation (not a mapped typeproduct)
@@ -190,55 +190,113 @@ class Tests(unittest.TestCase):
         # make the ifc model available to other test methods
         self.ifc = ifc
         self.storey = storey
+        self.bodycontext = bodycontext
 
     def test_write(self):
         ifc = self.ifc
-        # find the mapped windows and store by name
+        storey = self.storey
+        bodycontext = self.bodycontext
+        # create a lookup table of existing typeproducts in this ifc
         lookup = {}
-        windows = self.ifc.by_type("IfcWindow")
-        # there should be two mapped and one unmapped window
-        self.assertEqual(len(windows), 3)
-        for entity in windows:
-            mapped = True
-            representations = entity.Representation.Representations
-            for representation in representations:
-                # all representations should be mapped
-                if not representation.RepresentationType == "MappedRepresentation":
-                    mapped = False
-            if mapped:
-                lookup[entity.Name] = entity
-        self.assertEqual(len(lookup), 1)
+        for typeproduct in ifc.by_type("IfcTypeProduct"):
+            lookup[typeproduct.Name] = typeproduct
 
-        template = lookup["My Window"]
-
-        # create another window using the mapped item as a template
+        # create a window
         myproduct = run(
-            "root.copy_class",
+            "root.create_entity",
             ifc,
-            product=template,
+            ifc_class="IfcWindow",
+            name="My Window",
         )
-        for subrepresentation in template.Representation.Representations:
-            run(
-                "geometry.assign_representation",
-                ifc,
-                product=myproduct,
-                representation=subrepresentation,
-            )
-        # place it in space and assign to storey
+        # window needs some attributes
+        run(
+            "attribute.edit_attributes",
+            ifc,
+            product=myproduct,
+            attributes={"OverallHeight": 2.545, "OverallWidth": 5.0},
+        )
+        # place the window in space
         run(
             "geometry.edit_object_placement",
             ifc,
             product=myproduct,
             matrix=matrix_align([11.0, 0.0, 3.0], [11.0, 2.0, 0.0]),
         )
+        # assign the window to a storey
         run(
             "spatial.assign_container",
             ifc,
             product=myproduct,
-            relating_structure=self.storey,
+            relating_structure=storey,
         )
 
-        self.ifc.write("_test.ifc")
+        # The TypeProduct knows what MappedRepresentations to use
+        typeproduct = lookup["shopfront.dxf"]
+        for representationmap in typeproduct.RepresentationMaps:
+            run(
+                "geometry.assign_representation",
+                ifc,
+                product=myproduct,
+                representation=run(
+                    "geometry.map_representation",
+                    ifc,
+                    representation=representationmap.MappedRepresentation,
+                ),
+            )
+
+        # create a wall
+        mywall = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
+        # give the wall a Body representation
+        run(
+            "geometry.assign_representation",
+            ifc,
+            product=mywall,
+            representation=ifc.createSweptSolid(
+                bodycontext, [[0.0, -0.25], [6.0, -0.25], [6.0, 0.08], [0.0, 0.08]], 4.0
+            ),
+        )
+        # place the wall in space
+        run(
+            "geometry.edit_object_placement",
+            ifc,
+            product=mywall,
+            matrix=matrix_align([11.0, -0.5, 3.0], [11.0, 2.0, 0.0]),
+        )
+        # assign the wall to a storey
+        run("spatial.assign_container", ifc, product=mywall, relating_structure=storey)
+
+        # create an opening
+        myopening = run(
+            "root.create_entity", ifc, ifc_class="IfcOpeningElement", name="My Opening"
+        )
+        run(
+            "attribute.edit_attributes",
+            ifc,
+            product=myopening,
+            attributes={"PredefinedType": "OPENING"},
+        )
+        # give the opening a Body representation
+        run(
+            "geometry.assign_representation",
+            ifc,
+            product=myopening,
+            representation=ifc.createSweptSolid(
+                bodycontext, [[0.5, -1.0], [5.5, -1.0], [5.5, 1.0], [0.5, 1.0]], 2.545
+            ),
+        )
+        # place the opening where the wall is
+        run(
+            "geometry.edit_object_placement",
+            ifc,
+            product=myopening,
+            matrix=matrix_align([11.0, -0.5, 3.0], [11.0, 2.0, 0.0]),
+        )
+        # use the opening to cut the wall, no need to assign a storey
+        run("void.add_opening", ifc, opening=myopening, element=mywall)
+        # associate the opening with our window
+        run("void.add_filling", ifc, opening=myopening, element=myproduct)
+
+        ifc.write("_test.ifc")
 
 
 if __name__ == "__main__":
