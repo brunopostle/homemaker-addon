@@ -87,6 +87,7 @@ def createAdvancedSweptSolid(self, context, profile, directrix):
 def createBrep_fromDXF(self, context, path_dxf):
     doc = ezdxf.readfile(path_dxf)
     model = doc.modelspace()
+    breps = []
     for entity in model:
         if entity.get_mode() == "AcDbPolyFaceMesh":
             ifc_faces = []
@@ -108,17 +109,21 @@ def createBrep_fromDXF(self, context, path_dxf):
                         ]
                     )
                 )
-            return self.createIfcShapeRepresentation(
-                context,
-                "Body",
-                "Brep",
-                [self.createIfcFacetedBrep(self.createIfcClosedShell(ifc_faces))],
-            )
+            breps.append(self.createIfcFacetedBrep(self.createIfcClosedShell(ifc_faces)))
+    if len(breps) == 0:
+        return None
+    return self.createIfcShapeRepresentation(
+        context,
+        "Body",
+        "Brep",
+        breps,
+    )
 
 
 def createTessellation_fromDXF(self, context, path_dxf):
     doc = ezdxf.readfile(path_dxf)
     model = doc.modelspace()
+    tessellations = []
     for entity in model:
         if entity.get_mode() == "AcDbPolyFaceMesh":
             vertices, faces = entity.indexed_faces()
@@ -131,12 +136,17 @@ def createTessellation_fromDXF(self, context, path_dxf):
                 )
                 for face in faces
             ]
-            return self.createIfcShapeRepresentation(
-                context,
-                "Body",
-                "Tessellation",
-                [self.createIfcPolygonalFaceSet(pointlist, None, indexedfaces, None)],
-            )
+        tessellations.append(
+            self.createIfcPolygonalFaceSet(pointlist, None, indexedfaces, None)
+        )
+    if len(tessellations) == 0:
+        return None
+    return self.createIfcShapeRepresentation(
+        context,
+        "Body",
+        "Tessellation",
+        tessellations,
+    )
 
 
 setattr(ifcfile, "createCurve2D", createCurve2D)
