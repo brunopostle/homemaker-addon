@@ -1,5 +1,9 @@
 from ifcopenshell.file import file as ifcfile
 import ezdxf
+import os
+import ifcopenshell.api
+
+run = ifcopenshell.api.run
 
 
 def createCurve2D(self, context, profile):
@@ -109,15 +113,16 @@ def createBrep_fromDXF(self, context, path_dxf):
                         ]
                     )
                 )
-            breps.append(self.createIfcFacetedBrep(self.createIfcClosedShell(ifc_faces)))
-    if len(breps) == 0:
-        return None
-    return self.createIfcShapeRepresentation(
-        context,
-        "Body",
-        "Brep",
-        breps,
-    )
+            breps.append(
+                self.createIfcFacetedBrep(self.createIfcClosedShell(ifc_faces))
+            )
+    if len(breps) > 0:
+        return self.createIfcShapeRepresentation(
+            context,
+            "Body",
+            "Brep",
+            breps,
+        )
 
 
 def createTessellation_fromDXF(self, context, path_dxf):
@@ -139,16 +144,67 @@ def createTessellation_fromDXF(self, context, path_dxf):
         tessellations.append(
             self.createIfcPolygonalFaceSet(pointlist, None, indexedfaces, None)
         )
-    if len(tessellations) == 0:
-        return None
-    return self.createIfcShapeRepresentation(
-        context,
-        "Body",
-        "Tessellation",
-        tessellations,
-    )
+    if len(tessellations) > 0:
+        return self.createIfcShapeRepresentation(
+            context,
+            "Body",
+            "Tessellation",
+            tessellations,
+        )
 
 
+def assign_representation_fromDXF(self, bodycontext, element, path_dxf):
+    """Assign geometry from DXF unless a TypeProduct with this name already exists"""
+    filename = os.path.split(path_dxf)[-1]
+
+    # let's see if there is an existing TypeProduct defined
+    typeproducts = {}
+    for typeproduct in self.by_type("IfcTypeProduct"):
+        typeproducts[typeproduct.Name] = typeproduct
+
+    if filename in typeproducts:
+        # The TypeProduct knows what MappedRepresentations to use
+        for representationmap in typeproducts[filename].RepresentationMaps:
+            run(
+                "geometry.assign_representation",
+                self,
+                product=element,
+                representation=run(
+                    "geometry.map_representation",
+                    self,
+                    representation=representationmap.MappedRepresentation,
+                ),
+            )
+    else:
+        # load a DXF polyface mesh as a Brep and create the TypeProduct
+        brep = self.createBrep_fromDXF(
+            bodycontext,
+            path_dxf,
+        )
+        # create a mapped item that can be reused
+        run(
+            "geometry.assign_representation",
+            self,
+            product=run(
+                "root.create_entity",
+                self,
+                ifc_class="IfcTypeProduct",
+                name=filename,
+            ),
+            representation=brep,
+        )
+
+        run(
+            "geometry.assign_representation",
+            self,
+            product=element,
+            representation=run(
+                "geometry.map_representation", self, representation=brep
+            ),
+        )
+
+
+setattr(ifcfile, "assign_representation_fromDXF", assign_representation_fromDXF)
 setattr(ifcfile, "createCurve2D", createCurve2D)
 setattr(ifcfile, "createSweptSolid", createSweptSolid)
 setattr(ifcfile, "createAdvancedSweptSolid", createAdvancedSweptSolid)
