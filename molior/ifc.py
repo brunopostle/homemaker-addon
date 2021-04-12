@@ -88,6 +88,47 @@ def createAdvancedSweptSolid(self, context, profile, directrix):
     )
 
 
+def createClosedProfileDefs_fromDXF(self, context, stylename, path_dxf):
+    identifier = stylename + "/" + os.path.split(path_dxf)[-1]
+
+    # let's see if there is an existing ExternalReference defined
+    externalreferences = {}
+    for externalreference in self.by_type("IfcExternalReferenceRelationship"):
+        externalreferences[externalreference.Name] = externalreference
+
+    if identifier in externalreferences:
+        # We already have this profile definition
+        return externalreferences[identifier]
+
+    doc = ezdxf.readfile(path_dxf)
+    model = doc.modelspace()
+    closedprofiledefs = []
+    for entity in model:
+        if entity.get_mode() == "AcDb2dPolyline":
+            profile = list(entity.points())
+            if not profile[-1] == profile[0]:
+                # a closed polyline has first and last points coincident
+                profile.append(profile[0])
+            closedprofiledefs.append(
+                self.createIfcArbitraryClosedProfileDef(
+                    "AREA",
+                    None,
+                    self.createIfcPolyline(
+                        [
+                            self.createIfcCartesianPoint([point[1], point[0]])
+                            for point in profile
+                        ]
+                    ),
+                ),
+            )
+    return self.createIfcExternalReferenceRelationship(
+        identifier,
+        None,
+        self.createIfcExternalReference(None, identifier, None),
+        closedprofiledefs,
+    )
+
+
 def createBrep_fromDXF(self, context, path_dxf):
     doc = ezdxf.readfile(path_dxf)
     model = doc.modelspace()
@@ -153,18 +194,18 @@ def createTessellation_fromDXF(self, context, path_dxf):
         )
 
 
-def assign_representation_fromDXF(self, bodycontext, element, path_dxf):
+def assign_representation_fromDXF(self, bodycontext, element, stylename, path_dxf):
     """Assign geometry from DXF unless a TypeProduct with this name already exists"""
-    filename = os.path.split(path_dxf)[-1]
+    identifier = stylename + "/" + os.path.split(path_dxf)[-1]
 
     # let's see if there is an existing TypeProduct defined
     typeproducts = {}
     for typeproduct in self.by_type("IfcTypeProduct"):
         typeproducts[typeproduct.Name] = typeproduct
 
-    if filename in typeproducts:
+    if identifier in typeproducts:
         # The TypeProduct knows what MappedRepresentations to use
-        for representationmap in typeproducts[filename].RepresentationMaps:
+        for representationmap in typeproducts[identifier].RepresentationMaps:
             run(
                 "geometry.assign_representation",
                 self,
@@ -189,7 +230,7 @@ def assign_representation_fromDXF(self, bodycontext, element, path_dxf):
                 "root.create_entity",
                 self,
                 ifc_class="IfcTypeProduct",
-                name=filename,
+                name=identifier,
             ),
             representation=brep,
         )
@@ -207,6 +248,7 @@ def assign_representation_fromDXF(self, bodycontext, element, path_dxf):
 setattr(ifcfile, "assign_representation_fromDXF", assign_representation_fromDXF)
 setattr(ifcfile, "createCurve2D", createCurve2D)
 setattr(ifcfile, "createSweptSolid", createSweptSolid)
+setattr(ifcfile, "createClosedProfileDefs_fromDXF", createClosedProfileDefs_fromDXF)
 setattr(ifcfile, "createAdvancedSweptSolid", createAdvancedSweptSolid)
 setattr(ifcfile, "createBrep_fromDXF", createBrep_fromDXF)
 setattr(ifcfile, "createTessellation_fromDXF", createTessellation_fromDXF)

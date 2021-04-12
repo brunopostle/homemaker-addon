@@ -79,7 +79,7 @@ class Tests(unittest.TestCase):
         )
         # load geometry from a DXF file and assign to the window
         ifc.assign_representation_fromDXF(
-            bodycontext, myproduct, "molior/share/shopfront.dxf"
+            bodycontext, myproduct, "default", "molior/share/shopfront.dxf"
         )
 
         # create a wall
@@ -166,7 +166,7 @@ class Tests(unittest.TestCase):
         )
         # shopfront.dxf is already imported and mapped
         ifc.assign_representation_fromDXF(
-            bodycontext, myproduct, "molior/share/shopfront.dxf"
+            bodycontext, myproduct, "default", "molior/share/shopfront.dxf"
         )
 
         # create an opening
