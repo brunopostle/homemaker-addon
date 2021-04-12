@@ -50,120 +50,50 @@ class Tests(unittest.TestCase):
         run("aggregate.assign_object", ifc, product=building, relating_object=site)
         run("aggregate.assign_object", ifc, product=storey, relating_object=building)
 
-        externalref = ifc.createClosedProfileDefs_fromDXF(
-            bodycontext, "courtyard", "molior/share/courtyard/eaves.dxf"
-        )
-
-        axis = ifc.createIfcAxis2Placement3D(
-            ifc.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
-        )
-        directrix = [[5.0, 1.0], [8.0, 1.0], [5.0, 5.0]]
-
-        shape2 = ifc.createIfcShapeRepresentation(
-            bodycontext,
-            "Body",
-            "AdvancedSweptSolid",
-            [
-                ifc.createIfcSurfaceCurveSweptAreaSolid(
-                    closedprofiledef,
-                    axis,
-                    ifc.createIfcPolyline(
-                        [ifc.createIfcCartesianPoint(point) for point in directrix]
-                    ),
-                    0.0,
-                    1.0,
-                    ifc.createIfcPlane(axis),
-                )
-                for closedprofiledef in externalref.RelatedResourceObjects
-            ],
-        )
-
-        loft = run(
+        element = run(
             "root.create_entity",
             ifc,
             ifc_class="IfcBuildingElementProxy",
             name="My Extrusion",
         )
-        run("geometry.assign_representation", ifc, product=loft, representation=shape2)
-        run("geometry.edit_object_placement", ifc, product=loft, matrix=numpy.eye(4))
-        run("spatial.assign_container", ifc, product=loft, relating_structure=storey)
+        directrix = [[-5.0, 1.0], [-1.0, 1.0], [-1.0, 5.0], [-5.0, 5.0], [-5.0, 1.0]]
 
-        # do it again
-        axis = ifc.createIfcAxis2Placement3D(
-            ifc.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
-        )
-        directrix = [[5.0, 2.0], [5.0, 4.0], [2.0, 4.0], [2.0, 2.0], [5.0, 2.0]]
-        polyline = ifc.createIfcPolyline(
-            [ifc.createIfcCartesianPoint(point) for point in directrix]
-        )
-        plane = ifc.createIfcPlane(axis)
-        shape2 = ifc.createIfcShapeRepresentation(
+        ifc.assign_extrusion_fromDXF(
             bodycontext,
-            "Body",
-            "AdvancedSweptSolid",
-            [
-                ifc.createIfcSurfaceCurveSweptAreaSolid(
-                    closedprofiledef,
-                    axis,
-                    polyline,
-                    0.0,
-                    1.0,
-                    plane,
-                )
-                for closedprofiledef in externalref.RelatedResourceObjects
-            ],
+            element,
+            directrix,
+            "courtyard",
+            "molior/share/courtyard/eaves.dxf",
         )
 
-        loft = run(
-            "root.create_entity",
-            ifc,
-            ifc_class="IfcBuildingElementProxy",
-            name="My Extrusion",
-        )
-        run("geometry.assign_representation", ifc, product=loft, representation=shape2)
-        run("geometry.edit_object_placement", ifc, product=loft, matrix=numpy.eye(4))
-        run("spatial.assign_container", ifc, product=loft, relating_structure=storey)
+        run("geometry.edit_object_placement", ifc, product=element, matrix=numpy.eye(4))
+        run("spatial.assign_container", ifc, product=element, relating_structure=storey)
 
         # do it again, hopefully dxf isn't reloaded
 
-        externalref = ifc.createClosedProfileDefs_fromDXF(
-            bodycontext, "courtyard", "molior/share/courtyard/eaves.dxf"
-        )
-
-        axis = ifc.createIfcAxis2Placement3D(
-            ifc.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
-        )
-        directrix = [[-5.0, 1.0], [-1.0, 1.0], [-1.0, 5.0], [-5.0, 5.0], [-5.0, 1.0]]
-        polyline = ifc.createIfcPolyline(
-            [ifc.createIfcCartesianPoint(point) for point in directrix]
-        )
-        plane = ifc.createIfcPlane(axis)
-        shape2 = ifc.createIfcShapeRepresentation(
-            bodycontext,
-            "Body",
-            "AdvancedSweptSolid",
-            [
-                ifc.createIfcSurfaceCurveSweptAreaSolid(
-                    closedprofiledef,
-                    axis,
-                    polyline,
-                    0.0,
-                    1.0,
-                    plane,
-                )
-                for closedprofiledef in externalref.RelatedResourceObjects
-            ],
-        )
-
-        loft = run(
+        element = run(
             "root.create_entity",
             ifc,
             ifc_class="IfcBuildingElementProxy",
-            name="My Extrusion",
+            name="Another Extrusion",
         )
-        run("geometry.assign_representation", ifc, product=loft, representation=shape2)
-        run("geometry.edit_object_placement", ifc, product=loft, matrix=numpy.eye(4))
-        run("spatial.assign_container", ifc, product=loft, relating_structure=storey)
+        directrix = [[-5.0, 2.0], [-1.0, 2.0], [-1.0, 5.0], [-5.0, 5.0], [-5.0, 2.0]]
+
+        ifc.assign_extrusion_fromDXF(
+            bodycontext,
+            element,
+            directrix,
+            "courtyard",
+            "molior/share/courtyard/eaves.dxf",
+        )
+
+        run(
+            "geometry.edit_object_placement",
+            ifc,
+            product=element,
+            matrix=matrix_align([0.0, 0.0, 1.0], [1.0, 0.0, 1.0]),
+        )
+        run("spatial.assign_container", ifc, product=element, relating_structure=storey)
 
         ifc.write("_test.ifc")
 

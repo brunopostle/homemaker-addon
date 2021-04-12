@@ -88,7 +88,9 @@ def createAdvancedSweptSolid(self, context, profile, directrix):
     )
 
 
-def createClosedProfileDefs_fromDXF(self, context, stylename, path_dxf):
+def assign_extrusion_fromDXF(
+    self, bodycontext, element, directrix, stylename, path_dxf
+):
     identifier = stylename + "/" + os.path.split(path_dxf)[-1]
 
     # let's see if there is an existing ExternalReference defined
@@ -98,35 +100,62 @@ def createClosedProfileDefs_fromDXF(self, context, stylename, path_dxf):
 
     if identifier in externalreferences:
         # We already have this profile definition
-        return externalreferences[identifier]
+        closedprofiledefs = externalreferences[identifier].RelatedResourceObjects
 
-    doc = ezdxf.readfile(path_dxf)
-    model = doc.modelspace()
-    closedprofiledefs = []
-    for entity in model:
-        if entity.get_mode() == "AcDb2dPolyline":
-            profile = list(entity.points())
-            if not profile[-1] == profile[0]:
-                # a closed polyline has first and last points coincident
-                profile.append(profile[0])
-            closedprofiledefs.append(
-                self.createIfcArbitraryClosedProfileDef(
-                    "AREA",
-                    None,
-                    self.createIfcPolyline(
-                        [
-                            self.createIfcCartesianPoint([point[1], point[0]])
-                            for point in profile
-                        ]
+    else:
+        doc = ezdxf.readfile(path_dxf)
+        model = doc.modelspace()
+        closedprofiledefs = []
+        for entity in model:
+            if entity.get_mode() == "AcDb2dPolyline":
+                profile = list(entity.points())
+                if not profile[-1] == profile[0]:
+                    # a closed polyline has first and last points coincident
+                    profile.append(profile[0])
+                closedprofiledefs.append(
+                    self.createIfcArbitraryClosedProfileDef(
+                        "AREA",
+                        None,
+                        self.createIfcPolyline(
+                            [
+                                self.createIfcCartesianPoint([point[1], point[0]])
+                                for point in profile
+                            ]
+                        ),
                     ),
-                ),
-            )
-    return self.createIfcExternalReferenceRelationship(
-        identifier,
-        None,
-        self.createIfcExternalReference(None, identifier, None),
-        closedprofiledefs,
+                )
+        self.createIfcExternalReferenceRelationship(
+            identifier,
+            None,
+            self.createIfcExternalReference(None, identifier, None),
+            closedprofiledefs,
+        )
+
+    axis = self.createIfcAxis2Placement3D(
+        self.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
     )
+    polyline = self.createIfcPolyline(
+        [self.createIfcCartesianPoint(point) for point in directrix]
+    )
+    plane = self.createIfcPlane(axis)
+    shape2 = self.createIfcShapeRepresentation(
+        bodycontext,
+        "Body",
+        "AdvancedSweptSolid",
+        [
+            self.createIfcSurfaceCurveSweptAreaSolid(
+                closedprofiledef,
+                axis,
+                polyline,
+                0.0,
+                1.0,
+                plane,
+            )
+            for closedprofiledef in closedprofiledefs
+        ],
+    )
+
+    run("geometry.assign_representation", self, product=element, representation=shape2)
 
 
 def createBrep_fromDXF(self, context, path_dxf):
@@ -248,7 +277,7 @@ def assign_representation_fromDXF(self, bodycontext, element, stylename, path_dx
 setattr(ifcfile, "assign_representation_fromDXF", assign_representation_fromDXF)
 setattr(ifcfile, "createCurve2D", createCurve2D)
 setattr(ifcfile, "createSweptSolid", createSweptSolid)
-setattr(ifcfile, "createClosedProfileDefs_fromDXF", createClosedProfileDefs_fromDXF)
+setattr(ifcfile, "assign_extrusion_fromDXF", assign_extrusion_fromDXF)
 setattr(ifcfile, "createAdvancedSweptSolid", createAdvancedSweptSolid)
 setattr(ifcfile, "createBrep_fromDXF", createBrep_fromDXF)
 setattr(ifcfile, "createTessellation_fromDXF", createTessellation_fromDXF)
