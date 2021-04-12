@@ -93,16 +93,16 @@ def assign_extrusion_fromDXF(
 ):
     identifier = stylename + "/" + os.path.split(path_dxf)[-1]
 
-    # let's see if there is an existing ExternalReference defined
+    # let's see if there is an existing ExternalReference recorded
     externalreferences = {}
     for externalreference in self.by_type("IfcExternalReferenceRelationship"):
         externalreferences[externalreference.Name] = externalreference
 
     if identifier in externalreferences:
-        # We already have this profile definition
+        # profile(s) already defined, use them
         closedprofiledefs = externalreferences[identifier].RelatedResourceObjects
-
     else:
+        # profile(s) not defined, load from the DXF
         doc = ezdxf.readfile(path_dxf)
         model = doc.modelspace()
         closedprofiledefs = []
@@ -124,6 +124,7 @@ def assign_extrusion_fromDXF(
                         ),
                     ),
                 )
+        # record profile(s) in an ExternalReference so we can find again
         self.createIfcExternalReferenceRelationship(
             identifier,
             None,
@@ -131,6 +132,7 @@ def assign_extrusion_fromDXF(
             closedprofiledefs,
         )
 
+    # define these outside the loop as they are the same for each profile
     axis = self.createIfcAxis2Placement3D(
         self.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
     )
@@ -138,24 +140,28 @@ def assign_extrusion_fromDXF(
         [self.createIfcCartesianPoint(point) for point in directrix]
     )
     plane = self.createIfcPlane(axis)
-    shape2 = self.createIfcShapeRepresentation(
-        bodycontext,
-        "Body",
-        "AdvancedSweptSolid",
-        [
-            self.createIfcSurfaceCurveSweptAreaSolid(
-                closedprofiledef,
-                axis,
-                polyline,
-                0.0,
-                1.0,
-                plane,
-            )
-            for closedprofiledef in closedprofiledefs
-        ],
-    )
 
-    run("geometry.assign_representation", self, product=element, representation=shape2)
+    run(
+        "geometry.assign_representation",
+        self,
+        product=element,
+        representation=self.createIfcShapeRepresentation(
+            bodycontext,
+            "Body",
+            "AdvancedSweptSolid",
+            [
+                self.createIfcSurfaceCurveSweptAreaSolid(
+                    closedprofiledef,
+                    axis,
+                    polyline,
+                    0.0,
+                    1.0,
+                    plane,
+                )
+                for closedprofiledef in closedprofiledefs
+            ],
+        ),
+    )
 
 
 def createBrep_fromDXF(self, context, path_dxf):
