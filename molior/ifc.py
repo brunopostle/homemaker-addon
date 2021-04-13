@@ -2,11 +2,12 @@ from ifcopenshell.file import file as ifcfile
 import ezdxf
 import os
 import ifcopenshell.api
+from molior.geometry_2d import matrix_align
 
 run = ifcopenshell.api.run
 
 
-def init():
+def init(building_name, elevations):
     ifc = run("project.create_file")
 
     run("owner.add_person", ifc)
@@ -23,7 +24,7 @@ def init():
 
     # TODO should create Plan, Footprint etc. contexts here
     run("context.add_context", ifc)
-    bodycontext = run(
+    run(
         "context.add_context",
         ifc,
         context="Model",
@@ -34,7 +35,25 @@ def init():
     # create and relate site and building
     site = run("root.create_entity", ifc, ifc_class="IfcSite", name="My Site")
     run("aggregate.assign_object", ifc, product=site, relating_object=project)
-    return ifc, site, bodycontext
+    building = run(
+        "root.create_entity", ifc, ifc_class="IfcBuilding", name=building_name
+    )
+    run("aggregate.assign_object", ifc, product=building, relating_object=site)
+    for elevation in sorted(elevations):
+        mystorey = run(
+            "root.create_entity",
+            ifc,
+            ifc_class="IfcBuildingStorey",
+            name=str(elevations[elevation]),
+        )
+        run("aggregate.assign_object", ifc, product=mystorey, relating_object=building)
+        run(
+            "geometry.edit_object_placement",
+            ifc,
+            product=mystorey,
+            matrix=matrix_align([0.0, 0.0, elevation], [1.0, 0.0, 0.0]),
+        )
+    return ifc
 
 
 def createCurve2D(self, context, profile):
@@ -260,6 +279,19 @@ def createTessellation_fromDXF(self, context, path_dxf):
         )
 
 
+def assign_storey_byindex(self, entity, index):
+    # let's see if there is an existing IfcBuildingStorey defined
+    storeys = {}
+    for storey in self.by_type("IfcBuildingStorey"):
+        storeys[storey.Name] = storey
+    run(
+        "aggregate.assign_object",
+        self,
+        product=entity,
+        relating_object=storeys[str(index)],
+    )
+
+
 def assign_representation_fromDXF(self, bodycontext, element, stylename, path_dxf):
     """Assign geometry from DXF unless a TypeProduct with this name already exists"""
     identifier = stylename + "/" + os.path.split(path_dxf)[-1]
@@ -312,6 +344,7 @@ def assign_representation_fromDXF(self, bodycontext, element, stylename, path_dx
 
 
 setattr(ifcfile, "assign_representation_fromDXF", assign_representation_fromDXF)
+setattr(ifcfile, "assign_storey_byindex", assign_storey_byindex)
 setattr(ifcfile, "createCurve2D", createCurve2D)
 setattr(ifcfile, "createSweptSolid", createSweptSolid)
 setattr(ifcfile, "assign_extrusion_fromDXF", assign_extrusion_fromDXF)
