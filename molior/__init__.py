@@ -7,6 +7,8 @@ from molior.stair import Stair
 from molior.wall import Wall
 from molior.style import Style
 from topologist.helpers import string_to_coor_2d
+import ifcopenshell.api
+import molior.ifc
 
 
 class Molior:
@@ -79,7 +81,10 @@ class Molior:
                 results.append(part)
         return results
 
-    def GetIfc(self, style, condition, level, elevation, height, chain, circulation):
+    def GetIfc(self, ifc, style, condition, level, elevation, height, chain, circulation):
         """Retrieves IFC data directly without using molior-ifc.pl"""
-        # TODO
-        pass
+        # figure out building and bodycontext
+        building = ifc.by_type("IfcBuilding")[0]
+        for item in ifc.by_type("IfcGeometricRepresentationSubContext"):
+            if item.TargetView == "MODEL_VIEW":
+                subcontext = item

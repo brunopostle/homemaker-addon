@@ -15,39 +15,14 @@ run = ifcopenshell.api.run
 
 class Tests(unittest.TestCase):
     def setUp(self):
-        ifc = run("project.create_file")
-
-        run("owner.add_person", ifc)
-        run("owner.add_organisation", ifc)
-
-        project = run(
-            "root.create_entity",
-            ifc,
-            ifc_class="IfcProject",
-            name="My Project",
-        )
-
-        run("unit.assign_unit", ifc, length={"is_metric": True, "raw": "METERS"})
-
-        run("context.add_context", ifc)
-        bodycontext = run(
-            "context.add_context",
-            ifc,
-            context="Model",
-            bodycontext="Body",
-            target_view="MODEL_VIEW",
-        )
-
-        # create and relate site, building and a storey
-        site = run("root.create_entity", ifc, ifc_class="IfcSite", name="My Site")
+        ifc, site, bodycontext = molior.ifc.init()
         building = run(
             "root.create_entity", ifc, ifc_class="IfcBuilding", name="My Building"
         )
+        run("aggregate.assign_object", ifc, product=building, relating_object=site)
         storey = run(
             "root.create_entity", ifc, ifc_class="IfcBuildingStorey", name="My Storey"
         )
-        run("aggregate.assign_object", ifc, product=site, relating_object=project)
-        run("aggregate.assign_object", ifc, product=building, relating_object=site)
         run("aggregate.assign_object", ifc, product=storey, relating_object=building)
 
         element = run(

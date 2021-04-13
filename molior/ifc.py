@@ -6,6 +6,37 @@ import ifcopenshell.api
 run = ifcopenshell.api.run
 
 
+def init():
+    ifc = run("project.create_file")
+
+    run("owner.add_person", ifc)
+    run("owner.add_organisation", ifc)
+
+    project = run(
+        "root.create_entity",
+        ifc,
+        ifc_class="IfcProject",
+        name="My Project",
+    )
+
+    run("unit.assign_unit", ifc, length={"is_metric": True, "raw": "METERS"})
+
+    # TODO should create Plan, Footprint etc. contexts here
+    run("context.add_context", ifc)
+    bodycontext = run(
+        "context.add_context",
+        ifc,
+        context="Model",
+        subcontext="Body",
+        target_view="MODEL_VIEW",
+    )
+
+    # create and relate site and building
+    site = run("root.create_entity", ifc, ifc_class="IfcSite", name="My Site")
+    run("aggregate.assign_object", ifc, product=site, relating_object=project)
+    return ifc, site, bodycontext
+
+
 def createCurve2D(self, context, profile):
     """A simple centreline"""
     if not profile[-1] == profile[0]:
