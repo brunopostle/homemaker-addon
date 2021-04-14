@@ -15,21 +15,16 @@ run = ifcopenshell.api.run
 
 class Tests(unittest.TestCase):
     def setUp(self):
-        ifc, site, bodycontext = molior.ifc.init()
-        building = run(
-            "root.create_entity", ifc, ifc_class="IfcBuilding", name="My Building"
-        )
-        run("aggregate.assign_object", ifc, product=building, relating_object=site)
-        storey = run(
-            "root.create_entity", ifc, ifc_class="IfcBuildingStorey", name="My Storey"
-        )
-        run("aggregate.assign_object", ifc, product=storey, relating_object=building)
+        ifc = molior.ifc.init("Building Name", {0.0: 0})
+        for item in ifc.by_type("IfcGeometricRepresentationSubContext"):
+            if item.TargetView == "MODEL_VIEW":
+                bodycontext = item
 
         # a centreline axis
         poly = ifc.createCurve2D(bodycontext, [[1.0, 0.0], [1.0, -3.0], [3.0, -3.0]])
         wall = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
         run("geometry.assign_representation", ifc, product=wall, representation=poly)
-        run("spatial.assign_container", ifc, product=wall, relating_structure=storey)
+        ifc.assign_storey_byindex(wall, 0)
 
         # a vertically extruded solid
         shape = ifc.createSweptSolid(
@@ -43,7 +38,7 @@ class Tests(unittest.TestCase):
             product=slab,
             matrix=matrix_align([3.0, 0.0, 3.0], [4.0, 1.0, 3.0]),
         )
-        run("spatial.assign_container", ifc, product=slab, relating_structure=storey)
+        ifc.assign_storey_byindex(slab, 0)
 
         # an extrusion that follows a 2D directrix
         shape2 = ifc.createAdvancedSweptSolid(
@@ -59,7 +54,7 @@ class Tests(unittest.TestCase):
         )
         run("geometry.assign_representation", ifc, product=loft, representation=shape2)
         run("geometry.edit_object_placement", ifc, product=loft, matrix=numpy.eye(4))
-        run("spatial.assign_container", ifc, product=loft, relating_structure=storey)
+        ifc.assign_storey_byindex(loft, 0)
 
         # load a DXF polyface mesh as a Brep
         brep = ifc.createBrep_fromDXF(
@@ -106,7 +101,7 @@ class Tests(unittest.TestCase):
             product=window,
             matrix=matrix_transform(0.0, [15.0, 0.0, 0.0]),
         )
-        run("spatial.assign_container", ifc, product=window, relating_structure=storey)
+        ifc.assign_storey_byindex(window, 0)
 
         # create another window using the mapped item
         window2 = run(
@@ -134,7 +129,7 @@ class Tests(unittest.TestCase):
             product=window2,
             matrix=matrix_align([11.0, 0.0, 0.0], [11.0, 2.0, 0.0]),
         )
-        run("spatial.assign_container", ifc, product=window2, relating_structure=storey)
+        ifc.assign_storey_byindex(window2, 0)
 
         # load a DXF polyface mesh as a Tessellation
         tessellation = ifc.createTessellation_fromDXF(
@@ -160,16 +155,14 @@ class Tests(unittest.TestCase):
             product=window3,
             matrix=matrix_transform(0.0, [5.0, 0.0, 0.0]),
         )
-        run("spatial.assign_container", ifc, product=window3, relating_structure=storey)
+        ifc.assign_storey_byindex(window3, 0)
 
         # make the ifc model available to other test methods
         self.ifc = ifc
-        self.storey = storey
         self.bodycontext = bodycontext
 
     def test_write(self):
         ifc = self.ifc
-        storey = self.storey
         bodycontext = self.bodycontext
         # create a lookup table of existing typeproducts in this ifc
         lookup = {}
@@ -198,12 +191,7 @@ class Tests(unittest.TestCase):
             matrix=matrix_align([11.0, 0.0, 3.0], [11.0, 2.0, 0.0]),
         )
         # assign the window to a storey
-        run(
-            "spatial.assign_container",
-            ifc,
-            product=myproduct,
-            relating_structure=storey,
-        )
+        ifc.assign_storey_byindex(myproduct, 0)
 
         # The TypeProduct knows what MappedRepresentations to use
         typeproduct = lookup["shopfront.dxf"]
@@ -238,7 +226,7 @@ class Tests(unittest.TestCase):
             matrix=matrix_align([11.0, -0.5, 3.0], [11.0, 2.0, 0.0]),
         )
         # assign the wall to a storey
-        run("spatial.assign_container", ifc, product=mywall, relating_structure=storey)
+        ifc.assign_storey_byindex(mywall, 0)
 
         # create an opening
         myopening = run(

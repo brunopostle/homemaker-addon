@@ -15,15 +15,10 @@ run = ifcopenshell.api.run
 
 class Tests(unittest.TestCase):
     def setUp(self):
-        ifc, site, bodycontext = molior.ifc.init()
-        building = run(
-            "root.create_entity", ifc, ifc_class="IfcBuilding", name="My Building"
-        )
-        run("aggregate.assign_object", ifc, product=building, relating_object=site)
-        storey = run(
-            "root.create_entity", ifc, ifc_class="IfcBuildingStorey", name="My Storey"
-        )
-        run("aggregate.assign_object", ifc, product=storey, relating_object=building)
+        ifc = molior.ifc.init("Building Name", {0.0: 0})
+        for item in ifc.by_type("IfcGeometricRepresentationSubContext"):
+            if item.TargetView == "MODEL_VIEW":
+                bodycontext = item
 
         element = run(
             "root.create_entity",
@@ -42,7 +37,7 @@ class Tests(unittest.TestCase):
         )
 
         run("geometry.edit_object_placement", ifc, product=element, matrix=numpy.eye(4))
-        run("spatial.assign_container", ifc, product=element, relating_structure=storey)
+        ifc.assign_storey_byindex(element, 0)
 
         # do it again, hopefully dxf isn't reloaded
 
@@ -68,7 +63,7 @@ class Tests(unittest.TestCase):
             product=element,
             matrix=matrix_align([0.0, 0.0, 1.0], [1.0, 0.0, 1.0]),
         )
-        run("spatial.assign_container", ifc, product=element, relating_structure=storey)
+        ifc.assign_storey_byindex(element, 0)
 
         ifc.write("_test.ifc")
 

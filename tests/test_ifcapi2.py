@@ -14,15 +14,10 @@ run = ifcopenshell.api.run
 
 class Tests(unittest.TestCase):
     def setUp(self):
-        ifc, site, bodycontext = molior.ifc.init()
-        building = run(
-            "root.create_entity", ifc, ifc_class="IfcBuilding", name="My Building"
-        )
-        run("aggregate.assign_object", ifc, product=building, relating_object=site)
-        storey = run(
-            "root.create_entity", ifc, ifc_class="IfcBuildingStorey", name="My Storey"
-        )
-        run("aggregate.assign_object", ifc, product=storey, relating_object=building)
+        ifc = molior.ifc.init("Building Name", {0.0: 0})
+        for item in ifc.by_type("IfcGeometricRepresentationSubContext"):
+            if item.TargetView == "MODEL_VIEW":
+                bodycontext = item
 
         # create a window
         myproduct = run(
@@ -46,12 +41,8 @@ class Tests(unittest.TestCase):
             matrix=matrix_align([11.0, 0.0, 3.0], [11.0, 2.0, 0.0]),
         )
         # assign the window to a storey
-        run(
-            "spatial.assign_container",
-            ifc,
-            product=myproduct,
-            relating_structure=storey,
-        )
+        ifc.assign_storey_byindex(myproduct, 0)
+
         # load geometry from a DXF file and assign to the window
         ifc.assign_representation_fromDXF(
             bodycontext, myproduct, "default", "molior/share/shopfront.dxf"
@@ -78,7 +69,7 @@ class Tests(unittest.TestCase):
             matrix=matrix_align([11.0, -0.5, 3.0], [11.0, 2.0, 0.0]),
         )
         # assign the wall to a storey
-        run("spatial.assign_container", ifc, product=mywall, relating_structure=storey)
+        ifc.assign_storey_byindex(mywall, 0)
 
         # create an opening
         myopening = run(
@@ -133,12 +124,8 @@ class Tests(unittest.TestCase):
             matrix=matrix_align([11.0, 6.0, 3.0], [11.0, 9.0, 0.0]),
         )
         # assign the window to a storey
-        run(
-            "spatial.assign_container",
-            ifc,
-            product=myproduct,
-            relating_structure=storey,
-        )
+        ifc.assign_storey_byindex(myproduct, 0)
+
         # shopfront.dxf is already imported and mapped
         ifc.assign_representation_fromDXF(
             bodycontext, myproduct, "default", "molior/share/shopfront.dxf"
