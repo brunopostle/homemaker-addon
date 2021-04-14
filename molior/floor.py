@@ -23,3 +23,20 @@ class Floor(BaseClass):
         for arg in args:
             self.__dict__[arg] = args[arg]
         # FIXME implement not_if_stair_below
+
+    def Ifc(self, ifc, context):
+        """Generate some ifc"""
+        entity = run("root.create_entity", ifc, ifc_class="IfcSlab", name="Floor")
+        ifc.assign_storey_byindex(entity, self.level)
+        shape = ifc.createSweptSolid(
+            context,
+            [self.corner_in(index) for index in range(len(self.path))],
+            self.floor,
+        )
+        run("geometry.assign_representation", ifc, product=entity, representation=shape)
+        run(
+            "geometry.edit_object_placement",
+            ifc,
+            product=entity,
+            matrix=matrix_align([0.0, 0.0, self.elevation], [1.0, 0.0, 0.0]),
+        )

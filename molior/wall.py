@@ -5,7 +5,7 @@ import ifcopenshell.api
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from molior.baseclass import BaseClass
 import molior
-from molior.geometry_2d import matrix_align
+from molior.geometry_2d import matrix_align, add_2d
 
 run = ifcopenshell.api.run
 
@@ -32,6 +32,54 @@ class Wall(BaseClass):
         self.openings = []
         for index in range(self.segments()):
             self.openings.append([])
+
+    def Ifc(self, ifc, context):
+        """Generate some ifc"""
+        segments = len(self.path)
+        if not self.closed:
+            segments -= 1
+
+        for id_segment in range(segments):
+            # outside face start and end coordinates
+            v_out_a = self.corner_out(id_segment)
+            v_out_b = self.corner_out(id_segment + 1)
+            if not self.closed:
+                if id_segment == 0:
+                    v_out_a = add_2d(v_out_a, self.extension_start())
+                elif id_segment == segments:
+                    v_out_b = add_2d(v_out_b, self.extension_end())
+
+            # inside face start and end coordinates
+            v_in_a = self.corner_in(id_segment)
+            v_in_b = self.corner_in(id_segment + 1)
+            if not self.closed:
+                if id_segment == 0:
+                    v_in_a = add_2d(v_in_a, self.extension_start())
+                elif id_segment == segments:
+                    v_in_b = add_2d(v_in_b, self.extension_end())
+
+            entity = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
+            ifc.assign_storey_byindex(entity, self.level)
+            shape = ifc.createSweptSolid(
+                context,
+                [v_in_a, v_out_a, v_out_b, v_in_b],
+                self.height,
+            )
+            run(
+                "geometry.assign_representation",
+                ifc,
+                product=entity,
+                representation=shape,
+            )
+            run(
+                "geometry.edit_object_placement",
+                ifc,
+                product=entity,
+                matrix=matrix_align([0.0, 0.0, self.elevation], [1.0, 0.0, 0.0]),
+            )
+            # TODO draw axis representation, IfcRelConnectsPathElements
+            # TODO draw wall surfaces for boundaries
+            # TODO draw openings, windows and doors
 
     def populate_exterior_openings(self, segment_id, interior_type, access):
         if interior_type == None:

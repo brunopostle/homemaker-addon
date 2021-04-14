@@ -34,7 +34,6 @@ class Ceiling(BaseClass):
             self.ceiling,
         )
         run("geometry.assign_representation", ifc, product=entity, representation=shape)
-        # FIXME this should be relative to storey
         run(
             "geometry.edit_object_placement",
             ifc,
