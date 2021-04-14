@@ -1,3 +1,30 @@
+"""Molior builds 3D models from topologist 'traces'
+
+Traces are 2D closed or open chains that define building elements,
+differentiated by elevation, height and style properties, typically
+running in an anti-clockwise direction, these follow the outlines of
+rooms, walls, eaves, string-courses etc.
+
+Which traces are used, and how they are used, are defined by files in
+the 'molior/share' folder and subfolders.  Each subfolder has a unique
+name and represents a different architectural 'style', buildings can be
+all one style or have multiple styles, each applied to different parts
+of the building.  Styles are inherited from parent folders, and can
+represent only minor variations, without needing to duplicate anything
+that is already defined by the parent folder(s).  Access to these style
+definitions is handled by the molior.style module.
+
+Molior uses IfcOpenShell to generate IFC models of buildings, with some
+extra helper methods defined in the molior.ifc module.  Different
+building parts need to be constructed differently, so walls, ceilings,
+extrusions etc. are each handled by dedicated modules.
+
+Molior is largely derived from the Perl 'Molior' module, but has been
+rewritten in python in order to interface with Topologic and
+IfcOpenShell.
+
+"""
+
 from molior.ceiling import Ceiling
 from molior.extrusion import Extrusion
 from molior.floor import Floor

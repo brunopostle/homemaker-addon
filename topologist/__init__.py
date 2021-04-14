@@ -15,8 +15,8 @@ elevation, height and style properties, typically running in an
 anti-clockwise direction, these follow the outlines of rooms, walls,
 eaves, string-courses etc.
 
-Traces are defined using a simple directed-graph implementation, called
-'ugraph', this only supports linear chains and doesn't support
+Traces are defined using a simple directed-graph implementation,
+'molior.ugraph', this only supports linear chains and doesn't support
 branching.  The traces contain references back to relevant Vertices,
 Faces and Cells in the original Topologic CellComplex.
 
@@ -24,6 +24,10 @@ Topological relationships between rooms are useful for analysis of the
 resulting building, this module contains methods for creating Topologic
 Graph objects representing adjaceny and circulation, along with methods
 for referencing these back-and-forth with the original CellComplex.
+
+This 'topologist' module knows nothing about CAD, BIM or IFC, use the
+'molior' module to convert these traces into something to visualise or
+solid to build.
 
 """
 
