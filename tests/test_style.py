@@ -27,10 +27,10 @@ class Tests(unittest.TestCase):
         default2 = mystyle.get("nonsuch")
         self.assertEqual(default, default2)
 
-        # currently eaves.dxf only exists in courtyard style
-        self.assertFalse(mystyle.get_file("default", "eaves.dxf"))
-        self.assertFalse(mystyle.get_file("fancy", "eaves.dxf"))
-        self.assertTrue(mystyle.get_file("courtyard", "eaves.dxf"))
+        # currently highparapet.dxf only exists in courtyard style
+        self.assertFalse(mystyle.get_file("default", "highparapet.dxf"))
+        self.assertFalse(mystyle.get_file("fancy", "highparapet.dxf"))
+        self.assertTrue(mystyle.get_file("courtyard", "highparapet.dxf"))
         # shopfront.dxf is in the default style so any style gets it
         self.assertTrue(mystyle.get_file("default", "shopfront.dxf"))
         self.assertTrue(mystyle.get_file("courtyard", "shopfront.dxf"))
