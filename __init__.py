@@ -8,10 +8,9 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 from topologic import Vertex, Face, CellComplex, Graph
 from topologist.helpers import create_stl_list, vertex_id
 from molior import Molior
+import molior.ifc
 
 import tempfile
-import yaml
-import subprocess
 import logging
 from blenderbim import import_ifc
 import bpy
@@ -113,15 +112,6 @@ class ObjectHomemaker(bpy.types.Operator):
 
             style = "default"
 
-            # molior
-            molior = []
-            molior_tmp = tempfile.NamedTemporaryFile(
-                mode="w+b", suffix=".molior", delete=False
-            )
-            ifc_tmp = tempfile.NamedTemporaryFile(
-                mode="w+b", suffix=".ifc", delete=False
-            )
-
             # roof
             roof = cc.Roof()
             if roof:
@@ -151,6 +141,9 @@ class ObjectHomemaker(bpy.types.Operator):
                 modifier.use_even_offset = True
                 modifier.thickness = -0.1
 
+            # generate an IFC object
+            ifc = molior.ifc.init(bl_object.name, elevations)
+
             # Traces are 2D paths that define walls, extrusions and rooms
             traces = cc.GetTraces().traces
 
@@ -161,7 +154,8 @@ class ObjectHomemaker(bpy.types.Operator):
                     for height in traces[condition][elevation]:
                         for style in traces[condition][elevation][height]:
                             for chain in traces[condition][elevation][height][style]:
-                                for item in molior_object.GetMolior(
+                                molior_object.GetIfc(
+                                    ifc,
                                     style,
                                     condition,
                                     level,
@@ -169,13 +163,13 @@ class ObjectHomemaker(bpy.types.Operator):
                                     height,
                                     chain,
                                     circulation,
-                                ):
-                                    molior.append(item.__dict__)
+                                )
 
-            # molior
-            with open(molior_tmp.name, "w") as outfile:
-                yaml.dump_all(molior, outfile)
-            subprocess.call(["molior-ifc.pl", molior_tmp.name, ifc_tmp.name])
+            # FIXME shouldn't have to write and import an IFC file
+            ifc_tmp = tempfile.NamedTemporaryFile(
+                mode="w+b", suffix=".ifc", delete=False
+            )
+            ifc.write(ifc_tmp.name)
             logger = logging.getLogger("ImportIFC")
 
             ifc_import_settings = import_ifc.IfcImportSettings.factory(
