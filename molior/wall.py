@@ -5,7 +5,7 @@ import ifcopenshell.api
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from molior.baseclass import BaseClass
 import molior
-from molior.geometry_2d import matrix_align, add_2d
+from molior.geometry_2d import matrix_align, add_2d, scale_2d
 
 run = ifcopenshell.api.run
 
@@ -35,6 +35,7 @@ class Wall(BaseClass):
 
     def Ifc(self, ifc, context):
         """Generate some ifc"""
+        style = molior.Molior.style
         segments = len(self.path)
         if not self.closed:
             segments -= 1
@@ -58,8 +59,8 @@ class Wall(BaseClass):
                 elif id_segment == segments:
                     v_in_b = add_2d(v_in_b, self.extension_end())
 
-            entity = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
-            ifc.assign_storey_byindex(entity, self.level)
+            mywall = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
+            ifc.assign_storey_byindex(mywall, self.level)
             shape = ifc.createSweptSolid(
                 context,
                 [v_in_a, v_out_a, v_out_b, v_in_b],
@@ -68,18 +69,128 @@ class Wall(BaseClass):
             run(
                 "geometry.assign_representation",
                 ifc,
-                product=entity,
+                product=mywall,
                 representation=shape,
             )
             run(
                 "geometry.edit_object_placement",
                 ifc,
-                product=entity,
+                product=mywall,
                 matrix=matrix_align([0.0, 0.0, self.elevation], [1.0, 0.0, 0.0]),
             )
             # TODO draw axis representation, IfcRelConnectsPathElements
             # TODO draw wall surfaces for boundaries
-            # TODO draw openings, windows and doors
+            segment = self.openings[id_segment]
+            for id_opening in range(len(self.openings[id_segment])):
+                start, end = self.opening_coor(id_segment, id_opening)
+                db = self.get_opening(segment[id_opening]["name"])
+                opening = db["list"][segment[id_opening]["size"]]
+                filename = opening["file"]
+                dxf_path = style.get_file(self.style, filename)
+
+                l, r = self.opening_coor(id_segment, id_opening)
+                left_2d = [l[0], l[1]]
+                right_2d = [r[0], r[1]]
+
+                if db["type"] == "window":
+                    ifc_class = "IfcWindow"
+                else:
+                    ifc_class = "IfcDoor"
+                entity = run(
+                    "root.create_entity",
+                    ifc,
+                    ifc_class=ifc_class,
+                    name=segment[id_opening]["name"],
+                )
+                # windows/doors have width and height attributes
+                run(
+                    "attribute.edit_attributes",
+                    ifc,
+                    product=entity,
+                    attributes={
+                        "OverallHeight": opening["height"],
+                        "OverallWidth": opening["width"],
+                    },
+                )
+                # place the entity in space
+                run(
+                    "geometry.edit_object_placement",
+                    ifc,
+                    product=entity,
+                    matrix=matrix_align(
+                        [left_2d[0], left_2d[1], self.elevation + db["cill"]],
+                        [right_2d[0], right_2d[1], 0.0],
+                    ),
+                )
+                # assign the entity to a storey
+                ifc.assign_storey_byindex(entity, self.level)
+
+                # load geometry from a DXF file and assign to the entity
+                ifc.assign_representation_fromDXF(context, entity, self.style, dxf_path)
+
+                # create an opening
+                myopening = run(
+                    "root.create_entity",
+                    ifc,
+                    ifc_class="IfcOpeningElement",
+                    name="My Opening",
+                )
+                run(
+                    "attribute.edit_attributes",
+                    ifc,
+                    product=myopening,
+                    attributes={"PredefinedType": "OPENING"},
+                )
+
+                # give the opening a Body representation
+                inner = self.inner + 0.02
+                outer = 0 - self.outer - 0.02
+                run(
+                    "geometry.assign_representation",
+                    ifc,
+                    product=myopening,
+                    representation=ifc.createSweptSolid(
+                        context,
+                        [
+                            [0.0, outer],
+                            [opening["width"], outer],
+                            [opening["width"], inner],
+                            [0.0, inner],
+                        ],
+                        opening["height"],
+                    ),
+                )
+                # place the opening where the wall is
+                run(
+                    "geometry.edit_object_placement",
+                    ifc,
+                    product=myopening,
+                    matrix=matrix_align(
+                        [left_2d[0], left_2d[1], self.elevation + db["cill"]],
+                        [right_2d[0], right_2d[1], 0.0],
+                    ),
+                )
+                # use the opening to cut the wall, no need to assign a storey
+                run("void.add_opening", ifc, opening=myopening, element=mywall)
+                # associate the opening with our window
+                run("void.add_filling", ifc, opening=myopening, element=entity)
+
+    def opening_coor(self, id_segment, id_opening):
+        opening = self.openings[id_segment][id_opening]
+        db = self.get_opening(self.name)
+        width = db["list"][opening["size"]]["width"]
+        height = db["list"][opening["size"]]["height"]
+        up = opening["up"]
+        along = opening["along"]
+        segment_direction = self.direction_segment(id_segment)
+
+        bottom = self.elevation + up
+        top = bottom + height
+
+        A = add_2d(self.path[id_segment], scale_2d(along, segment_direction))
+        B = add_2d(self.path[id_segment], scale_2d(along + width, segment_direction))
+
+        return [A[0], A[1], bottom], [B[0], B[1], top]
 
     def populate_exterior_openings(self, segment_id, interior_type, access):
         if interior_type == None:

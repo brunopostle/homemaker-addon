@@ -25,12 +25,7 @@ class Extrusion(BaseClass):
     def Ifc(self, ifc, context):
         style = molior.Molior.style
         """Generate some ifc"""
-        entity = run(
-            "root.create_entity",
-            ifc,
-            ifc_class=self.ifc,
-            name="My Extrusion"
-        )
+        entity = run("root.create_entity", ifc, ifc_class=self.ifc, name="My Extrusion")
         ifc.assign_storey_byindex(entity, self.level)
 
         directrix = self.path
