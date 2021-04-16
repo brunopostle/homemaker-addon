@@ -76,6 +76,8 @@ class Molior:
                     "height": height,
                     "style": style,
                     "level": level,
+                    "style_openings": myconfig["openings"],
+                    "style_assets": myconfig["assets"],
                 }
                 vals.update(config)
                 part = getattr(self, config["class"])(vals)
@@ -134,6 +136,8 @@ class Molior:
                     "height": height,
                     "style": style,
                     "level": level,
+                    "style_openings": myconfig["openings"],
+                    "style_assets": myconfig["assets"],
                 }
                 vals.update(config)
                 part = getattr(self, config["class"])(vals)

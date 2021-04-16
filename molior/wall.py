@@ -233,12 +233,11 @@ class Wall(BaseClass):
         )
 
     def get_opening(self, usage):
-        style = molior.Molior.style.get(self.style)
-        if usage in style["openings"]:
-            opening = style["openings"][usage]
-            if opening["name"] in style["assets"]:
+        if usage in self.style_openings:
+            opening = self.style_openings[usage]
+            if opening["name"] in self.style_assets:
                 return {
-                    "list": style["assets"][opening["name"]],
+                    "list": self.style_assets[opening["name"]],
                     "type": opening["type"],
                     "cill": opening["cill"],
                 }
