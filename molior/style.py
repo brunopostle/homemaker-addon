@@ -1,4 +1,4 @@
-import os, yaml
+import os, yaml, copy
 
 
 class Style:
@@ -45,7 +45,7 @@ class Style:
         """retrieves a style definition with ancestors filling in the gaps"""
         if not stylename in self.data:
             return self.get("default")
-        mydata = self.data[stylename].copy()
+        mydata = copy.deepcopy(self.data[stylename])
         if len(mydata["ancestors"]) == 0:
             return mydata
         ancestor = self.get(mydata["ancestors"][0])
