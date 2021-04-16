@@ -89,8 +89,8 @@ class Wall(BaseClass):
                 dxf_path = style.get_file(self.style, filename)
 
                 l, r = self.opening_coor(id_segment, id_opening)
-                left_2d = [l[0], l[1]]
-                right_2d = [r[0], r[1]]
+                left_2d = l[0:2]
+                right_2d = r[0:2]
 
                 if db["type"] == "window":
                     ifc_class = "IfcWindow"
@@ -177,7 +177,7 @@ class Wall(BaseClass):
 
     def opening_coor(self, id_segment, id_opening):
         opening = self.openings[id_segment][id_opening]
-        db = self.get_opening(self.name)
+        db = self.get_opening(opening["name"])
         width = db["list"][opening["size"]]["width"]
         height = db["list"][opening["size"]]["height"]
         up = opening["up"]
