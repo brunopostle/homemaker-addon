@@ -5,7 +5,7 @@ import ifcopenshell.api
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior
 from molior.baseclass import BaseClass
-from molior.geometry_2d import matrix_align
+from molior.geometry_2d import matrix_align, add_2d
 
 run = ifcopenshell.api.run
 
@@ -31,6 +31,9 @@ class Extrusion(BaseClass):
         directrix = self.path
         if self.closed:
             directrix.append(directrix[0])
+        else:
+            directrix[0] = add_2d(directrix[0], self.extension_start())
+            directrix[-1] = add_2d(directrix[-1], self.extension_end())
 
         dxf_path = style.get_file(self.style, self.profile)
 

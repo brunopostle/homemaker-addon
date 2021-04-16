@@ -57,7 +57,7 @@ parapet:
   condition: top-backward-level
   outer: 0.0
   height: 0.0
-  extension: 0.0
+  extension: 0.25
 external beam:
   class: Extrusion
   ifc: IFCBEAM
