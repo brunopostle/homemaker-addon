@@ -1,0 +1,8 @@
+---
+exterior:
+  class: Wall
+  ifc: IFCWALL
+  condition: external
+  inner: 0.08
+  outer: 0.25
+  extension: 0.25
