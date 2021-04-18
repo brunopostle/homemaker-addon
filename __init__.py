@@ -39,6 +39,7 @@ class ObjectHomemaker(bpy.types.Operator):
         for blender_object in context.selected_objects:
             if not blender_object.type == "MESH":
                 continue
+            # Collect widgets (if any) for allocating room/space usage
             label = re.match(
                 "(bedroom|circulation|circulation_stair|stair|kitchen|living|retail|sahn|toilet)",
                 blender_object.name,
@@ -65,6 +66,8 @@ class ObjectHomemaker(bpy.types.Operator):
             else:
                 bl_objects.append(blender_object)
 
+        # Each remaining mesh becomes a separate building
+        # FIXME should all end-up in the same IfcProject
         for bl_object in bl_objects:
             depsgraph = bpy.context.evaluated_depsgraph_get()
             bl_object = bl_object.evaluated_get(depsgraph)
@@ -82,7 +85,7 @@ class ObjectHomemaker(bpy.types.Operator):
                 vertex = Vertex.ByCoordinates(coor[0], coor[1], coor[2])
                 vertices.append(vertex)
 
-            faces = []
+            faces_ptr = create_stl_list(Face)
 
             for f in bm.faces:
                 style = "default"
@@ -94,25 +97,24 @@ class ObjectHomemaker(bpy.types.Operator):
                     vertices_face.append(vertex)
                 face = Face.ByVertices(vertices_face)
                 face.Set("style", style)
-                faces.append(face)
+                faces_ptr.push_back(face)
             bl_object.hide_viewport = True
 
-            # start using Topologic
-            faces_ptr = create_stl_list(Face)
-            for face in faces:
-                faces_ptr.push_back(face)
-
+            # Generate a Topologic CellComplex
             cc = CellComplex.ByFaces(faces_ptr, 0.0001)
+            # Copy styles from Faces to the CellComplex
             cc.ApplyDictionary(faces_ptr)
+            # Assign Cell usages from widgets
             cc.AllocateCells(widgets)
+            # Collect unique elevations and assign storey numbers
             elevations = cc.Elevations()
+            # Generate a cirulation Graph
             circulation = Graph.Adjacency(cc)
             circulation.Circulation(cc)
             # print(circulation.Dot(cc))
 
-            style = "default"
-
-            # roof
+            # FIXME this isn't creating any IFC data
+            # TODO should also do soffits, ceilings etc.
             roof = cc.Roof()
             if roof:
                 vertices_stl = create_stl_list(Vertex)
@@ -148,22 +150,7 @@ class ObjectHomemaker(bpy.types.Operator):
             traces = cc.GetTraces().traces
 
             molior_object = Molior()
-            for condition in traces:
-                for elevation in traces[condition]:
-                    level = elevations[elevation]
-                    for height in traces[condition][elevation]:
-                        for style in traces[condition][elevation][height]:
-                            for chain in traces[condition][elevation][height][style]:
-                                molior_object.GetIfc(
-                                    ifc,
-                                    style,
-                                    condition,
-                                    level,
-                                    elevation,
-                                    height,
-                                    chain,
-                                    circulation,
-                                )
+            molior_object.Process(ifc, circulation, elevations, traces)
 
             # FIXME shouldn't have to write and import an IFC file
             ifc_tmp = tempfile.NamedTemporaryFile(

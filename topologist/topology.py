@@ -108,14 +108,12 @@ def GraphVertex(self, graph):
         myclass = "Face"
     if self.__class__ == Cell:
         myclass = "Cell"
-    if index == None:
-        return None
-    vertices = create_stl_list(Vertex)
-    graph.Vertices(vertices)
-    for vertex in vertices:
-        if vertex.Get("index") == index and vertex.Get("class") == myclass:
-            return vertex
-    return None
+    if not index == None:
+        vertices = create_stl_list(Vertex)
+        graph.Vertices(vertices)
+        for vertex in vertices:
+            if vertex.Get("index") == index and vertex.Get("class") == myclass:
+                return vertex
 
 
 setattr(topologic.Topology, "FacesVertical", FacesVertical)

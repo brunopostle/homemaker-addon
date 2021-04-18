@@ -63,4 +63,3 @@ def vertex_id(topology, vertex):
         if v.IsSame(vertex):
             return i
         i += 1
-    return None

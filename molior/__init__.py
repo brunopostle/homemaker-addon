@@ -34,8 +34,6 @@ from molior.stair import Stair
 from molior.wall import Wall
 from molior.style import Style
 from topologist.helpers import string_to_coor_2d
-import ifcopenshell.api
-import molior.ifc
 
 
 class Molior:
@@ -53,6 +51,24 @@ class Molior:
         for arg in args:
             self.__dict__[arg] = args[arg]
         Molior.style = Style({"share_dir": self.share_dir})
+
+    def Process(self, ifc, circulation, elevations, traces):
+        for condition in traces:
+            for elevation in traces[condition]:
+                level = elevations[elevation]
+                for height in traces[condition][elevation]:
+                    for style in traces[condition][elevation][height]:
+                        for chain in traces[condition][elevation][height][style]:
+                            self.GetIfc(
+                                ifc,
+                                style,
+                                condition,
+                                level,
+                                elevation,
+                                height,
+                                chain,
+                                circulation,
+                            )
 
     def GetMolior(self, style, condition, level, elevation, height, chain, circulation):
         """Retrieves a struct that can be passed to the molior-ifc.pl command-line tool to generate an IFC file"""
