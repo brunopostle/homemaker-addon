@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from topologist import ugraph
 from topologist.helpers import vertex_string
 from molior import Molior
+import molior.ifc
 
 
 class Tests(unittest.TestCase):
@@ -27,7 +28,10 @@ class Tests(unittest.TestCase):
         trace.add_edge({coor_0: [coor_1, [vertex_0, vertex_1, None, None, None]]})
         paths = trace.find_paths()
 
-        self.wall = Molior().GetMolior(
+        ifc = molior.ifc.init("Our House", {3.15: 2})
+
+        self.wall = Molior().GetIfc(
+            ifc,
             "default",  # style
             "external",  # condition
             2,  # level

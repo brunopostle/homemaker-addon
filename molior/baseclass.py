@@ -30,10 +30,6 @@ class BaseClass:
         for arg in args:
             self.__dict__[arg] = args[arg]
 
-    def Ifc(self, ifc, context):
-        """Should never be called directly"""
-        print(self)
-
     def segments(self):
         """Number of segments in the path taking account for being closed or not"""
         segments = len(self.path)

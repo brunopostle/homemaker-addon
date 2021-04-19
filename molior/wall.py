@@ -27,11 +27,10 @@ class Wall(BaseClass):
         self.init_openings()
 
     def init_openings(self):
-        if len(self.openings) == self.segments():
-            return
-        self.openings = []
-        for index in range(self.segments()):
-            self.openings.append([])
+        if not len(self.openings) == self.segments():
+            self.openings = []
+            for index in range(self.segments()):
+                self.openings.append([])
 
     def Ifc(self, ifc, context):
         """Generate some ifc"""
@@ -244,28 +243,28 @@ class Wall(BaseClass):
         return {
             "list": [
                 {
-                    "file": "error1.dxf",
+                    "file": "error.dxf",
                     "height": 1.0,
                     "width": 1.0,
                     "side": 0.1,
                     "end": 0.0,
                 },
                 {
-                    "file": "error2.dxf",
+                    "file": "error.dxf",
                     "height": 2.0,
                     "width": 1.0,
                     "side": 0.1,
                     "end": 0.0,
                 },
                 {
-                    "file": "error3.dxf",
+                    "file": "error.dxf",
                     "height": 2.0,
                     "width": 2.0,
                     "side": 0.1,
                     "end": 0.0,
                 },
                 {
-                    "file": "error4.dxf",
+                    "file": "error.dxf",
                     "height": 1.0,
                     "width": 2.0,
                     "side": 0.1,

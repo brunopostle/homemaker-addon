@@ -1,6 +1,5 @@
 import os
 import sys
-import ifcopenshell.api
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from molior.baseclass import BaseClass
@@ -28,3 +27,8 @@ class Stair(BaseClass):
             self.__dict__[arg] = args[arg]
         self.risers = (int(self.height / self.riser) + 1,)
         # FIXME check circulation graph, only draw stair if cell above this cell is stair
+
+    def Ifc(self, ifc, context):
+        """Generate some ifc"""
+        # TODO entire stair drawing module still needs porting from Perl Molior library
+        print(self)
