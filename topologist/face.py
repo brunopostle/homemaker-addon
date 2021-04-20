@@ -130,7 +130,7 @@ def IsExternal(self):
             return True
         if cells[1].IsOutside() and not cells[0].IsOutside():
             return True
-    else:
+    elif len(cells) == 1:
         if not cells[0].IsOutside():
             return True
     return False
