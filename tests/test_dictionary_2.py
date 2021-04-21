@@ -47,7 +47,7 @@ class Tests(unittest.TestCase):
                 vertices_face.append(vertex)
 
             face = Face.ByVertices(vertices_face)
-            face.Set("style", "orange")
+            face.Set("stylename", "orange")
             self.faces_ptr.push_back(face)
 
         self.cellcomplex = CellComplex.ByFaces(self.faces_ptr, 0.0001)
@@ -56,14 +56,14 @@ class Tests(unittest.TestCase):
     def test_faces(self):
         self.assertEqual(len(self.faces_ptr), 6)
         for face in self.faces_ptr:
-            self.assertEqual(face.Get("style"), "orange")
+            self.assertEqual(face.Get("stylename"), "orange")
 
     def test_faces_cellcomplex(self):
         faces_all = create_stl_list(Face)
         self.cellcomplex.Faces(faces_all)
         self.assertEqual(len(faces_all), 6)
         for face in faces_all:
-            self.assertEqual(face.Get("style"), "orange")
+            self.assertEqual(face.Get("stylename"), "orange")
 
 
 if __name__ == "__main__":

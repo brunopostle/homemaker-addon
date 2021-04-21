@@ -52,7 +52,7 @@ def GetTraces(self):
         if face.IsVertical():
             elevation = face.Elevation()
             height = face.Height()
-            stylename = face.Get("style")
+            stylename = face.Get("stylename")
             if not stylename:
                 stylename = "default"
 

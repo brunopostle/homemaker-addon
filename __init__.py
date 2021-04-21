@@ -96,7 +96,7 @@ class ObjectHomemaker(bpy.types.Operator):
                     vertex = vertices[v.index]
                     vertices_face.append(vertex)
                 face = Face.ByVertices(vertices_face)
-                face.Set("style", stylename)
+                face.Set("stylename", stylename)
                 faces_ptr.push_back(face)
             bl_object.hide_viewport = True
 
