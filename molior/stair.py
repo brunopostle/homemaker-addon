@@ -31,4 +31,4 @@ class Stair(BaseClass):
     def Ifc(self, ifc, context):
         """Generate some ifc"""
         # TODO entire stair drawing module still needs porting from Perl Molior library
-        print(self)
+        pass

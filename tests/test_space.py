@@ -44,6 +44,17 @@ class Tests(unittest.TestCase):
             None,  # circulation
         )
 
+        self.stair = Molior().GetIfc(
+            ifc,
+            "default",  # style
+            "stair",  # condition
+            2,  # level
+            3.15,  # elevation
+            0.05,  # height
+            paths[0],  # chain
+            None,  # circulation
+        )
+
     def test_sanity(self):
         self.assertEqual(self.space[0].height, 0.05)
         self.assertEqual(self.space[0].level, 2)
@@ -59,6 +70,11 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.space[2].level, 2)
         self.assertEqual(self.space[2].name, "kitchen-ceiling")
         self.assertEqual(self.space[2].__dict__["class"], "Ceiling")
+
+        self.assertEqual(self.stair[1].height, 0.05)
+        self.assertEqual(self.stair[1].level, 2)
+        self.assertEqual(self.stair[1].name, "stair")
+        self.assertEqual(self.stair[1].__dict__["class"], "Stair")
 
 
 if __name__ == "__main__":
