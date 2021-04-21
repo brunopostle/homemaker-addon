@@ -1,3 +1,5 @@
+"""Overloads domain-specific methods onto topologic.Cell"""
+
 import topologic
 from topologic import Vertex, Edge, Wire, Face, Cell, FaceUtility
 from topologist.helpers import create_stl_list, el, vertex_string

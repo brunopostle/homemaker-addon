@@ -88,15 +88,15 @@ class ObjectHomemaker(bpy.types.Operator):
             faces_ptr = create_stl_list(Face)
 
             for f in bm.faces:
-                style = "default"
+                stylename = "default"
                 if len(bl_object.material_slots) > 0:
-                    style = bl_object.material_slots[f.material_index].material.name
+                    stylename = bl_object.material_slots[f.material_index].material.name
                 vertices_face = []
                 for v in f.verts:
                     vertex = vertices[v.index]
                     vertices_face.append(vertex)
                 face = Face.ByVertices(vertices_face)
-                face.Set("style", style)
+                face.Set("style", stylename)
                 faces_ptr.push_back(face)
             bl_object.hide_viewport = True
 

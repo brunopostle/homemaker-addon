@@ -44,6 +44,7 @@ class Space(BaseClass):
             self.height - self.ceiling,
         )
         run("geometry.assign_representation", ifc, product=entity, representation=shape)
+        # TODO space may be .INTERNAL. or .EXTERNAL.
         run(
             "geometry.edit_object_placement",
             ifc,

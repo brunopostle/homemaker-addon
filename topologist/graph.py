@@ -1,3 +1,5 @@
+"""Overloads domain-specific methods onto topologic.Graph"""
+
 import topologic
 from topologic import Vertex, Edge, Face, Cell, Graph, VertexUtility
 from topologist.helpers import create_stl_list

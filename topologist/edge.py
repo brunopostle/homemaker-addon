@@ -1,3 +1,5 @@
+"""Overloads domain-specific methods onto topologic.Edge"""
+
 import topologic
 from topologic import Face, Cell
 from topologist.helpers import create_stl_list, el

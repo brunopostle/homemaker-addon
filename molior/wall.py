@@ -27,6 +27,7 @@ class Wall(BaseClass):
         self.init_openings()
 
     def init_openings(self):
+        """We need an array for openings the same size as wall segments array"""
         if not len(self.openings) == self.segments():
             self.openings = []
             for index in range(self.segments()):
@@ -35,9 +36,7 @@ class Wall(BaseClass):
     def Ifc(self, ifc, context):
         """Generate some ifc"""
         style = molior.Molior.style
-        segments = len(self.path)
-        if not self.closed:
-            segments -= 1
+        segments = self.segments()
 
         for id_segment in range(segments):
             # outside face start and end coordinates
@@ -75,7 +74,10 @@ class Wall(BaseClass):
                 matrix=matrix_align([0.0, 0.0, self.elevation], [1.0, 0.0, 0.0]),
             )
             # TODO draw axis representation, IfcRelConnectsPathElements
+            # TODO draw plan representation with door cuts
             # TODO draw wall surfaces for boundaries
+            # TODO draw centreline surface for structure
+            # TODO calculate area, volume properties
             segment = self.openings[id_segment]
             for id_opening in range(len(self.openings[id_segment])):
                 start, end = self.opening_coor(id_segment, id_opening)
@@ -139,6 +141,7 @@ class Wall(BaseClass):
                 )
 
                 # give the opening a Body representation
+                # TODO IFC library objects may come with a more complex opening shape
                 inner = self.inner + 0.02
                 outer = 0 - self.outer - 0.02
                 run(

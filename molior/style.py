@@ -1,8 +1,31 @@
+"""A folder tree of inheritable style definitions and resources
+
+A 'style' is defined by a collection of YAML configuration files and other file
+resources in a folder.  This module provides methods for accessing this data.
+
+Alternative styles are accessed by a stylename, each represented by a subfolder
+that inherits data and resources from all parent folders.  For example, a style
+named 'thin' may be found in a folder named ${share_dir}/rustic/wood/thin; any
+query for 'thin' data not found in this folder will be sought in
+${share_dir}/rustic/wood; failing that it will be sought in
+${share_dir}/rustic, and finally in ${share_dir} itself.
+
+Note that styles are accessed by their short stylename _not_ the path, this
+allows inheritance to be defined entirely by rearrangement of the configuration
+data.  This also means that there may only be one folder called 'thin' in the
+folder tree, all others will be ignored.
+
+"""
+
 import os, yaml, copy
 
 
 class Style:
     def __init__(self, args={}):
+        """Read all the data in ${share_dir} and sub-folders, collect names of
+        non-YAML files. Default location is a folder called 'share' installed with this
+        module, or pass an absolute path in the 'share_dir' parameter to indicate a
+        different collection of styles."""
         self.share_dir = "share"
         self.data = {}
         self.files = {}
@@ -42,7 +65,7 @@ class Style:
                     self.files[stylename][name] = os.path.join(root, name)
 
     def get(self, stylename):
-        """retrieves a style definition with ancestors filling in the gaps"""
+        """retrieves a flattened style definition with ancestors filling in the gaps"""
         if not stylename in self.data:
             return self.get("default")
         mydata = copy.deepcopy(self.data[stylename])

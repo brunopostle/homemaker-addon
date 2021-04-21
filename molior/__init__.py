@@ -39,6 +39,7 @@ class Molior:
     """A Builder, has resources to build"""
 
     def __init__(self, args={}):
+        # TODO enable user defined location for share_dir
         self.share_dir = "share"
         self.Ceiling = Ceiling
         self.Extrusion = Extrusion
@@ -55,11 +56,11 @@ class Molior:
             for elevation in traces[condition]:
                 level = elevations[elevation]
                 for height in traces[condition][elevation]:
-                    for style in traces[condition][elevation][height]:
-                        for chain in traces[condition][elevation][height][style]:
+                    for stylename in traces[condition][elevation][height]:
+                        for chain in traces[condition][elevation][height][stylename]:
                             self.GetIfc(
                                 ifc,
-                                style,
+                                stylename,
                                 condition,
                                 level,
                                 elevation,
@@ -69,14 +70,14 @@ class Molior:
                             )
 
     def GetIfc(
-        self, ifc, style, condition, level, elevation, height, chain, circulation
+        self, ifc, stylename, condition, level, elevation, height, chain, circulation
     ):
         """Retrieves IFC data directly without using molior-ifc.pl"""
         results = []
         for item in ifc.by_type("IfcGeometricRepresentationSubContext"):
             if item.TargetView == "MODEL_VIEW":
                 subcontext = item
-        myconfig = Molior.style.get(style)
+        myconfig = Molior.style.get(stylename)
         for name in myconfig["traces"]:
             config = myconfig["traces"][name]
             if "condition" in config and config["condition"] == condition:
@@ -87,19 +88,27 @@ class Molior:
                 for node in chain.nodes():
                     path.append(string_to_coor_2d(node))
 
+                # TODO style definition should set material, layerset and/or
+                # colour for generated products.  Resources such as windows and
+                # doors in an IFC library should reference materials independently
                 vals = {
                     "closed": closed,
                     "path": path,
                     "name": name,
                     "elevation": elevation,
                     "height": height,
-                    "style": style,
+                    "style": stylename,
                     "level": level,
                     "style_openings": myconfig["openings"],
                     "style_assets": myconfig["assets"],
                 }
                 vals.update(config)
                 part = getattr(self, config["class"])(vals)
+
+                # TODO Face information in 'chain' is needed to trim top of
+                # gable walls.
+                # TODO Face information is needed to connect walls to spaces in
+                # relspaceboundary.
 
                 # part may be a wall, add some openings
                 if "do_populate_exterior_openings" in part.__dict__:

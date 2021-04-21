@@ -1,3 +1,5 @@
+"""Overloads domain-specific methods onto topologic.Topology"""
+
 import cppyy
 from cppyy.gbl.std import string
 import topologic

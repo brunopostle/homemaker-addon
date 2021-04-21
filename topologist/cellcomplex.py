@@ -1,3 +1,5 @@
+"""Overloads domain-specific methods onto topologic.CellComplex"""
+
 import topologic
 from topologic import Face, Cluster, Cell, Topology, FaceUtility, CellUtility
 from topologist.helpers import create_stl_list, el
@@ -50,22 +52,24 @@ def GetTraces(self):
         if face.IsVertical():
             elevation = face.Elevation()
             height = face.Height()
-            style = face.Get("style")
-            if not style:
-                style = "default"
+            stylename = face.Get("style")
+            if not stylename:
+                stylename = "default"
 
             axis = face.AxisOuter()
             # wall face may be triangular and not have a bottom edge
             if axis:
                 if face.IsOpen():
-                    mytraces.add_axis("open", elevation, height, style, axis, face)
+                    mytraces.add_axis("open", elevation, height, stylename, axis, face)
 
                 elif face.IsExternal():
-                    mytraces.add_axis("external", elevation, height, style, axis, face)
+                    mytraces.add_axis(
+                        "external", elevation, height, stylename, axis, face
+                    )
 
                 elif face.IsInternal():
                     mytraces.add_axis_simple(
-                        "internal", elevation, height, style, axis, face
+                        "internal", elevation, height, stylename, axis, face
                     )
 
                     # collect foundation strips
@@ -74,7 +78,7 @@ def GetTraces(self):
                             "internal-unsupported",
                             elevation,
                             0.0,
-                            style,
+                            stylename,
                             axis,
                             face,
                         )
@@ -87,7 +91,7 @@ def GetTraces(self):
                         label,
                         el(elevation + height),
                         0.0,
-                        style,
+                        stylename,
                         [edge.EndVertex(), edge.StartVertex()],
                         face,
                     )
@@ -99,7 +103,7 @@ def GetTraces(self):
                         label,
                         elevation,
                         0.0,
-                        style,
+                        stylename,
                         [edge.StartVertex(), edge.EndVertex()],
                         face,
                     )
@@ -112,10 +116,10 @@ def GetTraces(self):
             continue
         elevation = cell.Elevation()
         height = cell.Height()
-        style = "default"
+        stylename = "default"
 
         usage = cell.Usage()
-        mytraces.add_trace(usage, elevation, height, style, perimeter)
+        mytraces.add_trace(usage, elevation, height, stylename, perimeter)
 
     mytraces.process()
     return mytraces

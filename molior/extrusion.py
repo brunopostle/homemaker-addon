@@ -26,8 +26,9 @@ class Extrusion(BaseClass):
         style = molior.Molior.style
         """Generate some ifc"""
         entity = run("root.create_entity", ifc, ifc_class=self.ifc, name="My Extrusion")
+        # TODO IfcRoof may be .FREEFORM. IfcBeam may have structural
+        # attributes. IfcBuildingElementProxy can be .ELEMENT.
         ifc.assign_storey_byindex(entity, self.level)
-
         directrix = self.path
         if self.closed:
             directrix.append(directrix[0])

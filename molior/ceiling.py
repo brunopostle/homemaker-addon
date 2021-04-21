@@ -28,6 +28,9 @@ class Ceiling(BaseClass):
         """Generate some ifc"""
         entity = run("root.create_entity", ifc, ifc_class="IfcSlab", name="Ceiling")
         ifc.assign_storey_byindex(entity, self.level)
+        # TODO previous Molior module had Beams() method that drew a slab as parallel beams
+        # which could be created as an IFC boolean intersection.
+        # TODO draw surface for structure and boundary
         shape = ifc.createSweptSolid(
             context,
             [self.corner_in(index) for index in range(len(self.path))],
