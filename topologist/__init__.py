@@ -6,7 +6,8 @@ overloads additional functionality onto the topologicPy module that is
 specific to ordinary buildings.  In particular: horizontal and vertical
 faces are considered to be floors and walls; rooms are spaces with
 vertical walls on all sides; non-horizontal faces form roofs and/or
-soffits; and cells are tagged as indoor 'rooms', or outdoor spaces.
+soffits; and cells are tagged as indoor 'rooms', voids, or outdoor
+spaces.
 
 With this model of what-a-building-is, it is possible to decompose the
 Topologic CellComplex geometry into 'traces' that define building
@@ -22,7 +23,7 @@ Faces and Cells in the original Topologic CellComplex.
 
 Topological relationships between rooms are useful for analysis of the
 resulting building, this module contains methods for creating Topologic
-Graph objects representing adjaceny and circulation, along with methods
+Graph objects representing adjacency and circulation, along with methods
 for referencing these back-and-forth with the original CellComplex.
 
 This 'topologist' module knows nothing about CAD, BIM or IFC, use the

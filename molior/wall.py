@@ -73,7 +73,7 @@ class Wall(BaseClass):
                 product=mywall,
                 matrix=matrix_align([0.0, 0.0, self.elevation], [1.0, 0.0, 0.0]),
             )
-            # TODO draw axis representation, IfcRelConnectsPathElements
+            # TODO draw axis representation, materiallayerset, IfcRelConnectsPathElements
             # TODO draw plan representation with door cuts
             # TODO draw wall surfaces for boundaries
             # TODO draw centreline surface for structure
