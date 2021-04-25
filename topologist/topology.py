@@ -76,6 +76,24 @@ def EdgesBottom(self, edges_result):
             edges_result.push_back(edge)
 
 
+def EdgesCrop(self, edges_result):
+    """Which edges are not vertical or top/bottom?"""
+    edges = create_stl_list(Edge)
+    self.Edges(edges)
+    bottom = self.Elevation()
+    top = el(self.Elevation() + self.Height())
+    for edge in edges:
+        vertex_start = edge.StartVertex()
+        vertex_end = edge.EndVertex()
+        if el(vertex_start.Z()) == top and el(vertex_end.Z()) == top:
+            continue
+        elif el(vertex_start.Z()) == bottom and el(vertex_end.Z()) == bottom:
+            continue
+        elif edge.IsVertical():
+            continue
+        edges_result.push_back(edge)
+
+
 def Set(self, key, value):
     """Simple string value dictionary access"""
     dictionary = self.GetDictionary()
@@ -125,6 +143,7 @@ setattr(topologic.Topology, "Elevation", Elevation)
 setattr(topologic.Topology, "Height", Height)
 setattr(topologic.Topology, "EdgesTop", EdgesTop)
 setattr(topologic.Topology, "EdgesBottom", EdgesBottom)
+setattr(topologic.Topology, "EdgesCrop", EdgesCrop)
 setattr(topologic.Topology, "Set", Set)
 setattr(topologic.Topology, "Get", Get)
 setattr(topologic.Topology, "DumpDictionary", DumpDictionary)
