@@ -19,6 +19,7 @@ class Tests(unittest.TestCase):
             if item.TargetView == "MODEL_VIEW":
                 context = item
 
+        # geometry for an unclipped wall
         shape = ifc.createIfcExtrudedAreaSolid(
             ifc.createIfcArbitraryClosedProfileDef(
                 "AREA",
@@ -37,51 +38,80 @@ class Tests(unittest.TestCase):
             3.0,
         )
 
-        plane = ifc.createIfcAxis2Placement3D(
-            ifc.createIfcCartesianPoint((2.5, 1.0, 2.0)),
-            ifc.createIfcDirection((0.6, 0.0, 0.8)),
-            ifc.createIfcDirection((0.0, 1.0, 0.0)),
-        )
-        polyhalfsolid = ifc.createIfcPolygonalBoundedHalfSpace(
-            ifc.createIfcPlane(plane),
-            False,
-            ifc.createIfcAxis2Placement3D(
-                ifc.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
-            ),
-            ifc.createIfcPolyline(
-                [
-                    ifc.createIfcCartesianPoint(point)
-                    for point in [
-                        [2.0, 0.0],
-                        [3.0, 0.0],
-                        [3.0, 2.0],
-                        [2.0, 2.0],
-                        [2.0, 0.0],
-                    ]
-                ]
-            ),
-        )
         clipped = ifc.createIfcBooleanClippingResult(
             "DIFFERENCE",
             shape,
-            polyhalfsolid,
+            ifc.createIfcPolygonalBoundedHalfSpace(
+                ifc.createIfcPlane(
+                    ifc.createIfcAxis2Placement3D(
+                        ifc.createIfcCartesianPoint((2.5, 1.0, 2.0)),
+                        ifc.createIfcDirection((0.6, 0.0, 0.8)),
+                        None,
+                    )
+                ),
+                False,
+                ifc.createIfcAxis2Placement3D(
+                    ifc.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
+                ),
+                ifc.createIfcPolyline(
+                    [
+                        ifc.createIfcCartesianPoint(point)
+                        for point in [
+                            [2.0, 0.0],
+                            [3.0, 0.0],
+                            [3.0, 2.0],
+                            [2.0, 2.0],
+                            [2.0, 0.0],
+                        ]
+                    ]
+                ),
+            ),
+        )
+        clipped2 = ifc.createIfcBooleanClippingResult(
+            "DIFFERENCE",
+            clipped,
+            ifc.createIfcPolygonalBoundedHalfSpace(
+                ifc.createIfcPlane(
+                    ifc.createIfcAxis2Placement3D(
+                        ifc.createIfcCartesianPoint((3.5, 1.0, 2.0)),
+                        ifc.createIfcDirection((-0.6, 0.0, 0.8)),
+                        None,
+                    )
+                ),
+                False,
+                ifc.createIfcAxis2Placement3D(
+                    ifc.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
+                ),
+                ifc.createIfcPolyline(
+                    [
+                        ifc.createIfcCartesianPoint(point)
+                        for point in [
+                            [3.0, 0.0],
+                            [4.0, 0.0],
+                            [4.0, 2.0],
+                            [3.0, 2.0],
+                            [3.0, 0.0],
+                        ]
+                    ]
+                ),
+            ),
         )
         clipped_representation = ifc.createIfcShapeRepresentation(
             context,
             "Body",
             "Clipping",
-            [clipped],
+            [clipped2],
         )
 
         # use clipped geometry as a wall
         mywall = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
-        ifc.assign_storey_byindex(mywall, 2)
         run(
             "geometry.assign_representation",
             ifc,
             product=mywall,
             representation=clipped_representation,
         )
+        ifc.assign_storey_byindex(mywall, 2)
         run(
             "geometry.edit_object_placement",
             ifc,
