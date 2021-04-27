@@ -72,7 +72,6 @@ class Tests(unittest.TestCase):
         self.assertAlmostEqual(xprod[1], 0.0)
         self.assertAlmostEqual(xprod[2], 0.707106781)
 
-
     def test_math(self):
         self.assertEqual(distance_3d([1.0, 0.0, 1.0], [1.0, 3.0, 5.0]), 5.0)
         self.assertEqual(scale_3d([1.0, 2.0, 3.0], 2.0), [2.0, 4.0, 6.0])

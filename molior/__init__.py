@@ -94,6 +94,8 @@ class Molior:
                 vals = {
                     "closed": closed,
                     "path": path,
+                    "chain": chain,
+                    "circulation": circulation,
                     "name": name,
                     "elevation": elevation,
                     "height": height,
@@ -105,35 +107,6 @@ class Molior:
                 vals.update(config)
                 part = getattr(self, config["class"])(vals)
 
-                # TODO Face information in 'chain' is needed to trim top of
-                # gable walls.
-                # TODO Face information is needed to connect walls to spaces in
-                # relspaceboundary.
-
-                # part may be a wall, add some openings
-                if "do_populate_exterior_openings" in part.__dict__:
-                    edges = chain.edges()
-                    for segment in range(len(part.openings)):
-                        edge = chain.graph[edges[segment][0]]
-                        # edge = {string_coor_start: [string_coor_end, [Vertex_start, Vertex_end, Face, Cell_left, Cell_right]]}
-                        face = edge[1][2]
-                        try:
-                            interior_type = edge[1][3].Usage()
-                        except:
-                            interior_type = None
-                        part.populate_exterior_openings(segment, interior_type, 0)
-                        part.fix_heights(segment)
-                        part.fix_segment(segment)
-                elif "do_populate_interior_openings" in part.__dict__:
-                    edge = chain.graph[chain.edges()[0][0]]
-                    face = edge[1][2]
-                    vertex = face.GraphVertex(circulation)
-                    if vertex != None:
-                        part.populate_interior_openings(
-                            0, edge[1][3].Usage(), edge[1][4].Usage(), 0
-                        )
-                        part.fix_heights(0)
-                        part.fix_segment(0)
                 part.Ifc(ifc, subcontext)
                 # results are only used by test suite
                 results.append(part)

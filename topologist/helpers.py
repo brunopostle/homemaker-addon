@@ -94,5 +94,6 @@ def scale_3d(A, B):
 def subtract_3d(A, B):
     return [B[2] - A[2], B[1] - A[1], B[0] - A[0]]
 
+
 def distance_3d(A, B):
     return sqrt((A[0] - B[0]) ** 2 + (A[1] - B[1]) ** 2 + (A[2] - B[2]) ** 2)

@@ -33,6 +33,36 @@ class Wall(BaseClass):
             for index in range(self.segments()):
                 self.openings.append([])
 
+        # TODO Face information in 'chain' is needed to trim top of
+        # gable walls.
+        # TODO Face information is needed to connect walls to spaces in
+        # relspaceboundary.
+
+        # part may be a wall, add some openings
+        if "do_populate_exterior_openings" in self.__dict__:
+            edges = self.chain.edges()
+            for segment in range(len(self.openings)):
+                edge = self.chain.graph[edges[segment][0]]
+                # edge = {string_coor_start: [string_coor_end, [Vertex_start, Vertex_end, Face, Cell_left, Cell_right]]}
+                face = edge[1][2]
+                try:
+                    interior_type = edge[1][3].Usage()
+                except:
+                    interior_type = None
+                self.populate_exterior_openings(segment, interior_type, 0)
+                self.fix_heights(segment)
+                self.fix_segment(segment)
+        elif "do_populate_interior_openings" in self.__dict__:
+            edge = self.chain.graph[self.chain.edges()[0][0]]
+            face = edge[1][2]
+            vertex = face.GraphVertex(self.circulation)
+            if vertex != None:
+                self.populate_interior_openings(
+                    0, edge[1][3].Usage(), edge[1][4].Usage(), 0
+                )
+                self.fix_heights(0)
+                self.fix_segment(0)
+
     def Ifc(self, ifc, context):
         """Generate some ifc"""
         style = molior.Molior.style
