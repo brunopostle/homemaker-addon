@@ -21,14 +21,30 @@ class Tests(unittest.TestCase):
                 bodycontext = item
 
         # a centreline axis
-        poly = ifc.createCurve2D(bodycontext, [[1.0, 0.0], [1.0, -3.0], [3.0, -3.0]])
+        poly = ifc.createIfcShapeRepresentation(
+            bodycontext,
+            "Axis",
+            "Curve2D",
+            [
+                ifc.createIfcPolyline(
+                    [
+                        ifc.createIfcCartesianPoint(point)
+                        for point in [[1.0, 0.0], [1.0, -3.0], [3.0, -3.0]]
+                    ]
+                )
+            ],
+        )
+
         wall = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
         run("geometry.assign_representation", ifc, product=wall, representation=poly)
         ifc.assign_storey_byindex(wall, 0)
 
         # a vertically extruded solid
-        shape = ifc.createSweptSolid(
-            bodycontext, [[0.0, 0.0], [5.0, 0.0], [5.0, 4.0]], 3.0
+        shape = ifc.createIfcShapeRepresentation(
+            bodycontext,
+            "Body",
+            "SweptSolid",
+            [ifc.createExtrudedAreaSolid([[0.0, 0.0], [5.0, 0.0], [5.0, 4.0]], 3.0)],
         )
         slab = run("root.create_entity", ifc, ifc_class="IfcSlab", name="My Slab")
         run("geometry.assign_representation", ifc, product=slab, representation=shape)
@@ -40,27 +56,14 @@ class Tests(unittest.TestCase):
         )
         ifc.assign_storey_byindex(slab, 0)
 
-        # an extrusion that follows a 2D directrix
-        shape2 = ifc.createAdvancedSweptSolid(
-            bodycontext,
-            [[0.0, 0.0], [0.5, 0.0], [0.5, 1.0]],
-            [[5.0, 1.0], [8.0, 1.0], [5.0, 5.0]],
-        )
-        loft = run(
-            "root.create_entity",
-            ifc,
-            ifc_class="IfcBuildingElementProxy",
-            name="My Extrusion",
-        )
-        run("geometry.assign_representation", ifc, product=loft, representation=shape2)
-        run("geometry.edit_object_placement", ifc, product=loft, matrix=numpy.eye(4))
-        ifc.assign_storey_byindex(loft, 0)
-
         # load a DXF polyface mesh as a Brep
-        brep = ifc.createBrep_fromDXF(
+        brep = ifc.createIfcShapeRepresentation(
             bodycontext,
-            "molior/share/shopfront.dxf",
+            "Body",
+            "Brep",
+            ifc.createBreps_fromDXF("molior/share/shopfront.dxf"),
         )
+
         # create a mapped item that can be reused
         run(
             "geometry.assign_representation",
@@ -131,32 +134,6 @@ class Tests(unittest.TestCase):
         )
         ifc.assign_storey_byindex(window2, 0)
 
-        # load a DXF polyface mesh as a Tessellation
-        tessellation = ifc.createTessellation_fromDXF(
-            bodycontext,
-            "molior/share/shopfront.dxf",
-        )
-        # create a window using the tessellation (not a mapped typeproduct)
-        window3 = run(
-            "root.create_entity",
-            ifc,
-            ifc_class="IfcWindow",
-            name="Another Window",
-        )
-        run(
-            "geometry.assign_representation",
-            ifc,
-            product=window3,
-            representation=tessellation,
-        )
-        run(
-            "geometry.edit_object_placement",
-            ifc,
-            product=window3,
-            matrix=matrix_transform(0.0, [5.0, 0.0, 0.0]),
-        )
-        ifc.assign_storey_byindex(window3, 0)
-
         # make the ifc model available to other test methods
         self.ifc = ifc
         self.bodycontext = bodycontext
@@ -214,10 +191,18 @@ class Tests(unittest.TestCase):
             "geometry.assign_representation",
             ifc,
             product=mywall,
-            representation=ifc.createSweptSolid(
-                bodycontext, [[0.0, -0.25], [6.0, -0.25], [6.0, 0.08], [0.0, 0.08]], 4.0
+            representation=ifc.createIfcShapeRepresentation(
+                bodycontext,
+                "Body",
+                "SweptSolid",
+                [
+                    ifc.createExtrudedAreaSolid(
+                        [[0.0, -0.25], [6.0, -0.25], [6.0, 0.08], [0.0, 0.08]], 4.0
+                    )
+                ],
             ),
         )
+
         # place the wall in space
         run(
             "geometry.edit_object_placement",
@@ -243,8 +228,15 @@ class Tests(unittest.TestCase):
             "geometry.assign_representation",
             ifc,
             product=myopening,
-            representation=ifc.createSweptSolid(
-                bodycontext, [[0.5, -1.0], [5.5, -1.0], [5.5, 1.0], [0.5, 1.0]], 2.545
+            representation=ifc.createIfcShapeRepresentation(
+                bodycontext,
+                "Body",
+                "SweptSolid",
+                [
+                    ifc.createExtrudedAreaSolid(
+                        [[0.5, -1.0], [5.5, -1.0], [5.5, 1.0], [0.5, 1.0]], 2.545
+                    )
+                ],
             ),
         )
         # place the opening where the wall is

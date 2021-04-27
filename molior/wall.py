@@ -86,10 +86,16 @@ class Wall(BaseClass):
 
             mywall = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
             ifc.assign_storey_byindex(mywall, self.level)
-            shape = ifc.createSweptSolid(
+            shape = ifc.createIfcShapeRepresentation(
                 context,
-                [v_in_a, v_out_a, v_out_b, v_in_b],
-                self.height,
+                "Body",
+                "SweptSolid",
+                [
+                    ifc.createExtrudedAreaSolid(
+                        [v_in_a, v_out_a, v_out_b, v_in_b],
+                        self.height,
+                    )
+                ],
             )
             run(
                 "geometry.assign_representation",
@@ -178,15 +184,21 @@ class Wall(BaseClass):
                     "geometry.assign_representation",
                     ifc,
                     product=myopening,
-                    representation=ifc.createSweptSolid(
+                    representation=ifc.createIfcShapeRepresentation(
                         context,
+                        "Body",
+                        "SweptSolid",
                         [
-                            [0.0, outer],
-                            [opening["width"], outer],
-                            [opening["width"], inner],
-                            [0.0, inner],
+                            ifc.createExtrudedAreaSolid(
+                                [
+                                    [0.0, outer],
+                                    [opening["width"], outer],
+                                    [opening["width"], inner],
+                                    [0.0, inner],
+                                ],
+                                opening["height"],
+                            )
                         ],
-                        opening["height"],
                     ),
                 )
                 # place the opening where the wall is

@@ -55,10 +55,16 @@ class Tests(unittest.TestCase):
             "geometry.assign_representation",
             ifc,
             product=mywall,
-            representation=ifc.createSweptSolid(
+            representation=ifc.createIfcShapeRepresentation(
                 bodycontext,
-                [[0.0, -0.25], [12.0, -0.25], [12.0, 0.08], [0.0, 0.08]],
-                4.0,
+                "Body",
+                "SweptSolid",
+                [
+                    ifc.createExtrudedAreaSolid(
+                        [[0.0, -0.25], [12.0, -0.25], [12.0, 0.08], [0.0, 0.08]],
+                        4.0,
+                    )
+                ],
             ),
         )
         # place the wall in space
@@ -86,8 +92,15 @@ class Tests(unittest.TestCase):
             "geometry.assign_representation",
             ifc,
             product=myopening,
-            representation=ifc.createSweptSolid(
-                bodycontext, [[0.5, -1.0], [5.5, -1.0], [5.5, 1.0], [0.5, 1.0]], 2.545
+            representation=ifc.createIfcShapeRepresentation(
+                bodycontext,
+                "Body",
+                "SweptSolid",
+                [
+                    ifc.createExtrudedAreaSolid(
+                        [[0.5, -1.0], [5.5, -1.0], [5.5, 1.0], [0.5, 1.0]], 2.545
+                    )
+                ],
             ),
         )
         # place the opening where the wall is
@@ -149,8 +162,15 @@ class Tests(unittest.TestCase):
             "geometry.assign_representation",
             ifc,
             product=myopening,
-            representation=ifc.createSweptSolid(
-                bodycontext, [[0.5, -1.0], [5.5, -1.0], [5.5, 1.0], [0.5, 1.0]], 2.545
+            representation=ifc.createIfcShapeRepresentation(
+                bodycontext,
+                "Body",
+                "SweptSolid",
+                [
+                    ifc.createExtrudedAreaSolid(
+                        [[0.5, -1.0], [5.5, -1.0], [5.5, 1.0], [0.5, 1.0]], 2.545
+                    )
+                ],
             ),
         )
         # place the opening where the wall is

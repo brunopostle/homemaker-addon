@@ -28,10 +28,16 @@ class Floor(BaseClass):
         """Generate some ifc"""
         entity = run("root.create_entity", ifc, ifc_class="IfcSlab", name="Floor")
         ifc.assign_storey_byindex(entity, self.level)
-        shape = ifc.createSweptSolid(
+        shape = ifc.createIfcShapeRepresentation(
             context,
-            [self.corner_in(index) for index in range(len(self.path))],
-            self.floor,
+            "Body",
+            "SweptSolid",
+            [
+                ifc.createExtrudedAreaSolid(
+                    [self.corner_in(index) for index in range(len(self.path))],
+                    self.floor,
+                )
+            ],
         )
         run("geometry.assign_representation", ifc, product=entity, representation=shape)
         run(

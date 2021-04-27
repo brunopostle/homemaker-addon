@@ -31,10 +31,16 @@ class Ceiling(BaseClass):
         # TODO previous Molior module had Beams() method that drew a slab as parallel beams
         # which could be created as an IFC boolean intersection.
         # TODO draw surface for structure and boundary
-        shape = ifc.createSweptSolid(
+        shape = ifc.createIfcShapeRepresentation(
             context,
-            [self.corner_in(index) for index in range(len(self.path))],
-            self.ceiling,
+            "Body",
+            "SweptSolid",
+            [
+                ifc.createExtrudedAreaSolid(
+                    [self.corner_in(index) for index in range(len(self.path))],
+                    self.ceiling,
+                )
+            ],
         )
         run("geometry.assign_representation", ifc, product=entity, representation=shape)
         run(

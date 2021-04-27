@@ -56,85 +56,25 @@ def init(building_name, elevations):
     return ifc
 
 
-def createCurve2D(self, context, profile):
-    """A simple centreline"""
-    if not profile[-1] == profile[0]:
-        # a closed polyline has first and last profile coincident
-        profile.append(profile[0])
-
-    return self.createIfcShapeRepresentation(
-        context,
-        "Axis",
-        "Curve2D",
-        [
-            self.createIfcPolyline(
-                [self.createIfcCartesianPoint(point) for point in profile]
-            )
-        ],
-    )
-
-
-def createSweptSolid(self, context, profile, height):
+def createExtrudedAreaSolid(self, profile, height):
     """A simple vertically extruded profile"""
     if not profile[-1] == profile[0]:
         # a closed polyline has first and last points coincident
         profile.append(profile[0])
 
-    return self.createIfcShapeRepresentation(
-        context,
-        "Body",
-        "SweptSolid",
-        [
-            self.createIfcExtrudedAreaSolid(
-                self.createIfcArbitraryClosedProfileDef(
-                    "AREA",
-                    None,
-                    self.createIfcPolyline(
-                        [self.createIfcCartesianPoint(point) for point in profile]
-                    ),
-                ),
-                self.createIfcAxis2Placement3D(
-                    self.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
-                ),
-                self.createIfcDirection([0.0, 0.0, 1.0]),
-                height,
-            )
-        ],
-    )
-
-
-def createAdvancedSweptSolid(self, context, profile, directrix):
-    """A simple horizontally extruded profile following a directrix path"""
-    if not profile[-1] == profile[0]:
-        # a closed polyline has first and last points coincident
-        profile.append(profile[0])
-
-    axis = self.createIfcAxis2Placement3D(
-        self.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
-    )
-
-    return self.createIfcShapeRepresentation(
-        context,
-        "Body",
-        "AdvancedSweptSolid",
-        [
-            self.createIfcSurfaceCurveSweptAreaSolid(
-                self.createIfcArbitraryClosedProfileDef(
-                    "AREA",
-                    None,
-                    self.createIfcPolyline(
-                        [self.createIfcCartesianPoint(point) for point in profile]
-                    ),
-                ),
-                axis,
-                self.createIfcPolyline(
-                    [self.createIfcCartesianPoint(point) for point in directrix]
-                ),
-                0.0,
-                1.0,
-                self.createIfcPlane(axis),
-            )
-        ],
+    return self.createIfcExtrudedAreaSolid(
+        self.createIfcArbitraryClosedProfileDef(
+            "AREA",
+            None,
+            self.createIfcPolyline(
+                [self.createIfcCartesianPoint(point) for point in profile]
+            ),
+        ),
+        self.createIfcAxis2Placement3D(
+            self.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
+        ),
+        self.createIfcDirection([0.0, 0.0, 1.0]),
+        height,
     )
 
 
@@ -214,7 +154,7 @@ def assign_extrusion_fromDXF(
     )
 
 
-def createBrep_fromDXF(self, context, path_dxf):
+def createBreps_fromDXF(self, path_dxf):
     doc = ezdxf.readfile(path_dxf)
     model = doc.modelspace()
     breps = []
@@ -242,41 +182,7 @@ def createBrep_fromDXF(self, context, path_dxf):
             breps.append(
                 self.createIfcFacetedBrep(self.createIfcClosedShell(ifc_faces))
             )
-    if len(breps) > 0:
-        return self.createIfcShapeRepresentation(
-            context,
-            "Body",
-            "Brep",
-            breps,
-        )
-
-
-def createTessellation_fromDXF(self, context, path_dxf):
-    doc = ezdxf.readfile(path_dxf)
-    model = doc.modelspace()
-    tessellations = []
-    for entity in model:
-        if entity.get_mode() == "AcDbPolyFaceMesh":
-            vertices, faces = entity.indexed_faces()
-            pointlist = self.createIfcCartesianPointList3D(
-                [vertex.dxf.location for vertex in vertices]
-            )
-            indexedfaces = [
-                self.createIfcIndexedPolygonalFace(
-                    [index + 1 for index in face.indices]
-                )
-                for face in faces
-            ]
-        tessellations.append(
-            self.createIfcPolygonalFaceSet(pointlist, None, indexedfaces, None)
-        )
-    if len(tessellations) > 0:
-        return self.createIfcShapeRepresentation(
-            context,
-            "Body",
-            "Tessellation",
-            tessellations,
-        )
+    return breps
 
 
 def assign_storey_byindex(self, entity, index):
@@ -316,10 +222,13 @@ def assign_representation_fromDXF(self, bodycontext, element, stylename, path_dx
             )
     else:
         # load a DXF polyface mesh as a Brep and create the TypeProduct
-        brep = self.createBrep_fromDXF(
+        brep = self.createIfcShapeRepresentation(
             bodycontext,
-            path_dxf,
+            "Body",
+            "Brep",
+            self.createBreps_fromDXF(path_dxf),
         )
+
         # create a mapped item that can be reused
         run(
             "geometry.assign_representation",
@@ -345,9 +254,6 @@ def assign_representation_fromDXF(self, bodycontext, element, stylename, path_dx
 
 setattr(ifcfile, "assign_representation_fromDXF", assign_representation_fromDXF)
 setattr(ifcfile, "assign_storey_byindex", assign_storey_byindex)
-setattr(ifcfile, "createCurve2D", createCurve2D)
-setattr(ifcfile, "createSweptSolid", createSweptSolid)
+setattr(ifcfile, "createExtrudedAreaSolid", createExtrudedAreaSolid)
 setattr(ifcfile, "assign_extrusion_fromDXF", assign_extrusion_fromDXF)
-setattr(ifcfile, "createAdvancedSweptSolid", createAdvancedSweptSolid)
-setattr(ifcfile, "createBrep_fromDXF", createBrep_fromDXF)
-setattr(ifcfile, "createTessellation_fromDXF", createTessellation_fromDXF)
+setattr(ifcfile, "createBreps_fromDXF", createBreps_fromDXF)

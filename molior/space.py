@@ -38,10 +38,16 @@ class Space(BaseClass):
         """Generate some ifc"""
         entity = run("root.create_entity", ifc, ifc_class="IfcSpace", name=self.usage)
         ifc.assign_storey_byindex(entity, self.level)
-        shape = ifc.createSweptSolid(
+        shape = ifc.createIfcShapeRepresentation(
             context,
-            [self.corner_in(index) for index in range(len(self.path))],
-            self.height - self.ceiling,
+            "Body",
+            "SweptSolid",
+            [
+                ifc.createExtrudedAreaSolid(
+                    [self.corner_in(index) for index in range(len(self.path))],
+                    self.height - self.ceiling,
+                )
+            ],
         )
         run("geometry.assign_representation", ifc, product=entity, representation=shape)
         # TODO space may be .INTERNAL. or .EXTERNAL.
