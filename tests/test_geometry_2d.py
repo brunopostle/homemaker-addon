@@ -5,7 +5,7 @@ import sys
 import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from molior.geometry_2d import (
+from molior.geometry import (
     add_2d,
     angle_2d,
     distance_2d,
@@ -17,7 +17,7 @@ from molior.geometry_2d import (
 
 
 class Tests(unittest.TestCase):
-    """geometry_2d functions"""
+    """geometry functions"""
 
     def test_add_2d(self):
         self.assertEqual(add_2d([2, 3], [5, -3]), [7.0, 0])

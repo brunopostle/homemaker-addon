@@ -27,6 +27,9 @@ def matrix_align(A, B):
     )
 
 
+# FIXME replace these with appropriate numpy functions
+
+
 def add_2d(A, B):
     return [A[0] + B[0], A[1] + B[1]]
 
@@ -87,3 +90,40 @@ def scale_2d(A, B):
 
 def subtract_2d(A, B):
     return [A[0] - B[0], A[1] - B[1]]
+
+
+def x_product_3d(A, B):
+    x = A[1] * B[2] - B[1] * A[2]
+    y = A[2] * B[0] - B[2] * A[0]
+    z = A[0] * B[1] - B[0] * A[1]
+    return normalise_3d([x, y, z])
+
+
+def normalise_3d(A):
+    magnitude = magnitude_3d(A)
+    if magnitude == 0.0:
+        return [1.0, 0.0, 0.0]
+    return scale_3d(A, 1.0 / magnitude)
+
+
+def magnitude_3d(A):
+    return distance_3d([0.0, 0.0, 0.0], A)
+
+
+def scale_3d(A, B):
+    if A.__class__ == [].__class__:
+        return [A[0] * B, A[1] * B, A[2] * B]
+    else:
+        return [B[0] * A, B[1] * A, B[2] * A]
+
+
+def subtract_3d(A, B):
+    return [A[0] - B[0], A[1] - B[1], A[2] - B[2]]
+
+
+def add_3d(A, B):
+    return [A[0] + B[0], A[1] + B[1], A[2] + B[2]]
+
+
+def distance_3d(A, B):
+    return sqrt((A[0] - B[0]) ** 2 + (A[1] - B[1]) ** 2 + (A[2] - B[2]) ** 2)

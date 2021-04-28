@@ -7,7 +7,7 @@ import ifcopenshell.api
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior.ifc
-from molior.geometry_2d import matrix_align
+from molior.geometry import matrix_align
 
 run = ifcopenshell.api.run
 

@@ -4,7 +4,7 @@ import ifcopenshell.api
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from molior.baseclass import BaseClass
-from molior.geometry_2d import matrix_align
+from molior.geometry import matrix_align
 
 run = ifcopenshell.api.run
 
@@ -33,6 +33,7 @@ class Space(BaseClass):
         #    if colour > 170: colour = 170
         #    if colour < 10: colour = 10
         # FIXME cell[index] can be used for id
+        # FIXME space may be bounded by roof
 
     def Ifc(self, ifc, context):
         """Generate some ifc"""

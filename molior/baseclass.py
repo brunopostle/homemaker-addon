@@ -1,6 +1,6 @@
 from math import pi
 
-from molior.geometry_2d import (
+from molior.geometry import (
     add_2d,
     angle_2d,
     distance_2d,

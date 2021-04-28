@@ -3,7 +3,6 @@
 import os
 import sys
 import unittest
-import numpy
 
 from topologic import (
     Vertex,
@@ -14,8 +13,8 @@ from topologic import (
 )
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from topologist.helpers import (
-    create_stl_list,
+from topologist.helpers import create_stl_list
+from molior.geometry import (
     x_product_3d,
     normalise_3d,
     magnitude_3d,

@@ -4,10 +4,17 @@ import ifcopenshell.api
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from topologic import Edge
-from topologist.helpers import create_stl_list, el, subtract_3d, add_3d
+from topologist.helpers import create_stl_list, el
 from molior.baseclass import BaseClass
 import molior
-from molior.geometry_2d import matrix_align, add_2d, scale_2d, distance_2d
+from molior.geometry import (
+    matrix_align,
+    add_2d,
+    scale_2d,
+    distance_2d,
+    subtract_3d,
+    add_3d,
+)
 
 run = ifcopenshell.api.run
 

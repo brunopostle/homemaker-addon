@@ -4,7 +4,7 @@ import ifcopenshell.api
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from molior.baseclass import BaseClass
-from molior.geometry_2d import matrix_align
+from molior.geometry import matrix_align
 
 run = ifcopenshell.api.run
 
@@ -23,6 +23,7 @@ class Ceiling(BaseClass):
         for arg in args:
             self.__dict__[arg] = args[arg]
         # FIXME implement not_if_stair_above
+        # FIXME don't draw ceiling when roof forms the ceiling
 
     def Ifc(self, ifc, context):
         """Generate some ifc"""

@@ -6,7 +6,7 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from molior import Wall, Ceiling, Molior
-from molior.geometry_2d import distance_2d
+from molior.geometry import distance_2d
 
 
 class Tests(unittest.TestCase):

@@ -2,8 +2,10 @@ from ifcopenshell.file import file as ifcfile
 import ezdxf
 import os
 import ifcopenshell.api
-from molior.geometry_2d import matrix_align, add_2d, subtract_2d
-from topologist.helpers import (
+from molior.geometry import (
+    matrix_align,
+    add_2d,
+    subtract_2d,
     x_product_3d,
     subtract_3d,
     normalise_3d,
