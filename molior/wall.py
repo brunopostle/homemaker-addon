@@ -3,9 +3,11 @@ import sys
 import ifcopenshell.api
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from topologic import Edge
+from topologist.helpers import create_stl_list, el, subtract_3d, add_3d
 from molior.baseclass import BaseClass
 import molior
-from molior.geometry_2d import matrix_align, add_2d, scale_2d
+from molior.geometry_2d import matrix_align, add_2d, scale_2d, distance_2d
 
 run = ifcopenshell.api.run
 
@@ -33,8 +35,6 @@ class Wall(BaseClass):
             for index in range(self.segments()):
                 self.openings.append([])
 
-        # TODO Face information in 'chain' is needed to trim top of
-        # gable walls.
         # TODO Face information is needed to connect walls to spaces in
         # relspaceboundary.
 
@@ -86,16 +86,77 @@ class Wall(BaseClass):
 
             mywall = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
             ifc.assign_storey_byindex(mywall, self.level)
+
+            # wall is a plan shape extruded vertically
+            solid = ifc.createExtrudedAreaSolid(
+                [v_in_a, v_out_a, v_out_b, v_in_b],
+                self.height,
+            )
+
+            segment = self.chain.edges()[id_segment]
+            face = self.chain.graph[segment[0]][1][2]
+            # clip the top of the wall if face isn't rectangular
+            edges_result = create_stl_list(Edge)
+            face.EdgesCrop(edges_result)
+            for edge in edges_result:
+                start_coor = list(edge.StartVertex().Coordinates())
+                end_coor = list(edge.EndVertex().Coordinates())
+                solid = ifc.clipSolid(
+                    solid,
+                    subtract_3d(
+                        start_coor,
+                        [0.0, 0.0, self.elevation],
+                    ),
+                    subtract_3d(end_coor, [0.0, 0.0, self.elevation]),
+                )
+                # clip beyond the end of the wall if necessary
+                if (
+                    el(start_coor[2]) < el(self.elevation + self.height)
+                    and distance_2d(start_coor[0:2], self.corner_coor(id_segment + 1))
+                    < 0.001
+                ):
+                    solid = ifc.clipSolid(
+                        solid,
+                        subtract_3d(
+                            start_coor,
+                            [0.0, 0.0, self.elevation],
+                        ),
+                        subtract_3d(
+                            add_3d(
+                                start_coor, [*self.direction_segment(id_segment), 0.0]
+                            ),
+                            [0.0, 0.0, self.elevation],
+                        ),
+                    )
+                # clip beyond the start of the wall if necessary
+                if (
+                    el(end_coor[2]) < el(self.elevation + self.height)
+                    and distance_2d(end_coor[0:2], self.corner_coor(id_segment)) < 0.001
+                ):
+                    solid = ifc.clipSolid(
+                        solid,
+                        subtract_3d(
+                            end_coor,
+                            [0.0, 0.0, self.elevation],
+                        ),
+                        subtract_3d(
+                            subtract_3d(
+                                end_coor, [*self.direction_segment(id_segment), 0.0]
+                            ),
+                            [0.0, 0.0, self.elevation],
+                        ),
+                    )
+
+            if len(list(edges_result)) == 0:
+                representationtype = "SweptSolid"
+            else:
+                representationtype = "Clipping"
+
             shape = ifc.createIfcShapeRepresentation(
                 context,
                 "Body",
-                "SweptSolid",
-                [
-                    ifc.createExtrudedAreaSolid(
-                        [v_in_a, v_out_a, v_out_b, v_in_b],
-                        self.height,
-                    )
-                ],
+                representationtype,
+                [solid],
             )
             run(
                 "geometry.assign_representation",

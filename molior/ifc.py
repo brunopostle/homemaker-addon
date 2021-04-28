@@ -2,7 +2,12 @@ from ifcopenshell.file import file as ifcfile
 import ezdxf
 import os
 import ifcopenshell.api
-from molior.geometry_2d import matrix_align
+from molior.geometry_2d import matrix_align, add_2d, subtract_2d
+from topologist.helpers import (
+    x_product_3d,
+    subtract_3d,
+    normalise_3d,
+)
 
 run = ifcopenshell.api.run
 
@@ -75,6 +80,42 @@ def createExtrudedAreaSolid(self, profile, height):
         ),
         self.createIfcDirection([0.0, 0.0, 1.0]),
         height,
+    )
+
+
+def clipSolid(self, solid, start, end):
+    """Clip a wall using a half-space solid"""
+    vector = subtract_3d(end, start)
+    perp_plan = normalise_3d([0 - vector[1], vector[0], 0.0])
+    xprod = x_product_3d(vector, perp_plan)
+
+    polygon = [
+        add_2d(start[0:2], perp_plan[0:2]),
+        add_2d(end[0:2], perp_plan[0:2]),
+        subtract_2d(end[0:2], perp_plan[0:2]),
+        subtract_2d(start[0:2], perp_plan[0:2]),
+        add_2d(start[0:2], perp_plan[0:2]),
+    ]
+
+    return self.createIfcBooleanClippingResult(
+        "DIFFERENCE",
+        solid,
+        self.createIfcPolygonalBoundedHalfSpace(
+            self.createIfcPlane(
+                self.createIfcAxis2Placement3D(
+                    self.createIfcCartesianPoint(start),
+                    self.createIfcDirection(xprod),
+                    None,
+                )
+            ),
+            False,
+            self.createIfcAxis2Placement3D(
+                self.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
+            ),
+            self.createIfcPolyline(
+                [self.createIfcCartesianPoint(point) for point in polygon]
+            ),
+        ),
     )
 
 
@@ -255,5 +296,6 @@ def assign_representation_fromDXF(self, bodycontext, element, stylename, path_dx
 setattr(ifcfile, "assign_representation_fromDXF", assign_representation_fromDXF)
 setattr(ifcfile, "assign_storey_byindex", assign_storey_byindex)
 setattr(ifcfile, "createExtrudedAreaSolid", createExtrudedAreaSolid)
+setattr(ifcfile, "clipSolid", clipSolid)
 setattr(ifcfile, "assign_extrusion_fromDXF", assign_extrusion_fromDXF)
 setattr(ifcfile, "createBreps_fromDXF", createBreps_fromDXF)

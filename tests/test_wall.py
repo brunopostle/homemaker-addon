@@ -3,7 +3,7 @@
 import os
 import sys
 import unittest
-from topologic import Vertex
+from topologic import Vertex, Face
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from topologist import ugraph
@@ -21,17 +21,46 @@ class Tests(unittest.TestCase):
         coor_0 = vertex_string(vertex_0)
         coor_1 = vertex_string(vertex_1)
         coor_2 = vertex_string(vertex_2)
+        vertex_3 = Vertex.ByCoordinates(1.0, 0.0, 5.15)
+        vertex_4 = Vertex.ByCoordinates(5.0, 0.0, 6.15)
+        vertex_5 = Vertex.ByCoordinates(8.0, 4.0, 6.15)
 
         # a real wall would have a Face and one or two Cells
         # string: [string, [Vertex, Vertex, Face, Cell, Cell]]
-        trace.add_edge({coor_1: [coor_2, [vertex_1, vertex_2, None, None, None]]})
-        trace.add_edge({coor_0: [coor_1, [vertex_0, vertex_1, None, None, None]]})
+        trace.add_edge(
+            {
+                coor_1: [
+                    coor_2,
+                    [
+                        vertex_1,
+                        vertex_2,
+                        Face.ByVertices([vertex_1, vertex_2, vertex_5, vertex_4]),
+                        None,
+                        None,
+                    ],
+                ]
+            }
+        )
+        trace.add_edge(
+            {
+                coor_0: [
+                    coor_1,
+                    [
+                        vertex_0,
+                        vertex_1,
+                        Face.ByVertices([vertex_0, vertex_1, vertex_4, vertex_3]),
+                        None,
+                        None,
+                    ],
+                ]
+            }
+        )
         paths = trace.find_paths()
 
-        ifc = molior.ifc.init("Our House", {3.15: 2})
+        self.ifc = molior.ifc.init("Our House", {3.15: 2})
 
         self.wall = Molior().GetIfc(
-            ifc,
+            self.ifc,
             "default",  # style
             "external",  # condition
             2,  # level
@@ -107,6 +136,9 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.wall.openings[0][0]["size"], 3)
         self.wall.fix_heights(0)
         self.assertEqual(self.wall.openings[0][0]["size"], 3)
+
+    def test_write(self):
+        self.ifc.write("_test.ifc")
 
 
 if __name__ == "__main__":
