@@ -20,6 +20,7 @@ from molior.geometry import (
     magnitude_3d,
     scale_3d,
     subtract_3d,
+    add_3d,
     distance_3d,
 )
 
@@ -80,6 +81,10 @@ class Tests(unittest.TestCase):
         self.assertEqual(normalise_3d([0.0, 0.0, 0.0]), [1.0, 0.0, 0.0])
         self.assertEqual(
             x_product_3d([1.0, 0.0, 0.0], [0.0, 1.0, 0.0]), [0.0, 0.0, 1.0]
+        )
+        self.assertEqual(add_3d([1.0, 2.0, 3.0], [5.0, 3.0, 1.0]), [6.0, 5.0, 4.0])
+        self.assertEqual(
+            subtract_3d([1.0, 2.0, 3.0], [5.0, 3.0, 1.0]), [-4.0, -1.0, 2.0]
         )
 
 

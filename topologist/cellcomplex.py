@@ -112,14 +112,13 @@ def GetTraces(self):
     self.Cells(cells)
     for cell in cells:
         perimeter = cell.Perimeter()
-        if not perimeter.is_simple_cycle():
-            continue
-        elevation = cell.Elevation()
-        height = cell.Height()
-        stylename = "default"
+        if perimeter.is_simple_cycle():
+            elevation = cell.Elevation()
+            height = cell.Height()
+            stylename = "default"
 
-        usage = cell.Usage()
-        mytraces.add_trace(usage, elevation, height, stylename, perimeter)
+            usage = cell.Usage()
+            mytraces.add_trace(usage, elevation, height, stylename, perimeter)
 
     mytraces.process()
     return mytraces

@@ -72,40 +72,38 @@ def AxisOuter(self):
     """2D bottom edge of a vertical face, for external walls, anti-clockwise in plan"""
     edges = create_stl_list(Edge)
     self.EdgesBottom(edges)
-    if len(edges) == 0:
-        return None
-    unordered = ugraph.graph()
-    for edge in edges:
-        start_coor = vertex_string(edge.StartVertex())
-        end_coor = vertex_string(edge.EndVertex())
-        unordered.add_edge(
-            {start_coor: [end_coor, [edge.StartVertex(), edge.EndVertex(), self]]}
-        )
-    ordered = unordered.find_chains()[0]
-    ordered_edges = ordered.edges()
-    first_edge = ordered_edges[0][0]
-    last_edge = ordered_edges[-1][0]
-    return [ordered.graph[first_edge][1][0], ordered.graph[last_edge][1][1]]
+    if len(edges) > 0:
+        unordered = ugraph.graph()
+        for edge in edges:
+            start_coor = vertex_string(edge.StartVertex())
+            end_coor = vertex_string(edge.EndVertex())
+            unordered.add_edge(
+                {start_coor: [end_coor, [edge.StartVertex(), edge.EndVertex(), self]]}
+            )
+        ordered = unordered.find_chains()[0]
+        ordered_edges = ordered.edges()
+        first_edge = ordered_edges[0][0]
+        last_edge = ordered_edges[-1][0]
+        return [ordered.graph[first_edge][1][0], ordered.graph[last_edge][1][1]]
 
 
 def AxisOuterTop(self):
     """2D top edge of a vertical face, for external walls, anti-clockwise in plan"""
     edges = create_stl_list(Edge)
     self.EdgesTop(edges)
-    if len(edges) == 0:
-        return None
-    unordered = ugraph.graph()
-    for edge in edges:
-        start_coor = vertex_string(edge.StartVertex())
-        end_coor = vertex_string(edge.EndVertex())
-        unordered.add_edge(
-            {start_coor: [end_coor, [edge.StartVertex(), edge.EndVertex(), self]]}
-        )
-    ordered = unordered.find_chains()[0]
-    ordered_edges = ordered.edges()
-    first_edge = ordered_edges[0][0]
-    last_edge = ordered_edges[-1][0]
-    return [ordered.graph[last_edge][1][1], ordered.graph[first_edge][1][0]]
+    if len(edges) > 0:
+        unordered = ugraph.graph()
+        for edge in edges:
+            start_coor = vertex_string(edge.StartVertex())
+            end_coor = vertex_string(edge.EndVertex())
+            unordered.add_edge(
+                {start_coor: [end_coor, [edge.StartVertex(), edge.EndVertex(), self]]}
+            )
+        ordered = unordered.find_chains()[0]
+        ordered_edges = ordered.edges()
+        first_edge = ordered_edges[0][0]
+        last_edge = ordered_edges[-1][0]
+        return [ordered.graph[last_edge][1][1], ordered.graph[first_edge][1][0]]
 
 
 def IsInternal(self):

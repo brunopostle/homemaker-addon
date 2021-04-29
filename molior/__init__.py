@@ -72,7 +72,7 @@ class Molior:
     def GetIfc(
         self, ifc, stylename, condition, level, elevation, height, chain, circulation
     ):
-        """Retrieves IFC data directly without using molior-ifc.pl"""
+        """Retrieves IFC data and adds to model"""
         results = []
         for item in ifc.by_type("IfcGeometricRepresentationSubContext"):
             if item.TargetView == "MODEL_VIEW":
