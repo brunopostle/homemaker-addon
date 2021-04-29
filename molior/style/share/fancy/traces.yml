@@ -1,0 +1,11 @@
+---
+brackets:
+  class: Repeat
+  ifc: IFCROOF
+  file: bracket.dxf
+  condition: top-backward-up
+  outer: 0.25
+  height: -0.285
+  inset: 0.1
+  spacing: 0.5
+  alternate: 0

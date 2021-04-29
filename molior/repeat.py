@@ -1,0 +1,86 @@
+import os, sys, ifcopenshell.api
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from molior.baseclass import BaseClass
+import molior
+from molior.geometry import add_2d, subtract_2d, scale_2d, distance_2d, matrix_align
+
+run = ifcopenshell.api.run
+
+
+class Repeat(BaseClass):
+    """A row of evenly spaced identical objects"""
+
+    def __init__(self, args={}):
+        super().__init__(args)
+        self.alternate = 0
+        self.closed = 0
+        self.file = "error.dxf"
+        self.height = 0.0
+        self.ifc = "IFCBUILDINGELEMENTPROXY"
+        self.inset = 0.0
+        self.outer = 0.08
+        self.path = []
+        self.spacing = 1.0
+        self.traces = []
+        self.type = "molior-repeat"
+        for arg in args:
+            self.__dict__[arg] = args[arg]
+
+    def Ifc(self, ifc, context):
+        """Generate some ifc"""
+        style = molior.Molior.style
+        dxf_path = style.get_file(self.style, self.file)
+
+        segments = self.segments()
+
+        for id_segment in range(segments):
+            inset = scale_2d(self.direction_segment(id_segment), self.inset)
+            # outside face start and end coordinates
+            v_out_a = add_2d(self.corner_out(id_segment), inset)
+            v_out_b = subtract_2d(self.corner_out(id_segment + 1), inset)
+            # space to fill
+            length = distance_2d(v_out_a, v_out_b)
+            if self.spacing > 0.0 and self.spacing < length:
+                items = int(length / self.spacing) + 1
+            else:
+                items = 2
+
+            spacing = length / (items - 1)
+
+            if self.alternate == 1:
+                items -= 1
+                v_out_a = add_2d(
+                    v_out_a, scale_2d(self.direction_segment(id_segment), spacing / 2)
+                )
+
+            for index in range(items):
+                location = add_2d(
+                    v_out_a,
+                    scale_2d(self.direction_segment(id_segment), index * spacing),
+                )
+                entity = run(
+                    "root.create_entity",
+                    ifc,
+                    ifc_class=self.ifc,
+                    name=self.style + "/" + self.condition,
+                )
+                # place the entity in space
+                elevation = self.elevation + self.height
+                run(
+                    "geometry.edit_object_placement",
+                    ifc,
+                    product=entity,
+                    matrix=matrix_align(
+                        [*location, elevation],
+                        [
+                            *add_2d(location, self.direction_segment(id_segment)),
+                            elevation,
+                        ],
+                    ),
+                )
+                # assign the entity to a storey
+                ifc.assign_storey_byindex(entity, self.level)
+
+                # load geometry from a DXF file and assign to the entity
+                ifc.assign_representation_fromDXF(context, entity, self.style, dxf_path)

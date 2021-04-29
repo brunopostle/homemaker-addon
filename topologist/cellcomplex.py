@@ -128,6 +128,7 @@ def Elevations(self):
     """Identify all unique elevations, allocate level index"""
     elevations = {}
 
+    # FIXME doesn't collect all horizontal top edges
     faces = create_stl_list(Face)
     self.Faces(faces)
     for face in faces:

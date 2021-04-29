@@ -3,6 +3,48 @@ differentiated by elevation, height and style properties.  Typically
 running in an anti-clockwise direction, these follow the outlines of
 rooms, walls, eaves, string-courses etc.
 
+There are traces for each space/room usage:
+
+* kitchen
+* living
+* bedroom
+* toilet
+* sahn (an outdoor circulation space)
+* circulation
+* stair
+* retail
+* outside
+* void (an internal space that doesn't qualify as a room)
+
+There are traces for each wall condition:
+
+* external
+* internal (these are always a single segment long)
+* open (an external 'wall' to outdoor space)
+
+There are traces that follow the top and bottom horizontal edges of
+external walls:
+
+* top-vertical-up (a string course between two vertical walls)
+* top-forward-up
+* top-forward-level (a horizontal soffit at the top of a wall)
+* top-forward-down
+* top-backward-up (a typical eave with a pitched roof above)
+* top-backward-level (a typical eave with a horizontal roof behind)
+* top-backward-down (a typical eave at the top of a monopitch roof)
+* bottom-vertical-down (a string course between two vertical walls)
+* bottom-forward-up (a box gutter where a pitched roof meets a wall)
+* bottom-forward-level (a wall on a flat roof)
+* bottom-forward-down (a wall above a lean-to pitched roof)
+* bottom-backward-up
+* bottom-backward-level (a horizontal soffit behind a wall)
+* bottom-backward-down
+
+And a trace that follows the bottom of internal walls with nothing
+below:
+
+* internal-unsupported (always one segment long)
+
 """
 
 import topologist.ugraph as ugraph

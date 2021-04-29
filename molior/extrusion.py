@@ -15,6 +15,7 @@ class Extrusion(BaseClass):
 
     def __init__(self, args={}):
         super().__init__(args)
+        self.ifc = "IFCBUILDINGELEMENTPROXY"
         self.closed = 0
         self.extension = 0.0
         self.path = []

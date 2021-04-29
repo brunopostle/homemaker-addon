@@ -31,6 +31,8 @@ from molior.floor import Floor
 from molior.space import Space
 from molior.stair import Stair
 from molior.wall import Wall
+from molior.repeat import Repeat
+
 from molior.style import Style
 from topologist.helpers import string_to_coor_2d
 
@@ -47,6 +49,7 @@ class Molior:
         self.Space = Space
         self.Stair = Stair
         self.Wall = Wall
+        self.Repeat = Repeat
         for arg in args:
             self.__dict__[arg] = args[arg]
         Molior.style = Style({"share_dir": self.share_dir})
