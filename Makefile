@@ -4,10 +4,10 @@ test :
 	python3 -m unittest discover -s tests
 
 lint :
-	pyflakes *.py */*.py || true
+	pyflakes *.py */*.py */*/*.py || true
 
 todo :
-	egrep 'FIXME|TODO' *.py */*.py
+	egrep 'FIXME|TODO' *.py */*.py */*/*.py
 
 black :
 	black --diff ./

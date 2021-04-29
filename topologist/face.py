@@ -2,8 +2,8 @@
 
 import topologic
 from topologic import Vertex, Edge, Face, FaceUtility, Cell, CellUtility
-from topologist.helpers import create_stl_list, vertex_string
-from topologist import ugraph
+from topologist.helpers import create_stl_list
+import topologist.ugraph as ugraph
 
 
 def ByVertices(vertices):
@@ -75,8 +75,8 @@ def AxisOuter(self):
     if len(edges) > 0:
         unordered = ugraph.graph()
         for edge in edges:
-            start_coor = vertex_string(edge.StartVertex())
-            end_coor = vertex_string(edge.EndVertex())
+            start_coor = edge.StartVertex().String()
+            end_coor = edge.EndVertex().String()
             unordered.add_edge(
                 {start_coor: [end_coor, [edge.StartVertex(), edge.EndVertex(), self]]}
             )
@@ -94,8 +94,8 @@ def AxisOuterTop(self):
     if len(edges) > 0:
         unordered = ugraph.graph()
         for edge in edges:
-            start_coor = vertex_string(edge.StartVertex())
-            end_coor = vertex_string(edge.EndVertex())
+            start_coor = edge.StartVertex().String()
+            end_coor = edge.EndVertex().String()
             unordered.add_edge(
                 {start_coor: [end_coor, [edge.StartVertex(), edge.EndVertex(), self]]}
             )

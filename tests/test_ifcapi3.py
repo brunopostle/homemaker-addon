@@ -33,7 +33,7 @@ class Tests(unittest.TestCase):
             element,
             directrix,
             "courtyard",
-            "molior/share/courtyard/eaves.dxf",
+            "molior/style/share/courtyard/eaves.dxf",
         )
 
         run("geometry.edit_object_placement", ifc, product=element, matrix=numpy.eye(4))
@@ -54,7 +54,7 @@ class Tests(unittest.TestCase):
             element,
             directrix,
             "courtyard",
-            "molior/share/courtyard/eaves.dxf",
+            "molior/style/share/courtyard/eaves.dxf",
         )
 
         run(

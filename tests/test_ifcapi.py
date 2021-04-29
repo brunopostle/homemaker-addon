@@ -60,7 +60,7 @@ class Tests(unittest.TestCase):
             bodycontext,
             "Body",
             "Brep",
-            ifc.createBreps_fromDXF("molior/share/shopfront.dxf"),
+            ifc.createBreps_fromDXF("molior/style/share/shopfront.dxf"),
         )
 
         # create a mapped item that can be reused

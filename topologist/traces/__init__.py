@@ -1,5 +1,11 @@
-from topologist import ugraph
-from topologist.helpers import vertex_string
+""" Traces are 2D closed or open chains that define building elements,
+differentiated by elevation, height and style properties.  Typically
+running in an anti-clockwise direction, these follow the outlines of
+rooms, walls, eaves, string-courses etc.
+
+"""
+
+import topologist.ugraph as ugraph
 
 
 class Traces:
@@ -21,8 +27,8 @@ class Traces:
             traces[label][elevation][height][stylename] = ugraph.graph()
 
         cells = face.CellsOrdered()
-        start_coor = vertex_string(edge[0])
-        end_coor = vertex_string(edge[1])
+        start_coor = edge[0].String()
+        end_coor = edge[1].String()
 
         traces[label][elevation][height][stylename].add_edge(
             {start_coor: [end_coor, [edge[0], edge[1], face, cells[1], cells[0]]]}
@@ -31,8 +37,8 @@ class Traces:
     def add_axis_simple(self, label, elevation, height, stylename, edge, face):
         """edge is two vertices, add as a simple single edge graph"""
         cells = face.CellsOrdered()
-        start_coor = vertex_string(edge[0])
-        end_coor = vertex_string(edge[1])
+        start_coor = edge[0].String()
+        end_coor = edge[1].String()
         graph = ugraph.graph()
         graph.add_edge(
             {start_coor: [end_coor, [edge[0], edge[1], face, cells[1], cells[0]]]}

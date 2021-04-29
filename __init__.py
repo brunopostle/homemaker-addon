@@ -6,7 +6,7 @@ sys.path.append("/home/bruno/src/homemaker-addon")
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 from topologic import Vertex, Face, CellComplex, Graph
-from topologist.helpers import create_stl_list, vertex_id
+from topologist.helpers import create_stl_list
 from molior import Molior
 import molior.ifc
 
@@ -133,7 +133,7 @@ class ObjectHomemaker(bpy.types.Operator):
                     wire.Vertices(vertices_wire)
                     face_tmp = []
                     for vertex in vertices_wire:
-                        face_tmp.append(vertex_id(roof, vertex))
+                        face_tmp.append(roof.VertexId(vertex))
                     faces.append(face_tmp)
 
                 mesh = bpy.data.meshes.new(name="Roof")

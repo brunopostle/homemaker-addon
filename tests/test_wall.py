@@ -6,8 +6,7 @@ import unittest
 from topologic import Vertex, Face
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from topologist import ugraph
-from topologist.helpers import vertex_string
+import topologist.ugraph as ugraph
 from molior import Molior
 import molior.ifc
 
@@ -18,9 +17,9 @@ class Tests(unittest.TestCase):
         vertex_0 = Vertex.ByCoordinates(1.0, 0.0, 3.15)
         vertex_1 = Vertex.ByCoordinates(5.0, 0.0, 3.15)
         vertex_2 = Vertex.ByCoordinates(8.0, 4.0, 3.15)
-        coor_0 = vertex_string(vertex_0)
-        coor_1 = vertex_string(vertex_1)
-        coor_2 = vertex_string(vertex_2)
+        coor_0 = vertex_0.String()
+        coor_1 = vertex_1.String()
+        coor_2 = vertex_2.String()
         vertex_3 = Vertex.ByCoordinates(1.0, 0.0, 5.15)
         vertex_4 = Vertex.ByCoordinates(5.0, 0.0, 6.15)
         vertex_5 = Vertex.ByCoordinates(8.0, 4.0, 6.15)

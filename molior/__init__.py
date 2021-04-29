@@ -6,7 +6,7 @@ running in an anti-clockwise direction, these follow the outlines of
 rooms, walls, eaves, string-courses etc.
 
 Which traces are used, and how they are used, are defined by files in
-the 'molior/share' folder and subfolders.  Each subfolder has a unique
+the 'molior/style/share' folder and subfolders.  Each subfolder has a unique
 name and represents a different architectural 'style', buildings can be
 all one style or have multiple styles, each applied to different parts
 of the building.  Styles are inherited from parent folders, and can

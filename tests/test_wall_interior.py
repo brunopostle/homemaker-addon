@@ -6,9 +6,7 @@ import unittest
 from topologic import Vertex, Face, Graph
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-import topologist
-from topologist import ugraph
-from topologist.helpers import vertex_string
+import topologist.ugraph as ugraph
 from molior import Molior
 import molior.ifc
 
@@ -20,8 +18,8 @@ class Tests(unittest.TestCase):
         vertex_1 = Vertex.ByCoordinates(5.0, 0.0, 3.15)
         vertex_2 = Vertex.ByCoordinates(5.0, 0.0, 6.00)
         vertex_3 = Vertex.ByCoordinates(1.0, 0.0, 6.00)
-        coor_0 = vertex_string(vertex_0)
-        coor_1 = vertex_string(vertex_1)
+        coor_0 = vertex_0.String()
+        coor_1 = vertex_1.String()
 
         face = Face.ByVertices([vertex_0, vertex_1, vertex_2, vertex_3])
         # a real wall would have a Face and one or two Cells

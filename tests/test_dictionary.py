@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 import cppyy
 from cppyy.gbl.std import string
 from topologic import Vertex, StringAttribute
-import topologist
+from topologist.helpers import el
 
 
 class Tests(unittest.TestCase):
@@ -33,6 +33,7 @@ class Tests(unittest.TestCase):
         retrieved_dictionary.Add(self.other_key, other_value)
         # add a copy of this amended dictionary to self.my_vertex
         self.my_vertex.SetDictionary(retrieved_dictionary)
+        el(1)
 
     def test_dictionary(self):
         """read"""

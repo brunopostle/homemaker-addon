@@ -3,7 +3,7 @@
 import topologic
 from topologic import Face, Cluster, Cell, Topology, FaceUtility, CellUtility
 from topologist.helpers import create_stl_list, el
-from topologist import traces
+import topologist.traces
 
 
 def AllocateCells(self, widgets):
@@ -44,7 +44,7 @@ def Roof(self):
 
 def GetTraces(self):
     """Traces are 2D ugraph paths that define walls, extrusions and rooms"""
-    mytraces = traces.Traces()
+    mytraces = topologist.traces.Traces()
     faces = create_stl_list(Face)
     self.Faces(faces)
 

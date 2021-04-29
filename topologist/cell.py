@@ -2,8 +2,8 @@
 
 import topologic
 from topologic import Vertex, Edge, Wire, Face, Cell, FaceUtility
-from topologist.helpers import create_stl_list, el, vertex_string
-from topologist import ugraph
+from topologist.helpers import create_stl_list, el
+import topologist.ugraph as ugraph
 
 
 def FacesTop(self, faces_result):
@@ -110,12 +110,12 @@ def Perimeter(self):
             if edge:
                 edges.push_back(Edge.ByStartVertexEndVertex(edge[0], edge[1]))
                 # process of creating a wire loses all references to original cellcomplex, stash
-                lookup[vertex_string(edge[0]) + " " + vertex_string(edge[1])] = [
+                lookup[edge[0].String() + " " + edge[1].String()] = [
                     edge[0],
                     edge[1],
                     face,
                 ]
-                lookup[vertex_string(edge[1]) + " " + vertex_string(edge[0])] = [
+                lookup[edge[1].String() + " " + edge[0].String()] = [
                     edge[1],
                     edge[0],
                     face,
@@ -145,8 +145,8 @@ def Perimeter(self):
         else:
             start = vertices_list[i - 1]
             end = vertices_list[i]
-        start_coor = vertex_string(start)
-        end_coor = vertex_string(end)
+        start_coor = start.String()
+        end_coor = end.String()
         refs = lookup[start_coor + " " + end_coor]
 
         outer_cell = None

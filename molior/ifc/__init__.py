@@ -1,3 +1,10 @@
+""" Domain-specific extensions to IfcOpenShell
+
+A collection of code for commonly used IFC related tasks, generally
+implemented as methods overloaded onto ifcopenshell.file
+
+"""
+
 from ifcopenshell.file import file as ifcfile
 import ezdxf
 import os

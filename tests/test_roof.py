@@ -7,7 +7,7 @@ import unittest
 from topologic import Vertex, Face, CellComplex
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from topologist.helpers import create_stl_list, vertex_id
+from topologist.helpers import create_stl_list
 
 
 class Tests(unittest.TestCase):
@@ -58,7 +58,7 @@ class Tests(unittest.TestCase):
         vertices = create_stl_list(Vertex)
         roof_cluster.Vertices(vertices)
         for vertex in vertices:
-            i = vertex_id(roof_cluster, vertex)
+            i = roof_cluster.VertexId(vertex)
             self.assertTrue(i > -1)
             self.assertTrue(i < 6)
 

@@ -136,6 +136,16 @@ def GraphVertex(self, graph):
                 return vertex
 
 
+def VertexId(self, vertex):
+    i = 0
+    vertices = create_stl_list(Vertex)
+    self.Vertices(vertices)
+    for v in vertices:
+        if v.IsSame(vertex):
+            return i
+        i += 1
+
+
 setattr(topologic.Topology, "FacesVertical", FacesVertical)
 setattr(topologic.Topology, "FacesHorizontal", FacesHorizontal)
 setattr(topologic.Topology, "FacesExternal", FacesExternal)
@@ -148,3 +158,4 @@ setattr(topologic.Topology, "Set", Set)
 setattr(topologic.Topology, "Get", Get)
 setattr(topologic.Topology, "DumpDictionary", DumpDictionary)
 setattr(topologic.Topology, "GraphVertex", GraphVertex)
+setattr(topologic.Topology, "VertexId", VertexId)
