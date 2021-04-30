@@ -4,6 +4,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from molior.baseclass import BaseClass
 import molior
 from molior.geometry import add_2d, subtract_2d, scale_2d, distance_2d, matrix_align
+from molior.extrusion import Extrusion
 
 run = ifcopenshell.api.run
 
@@ -24,12 +25,15 @@ class Repeat(BaseClass):
         self.spacing = 1.0
         self.traces = []
         self.type = "molior-repeat"
+        self.Extrusion = Extrusion
+        self.Repeat = Repeat
         for arg in args:
             self.__dict__[arg] = args[arg]
 
     def Ifc(self, ifc, context):
         """Generate some ifc"""
         style = molior.Molior.style
+        myconfig = style.get(self.style)
         dxf_path = style.get_file(self.style, self.file)
 
         segments = self.segments()
@@ -84,3 +88,31 @@ class Repeat(BaseClass):
 
                 # load geometry from a DXF file and assign to the entity
                 ifc.assign_representation_fromDXF(context, entity, self.style, dxf_path)
+
+                # fill space between
+                if index == items - 1:
+                    continue
+                for condition in self.traces:
+                    for name in myconfig["traces"]:
+                        if name == condition:
+                            config = myconfig["traces"][name]
+                            vals = {
+                                "closed": 0,
+                                "path": [
+                                    location,
+                                    add_2d(
+                                        location,
+                                        scale_2d(
+                                            self.direction_segment(id_segment), spacing
+                                        ),
+                                    ),
+                                ],
+                                "name": name,
+                                "elevation": self.elevation,
+                                "style": self.style,
+                                "level": self.level,
+                            }
+                            vals.update(config)
+                            part = getattr(self, config["class"])(vals)
+
+                            part.Ifc(ifc, context)
