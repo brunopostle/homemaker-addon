@@ -39,3 +39,5 @@ import topologist.face
 import topologist.cell
 import topologist.cellcomplex
 import topologist.graph
+
+topologist.graph.noop = None

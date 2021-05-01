@@ -18,7 +18,6 @@ class Tests(unittest.TestCase):
         self.assertTrue("courtyard" in mystyle.data)
         self.assertEqual(len(mystyle.data["courtyard"]["ancestors"]), 1)
         self.assertTrue("fancy" in mystyle.data)
-        self.assertFalse("traces" in mystyle.data["fancy"])
 
         fancy = mystyle.get("fancy")
         self.assertTrue("traces" in fancy)

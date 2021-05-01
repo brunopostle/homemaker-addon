@@ -9,3 +9,26 @@ brackets:
   inset: 0.1
   spacing: 0.5
   alternate: 0
+  traces: [monkey, low-brackets]
+low-brackets:
+  class: Repeat
+  ifc: IFCROOF
+  file: bracket.dxf
+  condition: na
+  outer: -0.05
+  height: -0.585
+  inset: 0.1
+  spacing: 0.1
+  alternate: 1
+  traces: []
+monkey:
+  class: Repeat
+  ifc: IFCROOF
+  file: monkey.dxf
+  condition: na
+  outer: 0.05
+  height: -0.535
+  inset: 0.1
+  spacing: -1
+  alternate: 1
+  traces: []
