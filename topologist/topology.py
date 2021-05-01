@@ -52,6 +52,22 @@ def Height(self):
     return el(highest - self.Elevation())
 
 
+def Mesh(self):
+    """A list of node coordinates and a list of faces"""
+    vertices_stl = create_stl_list(Vertex)
+    self.Vertices(vertices_stl)
+    vertices = [vertex.Coordinates() for vertex in vertices_stl]
+
+    faces_stl = create_stl_list(Face)
+    self.Faces(faces_stl)
+    faces = []
+    for face in faces_stl:
+        vertices_wire = create_stl_list(Vertex)
+        face.ExternalBoundary().Vertices(vertices_wire)
+        faces.append([self.VertexId(vertex) for vertex in vertices_wire])
+    return vertices, faces
+
+
 def EdgesTop(self, edges_result):
     """A list of horizontal edges at the highest level of this face"""
     edges = create_stl_list(Edge)
@@ -151,6 +167,7 @@ setattr(topologic.Topology, "FacesHorizontal", FacesHorizontal)
 setattr(topologic.Topology, "FacesExternal", FacesExternal)
 setattr(topologic.Topology, "Elevation", Elevation)
 setattr(topologic.Topology, "Height", Height)
+setattr(topologic.Topology, "Mesh", Mesh)
 setattr(topologic.Topology, "EdgesTop", EdgesTop)
 setattr(topologic.Topology, "EdgesBottom", EdgesBottom)
 setattr(topologic.Topology, "EdgesCrop", EdgesCrop)

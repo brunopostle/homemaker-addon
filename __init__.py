@@ -117,24 +117,7 @@ class ObjectHomemaker(bpy.types.Operator):
             # TODO should also do soffits, ceilings etc.
             roof = cc.Roof()
             if roof:
-                vertices_stl = create_stl_list(Vertex)
-                roof.Vertices(vertices_stl)
-                vertices = []
-                for vertex in vertices_stl:
-                    vertices.append([vertex.X(), vertex.Y(), vertex.Z()])
-
-                faces_stl = create_stl_list(Face)
-                roof.Faces(faces_stl)
-                faces = []
-
-                for face in faces_stl:
-                    wire = face.ExternalBoundary()
-                    vertices_wire = create_stl_list(Vertex)
-                    wire.Vertices(vertices_wire)
-                    face_tmp = []
-                    for vertex in vertices_wire:
-                        face_tmp.append(roof.VertexId(vertex))
-                    faces.append(face_tmp)
+                vertices, faces = roof.Mesh()
 
                 mesh = bpy.data.meshes.new(name="Roof")
                 mesh.from_pydata(vertices, [], faces)
