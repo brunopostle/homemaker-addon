@@ -235,6 +235,27 @@ def createBreps_fromDXF(self, path_dxf):
     return breps
 
 
+def createBrep_fromMesh(self, vertices, faces):
+    ifc_faces = []
+    for face in faces:
+        ifc_faces.append(
+            self.createIfcFace(
+                [
+                    self.createIfcFaceOuterBound(
+                        self.createIfcPolyLoop(
+                            [
+                                self.createIfcCartesianPoint((vertices[face[index]]))
+                                for index in range(len(face))
+                            ]
+                        ),
+                        True,
+                    )
+                ]
+            )
+        )
+    return self.createIfcFacetedBrep(self.createIfcClosedShell(ifc_faces))
+
+
 def assign_storey_byindex(self, entity, index):
     # let's see if there is an existing IfcBuildingStorey defined
     storeys = {}
@@ -306,5 +327,6 @@ setattr(ifcfile, "assign_representation_fromDXF", assign_representation_fromDXF)
 setattr(ifcfile, "assign_storey_byindex", assign_storey_byindex)
 setattr(ifcfile, "createExtrudedAreaSolid", createExtrudedAreaSolid)
 setattr(ifcfile, "clipSolid", clipSolid)
+setattr(ifcfile, "createBrep_fromMesh", createBrep_fromMesh)
 setattr(ifcfile, "assign_extrusion_fromDXF", assign_extrusion_fromDXF)
 setattr(ifcfile, "createBreps_fromDXF", createBreps_fromDXF)

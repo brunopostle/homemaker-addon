@@ -23,11 +23,13 @@ class Tests(unittest.TestCase):
         coor_2 = vertex_2.String()
         coor_3 = vertex_3.String()
 
+        dummy_cell = Vertex.ByCoordinates(0.0, 0.0, 0.0)
+
         # string: [string, [Vertex, Vertex, Face, Cell, Cell]]
-        trace.add_edge({coor_1: [coor_2, [vertex_1, vertex_2, None, None, None]]})
-        trace.add_edge({coor_0: [coor_1, [vertex_0, vertex_1, None, None, None]]})
-        trace.add_edge({coor_2: [coor_3, [vertex_2, vertex_3, None, None, None]]})
-        trace.add_edge({coor_3: [coor_0, [vertex_3, vertex_0, None, None, None]]})
+        trace.add_edge({coor_1: [coor_2, [vertex_1, vertex_2, None, dummy_cell, None]]})
+        trace.add_edge({coor_0: [coor_1, [vertex_0, vertex_1, None, dummy_cell, None]]})
+        trace.add_edge({coor_2: [coor_3, [vertex_2, vertex_3, None, dummy_cell, None]]})
+        trace.add_edge({coor_3: [coor_0, [vertex_3, vertex_0, None, dummy_cell, None]]})
         paths = trace.find_paths()
 
         ifc = molior.ifc.init("Our House", {3.15: 2})

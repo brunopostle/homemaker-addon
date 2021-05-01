@@ -23,6 +23,14 @@ def FacesHorizontal(self, faces_result):
             faces_result.push_back(face)
 
 
+def FacesInclined(self, faces_result):
+    elements_ptr = create_stl_list(Face)
+    self.Faces(elements_ptr)
+    for face in elements_ptr:
+        if not face.IsHorizontal() and not face.IsVertical():
+            faces_result.push_back(face)
+
+
 def FacesExternal(self, faces_result):
     elements_ptr = create_stl_list(Face)
     self.Faces(elements_ptr)
@@ -164,6 +172,7 @@ def VertexId(self, vertex):
 
 setattr(topologic.Topology, "FacesVertical", FacesVertical)
 setattr(topologic.Topology, "FacesHorizontal", FacesHorizontal)
+setattr(topologic.Topology, "FacesInclined", FacesInclined)
 setattr(topologic.Topology, "FacesExternal", FacesExternal)
 setattr(topologic.Topology, "Elevation", Elevation)
 setattr(topologic.Topology, "Height", Height)

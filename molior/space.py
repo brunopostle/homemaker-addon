@@ -5,6 +5,8 @@ import ifcopenshell.api
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from molior.baseclass import BaseClass
 from molior.geometry import matrix_align
+from topologic import Face
+from topologist.helpers import create_stl_list
 
 run = ifcopenshell.api.run
 
@@ -26,29 +28,52 @@ class Space(BaseClass):
         for arg in args:
             self.__dict__[arg] = args[arg]
         self.usage = self.name
-        # FIXME identify cell and set colour
+        # FIXME set colour
         # if not cell.IsOutside():
         #    crinkliness = cell.Crinkliness()
         #    colour = (int(crinkliness*16)-7)*10
         #    if colour > 170: colour = 170
         #    if colour < 10: colour = 10
-        # FIXME cell[index] can be used for id
-        # FIXME space may be bounded by roof
 
     def Ifc(self, ifc, context):
         """Generate some ifc"""
-        entity = run("root.create_entity", ifc, ifc_class="IfcSpace", name=self.usage)
+        # the cell is the first cell attached to any edge in the chain
+        string_coor_start = next(iter(self.chain.graph))
+        cell = self.chain.graph[string_coor_start][1][3]
+
+        entity = run(
+            "root.create_entity",
+            ifc,
+            ifc_class="IfcSpace",
+            name=self.usage + "/" + str(cell.Get("index")),
+        )
         ifc.assign_storey_byindex(entity, self.level)
+        # simple extruded representation
+        representation = ifc.createExtrudedAreaSolid(
+            [self.corner_in(index) for index in range(len(self.path))],
+            self.height - self.ceiling,
+        )
+        representationtype = "SweptSolid"
+
+        # clip if original cell has non-horizontal ceiling
+        faces_stl = create_stl_list(Face)
+        cell.FacesInclined(faces_stl)
+        if len(faces_stl) > 0:
+            vertices, faces = cell.Mesh()
+            vertices = [
+                [v[0], v[1], v[2] - self.elevation - self.floor] for v in vertices
+            ]
+            brep = ifc.createBrep_fromMesh(vertices, faces)
+            representation = ifc.createIfcBooleanResult(
+                "INTERSECTION", representation, brep
+            )
+            representationtype = "CSG"
+
         shape = ifc.createIfcShapeRepresentation(
             context,
             "Body",
-            "SweptSolid",
-            [
-                ifc.createExtrudedAreaSolid(
-                    [self.corner_in(index) for index in range(len(self.path))],
-                    self.height - self.ceiling,
-                )
-            ],
+            representationtype,
+            [representation],
         )
         run("geometry.assign_representation", ifc, product=entity, representation=shape)
         # TODO space may be .INTERNAL. or .EXTERNAL.
