@@ -82,6 +82,9 @@ def GetTraces(self):
                             axis,
                             face,
                         )
+            else:
+                # TODO face has no horizontal bottom edge, add to shell for wall panels
+                pass
 
             if face.IsExternal():
                 for condition in face.TopLevelConditions():
@@ -107,6 +110,12 @@ def GetTraces(self):
                         [edge.StartVertex(), edge.EndVertex()],
                         face,
                     )
+        elif face.IsHorizontal():
+            # TODO collect edges of flat roof areas
+            pass
+        else:
+            # TODO collect roof, soffit, and vaulted ceiling faces as shells
+            pass
 
     cells = create_stl_list(Cell)
     self.Cells(cells)

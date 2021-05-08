@@ -24,6 +24,7 @@ class Ceiling(BaseClass):
             self.__dict__[arg] = args[arg]
         # FIXME implement not_if_stair_above
         # FIXME don't draw ceiling when roof forms the ceiling
+        # FIXME IFC has no 'ceiling' concept, drop and replace with floor slabs and a trace for flat roofs
 
     def Ifc(self, ifc, context):
         """Generate some ifc"""
@@ -31,7 +32,6 @@ class Ceiling(BaseClass):
         ifc.assign_storey_byindex(entity, self.level)
         # TODO previous Molior module had Beams() method that drew a slab as parallel beams
         # which could be created as an IFC boolean intersection.
-        # TODO draw surface for structure and boundary
         shape = ifc.createIfcShapeRepresentation(
             context,
             "Body",

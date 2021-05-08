@@ -25,6 +25,7 @@ class Wall(BaseClass):
     def __init__(self, args={}):
         super().__init__(args)
         self.bounds = []
+        # FIXME ceiling drop-down should be determined by slab thickness of room(s) above
         self.ceiling = 0.35
         self.closed = 0
         self.floor = 0.02
@@ -181,7 +182,7 @@ class Wall(BaseClass):
             # TODO draw plan representation with door cuts
             # TODO draw wall surfaces for boundaries
             # TODO draw centreline surface for structure
-            # TODO calculate area, volume properties
+            # TODO calculate area properties
             segment = self.openings[id_segment]
             for id_opening in range(len(self.openings[id_segment])):
                 start, end = self.opening_coor(id_segment, id_opening)
