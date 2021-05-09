@@ -1,7 +1,7 @@
 """Overloads domain-specific methods onto topologic.CellComplex"""
 
 import topologic
-from topologic import Face, Cluster, Cell, Topology, FaceUtility, CellUtility
+from topologic import Face, Cell, FaceUtility, CellUtility
 from topologist.helpers import create_stl_list, el
 import topologist.traces
 import topologist.hulls
@@ -23,23 +23,6 @@ def AllocateCells(self, widgets):
                 cell.Set("usage", widget[0].lower())
 
 
-def Roof(self):
-    faces = create_stl_list(Face)
-    self.Faces(faces)
-    roof_faces = create_stl_list(Topology)
-    for face in faces:
-        if not face.IsVertical() and not face.IsHorizontal():
-            cells = create_stl_list(Cell)
-            face.Cells(cells)
-            if len(list(cells)) == 1:
-                roof_faces.push_back(face)
-    # FIXME normals are not automatically unified facing up
-    cluster = Cluster.ByTopologies(roof_faces)
-    if len(list(roof_faces)) == 0:
-        return None
-    return cluster.SelfMerge()
-
-
 # TODO non-horizontal details (gables, arches, ridges and valleys)
 
 
@@ -51,12 +34,12 @@ def GetTraces(self):
     self.Faces(faces)
 
     for face in faces:
+        stylename = face.Get("stylename")
+        if not stylename:
+            stylename = "default"
         if face.IsVertical():
             elevation = face.Elevation()
             height = face.Height()
-            stylename = face.Get("stylename")
-            if not stylename:
-                stylename = "default"
 
             axis = face.AxisOuter()
             # wall face may be triangular and not have a bottom edge
@@ -173,7 +156,6 @@ def ApplyDictionary(self, source_faces):
 
 
 setattr(topologic.CellComplex, "AllocateCells", AllocateCells)
-setattr(topologic.CellComplex, "Roof", Roof)
 setattr(topologic.CellComplex, "GetTraces", GetTraces)
 setattr(topologic.CellComplex, "Elevations", Elevations)
 setattr(topologic.CellComplex, "ApplyDictionary", ApplyDictionary)

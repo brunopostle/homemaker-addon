@@ -15,7 +15,6 @@ import logging
 from blenderbim import import_ifc
 import bpy
 import bmesh
-from bpy_extras.object_utils import object_data_add
 
 bl_info = {
     "name": "Homemaker Topologise",
@@ -113,27 +112,15 @@ class ObjectHomemaker(bpy.types.Operator):
             circulation.Circulation(cc)
             # print(circulation.Dot(cc))
 
-            # FIXME this isn't creating any IFC data
-            # TODO should also do soffits, ceilings etc.
-            roof = cc.Roof()
-            if roof:
-                vertices, faces = roof.Mesh()
-
-                mesh = bpy.data.meshes.new(name="Roof")
-                mesh.from_pydata(vertices, [], faces)
-                obj = object_data_add(context, mesh)
-                modifier = obj.modifiers.new("Roof Thickness", "SOLIDIFY")
-                modifier.use_even_offset = True
-                modifier.thickness = -0.1
-
             # generate an IFC object
             ifc = molior.ifc.init(bl_object.name, elevations)
 
             # Traces are 2D paths that define walls, extrusions and rooms
+            # Hulls are 3D shells that define pitched roofs and soffits
             traces, hulls = cc.GetTraces()
 
             molior_object = Molior()
-            molior_object.Process(ifc, circulation, elevations, traces)
+            molior_object.Process(ifc, circulation, elevations, traces, hulls)
 
             # FIXME shouldn't have to write and import an IFC file
             ifc_tmp = tempfile.NamedTemporaryFile(

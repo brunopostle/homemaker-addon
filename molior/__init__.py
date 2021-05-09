@@ -28,6 +28,7 @@ IfcOpenShell.
 from molior.ceiling import Ceiling
 from molior.extrusion import Extrusion
 from molior.floor import Floor
+from molior.shell import Shell
 from molior.space import Space
 from molior.stair import Stair
 from molior.wall import Wall
@@ -46,6 +47,7 @@ class Molior:
         self.Ceiling = Ceiling
         self.Extrusion = Extrusion
         self.Floor = Floor
+        self.Shell = Shell
         self.Space = Space
         self.Stair = Stair
         self.Wall = Wall
@@ -54,7 +56,7 @@ class Molior:
             self.__dict__[arg] = args[arg]
         Molior.style = Style({"share_dir": self.share_dir})
 
-    def Process(self, ifc, circulation, elevations, traces):
+    def Process(self, ifc, circulation, elevations, traces, hulls):
         for condition in traces:
             for elevation in traces[condition]:
                 level = elevations[elevation]
@@ -71,6 +73,15 @@ class Molior:
                                 chain,
                                 circulation,
                             )
+        for condition in hulls:
+            for stylename in hulls[condition]:
+                for hull in hulls[condition][stylename]:
+                    self.GetHullIfc(
+                        ifc,
+                        stylename,
+                        condition,
+                        hull,
+                    )
 
     def GetIfc(
         self, ifc, stylename, condition, level, elevation, height, chain, circulation
@@ -106,6 +117,30 @@ class Molior:
                     "level": level,
                     "style_openings": myconfig["openings"],
                     "style_assets": myconfig["assets"],
+                }
+                vals.update(config)
+                part = getattr(self, config["class"])(vals)
+
+                part.Ifc(ifc, subcontext)
+                # results are only used by test suite
+                results.append(part)
+        return results
+
+    def GetHullIfc(self, ifc, stylename, condition, hull):
+        """Retrieves IFC data and adds to model"""
+        results = []
+        for item in ifc.by_type("IfcGeometricRepresentationSubContext"):
+            if item.TargetView == "MODEL_VIEW":
+                subcontext = item
+        myconfig = Molior.style.get(stylename)
+        for name in myconfig["hulls"]:
+            config = myconfig["hulls"][name]
+            if "condition" in config and config["condition"] == condition:
+                # TODO style definition should set material, layerset and/or colour for generated products.
+                vals = {
+                    "name": name,
+                    "style": stylename,
+                    "hull": hull,
                 }
                 vals.update(config)
                 part = getattr(self, config["class"])(vals)

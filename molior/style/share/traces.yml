@@ -1,11 +1,4 @@
 ---
-roof:
-  class: Shell
-  ifc: IFCROOF
-  condition: roof
-  inner: 0.08
-  outer: 0.25
-  extension: 0.25
 exterior:
   class: Wall
   ifc: IFCWALL

@@ -59,7 +59,7 @@ ifc = molior.ifc.init("dxf2ifc building", elevations)
 traces, hulls = cc.GetTraces()
 
 molior_object = Molior()
-molior_object.Process(ifc, circulation, elevations, traces)
+molior_object.Process(ifc, circulation, elevations, traces, hulls)
 
 profiler.stop()
 

@@ -56,7 +56,7 @@ traces, hulls = cc.GetTraces()
 print("Traces calculated", datetime.datetime.now())
 
 molior_object = Molior()
-molior_object.Process(ifc, circulation, elevations, traces)
+molior_object.Process(ifc, circulation, elevations, traces, hulls)
 print("IFC model created", datetime.datetime.now())
 
 ifc.write(sys.argv[2])

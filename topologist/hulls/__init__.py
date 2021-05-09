@@ -1,6 +1,6 @@
 """Hulls are 3D shells that define non-wall building elements,
-differentiated by elevation, height and style properties.  Typically
-these define roofs, soffits etc.
+differentiated by style properties.  Typically these define roofs,
+soffits etc.
 
 """
 

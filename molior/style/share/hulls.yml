@@ -1,0 +1,19 @@
+---
+pitched-roof:
+  class: Shell
+  ifc: IFCROOF
+  condition: roof
+  inner: 0.08
+  outer: 0.20
+inclined-soffit:
+  class: Shell
+  ifc: IFCBUILDINGELEMENTPROXY
+  condition: soffit
+  inner: 0.02
+  outer: 0.25
+wall-panel:
+  class: Shell
+  ifc: IFCWALL
+  condition: panel
+  inner: 0.08
+  outer: 0.25

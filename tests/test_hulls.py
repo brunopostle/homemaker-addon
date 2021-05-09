@@ -13,6 +13,8 @@ from topologic import (
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from topologist.helpers import create_stl_list
+from molior import Molior
+import molior.ifc
 
 
 class Tests(unittest.TestCase):
@@ -24,15 +26,15 @@ class Tests(unittest.TestCase):
             Vertex.ByCoordinates(*point)
             for point in [
                 [0.0, 0.0, 0.0],
-                [10.0, 0.0, 0.0],
-                [10.0, 10.0, 0.0],
+                [10.0, 2.0, 0.0],
+                [10.0, 12.0, 0.0],
                 [0.0, 10.0, 0.0],
                 [0.0, 0.0, 10.0],
-                [10.0, 0.0, 10.0],
-                [10.0, 10.0, 10.0],
+                [10.0, 2.0, 10.0],
+                [10.0, 12.0, 10.0],
                 [0.0, 10.0, 10.0],
                 [0.0, 5.0, 15.0],
-                [10.0, 5.0, 15.0],
+                [10.0, 7.0, 15.0],
             ]
         ]
 
@@ -88,7 +90,7 @@ class Tests(unittest.TestCase):
 
         centroid = self.cc.Centroid()
         self.assertEqual(centroid.X(), 5.0)
-        self.assertEqual(centroid.Y(), 5.0)
+        self.assertEqual(centroid.Y(), 6.0)
         self.assertEqual(centroid.Z(), 7.0)  # average of vertex positions
 
         cells = create_stl_list(Cell)
@@ -112,6 +114,14 @@ class Tests(unittest.TestCase):
 
         self.assertEqual(len(hulls_roof["default"][0].nodes_all()), 6)
         self.assertEqual(len(hulls_roof["default"][0].faces_all()), 2)
+
+    def test_ifc(self):
+        elevations = self.cc.Elevations()
+        ifc = molior.ifc.init("My House", elevations)
+        traces, hulls = self.cc.GetTraces()
+        molior_object = Molior()
+        molior_object.Process(ifc, None, elevations, traces, hulls)
+        ifc.write("_test.ifc")
 
 
 if __name__ == "__main__":
