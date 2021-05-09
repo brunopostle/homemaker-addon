@@ -4,6 +4,7 @@ import topologic
 from topologic import Face, Cluster, Cell, Topology, FaceUtility, CellUtility
 from topologist.helpers import create_stl_list, el
 import topologist.traces
+import topologist.hulls
 
 
 def AllocateCells(self, widgets):
@@ -45,6 +46,7 @@ def Roof(self):
 def GetTraces(self):
     """Traces are 2D ugraph paths that define walls, extrusions and rooms"""
     mytraces = topologist.traces.Traces()
+    myhulls = topologist.hulls.Hulls()
     faces = create_stl_list(Face)
     self.Faces(faces)
 
@@ -83,8 +85,8 @@ def GetTraces(self):
                             face,
                         )
             else:
-                # TODO face has no horizontal bottom edge, add to shell for wall panels
-                pass
+                # face has no horizontal bottom edge, add to hull for wall panels
+                myhulls.add_face("panel", stylename, face)
 
             if face.IsExternal():
                 for condition in face.TopLevelConditions():
@@ -114,8 +116,11 @@ def GetTraces(self):
             # TODO collect edges of flat roof areas
             pass
         else:
-            # TODO collect roof, soffit, and vaulted ceiling faces as shells
-            pass
+            # collect roof, soffit, and vaulted ceiling faces as hulls
+            if face.IsUpward():
+                myhulls.add_face("roof", stylename, face)
+            else:
+                myhulls.add_face("soffit", stylename, face)
 
     cells = create_stl_list(Cell)
     self.Cells(cells)
@@ -130,7 +135,8 @@ def GetTraces(self):
             mytraces.add_trace(usage, elevation, height, stylename, perimeter)
 
     mytraces.process()
-    return mytraces
+    myhulls.process()
+    return mytraces.traces, myhulls.hulls
 
 
 def Elevations(self):

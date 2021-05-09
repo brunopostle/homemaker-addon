@@ -68,6 +68,13 @@ def IsHorizontal(self):
     return False
 
 
+def IsUpward(self):
+    normal = self.Normal()
+    if normal.Z() > 0.0:
+        return True
+    return False
+
+
 def AxisOuter(self):
     """2D bottom edge of a vertical face, for external walls, anti-clockwise in plan"""
     edges = create_stl_list(Edge)
@@ -268,6 +275,7 @@ def BottomLevelConditions(self):
 setattr(topologic.Face, "CellsOrdered", CellsOrdered)
 setattr(topologic.Face, "IsVertical", IsVertical)
 setattr(topologic.Face, "IsHorizontal", IsHorizontal)
+setattr(topologic.Face, "IsUpward", IsUpward)
 setattr(topologic.Face, "AxisOuter", AxisOuter)
 setattr(topologic.Face, "AxisOuterTop", AxisOuterTop)
 setattr(topologic.Face, "IsInternal", IsInternal)

@@ -130,7 +130,7 @@ class ObjectHomemaker(bpy.types.Operator):
             ifc = molior.ifc.init(bl_object.name, elevations)
 
             # Traces are 2D paths that define walls, extrusions and rooms
-            traces = cc.GetTraces().traces
+            traces, hulls = cc.GetTraces()
 
             molior_object = Molior()
             molior_object.Process(ifc, circulation, elevations, traces)

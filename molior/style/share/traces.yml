@@ -2,7 +2,7 @@
 roof:
   class: Shell
   ifc: IFCROOF
-  shell: roof
+  condition: roof
   inner: 0.08
   outer: 0.25
   extension: 0.25
