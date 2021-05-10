@@ -70,7 +70,7 @@ def init(building_name, elevations):
     return ifc
 
 
-def createExtrudedAreaSolid(self, profile, height):
+def createExtrudedAreaSolid(self, profile, height, direction=[0.0, 0.0, 1.0]):
     """A simple vertically extruded profile"""
     if not profile[-1] == profile[0]:
         # a closed polyline has first and last points coincident
@@ -87,7 +87,7 @@ def createExtrudedAreaSolid(self, profile, height):
         self.createIfcAxis2Placement3D(
             self.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
         ),
-        self.createIfcDirection([0.0, 0.0, 1.0]),
+        self.createIfcDirection(direction),
         height,
     )
 

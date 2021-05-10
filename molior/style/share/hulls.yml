@@ -4,7 +4,7 @@ pitched-roof:
   ifc: IFCROOF
   condition: roof
   inner: 0.08
-  outer: 0.20
+  outer: 0.12
 inclined-soffit:
   class: Shell
   ifc: IFCBUILDINGELEMENTPROXY

@@ -90,6 +90,16 @@ class Shell(BaseClass):
             entity = run("root.create_entity", ifc, ifc_class=self.ifc, name="MyShell")
             # FIXME this puts roofs in the ground floor
             ifc.assign_storey_byindex(entity, 0)
+            if abs(float(normal_x[2][0])) < 0.001:
+                extrude_height = self.outer
+                extrude_direction = [0.0, 0.0, 1.0]
+            else:
+                extrude_height = self.outer / float(normal_x[2][0])
+                extrude_direction = [
+                    0.0,
+                    0 - float(normal_x[1][0]),
+                    float(normal_x[2][0]),
+                ]
             shape = ifc.createIfcShapeRepresentation(
                 context,
                 "Body",
@@ -97,7 +107,8 @@ class Shell(BaseClass):
                 [
                     ifc.createExtrudedAreaSolid(
                         nodes_2d,
-                        self.outer,
+                        extrude_height,
+                        extrude_direction,
                     )
                 ],
             )

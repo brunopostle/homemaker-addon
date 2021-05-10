@@ -1,6 +1,11 @@
 class graph:
     """A simple directed graph that only supports linear chains and loops"""
 
+    # Note, ideally this would be represented by a Topologic Wire.  But
+    # Wires don't support single-edge Wires, or arbitrary dictionary
+    # references to python objects such as Topologic Cells and Faces in
+    # the CellComplex
+
     def __init__(self):
         self.graph = {}
 

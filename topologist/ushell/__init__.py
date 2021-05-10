@@ -4,6 +4,10 @@ from topologist.helpers import string_to_coor
 class shell:
     """A simple append-only 3D shell"""
 
+    # Note, ideally this would be represented by a Topologic Shell.  But
+    # Shells don't support arbitrary dictionary references to python
+    # objects such as Topologic Cells and Faces in the CellComplex
+
     def __init__(self):
         self.nodes = {}
         self.faces = []
