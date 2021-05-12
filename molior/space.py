@@ -47,6 +47,14 @@ class Space(BaseClass):
             ifc_class="IfcSpace",
             name=self.usage + "/" + str(cell.Get("index")),
         )
+
+        try:
+            is_external = cell.IsOutside()
+        except:
+            is_external = False
+        pset = run("pset.add_pset", ifc, product=entity, Name="Pset_SpaceCommon")
+        run("pset.edit_pset", ifc, pset=pset, Properties={"IsExternal": is_external})
+
         ifc.assign_storey_byindex(entity, self.level)
         # simple extruded representation
         representation = ifc.createExtrudedAreaSolid(
@@ -76,7 +84,6 @@ class Space(BaseClass):
             [representation],
         )
         run("geometry.assign_representation", ifc, product=entity, representation=shape)
-        # TODO space may be .INTERNAL. or .EXTERNAL.
         run(
             "geometry.edit_object_placement",
             ifc,

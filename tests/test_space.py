@@ -55,6 +55,7 @@ class Tests(unittest.TestCase):
             paths[0],  # chain
             None,  # circulation
         )
+        ifc.write("_test.ifc")
 
     def test_sanity(self):
         self.assertEqual(self.space[0].height, 0.05)
