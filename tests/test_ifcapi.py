@@ -55,12 +55,12 @@ class Tests(unittest.TestCase):
         )
         ifc.assign_storey_byindex(slab, 0)
 
-        # load a DXF polyface mesh as a Brep
+        # load a DXF polyface mesh as a Tessellation
         brep = ifc.createIfcShapeRepresentation(
             bodycontext,
             "Body",
-            "Brep",
-            ifc.createBreps_fromDXF("molior/style/share/shopfront.dxf"),
+            "Tessellation",
+            ifc.createTessellations_fromDXF("molior/style/share/shopfront.dxf"),
         )
 
         # create a mapped item that can be reused

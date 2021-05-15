@@ -204,56 +204,30 @@ def assign_extrusion_fromDXF(
     )
 
 
-def createBreps_fromDXF(self, path_dxf):
+def createTessellations_fromDXF(self, path_dxf):
     doc = ezdxf.readfile(path_dxf)
     model = doc.modelspace()
-    breps = []
+    tessellations = []
     for entity in model:
         if entity.get_mode() == "AcDbPolyFaceMesh":
-            ifc_faces = []
-            for face in entity.faces():
-                ifc_faces.append(
-                    self.createIfcFace(
-                        [
-                            self.createIfcFaceOuterBound(
-                                self.createIfcPolyLoop(
-                                    [
-                                        self.createIfcCartesianPoint(
-                                            (face[index].dxf.location)
-                                        )
-                                        for index in range(len(face) - 1)
-                                    ]
-                                ),
-                                True,
-                            )
-                        ]
-                    )
+            vertices, faces = entity.indexed_faces()
+
+            tessellations.append(
+                self.createTessellation_fromMesh(
+                    [vertex.dxf.location for vertex in vertices],
+                    [face.indices for face in faces],
                 )
-            breps.append(
-                self.createIfcFacetedBrep(self.createIfcClosedShell(ifc_faces))
             )
-    return breps
+    return tessellations
 
 
-def createBrep_fromMesh(self, vertices, faces):
-    ifc_faces = []
-    for face in faces:
-        ifc_faces.append(
-            self.createIfcFace(
-                [
-                    self.createIfcFaceOuterBound(
-                        self.createIfcPolyLoop(
-                            [
-                                self.createIfcCartesianPoint((vertices[face[index]]))
-                                for index in range(len(face))
-                            ]
-                        ),
-                        True,
-                    )
-                ]
-            )
-        )
-    return self.createIfcFacetedBrep(self.createIfcClosedShell(ifc_faces))
+def createTessellation_fromMesh(self, vertices, faces):
+    pointlist = self.createIfcCartesianPointList3D(vertices)
+    indexedfaces = [
+        self.createIfcIndexedPolygonalFace([index + 1 for index in face])
+        for face in faces
+    ]
+    return self.createIfcPolygonalFaceSet(pointlist, None, indexedfaces, None)
 
 
 def assign_storey_byindex(self, entity, index):
@@ -292,12 +266,12 @@ def assign_representation_fromDXF(self, bodycontext, element, stylename, path_dx
                 ),
             )
     else:
-        # load a DXF polyface mesh as a Brep and create the TypeProduct
+        # load a DXF polyface mesh as a Tessellation and create the TypeProduct
         brep = self.createIfcShapeRepresentation(
             bodycontext,
             "Body",
-            "Brep",
-            self.createBreps_fromDXF(path_dxf),
+            "Tessellation",
+            self.createTessellations_fromDXF(path_dxf),
         )
 
         # create a mapped item that can be reused
@@ -327,6 +301,6 @@ setattr(ifcfile, "assign_representation_fromDXF", assign_representation_fromDXF)
 setattr(ifcfile, "assign_storey_byindex", assign_storey_byindex)
 setattr(ifcfile, "createExtrudedAreaSolid", createExtrudedAreaSolid)
 setattr(ifcfile, "clipSolid", clipSolid)
-setattr(ifcfile, "createBrep_fromMesh", createBrep_fromMesh)
+setattr(ifcfile, "createTessellation_fromMesh", createTessellation_fromMesh)
 setattr(ifcfile, "assign_extrusion_fromDXF", assign_extrusion_fromDXF)
-setattr(ifcfile, "createBreps_fromDXF", createBreps_fromDXF)
+setattr(ifcfile, "createTessellations_fromDXF", createTessellations_fromDXF)

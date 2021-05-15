@@ -71,9 +71,9 @@ class Space(BaseClass):
             vertices = [
                 [v[0], v[1], v[2] - self.elevation - self.floor] for v in vertices
             ]
-            brep = ifc.createBrep_fromMesh(vertices, faces)
+            tessellation = ifc.createTessellation_fromMesh(vertices, faces)
             representation = ifc.createIfcBooleanResult(
-                "INTERSECTION", representation, brep
+                "INTERSECTION", representation, tessellation
             )
             representationtype = "CSG"
 
