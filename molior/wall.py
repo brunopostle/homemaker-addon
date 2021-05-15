@@ -76,6 +76,7 @@ class Wall(BaseClass):
         segments = self.segments()
 
         for id_segment in range(segments):
+            # FIXME need to terminate correctly when continuation is in another style
             # outside face start and end coordinates
             v_out_a = self.corner_out(id_segment)
             v_out_b = self.corner_out(id_segment + 1)
