@@ -14,7 +14,8 @@ class Floor(BaseClass):
 
     def __init__(self, args={}):
         super().__init__(args)
-        self.floor = 0.02
+        self.above = 0.02
+        self.below = 0.2
         self.id = ""
         self.ifc = "IFCSLAB"
         self.inner = 0.08
@@ -26,7 +27,12 @@ class Floor(BaseClass):
 
     def Ifc(self, ifc, context):
         """Generate some ifc"""
-        entity = run("root.create_entity", ifc, ifc_class="IfcSlab", name="Floor")
+        entity = run(
+            "root.create_entity",
+            ifc,
+            ifc_class=self.ifc,
+            name=self.name,
+        )
         ifc.assign_storey_byindex(entity, self.level)
         shape = ifc.createIfcShapeRepresentation(
             context,
@@ -35,7 +41,7 @@ class Floor(BaseClass):
             [
                 ifc.createExtrudedAreaSolid(
                     [self.corner_in(index) for index in range(len(self.path))],
-                    self.floor,
+                    self.below + self.above,
                 )
             ],
         )
@@ -44,5 +50,7 @@ class Floor(BaseClass):
             "geometry.edit_object_placement",
             ifc,
             product=entity,
-            matrix=matrix_align([0.0, 0.0, self.elevation], [1.0, 0.0, 0.0]),
+            matrix=matrix_align(
+                [0.0, 0.0, self.elevation - self.below], [1.0, 0.0, 0.0]
+            ),
         )

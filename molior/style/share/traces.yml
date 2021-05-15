@@ -94,6 +94,8 @@ stair:
 bedroom-floor:
   class: Floor
   condition: bedroom
+  below: 0.2
+  above: 0.02
 circulation-floor:
   class: Floor
   condition: circulation
@@ -118,32 +120,4 @@ stair-floor:
   not_if_stair_below: 1
 toilet-floor:
   class: Floor
-  condition: toilet
-bedroom-ceiling:
-  class: Ceiling
-  condition: bedroom
-circulation-ceiling:
-  class: Ceiling
-  condition: circulation
-kitchen-ceiling:
-  class: Ceiling
-  condition: kitchen
-living-ceiling:
-  class: Ceiling
-  condition: living
-outside-ceiling:
-  class: Ceiling
-  condition: outside
-retail-ceiling:
-  class: Ceiling
-  condition: retail
-sahn-ceiling:
-  class: Ceiling
-  condition: sahn
-stair-ceiling:
-  class: Ceiling
-  condition: stair
-  not_if_stair_above: 1
-toilet-ceiling:
-  class: Ceiling
   condition: toilet

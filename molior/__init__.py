@@ -16,7 +16,7 @@ definitions is handled by the molior.style module.
 
 Molior uses IfcOpenShell to generate IFC models of buildings, with some
 extra helper methods defined in the molior.ifc module.  Different
-building parts need to be constructed differently, so walls, ceilings,
+building parts need to be constructed differently, so walls, floors,
 extrusions etc. are each handled by dedicated modules.
 
 Molior is largely derived from the Perl 'Molior' module, but has been
@@ -25,7 +25,6 @@ IfcOpenShell.
 
 """
 
-from molior.ceiling import Ceiling
 from molior.extrusion import Extrusion
 from molior.floor import Floor
 from molior.shell import Shell
@@ -44,7 +43,6 @@ class Molior:
     def __init__(self, args={}):
         # TODO enable user defined location for share_dir
         self.share_dir = "share"
-        self.Ceiling = Ceiling
         self.Extrusion = Extrusion
         self.Floor = Floor
         self.Shell = Shell

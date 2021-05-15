@@ -68,11 +68,6 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.space[1].name, "kitchen-floor")
         self.assertEqual(self.space[1].__dict__["class"], "Floor")
 
-        self.assertEqual(self.space[2].height, 0.05)
-        self.assertEqual(self.space[2].level, 2)
-        self.assertEqual(self.space[2].name, "kitchen-ceiling")
-        self.assertEqual(self.space[2].__dict__["class"], "Ceiling")
-
         self.assertEqual(self.stair[1].height, 0.05)
         self.assertEqual(self.stair[1].level, 2)
         self.assertEqual(self.stair[1].name, "stair")

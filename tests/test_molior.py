@@ -5,7 +5,7 @@ import sys
 import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from molior import Wall, Ceiling, Molior
+from molior import Wall, Molior
 from molior.geometry import distance_2d
 
 
@@ -74,10 +74,6 @@ class Tests(unittest.TestCase):
         )
 
         self.assertEqual(wall4.__dict__["guid"], "my building")
-
-    def test_ceiling(self):
-        ceiling = Ceiling()
-        self.assertEqual(ceiling.type, "molior-ceiling")
 
     def test_molior(self):
         molior = Molior()

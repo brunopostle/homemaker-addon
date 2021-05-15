@@ -25,7 +25,6 @@ class Wall(BaseClass):
     def __init__(self, args={}):
         super().__init__(args)
         self.bounds = []
-        # FIXME ceiling drop-down should be determined by slab thickness of room(s) above
         self.ceiling = 0.35
         self.closed = 0
         self.floor = 0.02

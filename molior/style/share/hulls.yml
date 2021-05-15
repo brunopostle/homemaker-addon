@@ -17,3 +17,9 @@ wall-panel:
   condition: panel
   inner: 0.08
   outer: 0.25
+flat-roof:
+  class: Shell
+  ifc: IFCROOF
+  condition: flat
+  inner: 0.08
+  outer: 0.12

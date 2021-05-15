@@ -96,8 +96,9 @@ def GetTraces(self):
                         face,
                     )
         elif face.IsHorizontal():
-            # TODO collect edges of flat roof areas
-            pass
+            # collect flat roof areas (not outdoor spaces)
+            if face.IsUpward() and face.IsWorld():
+                myhulls.add_face("flat", stylename, face)
         else:
             # collect roof, soffit, and vaulted ceiling faces as hulls
             if face.IsUpward():
