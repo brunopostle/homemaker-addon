@@ -6,14 +6,16 @@ import unittest
 from topologic import Vertex, Face, Graph
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-import topologist.ugraph as ugraph
+import topologist.ugraph
+import topologist.normals
 from molior import Molior
 import molior.ifc
 
 
 class Tests(unittest.TestCase):
     def setUp(self):
-        trace = ugraph.graph()
+        trace = topologist.ugraph.graph()
+        normals = topologist.normals.Normals()
         vertex_0 = Vertex.ByCoordinates(1.0, 0.0, 3.15)
         vertex_1 = Vertex.ByCoordinates(5.0, 0.0, 3.15)
         vertex_2 = Vertex.ByCoordinates(5.0, 0.0, 6.00)
@@ -38,6 +40,7 @@ class Tests(unittest.TestCase):
             2.85,  # height
             paths[0],  # chain
             Graph,  # circulation
+            normals.normals,  # normals
         )[0]
 
         self.wall.populate_interior_openings(0, "living", "living", 0)

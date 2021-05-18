@@ -52,11 +52,11 @@ print("Circulation Graph generated", datetime.datetime.now())
 ifc = molior.ifc.init("brep2ifc building", elevations)
 
 # Traces are 2D paths that define walls, extrusions and rooms
-traces, hulls = cc.GetTraces()
+traces, hulls, normals = cc.GetTraces()
 print("Traces calculated", datetime.datetime.now())
 
 molior_object = Molior()
-molior_object.Process(ifc, circulation, elevations, traces, hulls)
+molior_object.Process(ifc, circulation, elevations, traces, hulls, normals)
 print("IFC model created", datetime.datetime.now())
 
 ifc.write(sys.argv[2])

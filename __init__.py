@@ -117,10 +117,10 @@ class ObjectHomemaker(bpy.types.Operator):
 
             # Traces are 2D paths that define walls, extrusions and rooms
             # Hulls are 3D shells that define pitched roofs and soffits
-            traces, hulls = cc.GetTraces()
+            traces, hulls, normals = cc.GetTraces()
 
             molior_object = Molior()
-            molior_object.Process(ifc, circulation, elevations, traces, hulls)
+            molior_object.Process(ifc, circulation, elevations, traces, hulls, normals)
 
             # FIXME shouldn't have to write and import an IFC file
             ifc_tmp = tempfile.NamedTemporaryFile(

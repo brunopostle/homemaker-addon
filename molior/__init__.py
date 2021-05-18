@@ -54,7 +54,7 @@ class Molior:
             self.__dict__[arg] = args[arg]
         Molior.style = Style({"share_dir": self.share_dir})
 
-    def Process(self, ifc, circulation, elevations, traces, hulls):
+    def Process(self, ifc, circulation, elevations, traces, hulls, normals):
         for condition in traces:
             for elevation in traces[condition]:
                 level = elevations[elevation]
@@ -70,6 +70,7 @@ class Molior:
                                 height,
                                 chain,
                                 circulation,
+                                normals,
                             )
         for condition in hulls:
             for stylename in hulls[condition]:
@@ -82,7 +83,16 @@ class Molior:
                     )
 
     def GetIfc(
-        self, ifc, stylename, condition, level, elevation, height, chain, circulation
+        self,
+        ifc,
+        stylename,
+        condition,
+        level,
+        elevation,
+        height,
+        chain,
+        circulation,
+        normals,
     ):
         """Retrieves IFC data and adds to model"""
         results = []
@@ -111,6 +121,7 @@ class Molior:
                     "name": name,
                     "elevation": elevation,
                     "height": height,
+                    "normals": normals,
                     "style": stylename,
                     "level": level,
                     "style_openings": myconfig["openings"],

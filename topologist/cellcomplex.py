@@ -5,6 +5,7 @@ from topologic import Face, Cell, FaceUtility, CellUtility
 from topologist.helpers import create_stl_list, el
 import topologist.traces
 import topologist.hulls
+import topologist.normals
 
 
 def AllocateCells(self, widgets):
@@ -30,6 +31,7 @@ def GetTraces(self):
     """Traces are 2D ugraph paths that define walls, extrusions and rooms"""
     mytraces = topologist.traces.Traces()
     myhulls = topologist.hulls.Hulls()
+    mynormals = topologist.normals.Normals()
     faces = create_stl_list(Face)
     self.Faces(faces)
 
@@ -72,6 +74,8 @@ def GetTraces(self):
                 myhulls.add_face("panel", stylename, face)
 
             if face.IsExternal():
+                normal_ptr = face.Normal()
+                normal = [normal_ptr.X(), normal_ptr.Y(), normal_ptr.Z()]
                 for condition in face.TopLevelConditions():
                     edge = condition[0]
                     label = condition[1]
@@ -83,6 +87,8 @@ def GetTraces(self):
                         [edge.EndVertex(), edge.StartVertex()],
                         face,
                     )
+                    mynormals.add_vector("top", edge.StartVertex(), normal)
+                    mynormals.add_vector("top", edge.EndVertex(), normal)
 
                 for condition in face.BottomLevelConditions():
                     edge = condition[0]
@@ -95,6 +101,9 @@ def GetTraces(self):
                         [edge.StartVertex(), edge.EndVertex()],
                         face,
                     )
+                    mynormals.add_vector("bottom", edge.StartVertex(), normal)
+                    mynormals.add_vector("bottom", edge.EndVertex(), normal)
+
         elif face.IsHorizontal():
             # collect flat roof areas (not outdoor spaces)
             if face.IsUpward() and face.IsWorld():
@@ -120,7 +129,12 @@ def GetTraces(self):
 
     mytraces.process()
     myhulls.process()
-    return mytraces.traces, myhulls.hulls
+    mynormals.process()
+    return (
+        mytraces.traces,
+        myhulls.hulls,
+        mynormals.normals,
+    )
 
 
 def Elevations(self):

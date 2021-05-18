@@ -7,6 +7,7 @@ from topologic import Vertex
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import topologist.ugraph as ugraph
+import topologist.normals
 from molior import Molior
 import molior.ifc
 
@@ -14,6 +15,7 @@ import molior.ifc
 class Tests(unittest.TestCase):
     def setUp(self):
         trace = ugraph.graph()
+        normals = topologist.normals.Normals()
         vertex_0 = Vertex.ByCoordinates(1.0, 0.0, 3.15)
         vertex_1 = Vertex.ByCoordinates(5.0, 0.0, 3.15)
         vertex_2 = Vertex.ByCoordinates(8.0, 4.0, 3.15)
@@ -43,6 +45,7 @@ class Tests(unittest.TestCase):
             0.05,  # height
             paths[0],  # chain
             None,  # circulation
+            normals,  # normals
         )
 
         self.stair = Molior().GetIfc(
@@ -54,6 +57,7 @@ class Tests(unittest.TestCase):
             0.05,  # height
             paths[0],  # chain
             None,  # circulation
+            normals,  # normals
         )
         ifc.write("_test.ifc")
 
