@@ -45,7 +45,7 @@ class Tests(unittest.TestCase):
             0.05,  # height
             paths[0],  # chain
             None,  # circulation
-            normals,  # normals
+            normals.normals,  # normals
         )
 
         self.stair = Molior().GetIfc(
@@ -57,7 +57,7 @@ class Tests(unittest.TestCase):
             0.05,  # height
             paths[0],  # chain
             None,  # circulation
-            normals,  # normals
+            normals.normals,  # normals
         )
         ifc.write("_test.ifc")
 

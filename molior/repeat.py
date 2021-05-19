@@ -109,6 +109,8 @@ class Repeat(BaseClass):
                                 ],
                                 "name": name,
                                 "elevation": self.elevation,
+                                "normals": self.normals,
+                                "normal_set": self.normal_set,
                                 "style": self.style,
                                 "level": self.level,
                             }

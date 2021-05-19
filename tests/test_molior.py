@@ -29,7 +29,16 @@ class Tests(unittest.TestCase):
         self.assertEqual(wall2.outer, 0.4)
 
     def test_wall3(self):
-        wall3 = Wall({"closed": False, "path": [[0.0, 0.0], [5.0, 0.0], [10.0, 5.0]]})
+        wall3 = Wall(
+            {
+                "closed": False,
+                "path": [[0.0, 0.0], [5.0, 0.0], [10.0, 5.0]],
+                "extension": 0.25,
+                "condition": "external",
+                "normals": {"top": {}, "bottom": {}},
+                "normal_set": "top",
+            }
+        )
         self.assertEqual(len(wall3.path), 3)
         self.assertEqual(len(wall3.openings), 2)
         self.assertEqual(wall3.segments(), 2)
@@ -61,7 +70,15 @@ class Tests(unittest.TestCase):
         self.assertAlmostEqual(distance_2d(wall3.extension_end(), [0, 0]), 0.25)
 
     def test_wall4(self):
-        wall4 = Wall({"closed": True, "path": [[0.0, 0.0], [5.0, 0.0], [10.0, 5.0]]})
+        wall4 = Wall(
+            {
+                "closed": True,
+                "path": [[0.0, 0.0], [5.0, 0.0], [10.0, 5.0]],
+                "normals": {"top": {}, "bottom": {}},
+                "condition": "internal",
+                "normal_set": "top",
+            }
+        )
         self.assertEqual(len(wall4.path), 3)
         self.assertEqual(len(wall4.openings), 3)
         self.assertEqual(wall4.path[2], [10.0, 5.0])

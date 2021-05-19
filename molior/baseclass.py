@@ -11,6 +11,8 @@ from molior.geometry import (
     line_intersection,
 )
 
+# FIXME rename this since it isn't a baseclass for hull-based elements
+
 
 class BaseClass:
     """A generic building object"""
@@ -18,7 +20,7 @@ class BaseClass:
     def __init__(self, args={}):
         self.closed = 1
         self.elevation = 0.0
-        self.extension = 0.25
+        self.extension = 0.0
         self.guid = "my building"
         self.height = 0.0
         self.inner = 0.08
@@ -69,14 +71,7 @@ class BaseClass:
         offset_a = scale_2d(distance, self.normal_segment(index - 1))
         offset_b = scale_2d(distance, self.normal_segment(index))
 
-        if not self.closed:
-            if index == len(self.path) - 1:
-                return add_2d(self.corner_coor(index), offset_a)
-            elif index == 0:
-                return add_2d(self.corner_coor(index), offset_b)
-        if abs(distance_2d([0.0, 0.0], subtract_2d(offset_a, offset_b))) < 0.0000000001:
-            return add_2d(self.corner_coor(index), offset_a)
-
+        # line equations of offset edges
         line_a = points_2line(
             add_2d(self.corner_coor(index - 1), offset_a),
             add_2d(self.corner_coor(index), offset_a),
@@ -85,6 +80,29 @@ class BaseClass:
             add_2d(self.corner_coor(index), offset_b),
             add_2d(self.corner_coor(index + 1), offset_b),
         )
+
+        # deal with ends of open paths
+        if not self.closed and (index == len(self.path) - 1 or index == 0):
+            coor = self.corner_coor(index)
+            string = str(coor[0]) + "__" + str(coor[1]) + "__" + str(self.elevation)
+            normal_map = self.normals[self.normal_set]
+            if self.condition == "external" and string in normal_map:
+                # we have a stashed normal for this corner
+                line_mitre = points_2line(coor, add_2d(coor, normal_map[string]))
+                if index == len(self.path) - 1:
+                    return line_intersection(line_a, line_mitre)
+                elif index == 0:
+                    return line_intersection(line_b, line_mitre)
+
+            if index == len(self.path) - 1:
+                return add_2d(self.corner_coor(index), offset_a)
+            elif index == 0:
+                return add_2d(self.corner_coor(index), offset_b)
+
+        # deal with non-end corners
+        if abs(distance_2d([0.0, 0.0], subtract_2d(offset_a, offset_b))) < 0.0000000001:
+            return add_2d(self.corner_coor(index), offset_a)
+
         return line_intersection(line_a, line_b)
 
     def corner_in(self, index):

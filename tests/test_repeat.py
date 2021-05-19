@@ -44,7 +44,7 @@ class Tests(unittest.TestCase):
             0.05,  # height
             paths[0],  # chain
             None,  # circulation
-            normals,  # normals
+            normals.normals,  # normals
         )
 
         # open repeat
@@ -63,7 +63,7 @@ class Tests(unittest.TestCase):
             0.05,  # height
             paths[0],  # chain
             None,  # circulation
-            normals,  # normals
+            normals.normals,  # normals
         )
 
     def test_sanity(self):

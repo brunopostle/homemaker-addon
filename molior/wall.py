@@ -76,21 +76,12 @@ class Wall(BaseClass):
         segments = self.segments()
 
         for id_segment in range(segments):
-            # FIXME need to terminate correctly when continuation is in another style
             # outside face start and end coordinates
             v_out_a = self.corner_out(id_segment)
             v_out_b = self.corner_out(id_segment + 1)
             # inside face start and end coordinates
             v_in_a = self.corner_in(id_segment)
             v_in_b = self.corner_in(id_segment + 1)
-
-            if not self.closed:
-                if id_segment == 0:
-                    v_out_a = add_2d(v_out_a, self.extension_start())
-                    v_in_a = add_2d(v_in_a, self.extension_start())
-                elif id_segment == segments - 1:
-                    v_out_b = add_2d(v_out_b, self.extension_end())
-                    v_in_b = add_2d(v_in_b, self.extension_end())
 
             mywall = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
             ifc.assign_storey_byindex(mywall, self.level)

@@ -34,6 +34,7 @@ class Extrusion(BaseClass):
         if self.closed:
             directrix.append(directrix[0])
         else:
+            # FIXME need to terminate with a mitre when continuation is in another style
             directrix[0] = add_2d(directrix[0], self.extension_start())
             directrix[-1] = add_2d(directrix[-1], self.extension_end())
 

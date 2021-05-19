@@ -4,6 +4,7 @@ Here they are used to tell walls and extrusions how to mitre properly.
 """
 
 from molior.geometry import normalise_3d, add_3d
+from topologist.helpers import el
 
 
 class Normals:
@@ -15,7 +16,9 @@ class Normals:
         if not label in self.normals:
             self.normals[label] = {}
 
-        vertex_str = vertex.String()
+        vertex_str = (
+            str(vertex.X()) + "__" + str(vertex.Y()) + "__" + str(el(vertex.Z()))
+        )
 
         if vertex_str in self.normals[label]:
             self.normals[label][vertex_str] = add_3d(

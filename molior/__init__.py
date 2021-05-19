@@ -25,6 +25,7 @@ IfcOpenShell.
 
 """
 
+import re
 from molior.extrusion import Extrusion
 from molior.floor import Floor
 from molior.shell import Shell
@@ -109,6 +110,9 @@ class Molior:
                 path = []
                 for node in chain.nodes():
                     path.append(string_to_coor_2d(node))
+                normal_set = "bottom"
+                if re.search("^top-", condition):
+                    normal_set = "top"
 
                 # TODO style definition should set material, layerset and/or
                 # colour for generated products.  Resources such as windows and
@@ -122,6 +126,7 @@ class Molior:
                     "elevation": elevation,
                     "height": height,
                     "normals": normals,
+                    "normal_set": normal_set,
                     "style": stylename,
                     "level": level,
                     "style_openings": myconfig["openings"],
