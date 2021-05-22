@@ -33,14 +33,14 @@ def CellsOrdered(self):
     centroid = list(self.Centroid().Coordinates())
     normal = self.Normal()
     vertex_front = Vertex.ByCoordinates(
-        centroid[0] + (normal.X() / 10),
-        centroid[1] + (normal.Y() / 10),
-        centroid[2] + (normal.Z() / 10),
+        centroid[0] + (normal[0] / 10),
+        centroid[1] + (normal[1] / 10),
+        centroid[2] + (normal[2] / 10),
     )
     vertex_back = Vertex.ByCoordinates(
-        centroid[0] - (normal.X() / 10),
-        centroid[1] - (normal.Y() / 10),
-        centroid[2] - (normal.Z() / 10),
+        centroid[0] - (normal[0] / 10),
+        centroid[1] - (normal[1] / 10),
+        centroid[2] - (normal[2] / 10),
     )
 
     cells = create_stl_list(Cell)
@@ -54,23 +54,34 @@ def CellsOrdered(self):
     return results
 
 
+def BadNormal(self):
+    """Faces on outside of cellcomplex are orientated correctly, but 'outside'
+    faces inside the cellcomplex have random orientation"""
+    if not self.IsWorld():
+        cells = self.CellsOrdered()
+        if cells[1].IsOutside() and not cells[0].IsOutside():
+            self.Set("badnormal", True)
+            return True
+    return False
+
+
 def IsVertical(self):
     normal = self.Normal()
-    if abs(normal.Z()) < 0.0001:
+    if abs(normal[2]) < 0.0001:
         return True
     return False
 
 
 def IsHorizontal(self):
     normal = self.Normal()
-    if abs(normal.Z()) > 0.9999:
+    if abs(normal[2]) > 0.9999:
         return True
     return False
 
 
 def IsUpward(self):
     normal = self.Normal()
-    if normal.Z() > 0.0:
+    if normal[2] > 0.0:
         return True
     return False
 
@@ -91,7 +102,10 @@ def AxisOuter(self):
         ordered_edges = ordered.edges()
         first_edge = ordered_edges[0][0]
         last_edge = ordered_edges[-1][0]
-        return [ordered.graph[first_edge][1][0], ordered.graph[last_edge][1][1]]
+        if self.Get("badnormal"):
+            return [ordered.graph[first_edge][1][1], ordered.graph[last_edge][1][0]]
+        else:
+            return [ordered.graph[first_edge][1][0], ordered.graph[last_edge][1][1]]
 
 
 def AxisOuterTop(self):
@@ -110,7 +124,10 @@ def AxisOuterTop(self):
         ordered_edges = ordered.edges()
         first_edge = ordered_edges[0][0]
         last_edge = ordered_edges[-1][0]
-        return [ordered.graph[last_edge][1][1], ordered.graph[first_edge][1][0]]
+        if self.Get("badnormal"):
+            return [ordered.graph[last_edge][1][0], ordered.graph[first_edge][1][1]]
+        else:
+            return [ordered.graph[last_edge][1][1], ordered.graph[first_edge][1][0]]
 
 
 def IsInternal(self):
@@ -203,7 +220,11 @@ def HorizontalFacesSideways(self, faces_result):
 
 
 def Normal(self):
-    return FaceUtility.NormalAtParameters(self, 0.5, 0.5)
+    normal_stl = FaceUtility.NormalAtParameters(self, 0.5, 0.5)
+    if self.Get("badnormal"):
+        return [-normal_stl.X(), -normal_stl.Y(), -normal_stl.Z()]
+    else:
+        return [normal_stl.X(), normal_stl.Y(), normal_stl.Z()]
 
 
 def TopLevelConditions(self):
@@ -222,14 +243,14 @@ def TopLevelConditions(self):
             # top face tilts backward (roof) if normal faces up, forward (soffit) if faces down
             normal = face.Normal()
             condition = "top"
-            if abs(normal.Z()) < 0.0001:
+            if abs(normal[2]) < 0.0001:
                 condition += "-vertical"
-            elif normal.Z() > 0.0:
+            elif normal[2] > 0.0:
                 condition += "-backward"
             else:
                 condition += "-forward"
             # top face can be above or below top edge
-            if abs(normal.Z()) > 0.9999:
+            if abs(normal[2]) > 0.9999:
                 condition += "-level"
             elif face.Centroid().Z() > edge.Centroid().Z():
                 condition += "-up"
@@ -255,14 +276,14 @@ def BottomLevelConditions(self):
             # bottom face tilts forward (roof) if normal faces up, backward (soffit) if faces down
             normal = face.Normal()
             condition = "bottom"
-            if abs(normal.Z()) < 0.0001:
+            if abs(normal[2]) < 0.0001:
                 condition += "-vertical"
-            elif normal.Z() > 0.0:
+            elif normal[2] > 0.0:
                 condition += "-forward"
             else:
                 condition += "-backward"
             # bottom face can be above or below bottom edge
-            if abs(normal.Z()) > 0.9999:
+            if abs(normal[2]) > 0.9999:
                 condition += "-level"
             elif face.Centroid().Z() > edge.Centroid().Z():
                 condition += "-up"
@@ -273,6 +294,7 @@ def BottomLevelConditions(self):
 
 
 setattr(topologic.Face, "CellsOrdered", CellsOrdered)
+setattr(topologic.Face, "BadNormal", BadNormal)
 setattr(topologic.Face, "IsVertical", IsVertical)
 setattr(topologic.Face, "IsHorizontal", IsHorizontal)
 setattr(topologic.Face, "IsUpward", IsUpward)

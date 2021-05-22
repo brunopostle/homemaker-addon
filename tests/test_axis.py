@@ -102,8 +102,8 @@ class Tests(unittest.TestCase):
         normal_top = face_axis_top.Normal()
 
         # both faces are anticlockwise (normal up)
-        self.assertEqual(normal.Z(), 1.0)
-        self.assertEqual(normal_top.Z(), 1.0)
+        self.assertEqual(normal[2], 1.0)
+        self.assertEqual(normal_top[2], 1.0)
 
 
 if __name__ == "__main__":

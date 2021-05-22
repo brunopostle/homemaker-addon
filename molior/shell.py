@@ -34,10 +34,10 @@ class Shell(BaseClass):
             nodes = numpy.transpose(nodes)
 
             # normal has to be a 1x4 matrix
-            normal = [[face[1].X()], [face[1].Y()], [face[1].Z()], [1.0]]
+            normal = [[face[1][0]], [face[1][1]], [face[1][2]], [1.0]]
 
             # rotate around z axis
-            normal_z = normalise_2d([face[1].X(), face[1].Y()])
+            normal_z = normalise_2d([face[1][0], face[1][1]])
             z_rot_mat = numpy.array(
                 [
                     [0 - normal_z[1], 0 - normal_z[0], 0.0, 0.0],

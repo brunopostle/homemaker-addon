@@ -136,7 +136,7 @@ def Perimeter(self):
     vertices_list = list(vertices)
 
     clockwise = False
-    if normal.Z() < 0.0:
+    if normal[2] < 0.0:
         clockwise = True
     for i in range(len(vertices_list)):
         if clockwise:

@@ -74,8 +74,7 @@ def GetTraces(self):
                 myhulls.add_face("panel", stylename, face)
 
             if face.IsExternal():
-                normal_ptr = face.Normal()
-                normal = [normal_ptr.X(), normal_ptr.Y(), normal_ptr.Z()]
+                normal = face.Normal()
                 for condition in face.TopLevelConditions():
                     edge = condition[0]
                     label = condition[1]
@@ -147,6 +146,8 @@ def Elevations(self):
     for face in faces:
         elevation = face.Elevation()
         elevations[float(elevation)] = 0
+        # FIXME labelling "badnormal" faces should be a separate method but here is convenient for now
+        face.BadNormal()
 
     level = 0
     keys = list(elevations.keys())
