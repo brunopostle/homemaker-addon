@@ -63,6 +63,7 @@ class Wall(BaseClass):
             edge = self.chain.graph[self.chain.edges()[0][0]]
             face = edge[1][2]
             vertex = face.GraphVertex(self.circulation)
+            # FIXME determine door orientation
             if vertex != None:
                 self.populate_interior_openings(
                     0, edge[1][3].Usage(), edge[1][4].Usage(), 0
@@ -85,6 +86,14 @@ class Wall(BaseClass):
 
             mywall = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
             ifc.assign_storey_byindex(mywall, self.level)
+
+            is_external = False
+            if self.condition == "external":
+                is_external = True
+            pset = run("pset.add_pset", ifc, product=mywall, Name="Pset_WallCommon")
+            run(
+                "pset.edit_pset", ifc, pset=pset, Properties={"IsExternal": is_external}
+            )
 
             # wall is a plan shape extruded vertically
             solid = ifc.createExtrudedAreaSolid(

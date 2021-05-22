@@ -34,6 +34,7 @@ class Repeat(BaseClass):
         """Generate some ifc"""
         style = molior.Molior.style
         myconfig = style.get(self.style)
+        # FIXME should use alternative assets for different heights
         dxf_path = style.get_file(self.style, self.file)
 
         segments = self.segments()
