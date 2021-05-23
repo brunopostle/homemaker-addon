@@ -45,5 +45,6 @@ class Tests(unittest.TestCase):
         self.assertEqual(len(self.graph.starts()), 5)
         self.assertEqual(len(self.graph.ends()), 5)
 
+
 if __name__ == "__main__":
     unittest.main()
