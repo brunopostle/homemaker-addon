@@ -159,7 +159,8 @@ def Perimeter(self):
         graph.add_edge(
             {start_coor: [end_coor, [refs[0], refs[1], refs[2], self, outer_cell]]}
         )
-    return graph
+    # returning the first cycle will do weird things with doughnut shaped rooms
+    return graph.find_paths()[0]
 
 
 setattr(topologic.Cell, "FacesTop", FacesTop)
