@@ -57,8 +57,16 @@ external beam:
   profile: beam.dxf
   condition: open
   outer: 0.0
-  height: 0.0
   extension: 0.0
+column:
+  class: Repeat
+  ifc: IFCCOLUMN
+  file: column_30.dxf
+  condition: open
+  outer: 0.2
+  height: 0.0
+  inset: 2.0
+  spacing: 2.0
 bedroom-space:
   class: Space
   condition: bedroom
