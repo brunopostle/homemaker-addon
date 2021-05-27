@@ -2,8 +2,8 @@ import sys
 import os
 import re
 
-sys.path.append("/home/bruno/src/homemaker-addon")
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+sys.path.append(os.path.abspath(os.path.dirname(__file__) + "/libs/site/packages"))
 
 from topologic import Vertex, Face, CellComplex, Graph
 from topologist.helpers import create_stl_list
