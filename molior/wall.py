@@ -90,9 +90,9 @@ class Wall(BaseClass):
             is_external = False
             if self.condition == "external":
                 is_external = True
-            pset = run("pset.add_pset", ifc, product=mywall, Name="Pset_WallCommon")
+            pset = run("pset.add_pset", ifc, product=mywall, name="Pset_WallCommon")
             run(
-                "pset.edit_pset", ifc, pset=pset, Properties={"IsExternal": is_external}
+                "pset.edit_pset", ifc, pset=pset, properties={"IsExternal": is_external}
             )
 
             # wall is a plan shape extruded vertically

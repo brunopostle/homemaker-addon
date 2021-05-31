@@ -52,8 +52,8 @@ class Space(BaseClass):
             is_external = cell.IsOutside()
         except:
             is_external = False
-        pset = run("pset.add_pset", ifc, product=entity, Name="Pset_SpaceCommon")
-        run("pset.edit_pset", ifc, pset=pset, Properties={"IsExternal": is_external})
+        pset = run("pset.add_pset", ifc, product=entity, name="Pset_SpaceCommon")
+        run("pset.edit_pset", ifc, pset=pset, properties={"IsExternal": is_external})
 
         ifc.assign_storey_byindex(entity, self.level)
         # simple extruded representation
