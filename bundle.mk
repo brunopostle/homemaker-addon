@@ -59,6 +59,7 @@ dist:
 
 	#cd dist/working && unzip PyYAML-*.whl
 	#cp -r dist/working/yaml dist/homemaker/libs/site/packages/
+	pip install PyYAML -t dist/homemaker/libs/site/packages/
 
 	cd dist && zip -r blender-homemaker-$(VERSION)-$(PYVERSION)-$(PLATFORM).zip ./homemaker
 	#rm -rf dist/homemaker
