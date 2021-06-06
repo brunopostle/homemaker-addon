@@ -50,6 +50,10 @@ dist:
 	strip dist/homemaker/libs/site/packages/cppyy_backend/lib/*.so
 	strip dist/homemaker/libs/site/packages/*.so
 
+	# generate PCH (cppyy pre-compiled headers) file
+	PYTHONPATH=dist/homemaker/libs/site/packages python -c 'import topologic'
+	chmod 775 dist/homemaker/libs/site/packages/cppyy_backend/bin/rootcling
+
 	# EZDXF
 
 	cd dist/working && unzip ezdxf-0.16.3-*.whl
