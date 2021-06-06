@@ -42,14 +42,14 @@ class Tests(unittest.TestCase):
         value = dictionary.ValueAtKey(self.my_key)
 
         # Bind Retrieved String Value and Print It
-        string_struct = cppyy.bind_object(value.Value(), "StringStruct")
-        self.assertEqual(string_struct.getString, "Hello World")
+        string_struct = cppyy.bind_object(value.Value(), "std::string")
+        self.assertEqual(str(string_struct), "Hello World")
 
         retrieved_value = dictionary.ValueAtKey(self.other_key)
         retrieved_string_struct = cppyy.bind_object(
-            retrieved_value.Value(), "StringStruct"
+            retrieved_value.Value(), "std::string"
         )
-        self.assertEqual(retrieved_string_struct.getString, "Kitchen")
+        self.assertEqual(str(retrieved_string_struct), "Kitchen")
 
     def test_get_set(self):
         topology = Vertex.ByCoordinates(1, 1, 0)
