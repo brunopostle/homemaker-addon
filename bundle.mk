@@ -17,14 +17,15 @@ dist:
 	cd dist/working && wget https://files.pythonhosted.org/packages/81/3d/cf40833ecb8f2ae7024a8aeead8d5f699c3350cbf57582f087900ca0dddf/cppyy-2.0.0.tar.gz
 	cd dist/working && wget https://files.pythonhosted.org/packages/ac/dd/f6fc54a770ba0222261b33d60d9c9e01aa35d989f1cdfe892ae84e319779/ezdxf-0.16.3-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl
 	cd dist/working && wget https://files.pythonhosted.org/packages/8a/bb/488841f56197b13700afd5658fc279a2025a39e22449b7cf29864669b15d/pyparsing-2.4.7-py2.py3-none-any.whl
-	cd dist/working && wget https://github.com/brunopostle/Topologic/releases/download/2021-06-01/TopologicCore-2021-06-01-manylinux_2_24-x86_64.zip
-	cd dist/working && wget -O topologicPy-master.zip https://github.com/wassimj/topologicPy/archive/refs/heads/master.zip
+	cd dist/working && wget https://github.com/brunopostle/Topologic/releases/download/2021-06-08/TopologicCore-2021-06-08-manylinux_2_24-x86_64.zip
+	#cd dist/working && wget -O topologicPy-master.zip https://github.com/wassimj/topologicPy/archive/refs/heads/master.zip
 
 	# TOPOLOGIC
 
 	# topologicPy
-	cd dist/working && unzip topologicPy-master.zip
-	cp -r dist/working/topologicPy-master/cpython/topologic dist/homemaker/libs/site/packages/
+	#cd dist/working && unzip topologicPy-master.zip
+	#cp -r dist/working/topologicPy-master/cpython/topologic dist/homemaker/libs/site/packages/
+	cp -r ~/src/topologicPy/cpython/topologic dist/homemaker/libs/site/packages/
 	mkdir dist/homemaker/libs/site/packages/topologic/lib
 	mkdir -p dist/homemaker/libs/site/packages/topologic/include/api
 
@@ -44,8 +45,15 @@ dist:
 	cd dist/working && tar -xzvf CPyCppyy-*.tar.gz
 	cd dist/working/CPyCppyy-1.12.6/ && PYTHONPATH=../../homemaker/libs/site/packages python setup.py build && cp -r build/lib.*/* ../../homemaker/libs/site/packages/ && cp -r include/CPyCppyy ../../homemaker/libs/site/packages/topologic/include/api/
 
+	# set rpath to find bundled libpython
+	patchelf --set-rpath '$$ORIGIN/.' dist/homemaker/libs/site/packages/libcppyy.*.so
+
 	cd dist/working && tar -xzvf cppyy-2.0.0.tar.gz
 	cd dist/working/cppyy-2.0.0/ && PYTHONPATH=../../homemaker/libs/site/packages python setup.py build && cp -r build/lib/cppyy ../../homemaker/libs/site/packages/
+
+	# libpython needed with 3.7, but not 3.9 ??!?
+	if [ -e /usr/local/lib/libpython3.7m.so.1.0 ]; then cp /usr/local/lib/libpython3.7m.so.1.0 dist/homemaker/libs/site/packages/; fi
+	if [ -e /usr/lib64/libpython3.7m.so.1.0 ]; then cp /usr/lib64/libpython3.7m.so.1.0 dist/homemaker/libs/site/packages/; fi
 
 	strip dist/homemaker/libs/site/packages/cppyy_backend/lib/*.so
 	strip dist/homemaker/libs/site/packages/*.so
