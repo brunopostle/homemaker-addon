@@ -4,7 +4,7 @@ soffits etc.
 
 """
 
-from topologic import Vertex, Wire
+from topologic import Vertex
 from topologist.helpers import create_stl_list
 import topologist.ushell as ushell
 
@@ -21,10 +21,8 @@ class Hulls:
         if not stylename in hulls[label]:
             hulls[label][stylename] = ushell.shell()
 
-        wires = create_stl_list(Wire)
-        face.Wires(wires)
         vertices = create_stl_list(Vertex)
-        list(wires)[0].Vertices(vertices)
+        face.VerticesPerimeter(vertices)
         cells = face.CellsOrdered()
 
         hulls[label][stylename].add_face(

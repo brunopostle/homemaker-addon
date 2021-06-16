@@ -1,7 +1,7 @@
 """Overloads domain-specific methods onto topologic.Cell"""
 
 import topologic
-from topologic import Vertex, Edge, Wire, Face, Cell, FaceUtility
+from topologic import Vertex, Edge, Face, Cell, FaceUtility
 from topologist.helpers import create_stl_list, el
 import topologist.ugraph as ugraph
 
@@ -128,11 +128,8 @@ def Perimeter(self):
         return graph
     floor = Face.ByEdges(edges)
     normal = floor.Normal()
-    wires = create_stl_list(Wire)
-    floor.Wires(wires)
-    wire = list(wires)[0]
     vertices = create_stl_list(Vertex)
-    wire.Vertices(vertices)
+    floor.VerticesPerimeter(vertices)
     vertices_list = list(vertices)
 
     clockwise = False

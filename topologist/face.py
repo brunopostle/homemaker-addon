@@ -1,7 +1,7 @@
 """Overloads domain-specific methods onto topologic.Face"""
 
 import topologic
-from topologic import Vertex, Edge, Face, FaceUtility, Cell, CellUtility
+from topologic import Vertex, Edge, Wire, Face, FaceUtility, Cell, CellUtility
 from topologist.helpers import create_stl_list
 import topologist.ugraph as ugraph
 
@@ -52,6 +52,14 @@ def CellsOrdered(self):
         elif CellUtility.Contains(cell, vertex_back) == 0:
             results[1] = cell
     return results
+
+
+def VerticesPerimeter(self, vertices_result):
+    """Vertices, tracing the outer perimeter"""
+    wires = create_stl_list(Wire)
+    self.Wires(wires)
+    list(wires)[0].Vertices(vertices_result)
+    return vertices_result
 
 
 def BadNormal(self):
@@ -294,6 +302,7 @@ def BottomLevelConditions(self):
 
 
 setattr(topologic.Face, "CellsOrdered", CellsOrdered)
+setattr(topologic.Face, "VerticesPerimeter", VerticesPerimeter)
 setattr(topologic.Face, "BadNormal", BadNormal)
 setattr(topologic.Face, "IsVertical", IsVertical)
 setattr(topologic.Face, "IsHorizontal", IsHorizontal)
