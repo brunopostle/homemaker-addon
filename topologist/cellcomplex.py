@@ -146,7 +146,7 @@ def Elevations(self):
     for face in faces:
         elevation = face.Elevation()
         elevations[float(elevation)] = 0
-        # FIXME labelling "badnormal" faces should be a separate method but here is convenient for now
+        # labelling "badnormal" faces should be a separate method but here is convenient for now
         face.BadNormal()
 
     level = 0

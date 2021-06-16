@@ -11,8 +11,6 @@ from molior.geometry import (
     line_intersection,
 )
 
-# FIXME rename this since it isn't a baseclass for hull-based elements
-
 
 class BaseClass:
     """A generic building object"""

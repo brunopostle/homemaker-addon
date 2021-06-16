@@ -11,11 +11,10 @@ from topologist.helpers import string_to_coor
 run = ifcopenshell.api.run
 
 
-class Shell(BaseClass):
+class Shell:
     """A pitched roof or soffit"""
 
     def __init__(self, args={}):
-        super().__init__(args)
         self.id = ""
         self.ifc = "IFCROOF"
         self.inner = 0.08
