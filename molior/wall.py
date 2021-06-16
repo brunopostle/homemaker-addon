@@ -101,6 +101,17 @@ class Wall(BaseClass):
                 self.height,
             )
 
+            # axis is a straight line
+            axis = ifc.createIfcPolyline(
+                [
+                    ifc.createIfcCartesianPoint(point)
+                    for point in [
+                        self.corner_coor(id_segment),
+                        self.corner_coor(id_segment + 1),
+                    ]
+                ]
+            )
+
             segment = self.chain.edges()[id_segment]
             face = self.chain.graph[segment[0]][1][2]
             # clip the top of the wall if face isn't rectangular
@@ -172,13 +183,27 @@ class Wall(BaseClass):
                 product=mywall,
                 representation=shape,
             )
+
+            shape = ifc.createIfcShapeRepresentation(
+                context,
+                "Axis",
+                "Curve2D",
+                [axis],
+            )
+            run(
+                "geometry.assign_representation",
+                ifc,
+                product=mywall,
+                representation=shape,
+            )
+
             run(
                 "geometry.edit_object_placement",
                 ifc,
                 product=mywall,
                 matrix=matrix_align([0.0, 0.0, self.elevation], [1.0, 0.0, 0.0]),
             )
-            # TODO draw axis representation, materiallayerset, IfcRelConnectsPathElements
+            # TODO materiallayerset, IfcRelConnectsPathElements
             # TODO draw plan representation with door cuts
             # TODO draw wall surfaces for boundaries
             # TODO draw centreline surface for structure
