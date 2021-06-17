@@ -4,7 +4,6 @@ import ifcopenshell.api
 import numpy
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from molior.baseclass import BaseClass
 from molior.geometry import normalise_2d
 from topologist.helpers import string_to_coor
 

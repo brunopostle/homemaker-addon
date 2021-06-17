@@ -1,6 +1,7 @@
 import os
 import sys
 import ifcopenshell.api
+import numpy
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from molior.baseclass import BaseClass
@@ -28,12 +29,6 @@ class Space(BaseClass):
         for arg in args:
             self.__dict__[arg] = args[arg]
         self.usage = self.name
-        # FIXME set colour
-        # if not cell.IsOutside():
-        #    crinkliness = cell.Crinkliness()
-        #    colour = (int(crinkliness*16)-7)*10
-        #    if colour > 170: colour = 170
-        #    if colour < 10: colour = 10
 
     def Ifc(self, ifc, context):
         """Generate some ifc"""
@@ -50,8 +45,10 @@ class Space(BaseClass):
 
         try:
             is_external = cell.IsOutside()
+            crinkliness = int(cell.Crinkliness() * 10) / 10
         except:
             is_external = False
+            crinkliness = 1.0
         pset = run("pset.add_pset", ifc, product=entity, name="Pset_SpaceCommon")
         run("pset.edit_pset", ifc, pset=pset, properties={"IsExternal": is_external})
 
@@ -83,6 +80,32 @@ class Space(BaseClass):
             representationtype,
             [representation],
         )
+
+        if not is_external:
+            red = numpy.clip(1.0 - crinkliness, 0.0, 1.0)
+            green = numpy.clip(crinkliness, 0.0, 1.0)
+            blue = numpy.clip(crinkliness - 1.0, 0.0, 1.0)
+            style = run(
+                "style.add_style",
+                ifc,
+                name="Crinkliness " + str(crinkliness),
+                surface_colour=[red, green, blue],
+                diffuse_colour=[red, green, blue],
+                transparency=0.5,
+                external_definition=None,
+            )
+        else:
+            style = run(
+                "style.add_style",
+                ifc,
+                name="Outdoor Space",
+                surface_colour=[1.0, 1.0, 1.0],
+                diffuse_colour=[1.0, 1.0, 1.0],
+                transparency=0.9,
+                external_definition=None,
+            )
+        run("geometry.assign_styles", ifc, shape_representation=shape, styles=[style])
+
         run("geometry.assign_representation", ifc, product=entity, representation=shape)
         run(
             "geometry.edit_object_placement",
