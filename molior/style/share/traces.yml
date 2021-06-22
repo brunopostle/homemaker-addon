@@ -57,7 +57,7 @@ external beam:
 column:
   class: Repeat
   ifc: IFCCOLUMN
-  file: column_30.dxf
+  file: column_300.dxf
   condition: open
   outer: 0.2
   inset: 2.0
