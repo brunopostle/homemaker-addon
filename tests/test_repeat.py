@@ -68,7 +68,7 @@ class Tests(unittest.TestCase):
 
     def test_sanity(self):
         self.assertEqual(len(self.repeat), 2)
-        self.assertEqual(self.repeat[0].height, 0.0)
+        self.assertEqual(self.repeat[0].height, 0.05)
         self.assertEqual(self.repeat[0].level, 2)
         self.assertEqual(self.repeat[0].name, "eaves")
         self.assertEqual(self.repeat[1].__dict__["class"], "Repeat")
