@@ -5,7 +5,7 @@ brackets:
   file: bracket.dxf
   condition: top-backward-up
   outer: 0.25
-  height: -0.285
+  lift: -0.285
   inset: 0.1
   spacing: 0.5
   alternate: 0
@@ -16,7 +16,7 @@ low-brackets:
   file: bracket.dxf
   condition: na
   outer: -0.05
-  height: -0.585
+  lift: -0.585
   inset: 0.1
   spacing: 0.1
   alternate: 1
@@ -27,7 +27,7 @@ monkey:
   file: monkey.dxf
   condition: na
   outer: 0.05
-  height: -0.535
+  lift: -0.535
   inset: 0.1
   spacing: -1
   alternate: 1

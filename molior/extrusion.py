@@ -18,6 +18,7 @@ class Extrusion(BaseClass):
         self.ifc = "IFCBUILDINGELEMENTPROXY"
         self.closed = 0
         self.extension = 0.0
+        self.lift = 0.0
         self.path = []
         self.type = "molior-extrusion"
         for arg in args:
@@ -53,6 +54,6 @@ class Extrusion(BaseClass):
             ifc,
             product=entity,
             matrix=matrix_align(
-                [0.0, 0.0, self.elevation + self.height], [1.0, 0.0, 0.0]
+                [0.0, 0.0, self.elevation + self.height + self.lift], [1.0, 0.0, 0.0]
             ),
         )

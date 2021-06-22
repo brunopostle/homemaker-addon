@@ -20,6 +20,7 @@ class Repeat(BaseClass):
         self.height = 0.0
         self.ifc = "IFCBUILDINGELEMENTPROXY"
         self.inset = 0.0
+        self.lift = 0.0
         self.outer = 0.08
         self.path = []
         self.spacing = 1.0
@@ -71,7 +72,7 @@ class Repeat(BaseClass):
                     name=self.style + "/" + self.condition,
                 )
                 # place the entity in space
-                elevation = self.elevation + self.height
+                elevation = self.elevation + self.lift
                 run(
                     "geometry.edit_object_placement",
                     ifc,
@@ -110,6 +111,8 @@ class Repeat(BaseClass):
                                 ],
                                 "name": name,
                                 "elevation": self.elevation,
+                                "height": self.height,
+                                "lift": self.lift,
                                 "normals": self.normals,
                                 "normal_set": self.normal_set,
                                 "style": self.style,

@@ -13,7 +13,6 @@ ground beam:
   profile: beam_ground.dxf
   condition: bottom-backward-level
   outer: 0.0
-  height: 0.0
   extension: 0.25
 interior:
   class: Wall
@@ -32,7 +31,6 @@ internal ground beam:
   profile: beam_ground.dxf
   condition: internal-unsupported
   outer: 0.0
-  height: 0.0
   extension: 0.0
   cycles: 0
 eaves:
@@ -41,7 +39,6 @@ eaves:
   profile: eaves.dxf
   condition: top-backward-up
   outer: 0.25
-  height: 0.0
   extension: 0.25
 parapet:
   class: Extrusion
@@ -49,7 +46,6 @@ parapet:
   profile: parapet.dxf
   condition: top-backward-level
   outer: 0.0
-  height: 0.0
   extension: 0.25
 external beam:
   class: Extrusion
@@ -64,7 +60,6 @@ column:
   file: column_30.dxf
   condition: open
   outer: 0.2
-  height: 0.0
   inset: 2.0
   spacing: 2.0
 bedroom-space:
