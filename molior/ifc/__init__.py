@@ -165,6 +165,7 @@ def assign_extrusion_fromDXF(
                     ),
                 )
         # record profile(s) in an ExternalReference so we can find again
+        # FIXME use IfcMaterialProfile for this?
         self.createIfcExternalReferenceRelationship(
             identifier,
             None,

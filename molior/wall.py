@@ -203,11 +203,9 @@ class Wall(BaseClass):
                 product=mywall,
                 matrix=matrix_align([0.0, 0.0, self.elevation], [1.0, 0.0, 0.0]),
             )
-            # TODO materiallayerset, IfcRelConnectsPathElements
-            # TODO draw plan representation with door cuts
+            # TODO IfcWallType, IfcMaterialLayerSet, IfcRelConnectsPathElements
             # TODO draw wall surfaces for boundaries
             # TODO draw centreline surface for structure
-            # TODO calculate area properties
             segment = self.openings[id_segment]
             for id_opening in range(len(self.openings[id_segment])):
                 start, end = self.opening_coor(id_segment, id_opening)

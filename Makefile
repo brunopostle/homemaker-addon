@@ -10,7 +10,7 @@ todo :
 	egrep 'FIXME|TODO' *.py {tests,topologist,molior}/*.py {topologist,molior}/*/*.py || true
 
 black :
-	black --diff {tests,topologist,molior}/
+	black --diff *.py {tests,topologist,molior}/
 
 coverage :
 	coverage run --source=molior,topologist -m unittest discover -s tests
