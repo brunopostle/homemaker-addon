@@ -16,7 +16,6 @@ class Repeat(BaseClass):
         super().__init__(args)
         self.alternate = 0
         self.closed = 0
-        self.file = "error.dxf"
         self.height = 0.0
         self.ifc = "IFCBUILDINGELEMENTPROXY"
         self.inset = 0.0
@@ -36,7 +35,12 @@ class Repeat(BaseClass):
         style = molior.Molior.style
         myconfig = style.get(self.style)
         # FIXME should use alternative assets for different heights
-        dxf_path = style.get_file(self.style, self.file)
+        if self.asset in self.style_assets:
+            dxf_path = style.get_file(
+                self.style, self.style_assets[self.asset][0]["file"]
+            )
+        else:
+            dxf_path = style.get_file(self.style, "error.dxf")
 
         segments = self.segments()
 
@@ -117,6 +121,7 @@ class Repeat(BaseClass):
                                 "normal_set": self.normal_set,
                                 "style": self.style,
                                 "level": self.level,
+                                "style_assets": self.style_assets,
                             }
                             vals.update(config)
                             part = getattr(self, config["class"])(vals)

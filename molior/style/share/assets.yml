@@ -160,3 +160,74 @@ fancy sash window:
     width: 0.91
     side: 0.8
     end: 0.3
+column:
+  -
+    file: column_210.dxf
+    height: 2.1
+  -
+    file: column_220.dxf
+    height: 2.2
+  -
+    file: column_230.dxf
+    height: 2.3
+  -
+    file: column_240.dxf
+    height: 2.4
+  -
+    file: column_250.dxf
+    height: 2.5
+  -
+    file: column_260.dxf
+    height: 2.6
+  -
+    file: column_270.dxf
+    height: 2.7
+  -
+    file: column_280.dxf
+    height: 2.8
+  -
+    file: column_290.dxf
+    height: 2.9
+  -
+    file: column_300.dxf
+    height: 3.0
+  -
+    file: column_310.dxf
+    height: 3.1
+  -
+    file: column_320.dxf
+    height: 3.2
+  -
+    file: column_330.dxf
+    height: 3.3
+  -
+    file: column_340.dxf
+    height: 3.4
+post:
+  -
+    file: post_200.dxf
+    height: 2.00
+  -
+    file: post_215.dxf
+    height: 2.15
+  -
+    file: post_230.dxf
+    height: 2.30
+  -
+    file: post_245.dxf
+    height: 2.45
+  -
+    file: post_260.dxf
+    height: 2.60
+  -
+    file: post_275.dxf
+    height: 2.75
+  -
+    file: post_290.dxf
+    height: 2.90
+  -
+    file: post_305.dxf
+    height: 3.05
+  -
+    file: post_320.dxf
+    height: 3.20

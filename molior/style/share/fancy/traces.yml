@@ -2,7 +2,7 @@
 brackets:
   class: Repeat
   ifc: IFCROOF
-  file: bracket.dxf
+  asset: bracket
   condition: top-backward-up
   outer: 0.25
   lift: -0.285
@@ -13,7 +13,7 @@ brackets:
 low-brackets:
   class: Repeat
   ifc: IFCROOF
-  file: bracket.dxf
+  asset: bracket
   condition: na
   outer: -0.05
   lift: -0.585
@@ -24,7 +24,7 @@ low-brackets:
 monkey:
   class: Repeat
   ifc: IFCROOF
-  file: monkey.dxf
+  asset: monkey
   condition: na
   outer: 0.05
   lift: -0.535
