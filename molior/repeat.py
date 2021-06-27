@@ -19,7 +19,8 @@ class Repeat(BaseClass):
         self.height = 0.0
         self.ifc = "IFCBUILDINGELEMENTPROXY"
         self.inset = 0.0
-        self.lift = 0.0
+        self.xshift = 0.0
+        self.yshift = 0.0
         self.outer = 0.08
         self.path = []
         self.spacing = 1.0
@@ -43,6 +44,7 @@ class Repeat(BaseClass):
             dxf_path = style.get_file(self.style, "error.dxf")
 
         segments = self.segments()
+        self.outer += self.xshift
 
         for id_segment in range(segments):
             inset = scale_2d(self.direction_segment(id_segment), self.inset)
@@ -76,7 +78,7 @@ class Repeat(BaseClass):
                     name=self.style + "/" + self.condition,
                 )
                 # place the entity in space
-                elevation = self.elevation + self.lift
+                elevation = self.elevation + self.yshift
                 run(
                     "geometry.edit_object_placement",
                     ifc,
@@ -116,7 +118,8 @@ class Repeat(BaseClass):
                                 "name": name,
                                 "elevation": self.elevation,
                                 "height": self.height,
-                                "lift": self.lift,
+                                "xshift": self.xshift,
+                                "yshift": self.yshift,
                                 "normals": self.normals,
                                 "normal_set": self.normal_set,
                                 "style": self.style,

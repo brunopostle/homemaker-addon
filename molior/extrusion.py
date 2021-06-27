@@ -18,7 +18,9 @@ class Extrusion(BaseClass):
         self.ifc = "IFCBUILDINGELEMENTPROXY"
         self.closed = 0
         self.extension = 0.0
-        self.lift = 0.0
+        self.scale = 1.0
+        self.xshift = 0.0
+        self.yshift = 0.0
         self.path = []
         self.type = "molior-extrusion"
         for arg in args:
@@ -41,12 +43,20 @@ class Extrusion(BaseClass):
 
         dxf_path = style.get_file(self.style, self.profile)
 
+        transform = ifc.createIfcCartesianTransformationOperator2D(
+            None,
+            None,
+            ifc.createIfcCartesianPoint([self.yshift, self.xshift]),
+            self.scale,
+        )
+
         ifc.assign_extrusion_fromDXF(
             context,
             entity,
             directrix,
             self.style,
             dxf_path,
+            transform,
         )
 
         run(
@@ -54,6 +64,6 @@ class Extrusion(BaseClass):
             ifc,
             product=entity,
             matrix=matrix_align(
-                [0.0, 0.0, self.elevation + self.height + self.lift], [1.0, 0.0, 0.0]
+                [0.0, 0.0, self.elevation + self.height], [1.0, 0.0, 0.0]
             ),
         )

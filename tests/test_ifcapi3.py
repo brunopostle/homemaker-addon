@@ -28,12 +28,20 @@ class Tests(unittest.TestCase):
         )
         directrix = [[-5.0, 1.0], [-1.0, 1.0], [-1.0, 5.0], [-5.0, 5.0], [-5.0, 1.0]]
 
+        transform = ifc.createIfcCartesianTransformationOperator2D(
+            None,
+            None,
+            ifc.createIfcCartesianPoint([0.0, 0.0]),
+            1.0,
+        )
+
         ifc.assign_extrusion_fromDXF(
             bodycontext,
             element,
             directrix,
             "courtyard",
             "molior/style/share/courtyard/eaves.dxf",
+            transform,
         )
 
         run("geometry.edit_object_placement", ifc, product=element, matrix=numpy.eye(4))
@@ -55,6 +63,7 @@ class Tests(unittest.TestCase):
             directrix,
             "courtyard",
             "molior/style/share/courtyard/eaves.dxf",
+            transform,
         )
 
         run(

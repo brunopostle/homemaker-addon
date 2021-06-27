@@ -129,7 +129,7 @@ def clipSolid(self, solid, start, end):
 
 
 def assign_extrusion_fromDXF(
-    self, bodycontext, element, directrix, stylename, path_dxf
+    self, bodycontext, element, directrix, stylename, path_dxf, transform
 ):
     identifier = stylename + "/" + os.path.split(path_dxf)[-1]
 
@@ -192,7 +192,13 @@ def assign_extrusion_fromDXF(
             "AdvancedSweptSolid",
             [
                 self.createIfcSurfaceCurveSweptAreaSolid(
-                    closedprofiledef,
+                    self.createIfcDerivedProfileDef(
+                        "AREA",
+                        None,
+                        closedprofiledef,
+                        transform,
+                        None,
+                    ),
                     axis,
                     polyline,
                     0.0,

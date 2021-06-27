@@ -5,7 +5,8 @@ brackets:
   asset: bracket
   condition: top-backward-up
   outer: 0.25
-  lift: -0.285
+  xshift: 0.0
+  yshift: -0.285
   inset: 0.1
   spacing: 0.5
   alternate: 0
@@ -16,7 +17,8 @@ low-brackets:
   asset: bracket
   condition: na
   outer: -0.05
-  lift: -0.585
+  xshift: 0.0
+  yshift: -0.585
   inset: 0.1
   spacing: 0.1
   alternate: 1
@@ -27,7 +29,8 @@ monkey:
   asset: monkey
   condition: na
   outer: 0.05
-  lift: -0.535
+  xshift: 0.0
+  yshift: -0.535
   inset: 0.1
   spacing: -1
   alternate: 1
