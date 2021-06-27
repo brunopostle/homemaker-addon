@@ -65,6 +65,7 @@ class Tests(unittest.TestCase):
             None,  # circulation
             normals.normals,  # normals
         )
+        ifc.write("_test.ifc")
 
     def test_sanity(self):
         self.assertEqual(len(self.extrusion), 1)
