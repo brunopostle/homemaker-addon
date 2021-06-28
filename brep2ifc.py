@@ -11,7 +11,6 @@ Usage:
 """
 import sys, os, datetime
 
-sys.path.append("/home/bruno/src/homemaker-addon")
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 from topologic import Graph, Topology, Vertex, Face, CellComplex, TopologyUtility

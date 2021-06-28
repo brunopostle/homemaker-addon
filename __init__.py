@@ -88,6 +88,8 @@ class ObjectHomemaker(bpy.types.Operator):
             faces_ptr = create_stl_list(Face)
 
             for f in bm.faces:
+                if f.calc_area() < 0.00001:
+                    continue
                 stylename = "default"
                 if len(bl_object.material_slots) > 0:
                     stylename = bl_object.material_slots[f.material_index].material.name

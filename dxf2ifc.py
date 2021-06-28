@@ -11,10 +11,9 @@ Usage:
 """
 import sys, os
 
-sys.path.append("/home/bruno/src/homemaker-addon")
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
-from topologic import Graph, Vertex, Face, CellComplex
+from topologic import Graph, Vertex, Face, FaceUtility, CellComplex
 from topologist.helpers import create_stl_list
 from molior import Molior
 import molior.ifc
@@ -33,9 +32,9 @@ for entity in model:
         pointlist = [Vertex.ByCoordinates(*vertex.dxf.location) for vertex in vertices]
 
         for face in faces:
-            faces_stl.push_back(
-                Face.ByVertices([pointlist[index] for index in face.indices])
-            )
+            face_stl = Face.ByVertices([pointlist[index] for index in face.indices])
+            if FaceUtility.Area(face_stl) > 0.00001:
+                faces_stl.push_back(face_stl)
 
 # generate a CellComplex from the Face data
 cc = CellComplex.ByFaces(faces_stl, 0.0001)
