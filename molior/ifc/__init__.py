@@ -133,14 +133,17 @@ def assign_extrusion_fromDXF(
 ):
     identifier = stylename + "/" + os.path.split(path_dxf)[-1]
 
-    # let's see if there is an existing ExternalReference recorded
-    externalreferences = {}
-    for externalreference in self.by_type("IfcExternalReferenceRelationship"):
-        externalreferences[externalreference.Name] = externalreference
+    # let's see if there is an existing MaterialProfileSet recorded
+    materialprofilesets = {}
+    for materialprofileset in self.by_type("IfcMaterialProfileSet"):
+        materialprofilesets[materialprofileset.Name] = materialprofileset
 
-    if identifier in externalreferences:
+    if identifier in materialprofilesets:
         # profile(s) already defined, use them
-        closedprofiledefs = externalreferences[identifier].RelatedResourceObjects
+        closedprofiledefs = [
+            materialprofile.Profile
+            for materialprofile in materialprofilesets[identifier].MaterialProfiles
+        ]
     else:
         # profile(s) not defined, load from the DXF
         doc = ezdxf.readfile(path_dxf)
@@ -164,13 +167,14 @@ def assign_extrusion_fromDXF(
                         ),
                     ),
                 )
-        # record profile(s) in an ExternalReference so we can find again
-        # FIXME use IfcMaterialProfile for this?
-        self.createIfcExternalReferenceRelationship(
+        # record profile(s) in a MaterialProfileSet so we can find them again
+        self.createIfcMaterialProfileSet(
             identifier,
             None,
-            self.createIfcExternalReference(None, identifier, None),
-            closedprofiledefs,
+            [
+                self.createIfcMaterialProfile(None, None, None, profiledef)
+                for profiledef in closedprofiledefs
+            ],
         )
 
     # define these outside the loop as they are the same for each profile
