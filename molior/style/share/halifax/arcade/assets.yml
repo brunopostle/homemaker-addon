@@ -1,0 +1,18 @@
+---
+arch:
+  -
+    file: arch_194x300.dxf
+    height: 3.0
+    width: 1.94
+    side: 0.61
+    end: 0.305
+  -
+    file: arch_61x304.dxf
+    height: 3.0
+    width: 0.61
+    side: 0.61
+    end: 0.305
+column:
+  -
+    file: column_rustic_290.dxf
+    height: 2.9

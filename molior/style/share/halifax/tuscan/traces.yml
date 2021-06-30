@@ -1,0 +1,36 @@
+---
+exterior:
+  class: Wall
+  ifc: IFCWALL
+  condition: external
+  inner: 0.1524
+  outer: 0.254
+  do_populate_exterior_openings: 1
+column:
+  condition: noop
+colonnade:
+  class: Repeat
+  ifc: IFCCOLUMN
+  asset: column
+  condition: open
+  outer: 0.0
+  inset: 0.0
+  spacing: 2.54
+external beam:
+  class: Extrusion
+  ifc: IFCBEAM
+  profile: beam_tuscan.dxf
+  condition: open
+  xshift: 0.0
+  yshift: -0.675
+  extension: 0.0
+parapet:
+  condition: noop
+crown:
+  class: Extrusion
+  ifc: IFCWALL
+  profile: beam_tuscan.dxf
+  condition: top-backward-level
+  xshift: 0.1024
+  yshift: -0.675
+  extension: 0.254

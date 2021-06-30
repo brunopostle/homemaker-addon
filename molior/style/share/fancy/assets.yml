@@ -1,0 +1,9 @@
+---
+bracket:
+  -
+    file: bracket.dxf
+    height: 0.0
+monkey:
+  -
+    file: monkey.dxf
+    height: 0.0

@@ -1,0 +1,19 @@
+---
+exterior:
+  class: Wall
+  ifc: IFCWALL
+  condition: external
+  inner: 0.305
+  outer: 0.305
+  do_populate_exterior_openings: 1
+crown:
+  class: Extrusion
+  ifc: IFCWALL
+  profile: crown.dxf
+  condition: external
+  xshift: 0.305
+  yshift: -0.24
+  outer: 0.0
+  extension: 0.305
+parapet:
+  condition: noop
