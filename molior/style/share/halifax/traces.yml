@@ -5,4 +5,22 @@ exterior:
   inner: 0.305
   outer: 0.305
   do_populate_exterior_openings: 1
-
+balustrade_small:
+  class: Repeat
+  ifc: IFCRAILING
+  asset: balustrade_small
+  condition: none
+  xshift: 0.0
+  yshift: 0.12
+  outer: 0.0
+  inset: 0.125
+  spacing: 0.12
+bar:
+  class: Extrusion
+  ifc: IFCRAILING
+  profile: bar_4x2.dxf
+  height: 0.0
+  condition: none
+  xshift: 0.0
+  yshift: 0.1
+  extension: -0.025

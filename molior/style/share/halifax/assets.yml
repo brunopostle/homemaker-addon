@@ -1,0 +1,9 @@
+---
+balustrade_large:
+  -
+    file: balustrade_102.dxf
+    height: 1.02
+balustrade_small:
+  -
+    file: balustrade_90.dxf
+    height: 0.9

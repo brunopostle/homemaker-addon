@@ -16,6 +16,7 @@ colonnade:
   outer: 0.0
   inset: 0.0
   spacing: 2.54
+  traces: [handrail, balustrade_large]
 external beam:
   class: Extrusion
   ifc: IFCBEAM
@@ -34,3 +35,21 @@ crown:
   xshift: 0.1024
   yshift: -0.675
   extension: 0.254
+handrail:
+  class: Extrusion
+  ifc: IFCRAILING
+  profile: handrail_12.dxf
+  height: 0.0
+  condition: none
+  xshift: 0.0
+  yshift: 1.02
+  extension: -0.25
+balustrade_large:
+  class: Repeat
+  ifc: IFCRAILING
+  asset: balustrade_large
+  condition: none
+  outer: 0.0
+  inset: 0.3
+  spacing: 1.2
+  traces: [balustrade_small, bar]
