@@ -67,35 +67,38 @@ class Repeat(BaseClass):
                 )
 
             for index in range(items):
-                location = add_2d(
-                    v_out_a,
-                    scale_2d(self.direction_segment(id_segment), index * spacing),
-                )
-                entity = run(
-                    "root.create_entity",
-                    ifc,
-                    ifc_class=self.ifc,
-                    name=self.style + "/" + self.condition,
-                )
-                # place the entity in space
-                elevation = self.elevation + self.yshift
-                run(
-                    "geometry.edit_object_placement",
-                    ifc,
-                    product=entity,
-                    matrix=matrix_align(
-                        [*location, elevation],
-                        [
-                            *add_2d(location, self.direction_segment(id_segment)),
-                            elevation,
-                        ],
-                    ),
-                )
-                # assign the entity to a storey
-                ifc.assign_storey_byindex(entity, self.level)
+                if index > 0 or id_segment == 0 or self.inset > 0.0:
+                    location = add_2d(
+                        v_out_a,
+                        scale_2d(self.direction_segment(id_segment), index * spacing),
+                    )
+                    entity = run(
+                        "root.create_entity",
+                        ifc,
+                        ifc_class=self.ifc,
+                        name=self.style + "/" + self.condition,
+                    )
+                    # place the entity in space
+                    elevation = self.elevation + self.yshift
+                    run(
+                        "geometry.edit_object_placement",
+                        ifc,
+                        product=entity,
+                        matrix=matrix_align(
+                            [*location, elevation],
+                            [
+                                *add_2d(location, self.direction_segment(id_segment)),
+                                elevation,
+                            ],
+                        ),
+                    )
+                    # assign the entity to a storey
+                    ifc.assign_storey_byindex(entity, self.level)
 
-                # load geometry from a DXF file and assign to the entity
-                ifc.assign_representation_fromDXF(context, entity, self.style, dxf_path)
+                    # load geometry from a DXF file and assign to the entity
+                    ifc.assign_representation_fromDXF(
+                        context, entity, self.style, dxf_path
+                    )
 
                 # fill space between
                 if index == items - 1:
