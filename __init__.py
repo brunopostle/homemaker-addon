@@ -23,6 +23,8 @@ bl_info = {
     "category": "Object",
 }
 
+# TODO operator that just generates cellcomplex geometry
+
 
 class ObjectHomemaker(bpy.types.Operator):
     """Object Homemaker Topologise"""

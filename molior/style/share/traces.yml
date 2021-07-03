@@ -60,7 +60,7 @@ column:
   asset: column
   condition: open
   outer: 0.2
-  inset: 2.0
+  inset: 0.0
   spacing: 2.0
 bedroom-space:
   class: Space

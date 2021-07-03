@@ -26,6 +26,16 @@ external beam:
   extension: 0.254
 column:
   condition: noop
+parapet:
+  condition: noop
+crown:
+  class: Extrusion
+  ifc: IFCWALL
+  profile: beam_rustic.dxf
+  condition: top-backward-level
+  xshift: 0.0
+  yshift: -0.535
+  extension: 0.254
 handrail:
   class: Extrusion
   ifc: IFCRAILING
