@@ -63,6 +63,8 @@ class Tests(unittest.TestCase):
         self.cellcomplex.Faces(faces_all)
         self.assertEqual(len(faces_all), 6)
         for face in faces_all:
+            if not face.IsVertical():
+                continue
             self.assertEqual(face.Get("stylename"), "orange")
 
 

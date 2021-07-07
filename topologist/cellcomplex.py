@@ -163,8 +163,14 @@ def ApplyDictionary(self, source_faces):
     faces = create_stl_list(Face)
     self.Faces(faces)
     for face in faces:
+        # currently only copying material names to/from vertical faces
+        if not face.IsVertical():
+            continue
         vertex = FaceUtility.InternalVertex(face)
         for source_face in source_faces:
+            if not source_face.IsVertical():
+                continue
+            # FIXME calling IsInside() many times slows subsequent code!!
             if FaceUtility.IsInside(source_face, vertex, 0.001):
                 dictionary = source_face.GetDictionary()
                 for key in dictionary.Keys():
