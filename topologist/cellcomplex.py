@@ -175,6 +175,7 @@ def ApplyDictionary(self, source_faces):
                 dictionary = source_face.GetDictionary()
                 for key in dictionary.Keys():
                     face.Set(key, source_face.Get(key))
+                break
 
 
 setattr(topologic.CellComplex, "AllocateCells", AllocateCells)
