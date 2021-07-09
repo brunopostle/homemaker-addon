@@ -74,15 +74,16 @@ def BadNormal(self):
 
 
 def IsVertical(self):
-    normal = self.Normal()
-    if abs(normal[2]) < 0.0001:
+
+    normal_stl = FaceUtility.NormalAtParameters(self, 0.5, 0.5)
+    if abs(normal_stl.Z()) < 0.0001:
         return True
     return False
 
 
 def IsHorizontal(self):
-    normal = self.Normal()
-    if abs(normal[2]) > 0.9999:
+    normal_stl = FaceUtility.NormalAtParameters(self, 0.5, 0.5)
+    if abs(normal_stl.Z()) > 0.9999:
         return True
     return False
 
