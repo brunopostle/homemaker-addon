@@ -15,7 +15,6 @@ import tempfile
 import logging
 from blenderbim import import_ifc
 import bpy
-import bmesh
 
 bl_info = {
     "name": "Homemaker Topologise",
@@ -35,7 +34,7 @@ class ObjectHomemaker(bpy.types.Operator):
 
     def execute(self, context):
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-        bl_objects = []
+        meshes = []
         widgets = []
 
         for blender_object in context.selected_objects:
@@ -60,31 +59,24 @@ class ObjectHomemaker(bpy.types.Operator):
                 )
                 widgets.append([label[0], vertex])
             else:
-                bl_objects.append(blender_object)
+                meshes.append(blender_object)
 
         # Each remaining mesh becomes a separate building
         # FIXME should all end-up in the same IfcProject
-        for bl_object in bl_objects:
-            depsgraph = bpy.context.evaluated_depsgraph_get()
-            bl_object = bl_object.evaluated_get(depsgraph)
-            # Get a BMesh representation
-            bm = bmesh.new()  # create an empty BMesh
-            bm.from_mesh(bl_object.data)  # fill it in from a Mesh
-
-            # Topologic model
-            vertices = [Vertex.ByCoordinates(*v.co) for v in bm.verts]
+        for mesh in meshes:
+            vertices = [Vertex.ByCoordinates(*v.co) for v in mesh.data.vertices]
             faces_ptr = create_stl_list(Face)
 
-            for f in bm.faces:
-                if f.calc_area() < 0.00001:
+            for polygon in mesh.data.polygons:
+                if polygon.area < 0.00001:
                     continue
                 stylename = "default"
-                if len(bl_object.material_slots) > 0:
-                    stylename = bl_object.material_slots[f.material_index].material.name
-                face = Face.ByVertices([vertices[v.index] for v in f.verts])
-                face.Set("stylename", stylename)
-                faces_ptr.push_back(face)
-            bl_object.hide_viewport = True
+                if len(mesh.material_slots) > 0:
+                    stylename = mesh.material_slots[polygon.material_index].material.name
+                face_ptr = Face.ByVertices([vertices[v] for v in polygon.vertices])
+                face_ptr.Set("stylename", stylename)
+                faces_ptr.push_back(face_ptr)
+            mesh.hide_viewport = True
 
             # Generate a Topologic CellComplex
             cc = CellComplex.ByFaces(faces_ptr, 0.0001)
@@ -100,7 +92,7 @@ class ObjectHomemaker(bpy.types.Operator):
             # print(circulation.Dot(cc))
 
             # generate an IFC object
-            ifc = molior.ifc.init(bl_object.name, elevations)
+            ifc = molior.ifc.init(mesh.name, elevations)
 
             # Traces are 2D paths that define walls, extrusions and rooms
             # Hulls are 3D shells that define pitched roofs and soffits
