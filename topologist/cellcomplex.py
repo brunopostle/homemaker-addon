@@ -19,9 +19,11 @@ def AllocateCells(self, widgets):
         # a usable space has vertical faces on all sides
         if not cell.Perimeter().is_simple_cycle():
             cell.Set("usage", "void")
+            continue
         for widget in widgets:
             if CellUtility.Contains(cell, widget[1]) == 0:
                 cell.Set("usage", widget[0].lower())
+                break
 
 
 # TODO non-horizontal details (gables, arches, ridges and valleys)
