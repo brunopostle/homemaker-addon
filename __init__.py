@@ -48,15 +48,9 @@ class ObjectHomemaker(bpy.types.Operator):
                 flags=re.IGNORECASE,
             )
             if label:
-                depsgraph = bpy.context.evaluated_depsgraph_get()
-                blender_object = blender_object.evaluated_get(depsgraph)
-                bm = bmesh.new()  # create an empty BMesh
-                bm.from_mesh(blender_object.data)  # fill it in from a Mesh
-                bm.verts.ensure_lookup_table()
-
                 centre = [0.0, 0.0, 0.0]
-                total = len(bm.verts)
-                for v in bm.verts:
+                total = len(blender_object.data.vertices)
+                for v in blender_object.data.vertices:
                     coor = v.co[:]
                     centre[0] += coor[0]
                     centre[1] += coor[1]
@@ -76,17 +70,9 @@ class ObjectHomemaker(bpy.types.Operator):
             # Get a BMesh representation
             bm = bmesh.new()  # create an empty BMesh
             bm.from_mesh(bl_object.data)  # fill it in from a Mesh
-            bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.001)
-            bm.verts.ensure_lookup_table()
 
             # Topologic model
-            vertices = []
-
-            for v in bm.verts:
-                coor = v.co[:]
-                vertex = Vertex.ByCoordinates(coor[0], coor[1], coor[2])
-                vertices.append(vertex)
-
+            vertices = [Vertex.ByCoordinates(*v.co) for v in bm.verts]
             faces_ptr = create_stl_list(Face)
 
             for f in bm.faces:
@@ -95,11 +81,7 @@ class ObjectHomemaker(bpy.types.Operator):
                 stylename = "default"
                 if len(bl_object.material_slots) > 0:
                     stylename = bl_object.material_slots[f.material_index].material.name
-                vertices_face = []
-                for v in f.verts:
-                    vertex = vertices[v.index]
-                    vertices_face.append(vertex)
-                face = Face.ByVertices(vertices_face)
+                face = Face.ByVertices([vertices[v.index] for v in f.verts])
                 face.Set("stylename", stylename)
                 faces_ptr.push_back(face)
             bl_object.hide_viewport = True
