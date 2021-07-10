@@ -69,8 +69,8 @@ class Traces:
             traces[label][elevation][height][stylename] = ugraph.graph()
 
         cells = face.CellsOrdered()
-        start_coor = edge[0].String()
-        end_coor = edge[1].String()
+        start_coor = edge[0].CoorAsString()
+        end_coor = edge[1].CoorAsString()
 
         traces[label][elevation][height][stylename].add_edge(
             {start_coor: [end_coor, [edge[0], edge[1], face, cells[1], cells[0]]]}
@@ -79,8 +79,8 @@ class Traces:
     def add_axis_simple(self, label, elevation, height, stylename, edge, face):
         """edge is two vertices, add as a simple single edge graph"""
         cells = face.CellsOrdered()
-        start_coor = edge[0].String()
-        end_coor = edge[1].String()
+        start_coor = edge[0].CoorAsString()
+        end_coor = edge[1].CoorAsString()
         graph = ugraph.graph()
         graph.add_edge(
             {start_coor: [end_coor, [edge[0], edge[1], face, cells[1], cells[0]]]}

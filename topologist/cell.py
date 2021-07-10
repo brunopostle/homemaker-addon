@@ -110,12 +110,12 @@ def Perimeter(self):
             if edge:
                 edges.push_back(Edge.ByStartVertexEndVertex(edge[0], edge[1]))
                 # process of creating a wire loses all references to original cellcomplex, stash
-                lookup[edge[0].String() + " " + edge[1].String()] = [
+                lookup[edge[0].CoorAsString() + " " + edge[1].CoorAsString()] = [
                     edge[0],
                     edge[1],
                     face,
                 ]
-                lookup[edge[1].String() + " " + edge[0].String()] = [
+                lookup[edge[1].CoorAsString() + " " + edge[0].CoorAsString()] = [
                     edge[1],
                     edge[0],
                     face,
@@ -142,8 +142,8 @@ def Perimeter(self):
         else:
             start = vertices_list[i - 1]
             end = vertices_list[i]
-        start_coor = start.String()
-        end_coor = end.String()
+        start_coor = start.CoorAsString()
+        end_coor = end.CoorAsString()
         refs = lookup[start_coor + " " + end_coor]
 
         outer_cell = None

@@ -20,8 +20,8 @@ class Tests(unittest.TestCase):
         vertex_1 = Vertex.ByCoordinates(5.0, 0.0, 3.15)
         vertex_2 = Vertex.ByCoordinates(5.0, 0.0, 6.00)
         vertex_3 = Vertex.ByCoordinates(1.0, 0.0, 6.00)
-        coor_0 = vertex_0.String()
-        coor_1 = vertex_1.String()
+        coor_0 = vertex_0.CoorAsString()
+        coor_1 = vertex_1.CoorAsString()
 
         face = Face.ByVertices([vertex_0, vertex_1, vertex_2, vertex_3])
         # a real wall would have a Face and one or two Cells

@@ -3,8 +3,8 @@
 import topologic
 
 
-def String(self):
+def CoorAsString(self):
     return str(self.X()) + "__" + str(self.Y()) + "__" + str(self.Z())
 
 
-setattr(topologic.Vertex, "String", String)
+setattr(topologic.Vertex, "CoorAsString", CoorAsString)

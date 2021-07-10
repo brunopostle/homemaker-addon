@@ -102,8 +102,8 @@ def AxisOuter(self):
     if len(edges) > 0:
         unordered = ugraph.graph()
         for edge in edges:
-            start_coor = edge.StartVertex().String()
-            end_coor = edge.EndVertex().String()
+            start_coor = edge.StartVertex().CoorAsString()
+            end_coor = edge.EndVertex().CoorAsString()
             unordered.add_edge(
                 {start_coor: [end_coor, [edge.StartVertex(), edge.EndVertex(), self]]}
             )
@@ -124,8 +124,8 @@ def AxisOuterTop(self):
     if len(edges) > 0:
         unordered = ugraph.graph()
         for edge in edges:
-            start_coor = edge.StartVertex().String()
-            end_coor = edge.EndVertex().String()
+            start_coor = edge.StartVertex().CoorAsString()
+            end_coor = edge.EndVertex().CoorAsString()
             unordered.add_edge(
                 {start_coor: [end_coor, [edge.StartVertex(), edge.EndVertex(), self]]}
             )

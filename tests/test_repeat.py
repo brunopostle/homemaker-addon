@@ -20,10 +20,10 @@ class Tests(unittest.TestCase):
         vertex_1 = Vertex.ByCoordinates(5.0, 0.0, 3.15)
         vertex_2 = Vertex.ByCoordinates(8.0, 4.0, 3.15)
         vertex_3 = Vertex.ByCoordinates(1.0, 4.0, 3.15)
-        coor_0 = vertex_0.String()
-        coor_1 = vertex_1.String()
-        coor_2 = vertex_2.String()
-        coor_3 = vertex_3.String()
+        coor_0 = vertex_0.CoorAsString()
+        coor_1 = vertex_1.CoorAsString()
+        coor_2 = vertex_2.CoorAsString()
+        coor_3 = vertex_3.CoorAsString()
 
         # closed repeat
         # string: [string, [Vertex, Vertex, Face, Cell, Cell]]
