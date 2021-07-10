@@ -3,6 +3,7 @@ exterior:
   class: Wall
   ifc: IFCWALL
   condition: external
+  ceiling: 0.5
   inner: 0.254
   outer: 0.254
   do_populate_exterior_openings: 1
