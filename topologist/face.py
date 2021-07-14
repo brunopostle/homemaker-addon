@@ -67,6 +67,9 @@ def BadNormal(self):
     faces inside the cellcomplex have random orientation"""
     if not self.IsWorld():
         cells = self.CellsOrdered()
+        if cells[0] == None or cells[1] == None:
+            self.Set("badnormal", True)
+            return True
         if cells[1].IsOutside() and not cells[0].IsOutside():
             self.Set("badnormal", True)
             return True

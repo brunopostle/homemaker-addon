@@ -64,7 +64,7 @@ class Wall(BaseClass):
             face = edge[1][2]
             vertex = face.GraphVertex(self.circulation)
             # FIXME determine door orientation
-            if vertex != None:
+            if vertex != None and edge[1][3] != None and edge[1][4] != None:
                 self.populate_interior_openings(
                     0, edge[1][3].Usage(), edge[1][4].Usage(), 0
                 )

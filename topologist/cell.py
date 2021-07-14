@@ -126,7 +126,11 @@ def Perimeter(self):
     # edges are in no particular order or direction
     if len(list(edges)) < 3:
         return graph
-    floor = Face.ByEdges(edges)
+    try:
+        floor = Face.ByEdges(edges)
+    except:
+        return graph
+
     normal = floor.Normal()
     vertices = create_stl_list(Vertex)
     floor.VerticesPerimeter(vertices)
