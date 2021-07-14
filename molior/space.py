@@ -104,7 +104,12 @@ class Space(BaseClass):
                 transparency=0.9,
                 external_definition=None,
             )
-        run("geometry.assign_styles", ifc, shape_representation=shape, styles=[style])
+        run(
+            "style.assign_representation_styles",
+            ifc,
+            shape_representation=shape,
+            styles=[style],
+        )
 
         run("geometry.assign_representation", ifc, product=entity, representation=shape)
         run(
