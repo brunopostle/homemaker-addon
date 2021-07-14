@@ -79,13 +79,16 @@ def GetTraces(self):
                 normal = face.Normal()
                 for condition in face.TopLevelConditions():
                     edge = condition[0]
+                    vertices = [edge.EndVertex(), edge.StartVertex()]
+                    if face.Get("badnormal"):
+                        vertices.reverse()
                     label = condition[1]
                     mytraces.add_axis(
                         label,
                         el(elevation + height),
                         0.0,
                         stylename,
-                        [edge.EndVertex(), edge.StartVertex()],
+                        vertices,
                         face,
                     )
                     mynormals.add_vector("top", edge.StartVertex(), normal)
@@ -93,13 +96,16 @@ def GetTraces(self):
 
                 for condition in face.BottomLevelConditions():
                     edge = condition[0]
+                    vertices = [edge.StartVertex(), edge.EndVertex()]
+                    if face.Get("badnormal"):
+                        vertices.reverse()
                     label = condition[1]
                     mytraces.add_axis(
                         label,
                         elevation,
                         0.0,
                         stylename,
-                        [edge.StartVertex(), edge.EndVertex()],
+                        vertices,
                         face,
                     )
                     mynormals.add_vector("bottom", edge.StartVertex(), normal)
