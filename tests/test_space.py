@@ -36,7 +36,7 @@ class Tests(unittest.TestCase):
 
         ifc = molior.ifc.init("Our House", {3.15: 2})
 
-        self.space = Molior().GetIfc(
+        self.space = Molior().GetTraceIfc(
             ifc,
             "default",  # style
             "kitchen",  # condition
@@ -48,7 +48,7 @@ class Tests(unittest.TestCase):
             normals.normals,  # normals
         )
 
-        self.stair = Molior().GetIfc(
+        self.stair = Molior().GetTraceIfc(
             ifc,
             "default",  # style
             "stair",  # condition

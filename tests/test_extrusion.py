@@ -35,7 +35,7 @@ class Tests(unittest.TestCase):
 
         ifc = molior.ifc.init("Our House", {3.15: 2})
 
-        self.extrusion = Molior().GetIfc(
+        self.extrusion = Molior().GetTraceIfc(
             ifc,
             "default",  # style
             "top-backward-up",  # condition
@@ -54,7 +54,7 @@ class Tests(unittest.TestCase):
         trace.add_edge({coor_2: [coor_3, [vertex_2, vertex_3, None, None, None]]})
         paths = trace.find_paths()
 
-        self.extrusion2 = Molior().GetIfc(
+        self.extrusion2 = Molior().GetTraceIfc(
             ifc,
             "default",  # style
             "top-backward-level",  # condition

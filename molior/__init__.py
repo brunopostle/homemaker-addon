@@ -62,7 +62,7 @@ class Molior:
                 for height in traces[condition][elevation]:
                     for stylename in traces[condition][elevation][height]:
                         for chain in traces[condition][elevation][height][stylename]:
-                            self.GetIfc(
+                            self.GetTraceIfc(
                                 ifc,
                                 stylename,
                                 condition,
@@ -83,7 +83,7 @@ class Molior:
                         hull,
                     )
 
-    def GetIfc(
+    def GetTraceIfc(
         self,
         ifc,
         stylename,

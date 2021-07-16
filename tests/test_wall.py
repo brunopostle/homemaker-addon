@@ -60,7 +60,7 @@ class Tests(unittest.TestCase):
 
         self.ifc = molior.ifc.init("Our House", {3.15: 2})
 
-        self.wall = Molior().GetIfc(
+        self.wall = Molior().GetTraceIfc(
             self.ifc,
             "default",  # style
             "external",  # condition

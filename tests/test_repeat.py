@@ -35,7 +35,7 @@ class Tests(unittest.TestCase):
 
         ifc = molior.ifc.init("Our House", {3.15: 2})
 
-        self.repeat = Molior().GetIfc(
+        self.repeat = Molior().GetTraceIfc(
             ifc,
             "fancy",  # style
             "top-backward-up",  # condition
@@ -54,7 +54,7 @@ class Tests(unittest.TestCase):
         trace.add_edge({coor_2: [coor_3, [vertex_2, vertex_3, None, None, None]]})
         paths = trace.find_paths()
 
-        self.repeat2 = Molior().GetIfc(
+        self.repeat2 = Molior().GetTraceIfc(
             ifc,
             "fancy",  # style
             "top-backward-level",  # condition
