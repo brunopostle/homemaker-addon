@@ -49,25 +49,30 @@ def init(building_name, elevations):
     # create and relate site and building
     site = run("root.create_entity", ifc, ifc_class="IfcSite", name="My Site")
     run("aggregate.assign_object", ifc, product=site, relating_object=project)
+    ifc.createBuilding(site, building_name, elevations)
+    return ifc
+
+
+def createBuilding(self, site, building_name, elevations):
     building = run(
-        "root.create_entity", ifc, ifc_class="IfcBuilding", name=building_name
+        "root.create_entity", self, ifc_class="IfcBuilding", name=building_name
     )
-    run("aggregate.assign_object", ifc, product=building, relating_object=site)
+    run("aggregate.assign_object", self, product=building, relating_object=site)
     for elevation in sorted(elevations):
         mystorey = run(
             "root.create_entity",
-            ifc,
+            self,
             ifc_class="IfcBuildingStorey",
             name=str(elevations[elevation]),
         )
-        run("aggregate.assign_object", ifc, product=mystorey, relating_object=building)
+        run("aggregate.assign_object", self, product=mystorey, relating_object=building)
         run(
             "geometry.edit_object_placement",
-            ifc,
+            self,
             product=mystorey,
             matrix=matrix_align([0.0, 0.0, elevation], [1.0, 0.0, 0.0]),
         )
-    return ifc
+    return building
 
 
 def createExtrudedAreaSolid(self, profile, height, direction=[0.0, 0.0, 1.0]):
@@ -310,6 +315,7 @@ def assign_representation_fromDXF(self, bodycontext, element, stylename, path_dx
 
 setattr(ifcfile, "assign_representation_fromDXF", assign_representation_fromDXF)
 setattr(ifcfile, "assign_storey_byindex", assign_storey_byindex)
+setattr(ifcfile, "createBuilding", createBuilding)
 setattr(ifcfile, "createExtrudedAreaSolid", createExtrudedAreaSolid)
 setattr(ifcfile, "clipSolid", clipSolid)
 setattr(ifcfile, "createTessellation_fromMesh", createTessellation_fromMesh)
