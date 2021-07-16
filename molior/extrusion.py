@@ -26,7 +26,7 @@ class Extrusion(BaseClass):
         for arg in args:
             self.__dict__[arg] = args[arg]
 
-    def Ifc(self, ifc, context):
+    def Ifc(self, ifc):
         style = molior.Molior.style
         """Generate some ifc"""
         entity = run("root.create_entity", ifc, ifc_class=self.ifc, name=self.name)
@@ -51,7 +51,7 @@ class Extrusion(BaseClass):
         )
 
         ifc.assign_extrusion_fromDXF(
-            context,
+            self.context,
             entity,
             directrix,
             self.style,

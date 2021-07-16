@@ -31,7 +31,7 @@ class Repeat(BaseClass):
         for arg in args:
             self.__dict__[arg] = args[arg]
 
-    def Ifc(self, ifc, context):
+    def Ifc(self, ifc):
         """Generate some ifc"""
         style = molior.Molior.style
         myconfig = style.get(self.style)
@@ -97,7 +97,7 @@ class Repeat(BaseClass):
 
                     # load geometry from a DXF file and assign to the entity
                     ifc.assign_representation_fromDXF(
-                        context, entity, self.style, dxf_path
+                        self.context, entity, self.style, dxf_path
                     )
 
                 # fill space between
@@ -118,6 +118,7 @@ class Repeat(BaseClass):
                                         ),
                                     ),
                                 ],
+                                "context": self.context,
                                 "name": name,
                                 "elevation": self.elevation,
                                 "height": self.height,
@@ -132,4 +133,4 @@ class Repeat(BaseClass):
                             vals.update(config)
                             part = getattr(self, config["class"])(vals)
 
-                            part.Ifc(ifc, context)
+                            part.Ifc(ifc)

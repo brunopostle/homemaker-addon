@@ -1,3 +1,5 @@
+SHELL=/bin/bash
+
 all : test lint todo black
 
 test :

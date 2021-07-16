@@ -71,7 +71,7 @@ class Wall(BaseClass):
                 self.fix_heights(0)
                 self.fix_segment(0)
 
-    def Ifc(self, ifc, context):
+    def Ifc(self, ifc):
         """Generate some ifc"""
         style = molior.Molior.style
         segments = self.segments()
@@ -172,7 +172,7 @@ class Wall(BaseClass):
                 representationtype = "Clipping"
 
             shape = ifc.createIfcShapeRepresentation(
-                context,
+                self.context,
                 "Body",
                 representationtype,
                 [solid],
@@ -185,7 +185,7 @@ class Wall(BaseClass):
             )
 
             shape = ifc.createIfcShapeRepresentation(
-                context,
+                self.context,
                 "Axis",
                 "Curve2D",
                 [axis],
@@ -252,7 +252,9 @@ class Wall(BaseClass):
                 ifc.assign_storey_byindex(entity, self.level)
 
                 # load geometry from a DXF file and assign to the entity
-                ifc.assign_representation_fromDXF(context, entity, self.style, dxf_path)
+                ifc.assign_representation_fromDXF(
+                    self.context, entity, self.style, dxf_path
+                )
 
                 # create an opening
                 myopening = run(
@@ -277,7 +279,7 @@ class Wall(BaseClass):
                     ifc,
                     product=myopening,
                     representation=ifc.createIfcShapeRepresentation(
-                        context,
+                        self.context,
                         "Body",
                         "SweptSolid",
                         [

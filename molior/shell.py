@@ -22,7 +22,7 @@ class Shell:
         for arg in args:
             self.__dict__[arg] = args[arg]
 
-    def Ifc(self, ifc, context):
+    def Ifc(self, ifc):
         """Generate some ifc"""
         for face in self.hull.faces:
             # coordinates need to be vertical in 4x4 matrix
@@ -99,7 +99,7 @@ class Shell:
                     float(normal_x[2][0]),
                 ]
             shape = ifc.createIfcShapeRepresentation(
-                context,
+                self.context,
                 "Body",
                 "SweptSolid",
                 [

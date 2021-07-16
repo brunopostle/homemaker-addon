@@ -122,6 +122,7 @@ class Molior:
                     "path": path,
                     "chain": chain,
                     "circulation": circulation,
+                    "context": subcontext,
                     "name": name,
                     "elevation": elevation,
                     "height": height,
@@ -135,7 +136,7 @@ class Molior:
                 vals.update(config)
                 part = getattr(self, config["class"])(vals)
 
-                part.Ifc(ifc, subcontext)
+                part.Ifc(ifc)
                 # results are only used by test suite
                 results.append(part)
         return results
@@ -152,6 +153,7 @@ class Molior:
             if "condition" in config and config["condition"] == condition:
                 # TODO style definition should set material, layerset and/or colour for generated products.
                 vals = {
+                    "context": subcontext,
                     "name": name,
                     "style": stylename,
                     "hull": hull,
@@ -159,7 +161,7 @@ class Molior:
                 vals.update(config)
                 part = getattr(self, config["class"])(vals)
 
-                part.Ifc(ifc, subcontext)
+                part.Ifc(ifc)
                 # results are only used by test suite
                 results.append(part)
         return results
