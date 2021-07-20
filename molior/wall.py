@@ -197,6 +197,7 @@ class Wall(BaseClass):
                 representation=shape,
             )
 
+            # TODO map walls, openings, clipping, windows and doors to axis coordinates
             run(
                 "geometry.edit_object_placement",
                 ifc,

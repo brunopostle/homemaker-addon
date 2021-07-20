@@ -75,6 +75,7 @@ def GetTraces(self):
                 # face has no horizontal bottom edge, add to hull for wall panels
                 myhulls.add_face("panel", stylename, face)
 
+            # TODO open wall top and bottom traces
             if face.IsExternal():
                 normal = face.Normal()
                 for condition in face.TopLevelConditions():
