@@ -226,6 +226,8 @@ def createTessellations_fromDXF(self, path_dxf):
     tessellations = []
     for entity in model:
         if entity.get_mode() == "AcDbPolyFaceMesh":
+            if not len(list(entity.faces())):
+                continue
             vertices, faces = entity.indexed_faces()
 
             tessellations.append(
