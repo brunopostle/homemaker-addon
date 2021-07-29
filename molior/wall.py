@@ -229,6 +229,7 @@ class Wall(BaseClass):
                     ifc_class=ifc_class,
                     name=segment[id_opening]["name"],
                 )
+                # TODO need to create IfcWindowType and IfcDoorType
                 # windows/doors have width and height attributes
                 run(
                     "attribute.edit_attributes",
