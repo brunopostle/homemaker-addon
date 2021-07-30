@@ -39,6 +39,7 @@ class Tests(unittest.TestCase):
                 "normal_set": "top",
             }
         )
+        wall3.init_openings()
         self.assertEqual(len(wall3.path), 3)
         self.assertEqual(len(wall3.openings), 2)
         self.assertEqual(wall3.segments(), 2)
@@ -79,6 +80,7 @@ class Tests(unittest.TestCase):
                 "normal_set": "top",
             }
         )
+        wall4.init_openings()
         self.assertEqual(len(wall4.path), 3)
         self.assertEqual(len(wall4.openings), 3)
         self.assertEqual(wall4.path[2], [10.0, 5.0])

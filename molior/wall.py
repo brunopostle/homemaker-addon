@@ -33,46 +33,10 @@ class Wall(BaseClass):
         self.type = "molior-wall"
         for arg in args:
             self.__dict__[arg] = args[arg]
-        self.init_openings()
-
-    def init_openings(self):
-        """We need an array for openings the same size as wall segments array"""
-        if not len(self.openings) == self.segments():
-            self.openings = []
-            for index in range(self.segments()):
-                self.openings.append([])
-
-        # TODO Face information is needed to connect walls to spaces in
-        # relspaceboundary.
-
-        # part may be a wall, add some openings
-        if "do_populate_exterior_openings" in self.__dict__:
-            edges = self.chain.edges()
-            for segment in range(len(self.openings)):
-                edge = self.chain.graph[edges[segment][0]]
-                # edge = {string_coor_start: [string_coor_end, [Vertex_start, Vertex_end, Face, Cell_left, Cell_right]]}
-                face = edge[1][2]
-                try:
-                    interior_type = edge[1][3].Usage()
-                except:
-                    interior_type = None
-                self.populate_exterior_openings(segment, interior_type, 0)
-                self.fix_heights(segment)
-                self.fix_segment(segment)
-        elif "do_populate_interior_openings" in self.__dict__:
-            edge = self.chain.graph[self.chain.edges()[0][0]]
-            face = edge[1][2]
-            vertex = face.GraphVertex(self.circulation)
-            # FIXME determine door orientation
-            if vertex != None and edge[1][3] != None and edge[1][4] != None:
-                self.populate_interior_openings(
-                    0, edge[1][3].Usage(), edge[1][4].Usage(), 0
-                )
-                self.fix_heights(0)
-                self.fix_segment(0)
 
     def Ifc(self):
         """Generate some ifc"""
+        self.init_openings()
         style = molior.Molior.style
         segments = self.segments()
 
@@ -318,6 +282,42 @@ class Wall(BaseClass):
                 run("void.add_opening", self.file, opening=myopening, element=mywall)
                 # associate the opening with our window
                 run("void.add_filling", self.file, opening=myopening, element=entity)
+
+    def init_openings(self):
+        """We need an array for openings the same size as wall segments array"""
+        if not len(self.openings) == self.segments():
+            self.openings = []
+            for index in range(self.segments()):
+                self.openings.append([])
+
+        # TODO Face information is needed to connect walls to spaces in
+        # relspaceboundary.
+
+        # part may be a wall, add some openings
+        if "do_populate_exterior_openings" in self.__dict__:
+            edges = self.chain.edges()
+            for segment in range(len(self.openings)):
+                edge = self.chain.graph[edges[segment][0]]
+                # edge = {string_coor_start: [string_coor_end, [Vertex_start, Vertex_end, Face, Cell_left, Cell_right]]}
+                face = edge[1][2]
+                try:
+                    interior_type = edge[1][3].Usage()
+                except:
+                    interior_type = None
+                self.populate_exterior_openings(segment, interior_type, 0)
+                self.fix_heights(segment)
+                self.fix_segment(segment)
+        elif "do_populate_interior_openings" in self.__dict__:
+            edge = self.chain.graph[self.chain.edges()[0][0]]
+            face = edge[1][2]
+            vertex = face.GraphVertex(self.circulation)
+            # FIXME determine door orientation
+            if vertex != None and edge[1][3] != None and edge[1][4] != None:
+                self.populate_interior_openings(
+                    0, edge[1][3].Usage(), edge[1][4].Usage(), 0
+                )
+                self.fix_heights(0)
+                self.fix_segment(0)
 
     def opening_coor(self, id_segment, id_opening):
         opening = self.openings[id_segment][id_opening]
