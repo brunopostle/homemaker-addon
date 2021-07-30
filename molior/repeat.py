@@ -31,7 +31,7 @@ class Repeat(BaseClass):
         for arg in args:
             self.__dict__[arg] = args[arg]
 
-    def Ifc(self, ifc):
+    def Ifc(self):
         """Generate some ifc"""
         style = molior.Molior.style
         myconfig = style.get(self.style)
@@ -75,7 +75,7 @@ class Repeat(BaseClass):
                     )
                     entity = run(
                         "root.create_entity",
-                        ifc,
+                        self.file,
                         ifc_class=self.ifc,
                         name=self.style + "/" + self.condition,
                     )
@@ -83,7 +83,7 @@ class Repeat(BaseClass):
                     elevation = self.elevation + self.yshift
                     run(
                         "geometry.edit_object_placement",
-                        ifc,
+                        self.file,
                         product=entity,
                         matrix=matrix_align(
                             [*location, elevation],
@@ -94,10 +94,10 @@ class Repeat(BaseClass):
                         ),
                     )
                     # assign the entity to a storey
-                    ifc.assign_storey_byindex(entity, self.level)
+                    self.file.assign_storey_byindex(entity, self.level)
 
                     # load geometry from a DXF file and assign to the entity
-                    ifc.assign_representation_fromDXF(
+                    self.file.assign_representation_fromDXF(
                         self.context, entity, self.style, dxf_path
                     )
 
@@ -120,6 +120,7 @@ class Repeat(BaseClass):
                                     ),
                                 ],
                                 "context": self.context,
+                                "file": self.file,
                                 "name": name,
                                 "elevation": self.elevation,
                                 "height": self.height,
@@ -134,4 +135,4 @@ class Repeat(BaseClass):
                             vals.update(config)
                             part = getattr(self, config["class"])(vals)
 
-                            part.Ifc(ifc)
+                            part.Ifc()

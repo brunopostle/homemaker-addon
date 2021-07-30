@@ -71,7 +71,7 @@ class Wall(BaseClass):
                 self.fix_heights(0)
                 self.fix_segment(0)
 
-    def Ifc(self, ifc):
+    def Ifc(self):
         """Generate some ifc"""
         style = molior.Molior.style
         segments = self.segments()
@@ -84,27 +84,34 @@ class Wall(BaseClass):
             v_in_a = self.corner_in(id_segment)
             v_in_b = self.corner_in(id_segment + 1)
 
-            mywall = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
-            ifc.assign_storey_byindex(mywall, self.level)
+            mywall = run(
+                "root.create_entity", self.file, ifc_class="IfcWall", name="My Wall"
+            )
+            self.file.assign_storey_byindex(mywall, self.level)
 
             is_external = False
             if self.condition == "external":
                 is_external = True
-            pset = run("pset.add_pset", ifc, product=mywall, name="Pset_WallCommon")
+            pset = run(
+                "pset.add_pset", self.file, product=mywall, name="Pset_WallCommon"
+            )
             run(
-                "pset.edit_pset", ifc, pset=pset, properties={"IsExternal": is_external}
+                "pset.edit_pset",
+                self.file,
+                pset=pset,
+                properties={"IsExternal": is_external},
             )
 
             # wall is a plan shape extruded vertically
-            solid = ifc.createExtrudedAreaSolid(
+            solid = self.file.createExtrudedAreaSolid(
                 [v_in_a, v_out_a, v_out_b, v_in_b],
                 self.height,
             )
 
             # axis is a straight line
-            axis = ifc.createIfcPolyline(
+            axis = self.file.createIfcPolyline(
                 [
-                    ifc.createIfcCartesianPoint(point)
+                    self.file.createIfcCartesianPoint(point)
                     for point in [
                         self.corner_coor(id_segment),
                         self.corner_coor(id_segment + 1),
@@ -120,7 +127,7 @@ class Wall(BaseClass):
             for edge in edges_result:
                 start_coor = list(edge.StartVertex().Coordinates())
                 end_coor = list(edge.EndVertex().Coordinates())
-                solid = ifc.clipSolid(
+                solid = self.file.clipSolid(
                     solid,
                     subtract_3d(
                         start_coor,
@@ -134,7 +141,7 @@ class Wall(BaseClass):
                     and distance_2d(start_coor[0:2], self.corner_coor(id_segment + 1))
                     < 0.001
                 ):
-                    solid = ifc.clipSolid(
+                    solid = self.file.clipSolid(
                         solid,
                         subtract_3d(
                             start_coor,
@@ -152,7 +159,7 @@ class Wall(BaseClass):
                     el(end_coor[2]) < el(self.elevation + self.height)
                     and distance_2d(end_coor[0:2], self.corner_coor(id_segment)) < 0.001
                 ):
-                    solid = ifc.clipSolid(
+                    solid = self.file.clipSolid(
                         solid,
                         subtract_3d(
                             end_coor,
@@ -171,7 +178,7 @@ class Wall(BaseClass):
             else:
                 representationtype = "Clipping"
 
-            shape = ifc.createIfcShapeRepresentation(
+            shape = self.file.createIfcShapeRepresentation(
                 self.context,
                 "Body",
                 representationtype,
@@ -179,12 +186,12 @@ class Wall(BaseClass):
             )
             run(
                 "geometry.assign_representation",
-                ifc,
+                self.file,
                 product=mywall,
                 representation=shape,
             )
 
-            shape = ifc.createIfcShapeRepresentation(
+            shape = self.file.createIfcShapeRepresentation(
                 self.context,
                 "Axis",
                 "Curve2D",
@@ -192,7 +199,7 @@ class Wall(BaseClass):
             )
             run(
                 "geometry.assign_representation",
-                ifc,
+                self.file,
                 product=mywall,
                 representation=shape,
             )
@@ -200,7 +207,7 @@ class Wall(BaseClass):
             # TODO map walls, openings, clipping, windows and doors to axis coordinates
             run(
                 "geometry.edit_object_placement",
-                ifc,
+                self.file,
                 product=mywall,
                 matrix=matrix_align([0.0, 0.0, self.elevation], [1.0, 0.0, 0.0]),
             )
@@ -225,7 +232,7 @@ class Wall(BaseClass):
                     ifc_class = "IfcDoor"
                 entity = run(
                     "root.create_entity",
-                    ifc,
+                    self.file,
                     ifc_class=ifc_class,
                     name=segment[id_opening]["name"],
                 )
@@ -233,7 +240,7 @@ class Wall(BaseClass):
                 # windows/doors have width and height attributes
                 run(
                     "attribute.edit_attributes",
-                    ifc,
+                    self.file,
                     product=entity,
                     attributes={
                         "OverallHeight": opening["height"],
@@ -243,7 +250,7 @@ class Wall(BaseClass):
                 # place the entity in space
                 run(
                     "geometry.edit_object_placement",
-                    ifc,
+                    self.file,
                     product=entity,
                     matrix=matrix_align(
                         [left_2d[0], left_2d[1], self.elevation + db["cill"]],
@@ -251,23 +258,23 @@ class Wall(BaseClass):
                     ),
                 )
                 # assign the entity to a storey
-                ifc.assign_storey_byindex(entity, self.level)
+                self.file.assign_storey_byindex(entity, self.level)
 
                 # load geometry from a DXF file and assign to the entity
-                ifc.assign_representation_fromDXF(
+                self.file.assign_representation_fromDXF(
                     self.context, entity, self.style, dxf_path
                 )
 
                 # create an opening
                 myopening = run(
                     "root.create_entity",
-                    ifc,
+                    self.file,
                     ifc_class="IfcOpeningElement",
                     name="My Opening",
                 )
                 run(
                     "attribute.edit_attributes",
-                    ifc,
+                    self.file,
                     product=myopening,
                     attributes={"PredefinedType": "OPENING"},
                 )
@@ -278,14 +285,14 @@ class Wall(BaseClass):
                 outer = 0 - self.outer - 0.02
                 run(
                     "geometry.assign_representation",
-                    ifc,
+                    self.file,
                     product=myopening,
-                    representation=ifc.createIfcShapeRepresentation(
+                    representation=self.file.createIfcShapeRepresentation(
                         self.context,
                         "Body",
                         "SweptSolid",
                         [
-                            ifc.createExtrudedAreaSolid(
+                            self.file.createExtrudedAreaSolid(
                                 [
                                     [0.0, outer],
                                     [opening["width"], outer],
@@ -300,7 +307,7 @@ class Wall(BaseClass):
                 # place the opening where the wall is
                 run(
                     "geometry.edit_object_placement",
-                    ifc,
+                    self.file,
                     product=myopening,
                     matrix=matrix_align(
                         [left_2d[0], left_2d[1], self.elevation + db["cill"]],
@@ -308,9 +315,9 @@ class Wall(BaseClass):
                     ),
                 )
                 # use the opening to cut the wall, no need to assign a storey
-                run("void.add_opening", ifc, opening=myopening, element=mywall)
+                run("void.add_opening", self.file, opening=myopening, element=mywall)
                 # associate the opening with our window
-                run("void.add_filling", ifc, opening=myopening, element=entity)
+                run("void.add_filling", self.file, opening=myopening, element=entity)
 
     def opening_coor(self, id_segment, id_opening):
         opening = self.openings[id_segment][id_opening]

@@ -26,13 +26,15 @@ class Extrusion(BaseClass):
         for arg in args:
             self.__dict__[arg] = args[arg]
 
-    def Ifc(self, ifc):
+    def Ifc(self):
         style = molior.Molior.style
         """Generate some ifc"""
-        entity = run("root.create_entity", ifc, ifc_class=self.ifc, name=self.name)
+        entity = run(
+            "root.create_entity", self.file, ifc_class=self.ifc, name=self.name
+        )
         # TODO IfcRoof may be .FREEFORM. IfcBeam may have structural
         # attributes. IfcBuildingElementProxy can be .ELEMENT.
-        ifc.assign_storey_byindex(entity, self.level)
+        self.file.assign_storey_byindex(entity, self.level)
         directrix = self.path
         if self.closed:
             directrix.append(directrix[0])
@@ -44,14 +46,14 @@ class Extrusion(BaseClass):
 
         dxf_path = style.get_file(self.style, self.profile)
 
-        transform = ifc.createIfcCartesianTransformationOperator2D(
+        transform = self.file.createIfcCartesianTransformationOperator2D(
             None,
             None,
-            ifc.createIfcCartesianPoint([self.yshift, self.xshift]),
+            self.file.createIfcCartesianPoint([self.yshift, self.xshift]),
             self.scale,
         )
 
-        ifc.assign_extrusion_fromDXF(
+        self.file.assign_extrusion_fromDXF(
             self.context,
             entity,
             directrix,
@@ -62,7 +64,7 @@ class Extrusion(BaseClass):
 
         run(
             "geometry.edit_object_placement",
-            ifc,
+            self.file,
             product=entity,
             matrix=matrix_align(
                 [0.0, 0.0, self.elevation + self.height], [1.0, 0.0, 0.0]

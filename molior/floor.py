@@ -27,17 +27,17 @@ class Floor(BaseClass):
         for layer in self.layerset:
             self.thickness += layer[0]
 
-    def Ifc(self, ifc):
+    def Ifc(self):
         """Generate some ifc"""
         entity = run(
             "root.create_entity",
-            ifc,
+            self.file,
             ifc_class=self.ifc,
             name=self.name,
         )
 
         element_types = {}
-        for element_type in ifc.by_type("IfcSlabType"):
+        for element_type in self.file.by_type("IfcSlabType"):
             element_types[element_type.Name] = element_type
         if self.name in element_types:
             myelement_type = element_types[self.name]
@@ -45,20 +45,20 @@ class Floor(BaseClass):
             # we need to create a new IfcSlabType
             myelement_type = ifcopenshell.api.run(
                 "root.create_entity",
-                ifc,
+                self.file,
                 ifc_class="IfcSlabType",
                 name=self.name,
                 predefined_type="FLOOR",
             )
             ifcopenshell.api.run(
                 "project.assign_declaration",
-                ifc,
+                self.file,
                 definition=myelement_type,
-                relating_context=ifc.by_type("IfcProject")[0],
+                relating_context=self.file.by_type("IfcProject")[0],
             )
             ifcopenshell.api.run(
                 "material.assign_material",
-                ifc,
+                self.file,
                 product=myelement_type,
                 type="IfcMaterialLayerSet",
             )
@@ -66,41 +66,52 @@ class Floor(BaseClass):
             mylayerset = ifcopenshell.util.element.get_material(myelement_type)
             for mylayer in self.layerset:
                 materials = {}
-                for material in ifc.by_type("IfcMaterial"):
+                for material in self.file.by_type("IfcMaterial"):
                     materials[material.Name] = material
                 if mylayer[1] in materials:
                     mymaterial = materials[mylayer[1]]
                 else:
                     # we need to create a new material
                     mymaterial = ifcopenshell.api.run(
-                        "material.add_material", ifc, name=mylayer[1]
+                        "material.add_material", self.file, name=mylayer[1]
                     )
 
                 layer = ifcopenshell.api.run(
-                    "material.add_layer", ifc, layer_set=mylayerset, material=mymaterial
+                    "material.add_layer",
+                    self.file,
+                    layer_set=mylayerset,
+                    material=mymaterial,
                 )
                 layer.LayerThickness = mylayer[0]
 
         run(
-            "type.assign_type", ifc, related_object=entity, relating_type=myelement_type
+            "type.assign_type",
+            self.file,
+            related_object=entity,
+            relating_type=myelement_type,
         )
 
-        ifc.assign_storey_byindex(entity, self.level)
-        shape = ifc.createIfcShapeRepresentation(
+        self.file.assign_storey_byindex(entity, self.level)
+        shape = self.file.createIfcShapeRepresentation(
             self.context,
             "Body",
             "SweptSolid",
             [
-                ifc.createExtrudedAreaSolid(
+                self.file.createExtrudedAreaSolid(
                     [self.corner_in(index) for index in range(len(self.path))],
                     self.thickness,
                 )
             ],
         )
-        run("geometry.assign_representation", ifc, product=entity, representation=shape)
+        run(
+            "geometry.assign_representation",
+            self.file,
+            product=entity,
+            representation=shape,
+        )
         run(
             "geometry.edit_object_placement",
-            ifc,
+            self.file,
             product=entity,
             matrix=matrix_align(
                 [0.0, 0.0, self.elevation - self.below], [1.0, 0.0, 0.0]

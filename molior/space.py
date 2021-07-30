@@ -30,7 +30,7 @@ class Space(BaseClass):
             self.__dict__[arg] = args[arg]
         self.usage = self.name
 
-    def Ifc(self, ifc):
+    def Ifc(self):
         """Generate some ifc"""
         # the cell is the first cell attached to any edge in the chain
         string_coor_start = next(iter(self.chain.graph))
@@ -38,7 +38,7 @@ class Space(BaseClass):
 
         entity = run(
             "root.create_entity",
-            ifc,
+            self.file,
             ifc_class="IfcSpace",
             name=self.usage + "/" + str(cell.Get("index")),
         )
@@ -49,12 +49,17 @@ class Space(BaseClass):
         except:
             is_external = False
             crinkliness = 1.0
-        pset = run("pset.add_pset", ifc, product=entity, name="Pset_SpaceCommon")
-        run("pset.edit_pset", ifc, pset=pset, properties={"IsExternal": is_external})
+        pset = run("pset.add_pset", self.file, product=entity, name="Pset_SpaceCommon")
+        run(
+            "pset.edit_pset",
+            self.file,
+            pset=pset,
+            properties={"IsExternal": is_external},
+        )
 
-        ifc.assign_storey_byindex(entity, self.level)
+        self.file.assign_storey_byindex(entity, self.level)
         # simple extruded representation
-        representation = ifc.createExtrudedAreaSolid(
+        representation = self.file.createExtrudedAreaSolid(
             [self.corner_in(index) for index in range(len(self.path))],
             self.height - self.ceiling,
         )
@@ -68,13 +73,13 @@ class Space(BaseClass):
             vertices = [
                 [v[0], v[1], v[2] - self.elevation - self.floor] for v in vertices
             ]
-            tessellation = ifc.createTessellation_fromMesh(vertices, faces)
-            representation = ifc.createIfcBooleanResult(
+            tessellation = self.file.createTessellation_fromMesh(vertices, faces)
+            representation = self.file.createIfcBooleanResult(
                 "INTERSECTION", representation, tessellation
             )
             representationtype = "CSG"
 
-        shape = ifc.createIfcShapeRepresentation(
+        shape = self.file.createIfcShapeRepresentation(
             self.context,
             "Body",
             representationtype,
@@ -87,7 +92,7 @@ class Space(BaseClass):
             blue = numpy.clip(crinkliness - 1.0, 0.0, 1.0)
             style = run(
                 "style.add_style",
-                ifc,
+                self.file,
                 name="Crinkliness " + str(crinkliness),
                 surface_colour=[red, green, blue],
                 diffuse_colour=[red, green, blue],
@@ -97,7 +102,7 @@ class Space(BaseClass):
         else:
             style = run(
                 "style.add_style",
-                ifc,
+                self.file,
                 name="Outdoor Space",
                 surface_colour=[1.0, 1.0, 1.0],
                 diffuse_colour=[1.0, 1.0, 1.0],
@@ -106,15 +111,20 @@ class Space(BaseClass):
             )
         run(
             "style.assign_representation_styles",
-            ifc,
+            self.file,
             shape_representation=shape,
             styles=[style],
         )
 
-        run("geometry.assign_representation", ifc, product=entity, representation=shape)
+        run(
+            "geometry.assign_representation",
+            self.file,
+            product=entity,
+            representation=shape,
+        )
         run(
             "geometry.edit_object_placement",
-            ifc,
+            self.file,
             product=entity,
             matrix=matrix_align(
                 [0.0, 0.0, self.elevation + self.floor], [1.0, 0.0, 0.0]

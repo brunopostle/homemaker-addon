@@ -22,7 +22,7 @@ class Shell:
         for arg in args:
             self.__dict__[arg] = args[arg]
 
-    def Ifc(self, ifc):
+    def Ifc(self):
         """Generate some ifc"""
         for face in self.hull.faces:
             # coordinates need to be vertical in 4x4 matrix
@@ -85,9 +85,11 @@ class Shell:
                 for node in numpy.transpose(combined_inv @ nodes)
             ]
 
-            entity = run("root.create_entity", ifc, ifc_class=self.ifc, name="MyShell")
+            entity = run(
+                "root.create_entity", self.file, ifc_class=self.ifc, name="MyShell"
+            )
             # FIXME this puts roofs in the ground floor
-            ifc.assign_storey_byindex(entity, 0)
+            self.file.assign_storey_byindex(entity, 0)
             if abs(float(normal_x[2][0])) < 0.001:
                 extrude_height = self.outer
                 extrude_direction = [0.0, 0.0, 1.0]
@@ -98,12 +100,12 @@ class Shell:
                     0 - float(normal_x[1][0]),
                     float(normal_x[2][0]),
                 ]
-            shape = ifc.createIfcShapeRepresentation(
+            shape = self.file.createIfcShapeRepresentation(
                 self.context,
                 "Body",
                 "SweptSolid",
                 [
-                    ifc.createExtrudedAreaSolid(
+                    self.file.createExtrudedAreaSolid(
                         nodes_2d,
                         extrude_height,
                         extrude_direction,
@@ -112,13 +114,13 @@ class Shell:
             )
             run(
                 "geometry.assign_representation",
-                ifc,
+                self.file,
                 product=entity,
                 representation=shape,
             )
             run(
                 "geometry.edit_object_placement",
-                ifc,
+                self.file,
                 product=entity,
                 matrix=combined,
             )

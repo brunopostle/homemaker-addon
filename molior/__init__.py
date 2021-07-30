@@ -55,7 +55,7 @@ class Molior:
             self.__dict__[arg] = args[arg]
         Molior.style = Style({"share_dir": self.share_dir})
 
-    def Process(self, ifc, circulation, elevations, traces, hulls, normals):
+    def Process(self, file, circulation, elevations, traces, hulls, normals):
         for condition in traces:
             for elevation in traces[condition]:
                 level = elevations[elevation]
@@ -63,7 +63,7 @@ class Molior:
                     for stylename in traces[condition][elevation][height]:
                         for chain in traces[condition][elevation][height][stylename]:
                             self.GetTraceIfc(
-                                ifc,
+                                file,
                                 stylename,
                                 condition,
                                 level,
@@ -77,7 +77,7 @@ class Molior:
             for stylename in hulls[condition]:
                 for hull in hulls[condition][stylename]:
                     self.GetHullIfc(
-                        ifc,
+                        file,
                         stylename,
                         condition,
                         hull,
@@ -85,7 +85,7 @@ class Molior:
 
     def GetTraceIfc(
         self,
-        ifc,
+        file,
         stylename,
         condition,
         level,
@@ -97,7 +97,7 @@ class Molior:
     ):
         """Retrieves IFC data and adds to model"""
         results = []
-        for item in ifc.by_type("IfcGeometricRepresentationSubContext"):
+        for item in file.by_type("IfcGeometricRepresentationSubContext"):
             if item.TargetView == "MODEL_VIEW":
                 subcontext = item
         myconfig = Molior.style.get(stylename)
@@ -123,6 +123,7 @@ class Molior:
                     "chain": chain,
                     "circulation": circulation,
                     "context": subcontext,
+                    "file": file,
                     "name": name,
                     "elevation": elevation,
                     "height": height,
@@ -136,15 +137,15 @@ class Molior:
                 vals.update(config)
                 part = getattr(self, config["class"])(vals)
 
-                part.Ifc(ifc)
+                part.Ifc()
                 # results are only used by test suite
                 results.append(part)
         return results
 
-    def GetHullIfc(self, ifc, stylename, condition, hull):
+    def GetHullIfc(self, file, stylename, condition, hull):
         """Retrieves IFC data and adds to model"""
         results = []
-        for item in ifc.by_type("IfcGeometricRepresentationSubContext"):
+        for item in file.by_type("IfcGeometricRepresentationSubContext"):
             if item.TargetView == "MODEL_VIEW":
                 subcontext = item
         myconfig = Molior.style.get(stylename)
@@ -154,6 +155,7 @@ class Molior:
                 # TODO style definition should set material, layerset and/or colour for generated products.
                 vals = {
                     "context": subcontext,
+                    "file": file,
                     "name": name,
                     "style": stylename,
                     "hull": hull,
@@ -161,7 +163,7 @@ class Molior:
                 vals.update(config)
                 part = getattr(self, config["class"])(vals)
 
-                part.Ifc(ifc)
+                part.Ifc()
                 # results are only used by test suite
                 results.append(part)
         return results
