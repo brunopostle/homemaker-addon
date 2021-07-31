@@ -57,8 +57,15 @@ ifc = molior.ifc.init("dxf2ifc building", elevations)
 # Traces are 2D paths that define walls, extrusions and rooms
 traces, hulls, normals = cc.GetTraces()
 
-molior_object = Molior()
-molior_object.Process(ifc, circulation, elevations, traces, hulls, normals)
+molior_object = Molior(
+    file=ifc,
+    circulation=circulation,
+    elevations=elevations,
+    traces=traces,
+    hulls=hulls,
+    normals=normals,
+)
+molior_object.execute()
 
 profiler.stop()
 

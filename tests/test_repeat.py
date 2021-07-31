@@ -35,16 +35,14 @@ class Tests(unittest.TestCase):
 
         ifc = molior.ifc.init("Our House", {3.15: 2})
 
-        self.repeat = Molior().GetTraceIfc(
-            ifc,
+        molior_object = Molior(file=ifc, circulation=None, normals=normals.normals)
+        self.repeat = molior_object.GetTraceIfc(
             "fancy",  # style
             "top-backward-up",  # condition
             2,  # level
             3.15,  # elevation
             0.05,  # height
             paths[0],  # chain
-            None,  # circulation
-            normals.normals,  # normals
         )
 
         # open repeat
@@ -54,16 +52,14 @@ class Tests(unittest.TestCase):
         trace.add_edge({coor_2: [coor_3, [vertex_2, vertex_3, None, None, None]]})
         paths = trace.find_paths()
 
-        self.repeat2 = Molior().GetTraceIfc(
-            ifc,
+        molior_object = Molior(file=ifc, circulation=None, normals=normals.normals)
+        self.repeat2 = molior_object.GetTraceIfc(
             "fancy",  # style
             "top-backward-level",  # condition
             2,  # level
             3.15,  # elevation
             0.05,  # height
             paths[0],  # chain
-            None,  # circulation
-            normals.normals,  # normals
         )
 
     def test_sanity(self):

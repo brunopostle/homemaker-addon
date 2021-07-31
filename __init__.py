@@ -100,8 +100,15 @@ class ObjectHomemaker(bpy.types.Operator):
             # Hulls are 3D shells that define pitched roofs and soffits
             traces, hulls, normals = cc.GetTraces()
 
-            molior_object = Molior()
-            molior_object.Process(ifc, circulation, elevations, traces, hulls, normals)
+            molior_object = Molior(
+                file=ifc,
+                circulation=circulation,
+                elevations=elevations,
+                traces=traces,
+                hulls=hulls,
+                normals=normals,
+            )
+            molior_object.execute()
 
             # FIXME shouldn't have to write and import an IFC file
             ifc_tmp = tempfile.NamedTemporaryFile(

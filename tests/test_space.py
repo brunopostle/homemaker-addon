@@ -36,28 +36,24 @@ class Tests(unittest.TestCase):
 
         ifc = molior.ifc.init("Our House", {3.15: 2})
 
-        self.space = Molior().GetTraceIfc(
-            ifc,
+        molior_object = Molior(file=ifc, circulation=None, normals=normals.normals)
+        self.space = molior_object.GetTraceIfc(
             "default",  # style
             "kitchen",  # condition
             2,  # level
             3.15,  # elevation
             0.05,  # height
             paths[0],  # chain
-            None,  # circulation
-            normals.normals,  # normals
         )
 
-        self.stair = Molior().GetTraceIfc(
-            ifc,
+        molior_object = Molior(file=ifc, circulation=None, normals=normals.normals)
+        self.stair = molior_object.GetTraceIfc(
             "default",  # style
             "stair",  # condition
             2,  # level
             3.15,  # elevation
             0.05,  # height
             paths[0],  # chain
-            None,  # circulation
-            normals.normals,  # normals
         )
         ifc.write("_test.ifc")
 

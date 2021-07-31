@@ -35,16 +35,14 @@ class Tests(unittest.TestCase):
 
         ifc = molior.ifc.init("Our House", {3.15: 2})
 
-        self.extrusion = Molior().GetTraceIfc(
-            ifc,
+        molior_object = Molior(file=ifc, circulation=None, normals=normals.normals)
+        self.extrusion = molior_object.GetTraceIfc(
             "default",  # style
             "top-backward-up",  # condition
             2,  # level
             3.15,  # elevation
             0.05,  # height
             paths[0],  # chain
-            None,  # circulation
-            normals.normals,  # normals
         )
 
         # open extrusion
@@ -54,16 +52,14 @@ class Tests(unittest.TestCase):
         trace.add_edge({coor_2: [coor_3, [vertex_2, vertex_3, None, None, None]]})
         paths = trace.find_paths()
 
-        self.extrusion2 = Molior().GetTraceIfc(
-            ifc,
+        molior_object = Molior(file=ifc, circulation=None, normals=normals.normals)
+        self.extrusion2 = molior_object.GetTraceIfc(
             "default",  # style
             "top-backward-level",  # condition
             2,  # level
             3.15,  # elevation
             0.05,  # height
             paths[0],  # chain
-            None,  # circulation
-            normals.normals,  # normals
         )
         ifc.write("_test.ifc")
 

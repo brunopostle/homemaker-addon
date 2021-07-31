@@ -41,7 +41,7 @@ from topologist.helpers import string_to_coor_2d
 class Molior:
     """A Builder, has resources to build"""
 
-    def __init__(self, args={}):
+    def __init__(self, **args):
         # TODO enable user defined location for share_dir
         self.share_dir = "share"
         self.Extrusion = Extrusion
@@ -55,29 +55,27 @@ class Molior:
             self.__dict__[arg] = args[arg]
         Molior.style = Style({"share_dir": self.share_dir})
 
-    def Process(self, file, circulation, elevations, traces, hulls, normals):
-        for condition in traces:
-            for elevation in traces[condition]:
-                level = elevations[elevation]
-                for height in traces[condition][elevation]:
-                    for stylename in traces[condition][elevation][height]:
-                        for chain in traces[condition][elevation][height][stylename]:
+    def execute(self):
+        for condition in self.traces:
+            for elevation in self.traces[condition]:
+                level = self.elevations[elevation]
+                for height in self.traces[condition][elevation]:
+                    for stylename in self.traces[condition][elevation][height]:
+                        for chain in self.traces[condition][elevation][height][
+                            stylename
+                        ]:
                             self.GetTraceIfc(
-                                file,
                                 stylename,
                                 condition,
                                 level,
                                 elevation,
                                 height,
                                 chain,
-                                circulation,
-                                normals,
                             )
-        for condition in hulls:
-            for stylename in hulls[condition]:
-                for hull in hulls[condition][stylename]:
+        for condition in self.hulls:
+            for stylename in self.hulls[condition]:
+                for hull in self.hulls[condition][stylename]:
                     self.GetHullIfc(
-                        file,
                         stylename,
                         condition,
                         hull,
@@ -85,19 +83,16 @@ class Molior:
 
     def GetTraceIfc(
         self,
-        file,
         stylename,
         condition,
         level,
         elevation,
         height,
         chain,
-        circulation,
-        normals,
     ):
         """Retrieves IFC data and adds to model"""
         results = []
-        for item in file.by_type("IfcGeometricRepresentationSubContext"):
+        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
             if item.TargetView == "MODEL_VIEW":
                 subcontext = item
         myconfig = Molior.style.get(stylename)
@@ -121,13 +116,13 @@ class Molior:
                     "closed": closed,
                     "path": path,
                     "chain": chain,
-                    "circulation": circulation,
+                    "circulation": self.circulation,
                     "context": subcontext,
-                    "file": file,
+                    "file": self.file,
                     "name": name,
                     "elevation": elevation,
                     "height": height,
-                    "normals": normals,
+                    "normals": self.normals,
                     "normal_set": normal_set,
                     "style": stylename,
                     "level": level,
@@ -142,10 +137,10 @@ class Molior:
                 results.append(part)
         return results
 
-    def GetHullIfc(self, file, stylename, condition, hull):
+    def GetHullIfc(self, stylename, condition, hull):
         """Retrieves IFC data and adds to model"""
         results = []
-        for item in file.by_type("IfcGeometricRepresentationSubContext"):
+        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
             if item.TargetView == "MODEL_VIEW":
                 subcontext = item
         myconfig = Molior.style.get(stylename)
@@ -155,7 +150,7 @@ class Molior:
                 # TODO style definition should set material, layerset and/or colour for generated products.
                 vals = {
                     "context": subcontext,
-                    "file": file,
+                    "file": self.file,
                     "name": name,
                     "style": stylename,
                     "hull": hull,

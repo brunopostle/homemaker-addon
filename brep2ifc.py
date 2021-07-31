@@ -54,8 +54,15 @@ ifc = molior.ifc.init("brep2ifc building", elevations)
 traces, hulls, normals = cc.GetTraces()
 print("Traces calculated", datetime.datetime.now())
 
-molior_object = Molior()
-molior_object.Process(ifc, circulation, elevations, traces, hulls, normals)
+molior_object = Molior(
+    file=ifc,
+    circulation=circulation,
+    elevations=elevations,
+    traces=traces,
+    hulls=hulls,
+    normals=normals,
+)
+molior_object.execute()
 print("IFC model created", datetime.datetime.now())
 
 ifc.write(sys.argv[2])
