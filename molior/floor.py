@@ -27,7 +27,7 @@ class Floor(BaseClass):
         for layer in self.layerset:
             self.thickness += layer[0]
 
-    def Ifc(self):
+    def execute(self):
         """Generate some ifc"""
         entity = run(
             "root.create_entity",

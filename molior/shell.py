@@ -22,7 +22,7 @@ class Shell:
         for arg in args:
             self.__dict__[arg] = args[arg]
 
-    def Ifc(self):
+    def execute(self):
         """Generate some ifc"""
         for face in self.hull.faces:
             # coordinates need to be vertical in 4x4 matrix

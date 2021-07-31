@@ -28,7 +28,7 @@ class Stair(BaseClass):
         self.risers = (int(self.height / self.riser) + 1,)
         # FIXME check circulation graph, only draw stair if cell above this cell is stair
 
-    def Ifc(self):
+    def execute(self):
         """Generate some ifc"""
         # TODO entire stair drawing module still needs porting from Perl Molior library
         pass

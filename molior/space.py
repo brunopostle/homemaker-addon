@@ -30,7 +30,7 @@ class Space(BaseClass):
             self.__dict__[arg] = args[arg]
         self.usage = self.name
 
-    def Ifc(self):
+    def execute(self):
         """Generate some ifc"""
         # the cell is the first cell attached to any edge in the chain
         string_coor_start = next(iter(self.chain.graph))

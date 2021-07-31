@@ -34,7 +34,7 @@ class Wall(BaseClass):
         for arg in args:
             self.__dict__[arg] = args[arg]
 
-    def Ifc(self):
+    def execute(self):
         """Generate some ifc"""
         self.init_openings()
         style = molior.Molior.style

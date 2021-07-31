@@ -137,7 +137,7 @@ class Molior:
                 vals.update(config)
                 part = getattr(self, config["class"])(vals)
 
-                part.Ifc()
+                part.execute()
                 # results are only used by test suite
                 results.append(part)
         return results
@@ -163,7 +163,7 @@ class Molior:
                 vals.update(config)
                 part = getattr(self, config["class"])(vals)
 
-                part.Ifc()
+                part.execute()
                 # results are only used by test suite
                 results.append(part)
         return results

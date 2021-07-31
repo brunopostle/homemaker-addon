@@ -31,7 +31,7 @@ class Repeat(BaseClass):
         for arg in args:
             self.__dict__[arg] = args[arg]
 
-    def Ifc(self):
+    def execute(self):
         """Generate some ifc"""
         style = molior.Molior.style
         myconfig = style.get(self.style)
@@ -135,4 +135,4 @@ class Repeat(BaseClass):
                             vals.update(config)
                             part = getattr(self, config["class"])(vals)
 
-                            part.Ifc()
+                            part.execute()

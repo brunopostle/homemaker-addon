@@ -26,7 +26,7 @@ class Extrusion(BaseClass):
         for arg in args:
             self.__dict__[arg] = args[arg]
 
-    def Ifc(self):
+    def execute(self):
         style = molior.Molior.style
         """Generate some ifc"""
         entity = run(
