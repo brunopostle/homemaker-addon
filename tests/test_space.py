@@ -46,7 +46,15 @@ class Tests(unittest.TestCase):
             paths[0],  # chain
         )
 
-        molior_object = Molior(file=ifc, circulation=None, normals=normals.normals)
+        self.space2 = molior_object.GetTraceIfc(
+            "default",  # style
+            "kitchen",  # condition
+            2,  # level
+            6.15,  # elevation
+            0.05,  # height
+            paths[0],  # chain
+        )
+
         self.stair = molior_object.GetTraceIfc(
             "default",  # style
             "stair",  # condition
