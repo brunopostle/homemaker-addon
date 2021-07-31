@@ -97,8 +97,6 @@ stair:
 bedroom-floor:
   class: Floor
   condition: bedroom
-  below: 0.2
-  above: 0.02
 circulation-floor:
   class: Floor
   condition: circulation
@@ -111,6 +109,11 @@ living-floor:
 outside-floor:
   class: Floor
   condition: outside
+  below: 0.3
+  layerset:
+    - [0.2, "Concrete"]
+    - [0.1, "Insulation"]
+    - [0.02, "Tiles"]
 retail-floor:
   class: Floor
   condition: retail
