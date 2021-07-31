@@ -81,10 +81,10 @@ class Tests(unittest.TestCase):
     def test_query(self):
         self.assertEqual(self.wall.length_openings(0), 2.0)
         self.assertEqual(self.wall.length_openings(1), 4.1)
-        self.assertEqual(self.wall.border(0)[0], 0.08)
-        self.assertEqual(self.wall.border(0)[1], 0.08)
-        self.assertEqual(self.wall.border(1)[0], 0.08)
-        self.assertEqual(self.wall.border(1)[1], 0.08)
+        self.assertAlmostEqual(self.wall.border(0)[0], 0.08)
+        self.assertAlmostEqual(self.wall.border(0)[1], 0.08)
+        self.assertAlmostEqual(self.wall.border(1)[0], 0.08)
+        self.assertAlmostEqual(self.wall.border(1)[1], 0.08)
 
     def test_align_openings(self):
         self.assertEqual(self.wall.openings[0][0]["along"], 1.0)

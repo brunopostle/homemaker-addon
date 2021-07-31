@@ -88,6 +88,7 @@ class Shell:
             entity = run(
                 "root.create_entity", self.file, ifc_class=self.ifc, name="MyShell"
             )
+            # TODO needs MaterialLayerSet
             # FIXME this puts roofs in the ground floor
             self.file.assign_storey_byindex(entity, 0)
             if abs(float(normal_x[2][0])) < 0.001:

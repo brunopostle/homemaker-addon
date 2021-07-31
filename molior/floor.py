@@ -83,6 +83,8 @@ class Floor(BaseClass):
                     material=mymaterial,
                 )
                 layer.LayerThickness = mylayer[0]
+            # FIXME assign OffsetFromReferenceLine to negative 'below' in IfcMaterialLayerSetUsage
+            # though IfcMaterialLayerSetUsage seems to be set once per slab even though it refers to a single layer set?
 
         run(
             "type.assign_type",

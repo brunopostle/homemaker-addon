@@ -28,11 +28,16 @@ class Wall(BaseClass):
         self.ceiling = 0.35
         self.closed = 0
         self.floor = 0.02
+        self.layerset = [[0.3, "Masonry"], [0.03, "Plaster"]]
         self.openings = []
         self.path = []
         self.type = "molior-wall"
         for arg in args:
             self.__dict__[arg] = args[arg]
+        self.thickness = 0.0
+        for layer in self.layerset:
+            self.thickness += layer[0]
+        self.inner = self.thickness - self.outer
 
     def execute(self):
         """Generate some ifc"""
@@ -52,6 +57,63 @@ class Wall(BaseClass):
                 "root.create_entity", self.file, ifc_class="IfcWall", name="My Wall"
             )
             self.file.assign_storey_byindex(mywall, self.level)
+
+            element_types = {}
+            for element_type in self.file.by_type("IfcWallType"):
+                element_types[element_type.Name] = element_type
+            if self.name in element_types:
+                myelement_type = element_types[self.name]
+            else:
+                # we need to create a new IfcWallType
+                myelement_type = ifcopenshell.api.run(
+                    "root.create_entity",
+                    self.file,
+                    ifc_class="IfcWallType",
+                    name=self.name,
+                    predefined_type="SOLIDWALL",
+                )
+                ifcopenshell.api.run(
+                    "project.assign_declaration",
+                    self.file,
+                    definition=myelement_type,
+                    relating_context=self.file.by_type("IfcProject")[0],
+                )
+                ifcopenshell.api.run(
+                    "material.assign_material",
+                    self.file,
+                    product=myelement_type,
+                    type="IfcMaterialLayerSet",
+                )
+
+                mylayerset = ifcopenshell.util.element.get_material(myelement_type)
+                for mylayer in self.layerset:
+                    materials = {}
+                    for material in self.file.by_type("IfcMaterial"):
+                        materials[material.Name] = material
+                    if mylayer[1] in materials:
+                        mymaterial = materials[mylayer[1]]
+                    else:
+                        # we need to create a new material
+                        mymaterial = ifcopenshell.api.run(
+                            "material.add_material", self.file, name=mylayer[1]
+                        )
+
+                    layer = ifcopenshell.api.run(
+                        "material.add_layer",
+                        self.file,
+                        layer_set=mylayerset,
+                        material=mymaterial,
+                    )
+                    layer.LayerThickness = mylayer[0]
+                # FIXME assign OffsetFromReferenceLine to negative 'outer' in IfcMaterialLayerSetUsage
+                # though IfcMaterialLayerSetUsage seems to be set once per wall even though it refers to a single layer set?
+
+            run(
+                "type.assign_type",
+                self.file,
+                related_object=mywall,
+                relating_type=myelement_type,
+            )
 
             is_external = False
             if self.condition == "external":
@@ -175,7 +237,7 @@ class Wall(BaseClass):
                 product=mywall,
                 matrix=matrix_align([0.0, 0.0, self.elevation], [1.0, 0.0, 0.0]),
             )
-            # TODO IfcWallType, IfcMaterialLayerSet, IfcRelConnectsPathElements
+            # TODO IfcRelConnectsPathElements
             # TODO draw wall surfaces for boundaries
             # TODO draw centreline surface for structure
             segment = self.openings[id_segment]
