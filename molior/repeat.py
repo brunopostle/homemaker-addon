@@ -47,6 +47,7 @@ class Repeat(BaseClass):
         self.outer += self.xshift
 
         for id_segment in range(segments):
+            # FIXME implement not_start, not_end and not_corners
             # FIXME large inset can result in a negative length
             inset = scale_2d(self.direction_segment(id_segment), self.inset)
             # outside face start and end coordinates
@@ -67,8 +68,21 @@ class Repeat(BaseClass):
                     v_out_a, scale_2d(self.direction_segment(id_segment), spacing / 2)
                 )
 
+            aggregate = run(
+                "root.create_entity",
+                self.file,
+                ifc_class="IfcBuildingElementProxy",
+                name=self.style + "/" + self.condition,
+            )
+            # assign the aggregate to a storey
+            self.file.assign_storey_byindex(aggregate, self.level)
+
             for index in range(items):
-                if index > 0 or id_segment == 0 or self.inset > 0.0:
+                if (
+                    index > 0
+                    or (id_segment == 0 and not self.closed)
+                    or self.inset > 0.0
+                ):
                     location = add_2d(
                         v_out_a,
                         scale_2d(self.direction_segment(id_segment), index * spacing),
@@ -93,9 +107,13 @@ class Repeat(BaseClass):
                             ],
                         ),
                     )
-                    # assign the entity to a storey
-                    self.file.assign_storey_byindex(entity, self.level)
-
+                    # assign the entity to the aggregate
+                    run(
+                        "aggregate.assign_object",
+                        self.file,
+                        product=entity,
+                        relating_object=aggregate,
+                    )
                     # load geometry from a DXF file and assign to the entity
                     self.file.assign_representation_fromDXF(
                         self.context, entity, self.style, dxf_path

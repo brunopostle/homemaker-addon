@@ -100,6 +100,7 @@ class ObjectHomemaker(bpy.types.Operator):
             # Hulls are 3D shells that define pitched roofs and soffits
             traces, hulls, normals = cc.GetTraces()
 
+            # TODO enable user defined location for share_dir
             molior_object = Molior(
                 file=ifc,
                 circulation=circulation,

@@ -42,7 +42,6 @@ class Molior:
     """A Builder, has resources to build"""
 
     def __init__(self, **args):
-        # TODO enable user defined location for share_dir
         self.share_dir = "share"
         self.Extrusion = Extrusion
         self.Floor = Floor
