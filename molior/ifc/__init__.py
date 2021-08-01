@@ -173,6 +173,7 @@ def assign_extrusion_fromDXF(
                     ),
                 )
         # record profile(s) in a MaterialProfileSet so we can find them again
+        # FIXME create Type definition instead
         self.createIfcMaterialProfileSet(
             identifier,
             None,

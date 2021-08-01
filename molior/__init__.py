@@ -108,10 +108,6 @@ class Molior:
                 normal_set = "bottom"
                 if re.search("^top-", condition):
                     normal_set = "top"
-
-                # TODO style definition should set material, layerset and/or
-                # colour for generated products.  Resources such as windows and
-                # doors in an IFC library should reference materials independently
                 vals = {
                     "closed": closed,
                     "path": path,
@@ -147,7 +143,6 @@ class Molior:
         for name in myconfig["hulls"]:
             config = myconfig["hulls"][name]
             if "condition" in config and config["condition"] == condition:
-                # TODO style definition should set material, layerset and/or colour for generated products.
                 vals = {
                     "context": subcontext,
                     "file": self.file,

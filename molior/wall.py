@@ -105,8 +105,6 @@ class Wall(BaseClass):
                         material=mymaterial,
                     )
                     layer.LayerThickness = mylayer[0]
-                # FIXME assign OffsetFromReferenceLine to negative 'outer' in IfcMaterialLayerSetUsage
-                # though IfcMaterialLayerSetUsage seems to be set once per wall even though it refers to a single layer set?
 
             run(
                 "type.assign_type",
@@ -114,6 +112,12 @@ class Wall(BaseClass):
                 related_object=mywall,
                 relating_type=myelement_type,
             )
+
+            # Usage isn't created until after type.assign_type
+            mylayerset = ifcopenshell.util.element.get_material(myelement_type)
+            for inverse in self.file.get_inverse(mylayerset):
+                if inverse.is_a("IfcMaterialLayerSetUsage"):
+                    inverse.OffsetFromReferenceLine = 0.0 - self.outer
 
             is_external = False
             if self.condition == "external":
