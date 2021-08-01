@@ -65,6 +65,10 @@ def createBuilding(self, site, building_name, elevations):
             ifc_class="IfcBuildingStorey",
             name=str(elevations[elevation]),
         )
+        mystorey.Elevation = elevation
+        mystorey.Description = "Storey " + mystorey.Name
+        mystorey.LongName = mystorey.Description
+        mystorey.CompositionType = "ELEMENT"
         run("aggregate.assign_object", self, product=mystorey, relating_object=building)
         run(
             "geometry.edit_object_placement",
@@ -173,7 +177,6 @@ def assign_extrusion_fromDXF(
                     ),
                 )
         # record profile(s) in a MaterialProfileSet so we can find them again
-        # FIXME create Type definition instead
         self.createIfcMaterialProfileSet(
             identifier,
             None,
