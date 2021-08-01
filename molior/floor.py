@@ -43,20 +43,20 @@ class Floor(BaseClass):
             myelement_type = element_types[self.name]
         else:
             # we need to create a new IfcSlabType
-            myelement_type = ifcopenshell.api.run(
+            myelement_type = run(
                 "root.create_entity",
                 self.file,
                 ifc_class="IfcSlabType",
                 name=self.name,
                 predefined_type="FLOOR",
             )
-            ifcopenshell.api.run(
+            run(
                 "project.assign_declaration",
                 self.file,
                 definition=myelement_type,
                 relating_context=self.file.by_type("IfcProject")[0],
             )
-            ifcopenshell.api.run(
+            run(
                 "material.assign_material",
                 self.file,
                 product=myelement_type,
@@ -73,11 +73,25 @@ class Floor(BaseClass):
                 else:
                     # we need to create a new material
                     # TODO materials.yml file to define material properties, colour etc..
-                    mymaterial = ifcopenshell.api.run(
+                    mymaterial = run(
                         "material.add_material", self.file, name=mylayer[1]
                     )
+                    run(
+                        "style.assign_material_style",
+                        self.file,
+                        material=mymaterial,
+                        style=run(
+                            "style.add_style",
+                            self.file,
+                            name=mylayer[1],
+                            surface_colour=[0.9, 0.9, 0.9],
+                            diffuse_colour=[1.0, 1.0, 1.0],
+                            external_definition=None,
+                        ),
+                        context=self.context,
+                    )
 
-                layer = ifcopenshell.api.run(
+                layer = run(
                     "material.add_layer",
                     self.file,
                     layer_set=mylayerset,
