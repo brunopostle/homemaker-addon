@@ -5,10 +5,10 @@ arch:
     height: 3.0
     width: 1.94
     side: 0.61
-    end: 0.0
+    end: 0.3
   -
     file: arch_61x300.dxf
     height: 3.0
     width: 0.61
-    side: 0.75
-    end: 0.0
+    side: 0.61
+    end: 0.3
