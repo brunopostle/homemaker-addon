@@ -60,6 +60,7 @@ column:
   class: Repeat
   ifc: IFCCOLUMN
   asset: column
+  ceiling: 0.3
   condition: open
   outer: 0.2
   inset: 0.0

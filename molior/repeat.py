@@ -17,6 +17,7 @@ class Repeat(BaseClass):
         self.alternate = 0
         self.closed = 0
         self.height = 0.0
+        self.ceiling = 0.0
         self.ifc = "IFCBUILDINGELEMENTPROXY"
         self.inset = 0.0
         self.xshift = 0.0
@@ -35,10 +36,13 @@ class Repeat(BaseClass):
         """Generate some ifc"""
         style = molior.Molior.style
         myconfig = style.get(self.style)
-        # FIXME should use alternative assets for different heights
         if self.asset in self.style_assets:
+            for index in range(len(self.style_assets[self.asset])):
+                height = self.style_assets[self.asset][index]["height"]
+                if height >= self.height - self.ceiling:
+                    break
             dxf_path = style.get_file(
-                self.style, self.style_assets[self.asset][0]["file"]
+                self.style, self.style_assets[self.asset][index]["file"]
             )
         else:
             dxf_path = style.get_file(self.style, "error.dxf")
@@ -141,7 +145,8 @@ class Repeat(BaseClass):
                                 "file": self.file,
                                 "name": name,
                                 "elevation": self.elevation,
-                                "height": self.height,
+                                "height": self.height - self.yshift,
+                                "ceiling": self.ceiling,
                                 "xshift": self.xshift,
                                 "yshift": self.yshift,
                                 "normals": self.normals,
