@@ -16,7 +16,9 @@ class Floor(BaseClass):
         super().__init__(args)
         self.below = 0.2
         self.id = ""
-        self.ifc = "IFCSLAB"
+        self.ifc = "IfcSlab"
+        self.ifc_class = "IfcSlabType"
+        self.predefined_type = "FLOOR"
         self.layerset = [[0.2, "Concrete"], [0.02, "Screed"]]
         self.path = []
         self.type = "molior-floor"
@@ -37,18 +39,18 @@ class Floor(BaseClass):
         )
 
         element_types = {}
-        for element_type in self.file.by_type("IfcSlabType"):
+        for element_type in self.file.by_type(self.ifc_class):
             element_types[element_type.Name] = element_type
         if self.name in element_types:
             myelement_type = element_types[self.name]
         else:
-            # we need to create a new IfcSlabType
+            # we need to create a new Type
             myelement_type = run(
                 "root.create_entity",
                 self.file,
-                ifc_class="IfcSlabType",
+                ifc_class=self.ifc_class,
                 name=self.name,
-                predefined_type="FLOOR",
+                predefined_type=self.predefined_type,
             )
             run(
                 "project.assign_declaration",

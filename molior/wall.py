@@ -28,6 +28,9 @@ class Wall(BaseClass):
         self.ceiling = 0.35
         self.closed = 0
         self.floor = 0.02
+        self.ifc = "IfcWall"
+        self.ifc_class = "IfcSlabType"
+        self.predefined_type = "SOLIDWALL"
         self.layerset = [[0.3, "Masonry"], [0.03, "Plaster"]]
         self.openings = []
         self.path = []
@@ -54,23 +57,23 @@ class Wall(BaseClass):
             v_in_b = self.corner_in(id_segment + 1)
 
             mywall = run(
-                "root.create_entity", self.file, ifc_class="IfcWall", name="My Wall"
+                "root.create_entity", self.file, ifc_class=self.ifc, name="My Wall"
             )
             self.file.assign_storey_byindex(mywall, self.level)
 
             element_types = {}
-            for element_type in self.file.by_type("IfcWallType"):
+            for element_type in self.file.by_type(self.ifc_class):
                 element_types[element_type.Name] = element_type
             if self.name in element_types:
                 myelement_type = element_types[self.name]
             else:
-                # we need to create a new IfcWallType
+                # we need to create a new Type
                 myelement_type = run(
                     "root.create_entity",
                     self.file,
-                    ifc_class="IfcWallType",
+                    ifc_class=self.ifc_class,
                     name=self.name,
-                    predefined_type="SOLIDWALL",
+                    predefined_type=self.predefined_type,
                 )
                 run(
                     "project.assign_declaration",
