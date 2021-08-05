@@ -91,7 +91,9 @@ class Wall(BaseClass):
                         "material.add_layer",
                         self.file,
                         layer_set=mylayerset,
-                        material=self.file.get_material_by_name(self.context, mylayer[1]),
+                        material=self.file.get_material_by_name(
+                            self.context, mylayer[1]
+                        ),
                     )
                     layer.LayerThickness = mylayer[0]
 

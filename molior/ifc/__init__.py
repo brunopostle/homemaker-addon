@@ -327,9 +327,7 @@ def get_material_by_name(self, context, material_name):
         mymaterial = materials[material_name]
     else:
         # we need to create a new material
-        mymaterial = run(
-            "material.add_material", self, name=material_name
-        )
+        mymaterial = run("material.add_material", self, name=material_name)
         run(
             "style.assign_material_style",
             self,
