@@ -49,6 +49,7 @@ class Space(TraceClass):
         except:
             is_external = False
             crinkliness = 1.0
+        # FIXME psets should be set in traces.yml
         pset = run("pset.add_pset", self.file, product=entity, name="Pset_SpaceCommon")
         run(
             "pset.edit_pset",
@@ -99,6 +100,7 @@ class Space(TraceClass):
                 transparency=0.5,
                 external_definition=None,
             )
+            # FIXME report 159 LIGHT ON TWO SIDES: custom psets? STDERR?
         else:
             style = run(
                 "style.add_style",

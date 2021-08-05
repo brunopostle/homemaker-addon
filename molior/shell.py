@@ -28,6 +28,7 @@ class Shell(BaseClass):
 
     def execute(self):
         """Generate some ifc"""
+        # TODO aggregate entities
         for face in self.hull.faces:
             # coordinates need to be vertical in 4x4 matrix
             nodes = numpy.array(

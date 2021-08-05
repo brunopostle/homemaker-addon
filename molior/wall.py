@@ -48,6 +48,7 @@ class Wall(TraceClass):
         style = molior.Molior.style
         segments = self.segments()
 
+        # TODO aggregate entities
         for id_segment in range(segments):
             # outside face start and end coordinates
             v_out_a = self.corner_out(id_segment)
@@ -78,6 +79,7 @@ class Wall(TraceClass):
             is_external = False
             if self.condition == "external":
                 is_external = True
+            # FIXME psets should be set in traces.yml
             pset = run(
                 "pset.add_pset", self.file, product=mywall, name="Pset_WallCommon"
             )
