@@ -16,6 +16,9 @@ class Shell:
     def __init__(self, args={}):
         self.id = ""
         self.ifc = "IFCROOF"
+        self.ifc_class = "IfcRoofType"
+        self.predefined_type = "USERDEFINED"
+        self.layerset = [[0.03, "Plaster"], [0.2, "Insulation"], [0.05, "Tiles"]]
         self.inner = 0.08
         self.outer = 0.20
         self.type = "molior-shell"
@@ -88,7 +91,60 @@ class Shell:
             entity = run(
                 "root.create_entity", self.file, ifc_class=self.ifc, name="MyShell"
             )
-            # TODO needs MaterialLayerSet
+
+            # use an existing Type or regenerate Type
+            element_types = {}
+            for element_type in self.file.by_type(self.ifc_class):
+                element_types[element_type.Name] = element_type
+            if self.name in element_types:
+                myelement_type = element_types[self.name]
+            else:
+                # we need to create a new Type
+                myelement_type = run(
+                    "root.create_entity",
+                    self.file,
+                    ifc_class=self.ifc_class,
+                    name=self.name,
+                    predefined_type=self.predefined_type,
+                )
+                run(
+                    "project.assign_declaration",
+                    self.file,
+                    definition=myelement_type,
+                    relating_context=self.file.by_type("IfcProject")[0],
+                )
+                run(
+                    "material.assign_material",
+                    self.file,
+                    product=myelement_type,
+                    type="IfcMaterialLayerSet",
+                )
+
+                mylayerset = ifcopenshell.util.element.get_material(myelement_type)
+                for mylayer in self.layerset:
+                    layer = run(
+                        "material.add_layer",
+                        self.file,
+                        layer_set=mylayerset,
+                        material=self.file.get_material_by_name(
+                            self.context, mylayer[1]
+                        ),
+                    )
+                    layer.LayerThickness = mylayer[0]
+
+            run(
+                "type.assign_type",
+                self.file,
+                related_object=entity,
+                relating_type=myelement_type,
+            )
+
+            # Usage isn't created until after type.assign_type
+            mylayerset = ifcopenshell.util.element.get_material(myelement_type)
+            for inverse in self.file.get_inverse(mylayerset):
+                if inverse.is_a("IfcMaterialLayerSetUsage"):
+                    inverse.OffsetFromReferenceLine = 0.0 - self.inner
+
             # FIXME this puts roofs in the ground floor
             self.file.assign_storey_byindex(entity, 0)
             if abs(float(normal_x[2][0])) < 0.001:

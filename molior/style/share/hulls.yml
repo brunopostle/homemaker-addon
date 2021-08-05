@@ -1,25 +1,33 @@
 ---
 pitched-roof:
   class: Shell
-  ifc: IFCROOF
+  ifc: IfcRoof
+  ifc_class: IfcRoofType
+  predefined_type: FREEFORM
   condition: roof
   inner: 0.08
   outer: 0.12
 inclined-soffit:
   class: Shell
-  ifc: IFCBUILDINGELEMENTPROXY
+  ifc: IfcBuildingElementProxy
+  ifc_class: IfcBuildingElementProxyType
+  predefined_type: USERDEFINED
   condition: soffit
   inner: 0.02
   outer: 0.25
 wall-panel:
   class: Shell
-  ifc: IFCWALL
+  ifc: IfcWall
+  ifc_class: IfcWallType
+  predefined_type: USERDEFINED
   condition: panel
   inner: 0.08
   outer: 0.25
 flat-roof:
   class: Shell
-  ifc: IFCROOF
+  ifc: IfcRoof
+  ifc_class: IfcRoofType
+  predefined_type: FLAT_ROOF
   condition: flat
   inner: 0.08
   outer: 0.12
