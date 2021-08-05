@@ -319,6 +319,34 @@ def assign_representation_fromDXF(self, bodycontext, element, stylename, path_dx
         )
 
 
+def get_material_by_name(self, context, material_name):
+    materials = {}
+    for material in self.by_type("IfcMaterial"):
+        materials[material.Name] = material
+    if material_name in materials:
+        mymaterial = materials[material_name]
+    else:
+        # we need to create a new material
+        mymaterial = run(
+            "material.add_material", self, name=material_name
+        )
+        run(
+            "style.assign_material_style",
+            self,
+            material=mymaterial,
+            style=run(
+                "style.add_style",
+                self,
+                name=material_name,
+                surface_colour=[0.9, 0.9, 0.9],
+                diffuse_colour=[1.0, 1.0, 1.0],
+                external_definition=None,
+            ),
+            context=context,
+        )
+    return mymaterial
+
+
 setattr(ifcfile, "assign_representation_fromDXF", assign_representation_fromDXF)
 setattr(ifcfile, "assign_storey_byindex", assign_storey_byindex)
 setattr(ifcfile, "createBuilding", createBuilding)
@@ -327,3 +355,4 @@ setattr(ifcfile, "clipSolid", clipSolid)
 setattr(ifcfile, "createTessellation_fromMesh", createTessellation_fromMesh)
 setattr(ifcfile, "assign_extrusion_fromDXF", assign_extrusion_fromDXF)
 setattr(ifcfile, "createTessellations_fromDXF", createTessellations_fromDXF)
+setattr(ifcfile, "get_material_by_name", get_material_by_name)

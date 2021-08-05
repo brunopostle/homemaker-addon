@@ -65,37 +65,11 @@ class Floor(BaseClass):
 
             mylayerset = ifcopenshell.util.element.get_material(myelement_type)
             for mylayer in self.layerset:
-                materials = {}
-                for material in self.file.by_type("IfcMaterial"):
-                    materials[material.Name] = material
-                if mylayer[1] in materials:
-                    mymaterial = materials[mylayer[1]]
-                else:
-                    # we need to create a new material
-                    # TODO materials.yml file to define material properties, colour etc..
-                    mymaterial = run(
-                        "material.add_material", self.file, name=mylayer[1]
-                    )
-                    run(
-                        "style.assign_material_style",
-                        self.file,
-                        material=mymaterial,
-                        style=run(
-                            "style.add_style",
-                            self.file,
-                            name=mylayer[1],
-                            surface_colour=[0.9, 0.9, 0.9],
-                            diffuse_colour=[1.0, 1.0, 1.0],
-                            external_definition=None,
-                        ),
-                        context=self.context,
-                    )
-
                 layer = run(
                     "material.add_layer",
                     self.file,
                     layer_set=mylayerset,
-                    material=mymaterial,
+                    material=self.file.get_material_by_name(self.context, mylayer[1]),
                 )
                 layer.LayerThickness = mylayer[0]
 
