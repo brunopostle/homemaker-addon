@@ -121,6 +121,7 @@ class Shell:
                 )
 
                 mylayerset = ifcopenshell.util.element.get_material(myelement_type)
+                mylayerset.LayerSetName = self.style + "/" + self.name
                 for mylayer in self.layerset:
                     layer = run(
                         "material.add_layer",

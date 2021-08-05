@@ -75,6 +75,8 @@ class ObjectHomemaker(bpy.types.Operator):
                     stylename = mesh.material_slots[
                         polygon.material_index
                     ].material.name
+                if stylename == "Material":
+                    stylename = "default"
                 face_ptr = Face.ByVertices([vertices[v] for v in polygon.vertices])
                 face_ptr.Set("stylename", stylename)
                 faces_ptr.push_back(face_ptr)

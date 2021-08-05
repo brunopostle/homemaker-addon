@@ -29,7 +29,7 @@ class Wall(BaseClass):
         self.closed = 0
         self.floor = 0.02
         self.ifc = "IfcWall"
-        self.ifc_class = "IfcSlabType"
+        self.ifc_class = "IfcWallType"
         self.predefined_type = "SOLIDWALL"
         self.layerset = [[0.3, "Masonry"], [0.03, "Plaster"]]
         self.openings = []
@@ -89,6 +89,7 @@ class Wall(BaseClass):
                 )
 
                 mylayerset = ifcopenshell.util.element.get_material(myelement_type)
+                mylayerset.LayerSetName = self.style + "/" + self.name
                 for mylayer in self.layerset:
                     layer = run(
                         "material.add_layer",
