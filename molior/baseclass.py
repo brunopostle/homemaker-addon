@@ -1,4 +1,5 @@
 from math import pi
+import ifcopenshell.api
 
 from molior.geometry import (
     add_2d,
@@ -10,6 +11,8 @@ from molior.geometry import (
     subtract_2d,
     line_intersection,
 )
+
+run = ifcopenshell.api.run
 
 
 class BaseClass:
@@ -29,6 +32,52 @@ class BaseClass:
         self.style = "default"
         for arg in args:
             self.__dict__[arg] = args[arg]
+
+    def get_element_type(self):
+        element_types = {}
+        for element_type in self.file.by_type(self.ifc_class):
+            element_types[element_type.Name] = element_type
+        if self.name in element_types:
+            myelement_type = element_types[self.name]
+        else:
+            # we need to create a new Type
+            myelement_type = run(
+                "root.create_entity",
+                self.file,
+                ifc_class=self.ifc_class,
+                name=self.name,
+                predefined_type=self.predefined_type,
+            )
+            run(
+                "project.assign_declaration",
+                self.file,
+                definition=myelement_type,
+                relating_context=self.file.by_type("IfcProject")[0],
+            )
+            run(
+                "material.assign_material",
+                self.file,
+                product=myelement_type,
+                type="IfcMaterialLayerSet",
+            )
+
+            mylayerset = ifcopenshell.util.element.get_material(myelement_type)
+            mylayerset.LayerSetName = self.style + "/" + self.name
+            for mylayer in self.layerset:
+                layer = run(
+                    "material.add_layer",
+                    self.file,
+                    layer_set=mylayerset,
+                    material=self.file.get_material_by_name(self.context, mylayer[1]),
+                )
+                layer.LayerThickness = mylayer[0]
+                layer.Name = mylayer[1]
+
+        return myelement_type
+
+
+class TraceClass(BaseClass):
+    """A building object that follows a path"""
 
     def segments(self):
         """Number of segments in the path taking account for being closed or not"""

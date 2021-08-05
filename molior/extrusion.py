@@ -4,13 +4,13 @@ import ifcopenshell.api
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior
-from molior.baseclass import BaseClass
+from molior.baseclass import TraceClass
 from molior.geometry import matrix_align, add_2d
 
 run = ifcopenshell.api.run
 
 
-class Extrusion(BaseClass):
+class Extrusion(TraceClass):
     """A profile following a horizontal 2D path"""
 
     def __init__(self, args={}):

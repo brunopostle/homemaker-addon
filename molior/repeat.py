@@ -1,7 +1,7 @@
 import os, sys, ifcopenshell.api
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from molior.baseclass import BaseClass
+from molior.baseclass import TraceClass
 import molior
 from molior.geometry import add_2d, subtract_2d, scale_2d, distance_2d, matrix_align
 from molior.extrusion import Extrusion
@@ -9,7 +9,7 @@ from molior.extrusion import Extrusion
 run = ifcopenshell.api.run
 
 
-class Repeat(BaseClass):
+class Repeat(TraceClass):
     """A row of evenly spaced identical objects"""
 
     def __init__(self, args={}):

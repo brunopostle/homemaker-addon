@@ -5,7 +5,7 @@ import ifcopenshell.api
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from topologic import Edge
 from topologist.helpers import create_stl_list, el
-from molior.baseclass import BaseClass
+from molior.baseclass import TraceClass
 import molior
 from molior.geometry import (
     matrix_align,
@@ -19,7 +19,7 @@ from molior.geometry import (
 run = ifcopenshell.api.run
 
 
-class Wall(BaseClass):
+class Wall(TraceClass):
     """A vertical wall, internal or external"""
 
     def __init__(self, args={}):
@@ -57,50 +57,11 @@ class Wall(BaseClass):
             v_in_b = self.corner_in(id_segment + 1)
 
             mywall = run(
-                "root.create_entity", self.file, ifc_class=self.ifc, name="My Wall"
+                "root.create_entity", self.file, ifc_class=self.ifc, name=self.name
             )
             self.file.assign_storey_byindex(mywall, self.level)
 
-            element_types = {}
-            for element_type in self.file.by_type(self.ifc_class):
-                element_types[element_type.Name] = element_type
-            if self.name in element_types:
-                myelement_type = element_types[self.name]
-            else:
-                # we need to create a new Type
-                myelement_type = run(
-                    "root.create_entity",
-                    self.file,
-                    ifc_class=self.ifc_class,
-                    name=self.name,
-                    predefined_type=self.predefined_type,
-                )
-                run(
-                    "project.assign_declaration",
-                    self.file,
-                    definition=myelement_type,
-                    relating_context=self.file.by_type("IfcProject")[0],
-                )
-                run(
-                    "material.assign_material",
-                    self.file,
-                    product=myelement_type,
-                    type="IfcMaterialLayerSet",
-                )
-
-                mylayerset = ifcopenshell.util.element.get_material(myelement_type)
-                mylayerset.LayerSetName = self.style + "/" + self.name
-                for mylayer in self.layerset:
-                    layer = run(
-                        "material.add_layer",
-                        self.file,
-                        layer_set=mylayerset,
-                        material=self.file.get_material_by_name(
-                            self.context, mylayer[1]
-                        ),
-                    )
-                    layer.LayerThickness = mylayer[0]
-
+            myelement_type = self.get_element_type()
             run(
                 "type.assign_type",
                 self.file,

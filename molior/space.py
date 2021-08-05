@@ -4,7 +4,7 @@ import ifcopenshell.api
 import numpy
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from molior.baseclass import BaseClass
+from molior.baseclass import TraceClass
 from molior.geometry import matrix_align
 from topologic import Face
 from topologist.helpers import create_stl_list
@@ -12,7 +12,7 @@ from topologist.helpers import create_stl_list
 run = ifcopenshell.api.run
 
 
-class Space(BaseClass):
+class Space(TraceClass):
     """A room or outdoor volume, as a 2D path extruded vertically"""
 
     def __init__(self, args={}):
