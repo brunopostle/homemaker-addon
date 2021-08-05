@@ -15,7 +15,8 @@ class Extrusion(TraceClass):
 
     def __init__(self, args={}):
         super().__init__(args)
-        self.ifc = "IFCBUILDINGELEMENTPROXY"
+        self.ifc = "IfcBuildingElementProxy"
+        self.predefined_type = "USERDEFINED"
         self.closed = 0
         self.extension = 0.0
         self.scale = 1.0
@@ -30,10 +31,14 @@ class Extrusion(TraceClass):
         style = molior.Molior.style
         """Generate some ifc"""
         entity = run(
-            "root.create_entity", self.file, ifc_class=self.ifc, name=self.name
+            "root.create_entity",
+            self.file,
+            ifc_class=self.ifc,
+            name=self.name,
+            predefined_type=self.predefined_type,
         )
-        # TODO IfcRoof may be .FREEFORM. IfcBeam may have structural
-        # attributes. IfcBuildingElementProxy can be .ELEMENT.
+        # TODO IfcBeam elements should generate IfcStructuralCurveMember
+        # TODO assign materials
         self.file.assign_storey_byindex(entity, self.level)
         directrix = self.path
         if self.closed:

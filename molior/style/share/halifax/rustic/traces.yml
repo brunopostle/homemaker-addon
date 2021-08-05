@@ -1,7 +1,7 @@
 ---
 exterior:
   class: Wall
-  ifc: IFCWALL
+  ifc: IfcWall
   condition: external
   ceiling: 0.5
   inner: 0.254
@@ -9,7 +9,7 @@ exterior:
   do_populate_exterior_openings: 1
 colonnade:
   class: Repeat
-  ifc: IFCCOLUMN
+  ifc: IfcColumn
   asset: column
   condition: open
   outer: 0.0
@@ -18,7 +18,8 @@ colonnade:
   traces: [handrail, balustrade_large]
 external beam:
   class: Extrusion
-  ifc: IFCBEAM
+  ifc: IfcBeam
+  predefined_type: BEAM
   profile: beam_rustic.dxf
   condition: open
   xshift: 0.0
@@ -31,7 +32,8 @@ parapet:
   condition: noop
 crown:
   class: Extrusion
-  ifc: IFCWALL
+  ifc: IfcWall
+  predefined_type: USERDEFINED
   profile: beam_rustic.dxf
   condition: top-backward-level
   xshift: 0.0
@@ -39,7 +41,8 @@ crown:
   extension: 0.254
 handrail:
   class: Extrusion
-  ifc: IFCRAILING
+  ifc: IfcRailing
+  predefined_type: BALUSTRADE
   profile: handrail_12.dxf
   height: 0.0
   condition: none
@@ -48,7 +51,7 @@ handrail:
   extension: -0.35
 balustrade_large:
   class: Repeat
-  ifc: IFCRAILING
+  ifc: IfcRailing
   asset: balustrade_large
   condition: none
   outer: 0.0

@@ -1,7 +1,7 @@
 ---
 exterior:
   class: Wall
-  ifc: IFCWALL
+  ifc: IfcWall
   condition: external
   inner: 0.08
   outer: 0.25

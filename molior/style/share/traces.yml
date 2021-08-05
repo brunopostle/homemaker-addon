@@ -1,21 +1,22 @@
 ---
 exterior:
   class: Wall
-  ifc: IFCWALL
+  ifc: IfcWall
   condition: external
   outer: 0.25
   extension: 0.25
   do_populate_exterior_openings: 1
 ground beam:
   class: Extrusion
-  ifc: IFCBUILDINGELEMENTPROXY
+  ifc: IfcFooting
+  predefined_type: STRIP_FOOTING
   profile: beam_ground.dxf
   condition: bottom-backward-level
   outer: 0.0
   extension: 0.25
 interior:
   class: Wall
-  ifc: IFCWALL
+  ifc: IfcWall
   condition: internal
   outer: 0.08
   layerset:
@@ -29,7 +30,8 @@ interior:
   do_populate_interior_openings: 1
 internal ground beam:
   class: Extrusion
-  ifc: IFCBUILDINGELEMENTPROXY
+  ifc: IfcFooting
+  predefined_type: STRIP_FOOTING
   profile: beam_ground.dxf
   condition: internal-unsupported
   outer: 0.0
@@ -37,28 +39,31 @@ internal ground beam:
   cycles: 0
 eaves:
   class: Extrusion
-  ifc: IFCROOF
+  ifc: IfcRoof
+  predefined_type: FREEFORM
   profile: eaves.dxf
   condition: top-backward-up
   outer: 0.25
   extension: 0.25
 parapet:
   class: Extrusion
-  ifc: IFCWALL
+  ifc: IfcWall
+  predefined_type: PARAPET
   profile: parapet.dxf
   condition: top-backward-level
   outer: 0.0
   extension: 0.25
 external beam:
   class: Extrusion
-  ifc: IFCBEAM
+  ifc: IfcBeam
+  predefined_type: BEAM
   profile: beam.dxf
   condition: open
   outer: 0.0
   extension: 0.0
 column:
   class: Repeat
-  ifc: IFCCOLUMN
+  ifc: IfcColumn
   asset: column
   ceiling: 0.3
   condition: open

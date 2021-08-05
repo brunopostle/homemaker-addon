@@ -1,13 +1,13 @@
 exterior:
   class: Wall
-  ifc: IFCWALL
+  ifc: IfcWall
   condition: external
   inner: 0.305
   outer: 0.305
   do_populate_exterior_openings: 1
 balustrade_small:
   class: Repeat
-  ifc: IFCRAILING
+  ifc: IfcRailing
   asset: balustrade_small
   condition: none
   xshift: 0.0
@@ -17,7 +17,8 @@ balustrade_small:
   spacing: 0.12
 bar:
   class: Extrusion
-  ifc: IFCRAILING
+  ifc: IfcRailing
+  predefined_type: BALUSTRADE
   profile: bar_4x2.dxf
   height: 0.0
   condition: none
