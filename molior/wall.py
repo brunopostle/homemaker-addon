@@ -1,8 +1,5 @@
-import os
-import sys
 import ifcopenshell.api
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from topologic import Edge
 from topologist.helpers import create_stl_list, el
 from molior.baseclass import TraceClass
@@ -57,6 +54,7 @@ class Wall(TraceClass):
             v_in_a = self.corner_in(id_segment)
             v_in_b = self.corner_in(id_segment + 1)
 
+            # TODO IfcWall elements should generate IfcStructuralSurfaceMember
             mywall = run(
                 "root.create_entity", self.file, ifc_class=self.ifc, name=self.name
             )

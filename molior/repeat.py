@@ -1,6 +1,5 @@
-import os, sys, ifcopenshell.api
+import ifcopenshell.api
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from molior.baseclass import TraceClass
 import molior
 from molior.geometry import add_2d, subtract_2d, scale_2d, distance_2d, matrix_align
@@ -18,7 +17,7 @@ class Repeat(TraceClass):
         self.closed = 0
         self.height = 0.0
         self.ceiling = 0.0
-        self.ifc = "IFCBUILDINGELEMENTPROXY"
+        self.ifc = "IfcBuildingElementProxy"
         self.inset = 0.0
         self.xshift = 0.0
         self.yshift = 0.0
@@ -75,7 +74,7 @@ class Repeat(TraceClass):
             aggregate = run(
                 "root.create_entity",
                 self.file,
-                ifc_class="IfcBuildingElementProxy",
+                ifc_class=self.ifc,
                 name=self.style + "/" + self.condition,
             )
             # assign the aggregate to a storey
@@ -91,6 +90,7 @@ class Repeat(TraceClass):
                         v_out_a,
                         scale_2d(self.direction_segment(id_segment), index * spacing),
                     )
+                    # TODO IfcColumn elements should generate IfcStructuralCurveMember
                     entity = run(
                         "root.create_entity",
                         self.file,

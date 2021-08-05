@@ -1,9 +1,6 @@
-import os
-import sys
 import ifcopenshell.api
 import numpy
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from molior.baseclass import TraceClass
 from molior.geometry import matrix_align
 from topologic import Face
@@ -21,7 +18,7 @@ class Space(TraceClass):
         self.colour = 255
         self.floor = 0.02
         self.id = ""
-        self.ifc = "IFCSPACE"
+        self.ifc = "IfcSpace"
         self.inner = 0.08
         self.path = []
         self.type = "molior-space"
@@ -39,7 +36,7 @@ class Space(TraceClass):
         entity = run(
             "root.create_entity",
             self.file,
-            ifc_class="IfcSpace",
+            ifc_class=self.ifc,
             name=self.usage + "/" + str(cell.Get("index")),
         )
 
@@ -100,7 +97,7 @@ class Space(TraceClass):
                 transparency=0.5,
                 external_definition=None,
             )
-            # FIXME report 159 LIGHT ON TWO SIDES: custom psets? STDERR?
+            # FIXME report 159 LIGHT ON TWO SIDES: custom psets? STDERR? IfcConstraint?
         else:
             style = run(
                 "style.add_style",

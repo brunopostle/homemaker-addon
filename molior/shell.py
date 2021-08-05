@@ -1,9 +1,6 @@
-import os
-import sys
 import ifcopenshell.api
 import numpy
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from molior.baseclass import BaseClass
 from molior.geometry import normalise_2d
 from topologist.helpers import string_to_coor
@@ -16,7 +13,7 @@ class Shell(BaseClass):
 
     def __init__(self, args={}):
         self.id = ""
-        self.ifc = "IFCROOF"
+        self.ifc = "IfcRoof"
         self.ifc_class = "IfcRoofType"
         self.predefined_type = "USERDEFINED"
         self.layerset = [[0.03, "Plaster"], [0.2, "Insulation"], [0.05, "Tiles"]]
@@ -90,6 +87,7 @@ class Shell(BaseClass):
                 for node in numpy.transpose(combined_inv @ nodes)
             ]
 
+            # TODO IfcRoof and IfcWall elements should generate IfcStructuralSurfaceMember
             entity = run(
                 "root.create_entity", self.file, ifc_class=self.ifc, name=self.name
             )

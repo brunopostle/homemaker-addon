@@ -1,8 +1,5 @@
-import os
-import sys
 import ifcopenshell.api
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior
 from molior.baseclass import TraceClass
 from molior.geometry import matrix_align, add_2d
