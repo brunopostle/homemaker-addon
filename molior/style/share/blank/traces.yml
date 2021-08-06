@@ -5,4 +5,7 @@ exterior:
   condition: external
   inner: 0.08
   outer: 0.25
-  extension: 0.25
+  psets:
+      Pset_WallCommon:
+          IsExternal: true
+          LoadBearing: true

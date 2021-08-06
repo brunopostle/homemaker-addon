@@ -67,26 +67,13 @@ class Wall(TraceClass):
                 related_object=mywall,
                 relating_type=myelement_type,
             )
+            self.add_psets(myelement_type)
 
             # Usage isn't created until after type.assign_type
             mylayerset = ifcopenshell.util.element.get_material(myelement_type)
             for inverse in self.file.get_inverse(mylayerset):
                 if inverse.is_a("IfcMaterialLayerSetUsage"):
                     inverse.OffsetFromReferenceLine = 0.0 - self.outer
-
-            is_external = False
-            if self.condition == "external":
-                is_external = True
-            # FIXME psets should be set in traces.yml
-            pset = run(
-                "pset.add_pset", self.file, product=mywall, name="Pset_WallCommon"
-            )
-            run(
-                "pset.edit_pset",
-                self.file,
-                pset=pset,
-                properties={"IsExternal": is_external},
-            )
 
             # wall is a plan shape extruded vertically
             solid = self.file.createExtrudedAreaSolid(

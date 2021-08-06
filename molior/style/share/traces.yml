@@ -4,7 +4,12 @@ exterior:
   ifc: IfcWall
   condition: external
   outer: 0.25
-  extension: 0.25
+  psets:
+      Pset_WallCommon:
+          IsExternal: true
+          LoadBearing: true
+      Custom_Pset:
+          Awesomeness: much
   do_populate_exterior_openings: 1
 ground beam:
   class: Extrusion
@@ -24,6 +29,10 @@ interior:
     - [0.1, "Masonry"]
     - [0.03, "Plaster"]
   extension: 0.0
+  psets:
+      Pset_WallCommon:
+          IsExternal: false
+          LoadBearing: true
   ceiling: 0.2
   floor: 0.02
   cycles: 0
@@ -61,6 +70,10 @@ external beam:
   condition: open
   outer: 0.0
   extension: 0.0
+  psets:
+      Pset_BeamCommon:
+          IsExternal: true
+          LoadBearing: true
 column:
   class: Repeat
   ifc: IfcColumn
@@ -70,50 +83,97 @@ column:
   outer: 0.2
   inset: 0.0
   spacing: 2.0
+  psets:
+      Pset_ColumnCommon:
+          IsExternal: true
+          LoadBearing: true
 bedroom-space:
   class: Space
   condition: bedroom
+  psets:
+      Pset_SpaceCommon:
+          IsExternal: false
 circulation-space:
   class: Space
   condition: circulation
+  psets:
+      Pset_SpaceCommon:
+          IsExternal: false
 kitchen-space:
   class: Space
   condition: kitchen
+  psets:
+      Pset_SpaceCommon:
+          IsExternal: false
 living-space:
   class: Space
   condition: living
+  psets:
+      Pset_SpaceCommon:
+          IsExternal: false
 outside-space:
   class: Space
   condition: outside
   inner: 0.25
+  psets:
+      Pset_SpaceCommon:
+          IsExternal: true
 retail-space:
   class: Space
   condition: retail
+  psets:
+      Pset_SpaceCommon:
+          IsExternal: false
 sahn-space:
   class: Space
   condition: sahn
   inner: 0.25
+  psets:
+      Pset_SpaceCommon:
+          IsExternal: true
 stair-space:
   class: Space
   condition: stair
+  psets:
+      Pset_SpaceCommon:
+          IsExternal: false
 toilet-space:
   class: Space
   condition: toilet
+  psets:
+      Pset_SpaceCommon:
+          IsExternal: false
 stair:
   class: Stair
   condition: stair
 bedroom-floor:
   class: Floor
   condition: bedroom
+  psets:
+      Pset_SlabCommon:
+          IsExternal: false
+          LoadBearing: true
 circulation-floor:
   class: Floor
   condition: circulation
+  psets:
+      Pset_SlabCommon:
+          IsExternal: false
+          LoadBearing: true
 kitchen-floor:
   class: Floor
   condition: kitchen
+  psets:
+      Pset_SlabCommon:
+          IsExternal: false
+          LoadBearing: true
 living-floor:
   class: Floor
   condition: living
+  psets:
+      Pset_SlabCommon:
+          IsExternal: false
+          LoadBearing: true
 outside-floor:
   class: Floor
   condition: outside
@@ -122,16 +182,36 @@ outside-floor:
     - [0.2, "Concrete"]
     - [0.1, "Insulation"]
     - [0.02, "Tiles"]
+  psets:
+      Pset_SlabCommon:
+          IsExternal: true
+          LoadBearing: true
 retail-floor:
   class: Floor
   condition: retail
+  psets:
+      Pset_SlabCommon:
+          IsExternal: false
+          LoadBearing: true
 sahn-floor:
   class: Floor
   condition: sahn
+  psets:
+      Pset_SlabCommon:
+          IsExternal: true
+          LoadBearing: true
 stair-floor:
   class: Floor
   condition: stair
   not_if_stair_below: 1
+  psets:
+      Pset_SlabCommon:
+          IsExternal: false
+          LoadBearing: true
 toilet-floor:
   class: Floor
   condition: toilet
+  psets:
+      Pset_SlabCommon:
+          IsExternal: false
+          LoadBearing: true

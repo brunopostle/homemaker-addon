@@ -12,6 +12,7 @@ class Shell(BaseClass):
     """A pitched roof or soffit"""
 
     def __init__(self, args={}):
+        super().__init__(args)
         self.id = ""
         self.ifc = "IfcRoof"
         self.ifc_class = "IfcRoofType"
@@ -99,6 +100,7 @@ class Shell(BaseClass):
                 related_object=entity,
                 relating_type=myelement_type,
             )
+            self.add_psets(myelement_type)
 
             # Usage isn't created until after type.assign_type
             mylayerset = ifcopenshell.util.element.get_material(myelement_type)

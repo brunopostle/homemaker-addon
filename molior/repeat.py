@@ -97,6 +97,7 @@ class Repeat(TraceClass):
                         ifc_class=self.ifc,
                         name=self.style + "/" + self.condition,
                     )
+                    self.add_psets(entity)
                     # place the entity in space
                     elevation = self.elevation + self.yshift
                     run(

@@ -6,6 +6,12 @@ exterior:
   ceiling: 0.5
   inner: 0.254
   outer: 0.254
+  layerset:
+    - [0.508, "Masonry"]
+  psets:
+      Pset_WallCommon:
+          IsExternal: true
+          LoadBearing: true
   do_populate_exterior_openings: 1
 colonnade:
   class: Repeat
@@ -16,6 +22,10 @@ colonnade:
   inset: 0.0
   spacing: 2.54
   traces: [handrail, balustrade_large]
+  psets:
+      Pset_ColumnCommon:
+          IsExternal: true
+          LoadBearing: true
 external beam:
   class: Extrusion
   ifc: IfcBeam
@@ -26,6 +36,10 @@ external beam:
   yshift: -0.535
   outer: 0.0
   extension: 0.254
+  psets:
+      Pset_BeamCommon:
+          IsExternal: true
+          LoadBearing: true
 column:
   condition: noop
 parapet:

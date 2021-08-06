@@ -46,14 +46,10 @@ class Space(TraceClass):
         except:
             is_external = False
             crinkliness = 1.0
-        # FIXME psets should be set in traces.yml
-        pset = run("pset.add_pset", self.file, product=entity, name="Pset_SpaceCommon")
-        run(
-            "pset.edit_pset",
-            self.file,
-            pset=pset,
-            properties={"IsExternal": is_external},
-        )
+        self.add_pset(entity, "Custom_Pset", {"Crinkliness": str(crinkliness)})
+
+        # FIXME should create IfcSpaceType for this
+        self.add_psets(entity)
 
         self.file.assign_storey_byindex(entity, self.level)
         # simple extruded representation

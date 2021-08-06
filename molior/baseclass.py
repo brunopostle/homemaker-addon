@@ -29,6 +29,7 @@ class BaseClass:
         self.name = "base-class"
         self.outer = 0.25
         self.plot = "my plot"
+        self.psets = {}
         self.style = "default"
         for arg in args:
             self.__dict__[arg] = args[arg]
@@ -74,6 +75,19 @@ class BaseClass:
                 layer.Name = mylayer[1]
 
         return myelement_type
+
+    def add_pset(self, product, name, properties):
+        pset = run("pset.add_pset", self.file, product=product, name=name)
+        run(
+            "pset.edit_pset",
+            self.file,
+            pset=pset,
+            properties=properties,
+        )
+
+    def add_psets(self, product):
+        for name, properties in self.psets.items():
+            self.add_pset(product, name, properties)
 
 
 class TraceClass(BaseClass):

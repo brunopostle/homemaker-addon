@@ -34,6 +34,8 @@ class Extrusion(TraceClass):
             name=self.name,
             predefined_type=self.predefined_type,
         )
+        self.add_psets(entity)
+
         # TODO IfcBeam elements should generate IfcStructuralCurveMember
         # TODO assign materials
         self.file.assign_storey_byindex(entity, self.level)

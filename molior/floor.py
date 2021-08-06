@@ -42,6 +42,7 @@ class Floor(TraceClass):
             related_object=entity,
             relating_type=myelement_type,
         )
+        self.add_psets(myelement_type)
 
         # Usage isn't created until after type.assign_type
         mylayerset = ifcopenshell.util.element.get_material(myelement_type)
