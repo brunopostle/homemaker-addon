@@ -42,6 +42,12 @@ class Molior:
     """A Builder, has resources to build"""
 
     def __init__(self, **args):
+        self.file = None
+        self.traces = {}
+        self.hulls = {}
+        self.normals = {}
+        self.elevations = {}
+        self.circulation = None
         self.share_dir = "share"
         self.Extrusion = Extrusion
         self.Floor = Floor
@@ -55,6 +61,7 @@ class Molior:
         Molior.style = Style({"share_dir": self.share_dir})
 
     def execute(self):
+        """Iterate through 'traces' and 'hulls' and populate an ifc 'file' object"""
         for condition in self.traces:
             for elevation in self.traces[condition]:
                 level = self.elevations[elevation]

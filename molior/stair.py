@@ -11,7 +11,6 @@ class Stair(TraceClass):
         self.corners_in_use = []
         self.floor = 0.02
         self.going = 0.25
-        self.id = ""
         self.ifc = "IfcStair"
         self.inner = 0.08
         self.path = []

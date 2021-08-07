@@ -25,8 +25,8 @@ class Extrusion(TraceClass):
             self.__dict__[arg] = args[arg]
 
     def execute(self):
-        style = molior.Molior.style
         """Generate some ifc"""
+        style = molior.Molior.style
         entity = run(
             "root.create_entity",
             self.file,

@@ -5,9 +5,9 @@ implemented as methods overloaded onto ifcopenshell.file
 
 """
 
+import os
 from ifcopenshell.file import file as ifcfile
 import ezdxf
-import os
 import ifcopenshell.api
 from molior.geometry import (
     matrix_align,
@@ -22,6 +22,7 @@ run = ifcopenshell.api.run
 
 
 def init(building_name, elevations):
+    """Creates and sets up an ifc 'file' object"""
     ifc = run("project.create_file")
 
     run("owner.add_person", ifc)
@@ -53,7 +54,11 @@ def init(building_name, elevations):
     return ifc
 
 
+# FIXME subclass methods instead of stomping all over ifcopenshell.file namespace
+
+
 def createBuilding(self, site, building_name, elevations):
+    """Add a building to an IfcSite"""
     building = run(
         "root.create_entity", self, ifc_class="IfcBuilding", name=building_name
     )
@@ -140,6 +145,7 @@ def clipSolid(self, solid, start, end):
 def assign_extrusion_fromDXF(
     self, bodycontext, element, directrix, stylename, path_dxf, transform
 ):
+    """Create an extrusion given a directrix and DXF profile filepath"""
     identifier = stylename + "/" + os.path.split(path_dxf)[-1]
 
     # let's see if there is an existing MaterialProfileSet recorded
@@ -225,12 +231,13 @@ def assign_extrusion_fromDXF(
 
 
 def createTessellations_fromDXF(self, path_dxf):
+    """Create Tessellations given a DXF filepath"""
     doc = ezdxf.readfile(path_dxf)
     model = doc.modelspace()
     tessellations = []
     for entity in model:
         if entity.get_mode() == "AcDbPolyFaceMesh":
-            if not len(list(entity.faces())):
+            if len(list(entity.faces())) == 0:
                 continue
             vertices, faces = entity.indexed_faces()
 
@@ -244,6 +251,7 @@ def createTessellations_fromDXF(self, path_dxf):
 
 
 def createTessellation_fromMesh(self, vertices, faces):
+    """Create a Tessellation from vertex coordinates and faces"""
     pointlist = self.createIfcCartesianPointList3D(vertices)
     indexedfaces = [
         self.createIfcIndexedPolygonalFace([index + 1 for index in face])
@@ -253,7 +261,8 @@ def createTessellation_fromMesh(self, vertices, faces):
 
 
 def assign_storey_byindex(self, entity, index):
-    # let's see if there is an existing IfcBuildingStorey defined
+    """Assign object to a storey by index"""
+    # FIXME will fail if there are not enough storeys defined or they are unordered"""
     storeys = {}
     for storey in self.by_type("IfcBuildingStorey"):
         storeys[storey.Name] = storey
@@ -320,6 +329,7 @@ def assign_representation_fromDXF(self, bodycontext, element, stylename, path_dx
 
 
 def get_material_by_name(self, context, material_name):
+    """Retrieve an IfcMaterial by name, creating it if necessary"""
     materials = {}
     for material in self.by_type("IfcMaterial"):
         materials[material.Name] = material

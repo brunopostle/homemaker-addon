@@ -13,7 +13,6 @@ class Shell(BaseClass):
 
     def __init__(self, args={}):
         super().__init__(args)
-        self.id = ""
         self.ifc = "IfcRoof"
         self.ifc_class = "IfcRoofType"
         self.predefined_type = "USERDEFINED"

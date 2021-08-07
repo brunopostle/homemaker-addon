@@ -113,8 +113,7 @@ def magnitude_3d(A):
 def scale_3d(A, B):
     if A.__class__ == [].__class__:
         return [A[0] * B, A[1] * B, A[2] * B]
-    else:
-        return [B[0] * A, B[1] * A, B[2] * A]
+    return [B[0] * A, B[1] * A, B[2] * A]
 
 
 def subtract_3d(A, B):

@@ -189,7 +189,6 @@ class Wall(TraceClass):
             # TODO draw centreline surface for structure
             segment = self.openings[id_segment]
             for id_opening in range(len(self.openings[id_segment])):
-                start, end = self.opening_coor(id_segment, id_opening)
                 db = self.get_opening(segment[id_opening]["name"])
                 opening = db["list"][segment[id_opening]["size"]]
                 filename = opening["file"]
@@ -296,7 +295,7 @@ class Wall(TraceClass):
         """We need an array for openings the same size as wall segments array"""
         if not len(self.openings) == self.segments():
             self.openings = []
-            for index in range(self.segments()):
+            for _ in range(self.segments()):
                 self.openings.append([])
 
         # TODO Face information is needed to connect walls to spaces in
@@ -307,7 +306,12 @@ class Wall(TraceClass):
             edges = self.chain.edges()
             for segment in range(len(self.openings)):
                 edge = self.chain.graph[edges[segment][0]]
-                # edge = {string_coor_start: [string_coor_end, [Vertex_start, Vertex_end, Face, Cell_left, Cell_right]]}
+                # edge = {
+                #     string_coor_start: [
+                #         string_coor_end,
+                #         [Vertex_start, Vertex_end, Face, Cell_left, Cell_right],
+                #     ]
+                # }
                 face = edge[1][2]
                 try:
                     interior_type = edge[1][3].Usage()
@@ -321,7 +325,7 @@ class Wall(TraceClass):
             face = edge[1][2]
             vertex = face.GraphVertex(self.circulation)
             # FIXME determine door orientation
-            if vertex != None and edge[1][3] != None and edge[1][4] != None:
+            if vertex is not None and edge[1][3] is not None and edge[1][4] is not None:
                 self.populate_interior_openings(
                     0, edge[1][3].Usage(), edge[1][4].Usage(), 0
                 )
@@ -329,6 +333,7 @@ class Wall(TraceClass):
                 self.fix_segment(0)
 
     def opening_coor(self, id_segment, id_opening):
+        """rectangle coordinates of an opening on the axis"""
         opening = self.openings[id_segment][id_opening]
         db = self.get_opening(opening["name"])
         width = db["list"][opening["size"]]["width"]
@@ -346,11 +351,12 @@ class Wall(TraceClass):
         return [A[0], A[1], bottom], [B[0], B[1], top]
 
     def populate_exterior_openings(self, segment_id, interior_type, access):
-        if interior_type == None:
+        """Add initial windows and doors to a segment"""
+        if interior_type is None:
             self.openings[segment_id].append(
                 {"name": "undefined outside window", "along": 0.5, "size": 0}
             )
-        if interior_type == "living" or interior_type == "retail":
+        if interior_type in ("living", "retail"):
             self.openings[segment_id].append(
                 {"name": "living outside window", "along": 0.5, "size": 0}
             )
@@ -366,7 +372,7 @@ class Wall(TraceClass):
             self.openings[segment_id].append(
                 {"name": "bedroom outside window", "along": 0.5, "size": 0}
             )
-        if interior_type == "circulation" or interior_type == "stair":
+        if interior_type in ("circulation", "stair"):
             self.openings[segment_id].append(
                 {"name": "circulation outside window", "along": 0.5, "size": 0}
             )
@@ -384,11 +390,13 @@ class Wall(TraceClass):
             )
 
     def populate_interior_openings(self, segment_id, type_a, type_b, access):
+        """Add an initial door to an interior segment"""
         self.openings[segment_id].append(
             {"name": "living inside door", "along": 0.5, "size": 0}
         )
 
     def get_opening(self, usage):
+        """Retrieve an opening definition via the style"""
         if usage in self.style_openings:
             opening = self.style_openings[usage]
             if opening["name"] in self.style_assets:
@@ -534,7 +542,8 @@ class Wall(TraceClass):
         if underrun <= 0.0:
             return
 
-        # fix underrun by sliding all but last opening forward by no more than amount of underrun or until spaced by border
+        # fix underrun by sliding all but last opening forward by no more than amount of underrun
+        # or until spaced by border
         for id_opening in reversed(range(len(openings) - 1)):
             # this opening has a width and side space
             opening = openings[id_opening]

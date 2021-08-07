@@ -12,7 +12,6 @@ class Floor(TraceClass):
     def __init__(self, args={}):
         super().__init__(args)
         self.below = 0.2
-        self.id = ""
         self.ifc = "IfcSlab"
         self.ifc_class = "IfcSlabType"
         self.predefined_type = "FLOOR"

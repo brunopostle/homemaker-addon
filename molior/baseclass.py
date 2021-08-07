@@ -31,10 +31,15 @@ class BaseClass:
         self.plot = "my plot"
         self.psets = {}
         self.style = "default"
+        self.file = None
+        self.ifc = "IfcBuildingElementProxy"
+        self.ifc_class = "IfcBuildingElementProxyType"
+        self.predefined_type = "USERDEFINED"
         for arg in args:
             self.__dict__[arg] = args[arg]
 
     def get_element_type(self):
+        """Retrieve or create an Ifc Type definition for this Molior object"""
         element_types = {}
         for element_type in self.file.by_type(self.ifc_class):
             element_types[element_type.Name] = element_type
@@ -77,6 +82,7 @@ class BaseClass:
         return myelement_type
 
     def add_pset(self, product, name, properties):
+        """Helper method to add an Ifc Pset"""
         pset = run("pset.add_pset", self.file, product=product, name=name)
         run(
             "pset.edit_pset",
@@ -86,6 +92,7 @@ class BaseClass:
         )
 
     def add_psets(self, product):
+        """self.psets is a dictionary of Psets, add them to an Ifc product"""
         for name, properties in self.psets.items():
             self.add_pset(product, name, properties)
 
@@ -143,7 +150,7 @@ class TraceClass(BaseClass):
         )
 
         # deal with ends of open paths
-        if not self.closed and (index == len(self.path) - 1 or index == 0):
+        if not self.closed and index in (len(self.path) - 1, 0):
             coor = self.corner_coor(index)
             string = str(coor[0]) + "__" + str(coor[1]) + "__" + str(self.elevation)
             normal_map = self.normals[self.normal_set]
@@ -152,12 +159,12 @@ class TraceClass(BaseClass):
                 line_mitre = points_2line(coor, add_2d(coor, normal_map[string]))
                 if index == len(self.path) - 1:
                     return line_intersection(line_a, line_mitre)
-                elif index == 0:
+                if index == 0:
                     return line_intersection(line_b, line_mitre)
 
             if index == len(self.path) - 1:
                 return add_2d(self.corner_coor(index), offset_a)
-            elif index == 0:
+            if index == 0:
                 return add_2d(self.corner_coor(index), offset_b)
 
         # deal with non-end corners
@@ -175,7 +182,9 @@ class TraceClass(BaseClass):
         return self.corner_offset(index, self.outer)
 
     def extension_start(self):
+        """extend the start of an open path"""
         return scale_2d(self.direction_segment(0), 0 - self.extension)
 
     def extension_end(self):
+        """extend the end of an open path"""
         return scale_2d(self.direction_segment(-2), self.extension)

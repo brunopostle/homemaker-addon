@@ -1,10 +1,10 @@
 import ifcopenshell.api
 import numpy
 
-from molior.baseclass import TraceClass
-from molior.geometry import matrix_align
 from topologic import Face
 from topologist.helpers import create_stl_list
+from molior.baseclass import TraceClass
+from molior.geometry import matrix_align
 
 run = ifcopenshell.api.run
 
@@ -17,7 +17,6 @@ class Space(TraceClass):
         self.ceiling = 0.2
         self.colour = 255
         self.floor = 0.02
-        self.id = ""
         self.ifc = "IfcSpace"
         self.inner = 0.08
         self.path = []
