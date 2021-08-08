@@ -27,6 +27,19 @@ def matrix_align(A, B):
     )
 
 
+def transform(matrix, A):
+    """Transform a 2d or 3d vector using a 4x4 matrix"""
+    # FIXME this is ridiculous
+    if len(A) == 3:
+        vertex = numpy.array([[A[0]], [A[1]], [A[2]], [1.0]])
+        result = matrix @ vertex
+        return [float(result[0][0]), float(result[1][0]), float(result[2][0])]
+    elif len(A) == 2:
+        vertex = numpy.array([[A[0]], [A[1]], [0.0], [1.0]])
+        result = matrix @ vertex
+        return [float(result[0][0]), float(result[1][0])]
+
+
 # FIXME replace these with appropriate numpy functions
 
 

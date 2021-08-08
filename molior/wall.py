@@ -1,4 +1,5 @@
 import ifcopenshell.api
+import numpy
 
 from topologic import Edge
 from topologist.helpers import create_stl_list, el
@@ -11,6 +12,7 @@ from molior.geometry import (
     distance_2d,
     subtract_3d,
     add_3d,
+    transform,
 )
 
 run = ifcopenshell.api.run
@@ -54,6 +56,13 @@ class Wall(TraceClass):
             v_in_a = self.corner_in(id_segment)
             v_in_b = self.corner_in(id_segment + 1)
 
+            # mapping from normalised X-axis to this rotated axis
+            matrix_forward = matrix_align(
+                [*self.corner_coor(id_segment), 0.0],
+                [*self.corner_coor(id_segment + 1), 0.0],
+            )
+            matrix_reverse = numpy.linalg.inv(matrix_forward)
+
             # TODO IfcWall elements should generate IfcStructuralSurfaceMember
             mywall = run(
                 "root.create_entity", self.file, ifc_class=self.ifc, name=self.name
@@ -77,7 +86,10 @@ class Wall(TraceClass):
 
             # wall is a plan shape extruded vertically
             solid = self.file.createExtrudedAreaSolid(
-                [v_in_a, v_out_a, v_out_b, v_in_b],
+                [
+                    transform(matrix_reverse, vertex)
+                    for vertex in [v_in_a, v_out_a, v_out_b, v_in_b]
+                ],
                 self.height,
             )
 
@@ -86,8 +98,11 @@ class Wall(TraceClass):
                 [
                     self.file.createIfcCartesianPoint(point)
                     for point in [
-                        self.corner_coor(id_segment),
-                        self.corner_coor(id_segment + 1),
+                        transform(matrix_reverse, vertex)
+                        for vertex in [
+                            self.corner_coor(id_segment),
+                            self.corner_coor(id_segment + 1),
+                        ]
                     ]
                 ]
             )
@@ -98,8 +113,12 @@ class Wall(TraceClass):
             edges_result = create_stl_list(Edge)
             face.EdgesCrop(edges_result)
             for edge in edges_result:
-                start_coor = list(edge.StartVertex().Coordinates())
-                end_coor = list(edge.EndVertex().Coordinates())
+                start_coor = transform(
+                    matrix_reverse, list(edge.StartVertex().Coordinates())
+                )
+                end_coor = transform(
+                    matrix_reverse, list(edge.EndVertex().Coordinates())
+                )
                 solid = self.file.clipSolid(
                     solid,
                     subtract_3d(
@@ -111,7 +130,10 @@ class Wall(TraceClass):
                 # clip beyond the end of the wall if necessary
                 if (
                     el(start_coor[2]) < el(self.elevation + self.height)
-                    and distance_2d(start_coor[0:2], self.corner_coor(id_segment + 1))
+                    and distance_2d(
+                        start_coor[0:2],
+                        transform(matrix_reverse, self.corner_coor(id_segment + 1)),
+                    )
                     < 0.001
                 ):
                     solid = self.file.clipSolid(
@@ -121,16 +143,18 @@ class Wall(TraceClass):
                             [0.0, 0.0, self.elevation],
                         ),
                         subtract_3d(
-                            add_3d(
-                                start_coor, [*self.direction_segment(id_segment), 0.0]
-                            ),
+                            add_3d(start_coor, [1.0, 0.0, 0.0]),
                             [0.0, 0.0, self.elevation],
                         ),
                     )
                 # clip beyond the start of the wall if necessary
                 if (
                     el(end_coor[2]) < el(self.elevation + self.height)
-                    and distance_2d(end_coor[0:2], self.corner_coor(id_segment)) < 0.001
+                    and distance_2d(
+                        end_coor[0:2],
+                        transform(matrix_reverse, self.corner_coor(id_segment)),
+                    )
+                    < 0.001
                 ):
                     solid = self.file.clipSolid(
                         solid,
@@ -139,9 +163,7 @@ class Wall(TraceClass):
                             [0.0, 0.0, self.elevation],
                         ),
                         subtract_3d(
-                            subtract_3d(
-                                end_coor, [*self.direction_segment(id_segment), 0.0]
-                            ),
+                            subtract_3d(end_coor, [1.0, 0.0, 0.0]),
                             [0.0, 0.0, self.elevation],
                         ),
                     )
@@ -176,13 +198,12 @@ class Wall(TraceClass):
                 product=mywall,
                 representation=shape,
             )
-
-            # TODO map walls, openings, clipping, windows and doors to axis coordinates
             run(
                 "geometry.edit_object_placement",
                 self.file,
                 product=mywall,
-                matrix=matrix_align([0.0, 0.0, self.elevation], [1.0, 0.0, 0.0]),
+                matrix=matrix_forward
+                @ matrix_align([0.0, 0.0, self.elevation], [1.0, 0.0, 0.0]),
             )
             # TODO IfcRelConnectsPathElements
             # TODO draw wall surfaces for boundaries

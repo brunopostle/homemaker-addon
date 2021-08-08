@@ -3,6 +3,7 @@
 import os
 import sys
 import unittest
+import numpy
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from molior.geometry import (
@@ -13,11 +14,24 @@ from molior.geometry import (
     normalise_2d,
     points_2line,
     line_intersection,
+    transform,
 )
 
 
 class Tests(unittest.TestCase):
     """geometry functions"""
+
+    def test_transform(self):
+        identity_matrix = numpy.array(
+            [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+        )
+        scale_matrix = numpy.array(
+            [[2, 0, 0, 0], [0, 2, 0, 0], [0, 0, 2, 0], [0, 0, 0, 2]]
+        )
+        self.assertEqual(transform(identity_matrix, [2, 3, 4]), [2, 3, 4])
+        self.assertEqual(transform(scale_matrix, [2, 3, 4]), [4, 6, 8])
+        self.assertEqual(transform(identity_matrix, [2, 3]), [2, 3])
+        self.assertEqual(transform(scale_matrix, [2, 3]), [4, 6])
 
     def test_add_2d(self):
         self.assertEqual(add_2d([2, 3], [5, -3]), [7.0, 0])
