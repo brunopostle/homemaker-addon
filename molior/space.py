@@ -46,6 +46,11 @@ class Space(TraceClass):
             is_external = False
             crinkliness = 1.0
         self.add_pset(entity, "Custom_Pset", {"Crinkliness": str(crinkliness)})
+        topology_index = cell.Get("index")
+        if not topology_index == None:
+            self.add_pset(
+                entity, "Custom_Pset", {"TopologyCellIndex": str(topology_index)}
+            )
 
         # FIXME should create IfcSpaceType for this
         self.add_psets(entity)

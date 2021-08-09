@@ -96,6 +96,30 @@ class BaseClass:
         for name, properties in self.psets.items():
             self.add_pset(product, name, properties)
 
+    def add_topology_pset(self, entity, face, back_cell, front_cell):
+        if face:
+            face_index = face.Get("index")
+            if not face_index == None:
+                self.add_pset(
+                    entity, "Custom_Pset", {"TopologyFaceIndex": str(face_index)}
+                )
+        if front_cell:
+            front_cell_index = front_cell.Get("index")
+            if not front_cell_index == None:
+                self.add_pset(
+                    entity,
+                    "Custom_Pset",
+                    {"TopologyFrontCellIndex": str(front_cell_index)},
+                )
+        if back_cell:
+            back_cell_index = back_cell.Get("index")
+            if not back_cell_index == None:
+                self.add_pset(
+                    entity,
+                    "Custom_Pset",
+                    {"TopologyBackCellIndex": str(back_cell_index)},
+                )
+
 
 class TraceClass(BaseClass):
     """A building object that follows a path"""

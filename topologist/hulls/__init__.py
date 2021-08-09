@@ -26,7 +26,9 @@ class Hulls:
         cells = face.CellsOrdered()
 
         hulls[label][stylename].add_face(
-            [vertex.Coordinates() for vertex in vertices], face.Normal(), [face, *cells]
+            [vertex.Coordinates() for vertex in vertices],
+            face.Normal(),
+            [face, cells[1], cells[0]],
         )
 
     def process(self):

@@ -109,6 +109,10 @@ class Wall(TraceClass):
 
             segment = self.chain.edges()[id_segment]
             face = self.chain.graph[segment[0]][1][2]
+            back_cell = self.chain.graph[segment[0]][1][3]
+            front_cell = self.chain.graph[segment[0]][1][4]
+            self.add_topology_pset(mywall, face, back_cell, front_cell)
+
             # clip the top of the wall if face isn't rectangular
             edges_result = create_stl_list(Edge)
             face.EdgesCrop(edges_result)

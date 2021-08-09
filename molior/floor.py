@@ -43,6 +43,14 @@ class Floor(TraceClass):
         )
         self.add_psets(myelement_type)
 
+        string_coor_start = next(iter(self.chain.graph))
+        cell = self.chain.graph[string_coor_start][1][3]
+        topology_index = cell.Get("index")
+        if not topology_index == None:
+            self.add_pset(
+                entity, "Custom_Pset", {"TopologyCellIndex": str(topology_index)}
+            )
+
         # Usage isn't created until after type.assign_type
         mylayerset = ifcopenshell.util.element.get_material(myelement_type)
         for inverse in self.file.get_inverse(mylayerset):

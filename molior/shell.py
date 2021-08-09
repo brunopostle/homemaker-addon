@@ -91,6 +91,7 @@ class Shell(BaseClass):
             entity = run(
                 "root.create_entity", self.file, ifc_class=self.ifc, name=self.name
             )
+            self.add_topology_pset(entity, *face[2])
 
             myelement_type = self.get_element_type()
             run(
