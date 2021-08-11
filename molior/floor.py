@@ -1,5 +1,8 @@
 import ifcopenshell.api
 
+from topologic import Face, Cell
+from topologist.helpers import create_stl_list
+
 from molior.baseclass import TraceClass
 from molior.geometry import matrix_align
 
@@ -45,9 +48,15 @@ class Floor(TraceClass):
 
         string_coor_start = next(iter(self.chain.graph))
         cell = self.chain.graph[string_coor_start][1][3]
-        topology_index = cell.Get("index")
-        if not topology_index == None:
+        if cell.__class__ == Cell:
+            topology_index = cell.Get("index")
             self.add_pset(entity, "EPset_Topology", {"CellIndex": str(topology_index)})
+            faces_bottom = create_stl_list(Face)
+            cell.FacesBottom(faces_bottom)
+            faces_bottom = [str(face.Get("index")) for face in list(faces_bottom)]
+            self.add_pset(
+                entity, "EPset_Topology", {"FaceIndices": " ".join(faces_bottom)}
+            )
 
         # Usage isn't created until after type.assign_type
         mylayerset = ifcopenshell.util.element.get_material(myelement_type)
