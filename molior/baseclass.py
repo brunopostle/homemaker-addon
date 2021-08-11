@@ -100,24 +100,22 @@ class BaseClass:
         if face:
             face_index = face.Get("index")
             if not face_index == None:
-                self.add_pset(
-                    entity, "Custom_Pset", {"TopologyFaceIndex": str(face_index)}
-                )
+                self.add_pset(entity, "EPset_Topology", {"FaceIndex": str(face_index)})
         if front_cell:
             front_cell_index = front_cell.Get("index")
             if not front_cell_index == None:
                 self.add_pset(
                     entity,
-                    "Custom_Pset",
-                    {"TopologyFrontCellIndex": str(front_cell_index)},
+                    "EPset_Topology",
+                    {"FrontCellIndex": str(front_cell_index)},
                 )
         if back_cell:
             back_cell_index = back_cell.Get("index")
             if not back_cell_index == None:
                 self.add_pset(
                     entity,
-                    "Custom_Pset",
-                    {"TopologyBackCellIndex": str(back_cell_index)},
+                    "EPset_Topology",
+                    {"BackCellIndex": str(back_cell_index)},
                 )
 
 
