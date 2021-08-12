@@ -40,6 +40,61 @@ def transform(matrix, A):
         return [float(result[0][0]), float(result[1][0])]
 
 
+def map_to_2d(nodes_3d, normal):
+    """Transform 3d nodes and their normal to 2d nodes, a return matrix and a vertical vector"""
+    # rotate around z axis
+    normal_z = normalise_2d([normal[0][0], normal[1][0]])
+    z_rot_mat = numpy.array(
+        [
+            [0 - normal_z[1], 0 - normal_z[0], 0.0, 0.0],
+            [normal_z[0], 0 - normal_z[1], 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ]
+    )
+    z_rot_inv = numpy.linalg.inv(z_rot_mat)
+
+    # rotate around x axis
+    normal_x = z_rot_inv @ normal
+    x_rot_mat = numpy.array(
+        [
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, normal_x[2][0], normal_x[1][0], 0.0],
+            [0.0, 0 - normal_x[1][0], normal_x[2][0], 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ]
+    )
+    x_rot_inv = numpy.linalg.inv(x_rot_mat)
+
+    # combined rotation and rotation
+    zx_rot_inv = x_rot_inv @ z_rot_inv
+
+    # face rotated to horizontal, but not necessarily z=0
+    nodes_2d_tmp = zx_rot_inv @ nodes_3d
+
+    # shift to origin
+    origin_matrix = numpy.array(
+        [
+            [1.0, 0.0, 0.0, 0 - nodes_2d_tmp[0][0]],
+            [0.0, 1.0, 0.0, 0 - nodes_2d_tmp[1][0]],
+            [0.0, 0.0, 1.0, 0 - nodes_2d_tmp[2][0]],
+            [0.0, 0.0, 0.0, 1.0],
+        ]
+    )
+
+    # combined rotation, rotation and shift
+    combined_inv = origin_matrix @ zx_rot_inv
+    combined = numpy.linalg.inv(combined_inv)
+
+    # outline of roof shifted and rotated to z=0 plane
+    nodes_2d = [
+        [float(node[0]), float(node[1]), 0.0]
+        for node in numpy.transpose(combined_inv @ nodes_3d)
+    ]
+
+    return nodes_2d, combined, normal_x
+
+
 # FIXME replace these with appropriate numpy functions
 
 
