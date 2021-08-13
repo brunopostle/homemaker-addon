@@ -21,6 +21,9 @@ class Shell(BaseClass):
         self.type = "molior-shell"
         for arg in args:
             self.__dict__[arg] = args[arg]
+        self.thickness = 0.0
+        for layer in self.layerset:
+            self.thickness += layer[0]
 
     def execute(self):
         """Generate some ifc"""
@@ -43,32 +46,25 @@ class Shell(BaseClass):
             )
             self.add_topology_pset(structural_surface, *face[2])
             structural_surface.PredefinedType = "SHELL"
-            structural_surface.Thickness = 0.2
-            models = self.file.by_type("IfcStructuralAnalysisModel")
+            structural_surface.Thickness = self.thickness
             run(
                 "structural.assign_structural_analysis_model",
                 self.file,
                 product=structural_surface,
-                structural_analysis_model=models[0],
-            )
-
-            shape = self.file.createIfcShapeRepresentation(
-                self.context,
-                "Reference",
-                "Face",
-                [face_surface],
+                structural_analysis_model=self.file.by_type(
+                    "IfcStructuralAnalysisModel"
+                )[0],
             )
             run(
                 "geometry.assign_representation",
                 self.file,
                 product=structural_surface,
-                representation=shape,
-            )
-            run(
-                "geometry.edit_object_placement",
-                self.file,
-                product=structural_surface,
-                matrix=matrix,
+                representation=self.file.createIfcShapeRepresentation(
+                    self.context,
+                    "Reference",
+                    "Face",
+                    [face_surface],
+                ),
             )
 
             entity = run(
