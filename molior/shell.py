@@ -29,8 +29,48 @@ class Shell(BaseClass):
             vertices = [[*string_to_coor(node_str)] for node_str in face[0]]
             normal = face[1]
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
+            # need this for boundaries
+            bounded_plane = self.file.createCurveBoundedPlane(nodes_2d)
+            # need this for structure
+            face_surface = self.file.createFaceSurface(vertices, normal)
 
-            # TODO IfcRoof and IfcWall elements should generate IfcStructuralSurfaceMember
+            # TODO generate structural connections
+            structural_surface = run(
+                "root.create_entity",
+                self.file,
+                ifc_class="IfcStructuralSurfaceMember",
+                name="My Shell",
+            )
+            self.add_topology_pset(structural_surface, *face[2])
+            structural_surface.PredefinedType = "SHELL"
+            structural_surface.Thickness = 0.2
+            models = self.file.by_type("IfcStructuralAnalysisModel")
+            run(
+                "structural.assign_structural_analysis_model",
+                self.file,
+                product=structural_surface,
+                structural_analysis_model=models[0],
+            )
+
+            shape = self.file.createIfcShapeRepresentation(
+                self.context,
+                "Reference",
+                "Face",
+                [face_surface],
+            )
+            run(
+                "geometry.assign_representation",
+                self.file,
+                product=structural_surface,
+                representation=shape,
+            )
+            run(
+                "geometry.edit_object_placement",
+                self.file,
+                product=structural_surface,
+                matrix=matrix,
+            )
+
             entity = run(
                 "root.create_entity", self.file, ifc_class=self.ifc, name=self.name
             )

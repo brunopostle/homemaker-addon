@@ -44,9 +44,7 @@ def map_to_2d(vertices, normal_vector):
     """Transform 3d nodes and their normal to 2d nodes, a return matrix and a vertical vector"""
 
     # coordinates need to be vertical in 4 high matrix
-    nodes_3d = numpy.array(
-        [[*vertex, 1.0] for vertex in vertices]
-    )
+    nodes_3d = numpy.array([[*vertex, 1.0] for vertex in vertices])
     nodes_3d = numpy.transpose(nodes_3d)
 
     # normal has to be a 1x4 matrix
