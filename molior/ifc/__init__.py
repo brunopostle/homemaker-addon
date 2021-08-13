@@ -47,6 +47,9 @@ def init(building_name, elevations):
         target_view="MODEL_VIEW",
     )
 
+    # create a structural model
+    run("structural.add_structural_analysis_model", ifc)
+
     # create and relate site and building
     site = run("root.create_entity", ifc, ifc_class="IfcSite", name="My Site")
     run("aggregate.assign_object", ifc, product=site, relating_object=project)
@@ -140,6 +143,52 @@ def clipSolid(self, solid, start, end):
             ),
         ),
     )
+
+
+def createCurveBoundedPlane(self, polygon):
+    """Create a bounded shape in the Z=0 plane"""
+    return self.createIfcCurveBoundedPlane(
+        self.createIfcPlane(
+            self.createIfcAxis2Placement3D(
+                self.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
+            )
+        ),
+        self.createIfcPolyline(
+            [self.createIfcCartesianPoint(point) for point in [*polygon, polygon[0]]]
+        ),
+        [],
+    )
+
+
+def createFaceSurface(self, polygon, normal):
+    """Create a single-face shape"""
+    surface = self.createIfcPlane(
+        self.createIfcAxis2Placement3D(
+            self.createIfcCartesianPoint(polygon[0]),
+            self.createIfcDirection(normal),
+            self.createIfcDirection([1.0, 0.0, 0.0]),
+        )
+    )
+    face_bound = self.createIfcFaceBound(
+        self.createIfcEdgeLoop(
+            [
+                self.createIfcOrientedEdge(None, None, edge, True)
+                for edge in [
+                    self.createIfcEdge(
+                        self.createIfcVertexPoint(
+                            self.createIfcCartesianPoint(polygon[i - 1])
+                        ),
+                        self.createIfcVertexPoint(
+                            self.createIfcCartesianPoint(polygon[i])
+                        ),
+                    )
+                    for i in range(len(polygon))
+                ]
+            ]
+        ),
+        True,
+    )
+    return self.createIfcFaceSurface([face_bound], surface, True)
 
 
 def assign_extrusion_fromDXF(
@@ -360,6 +409,8 @@ setattr(ifcfile, "assign_storey_byindex", assign_storey_byindex)
 setattr(ifcfile, "createBuilding", createBuilding)
 setattr(ifcfile, "createExtrudedAreaSolid", createExtrudedAreaSolid)
 setattr(ifcfile, "clipSolid", clipSolid)
+setattr(ifcfile, "createCurveBoundedPlane", createCurveBoundedPlane)
+setattr(ifcfile, "createFaceSurface", createFaceSurface)
 setattr(ifcfile, "createTessellation_fromMesh", createTessellation_fromMesh)
 setattr(ifcfile, "assign_extrusion_fromDXF", assign_extrusion_fromDXF)
 setattr(ifcfile, "createTessellations_fromDXF", createTessellations_fromDXF)
