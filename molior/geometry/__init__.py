@@ -40,8 +40,18 @@ def transform(matrix, A):
         return [float(result[0][0]), float(result[1][0])]
 
 
-def map_to_2d(nodes_3d, normal):
+def map_to_2d(vertices, normal_vector):
     """Transform 3d nodes and their normal to 2d nodes, a return matrix and a vertical vector"""
+
+    # coordinates need to be vertical in 4 high matrix
+    nodes_3d = numpy.array(
+        [[*vertex, 1.0] for vertex in vertices]
+    )
+    nodes_3d = numpy.transpose(nodes_3d)
+
+    # normal has to be a 1x4 matrix
+    normal = [[normal_vector[0]], [normal_vector[1]], [normal_vector[2]], [1.0]]
+
     # rotate around z axis
     normal_z = normalise_2d([normal[0][0], normal[1][0]])
     z_rot_mat = numpy.array(
@@ -92,7 +102,7 @@ def map_to_2d(nodes_3d, normal):
         for node in numpy.transpose(combined_inv @ nodes_3d)
     ]
 
-    return nodes_2d, combined, normal_x
+    return nodes_2d, combined, [normal_x[0][0], normal_x[1][0], normal_x[2][0]]
 
 
 # FIXME replace these with appropriate numpy functions

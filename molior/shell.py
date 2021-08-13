@@ -1,5 +1,4 @@
 import ifcopenshell.api
-import numpy
 
 from molior.baseclass import BaseClass
 from molior.geometry import map_to_2d
@@ -27,16 +26,9 @@ class Shell(BaseClass):
         """Generate some ifc"""
         # TODO aggregate entities
         for face in self.hull.faces:
-            # coordinates need to be vertical in 4 high matrix
-            nodes = numpy.array(
-                [[*string_to_coor(node_str), 1.0] for node_str in face[0]]
-            )
-            nodes = numpy.transpose(nodes)
-
-            # normal has to be a 1x4 matrix
-            normal = [[face[1][0]], [face[1][1]], [face[1][2]], [1.0]]
-
-            nodes_2d, matrix, normal_x = map_to_2d(nodes, normal)
+            vertices = [[*string_to_coor(node_str)] for node_str in face[0]]
+            normal = face[1]
+            nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
 
             # TODO IfcRoof and IfcWall elements should generate IfcStructuralSurfaceMember
             entity = run(
@@ -61,15 +53,15 @@ class Shell(BaseClass):
 
             # FIXME this puts roofs in the ground floor
             self.file.assign_storey_byindex(entity, 0)
-            if abs(float(normal_x[2][0])) < 0.001:
+            if abs(float(normal_x[2])) < 0.001:
                 extrude_height = self.outer
                 extrude_direction = [0.0, 0.0, 1.0]
             else:
-                extrude_height = self.outer / float(normal_x[2][0])
+                extrude_height = self.outer / float(normal_x[2])
                 extrude_direction = [
                     0.0,
-                    0 - float(normal_x[1][0]),
-                    float(normal_x[2][0]),
+                    0 - float(normal_x[1]),
+                    float(normal_x[2]),
                 ]
             shape = self.file.createIfcShapeRepresentation(
                 self.context,
