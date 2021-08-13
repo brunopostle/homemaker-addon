@@ -26,6 +26,7 @@ IfcOpenShell.
 """
 
 import re
+import ifcopenshell.util
 from molior.extrusion import Extrusion
 from molior.floor import Floor
 from molior.shell import Shell
@@ -35,7 +36,10 @@ from molior.wall import Wall
 from molior.repeat import Repeat
 
 from molior.style import Style
-from topologist.helpers import string_to_coor_2d
+from topologic import Edge, Face
+from topologist.helpers import create_stl_list, string_to_coor_2d
+
+run = ifcopenshell.api.run
 
 
 class Molior:
@@ -48,6 +52,7 @@ class Molior:
         self.normals = {}
         self.elevations = {}
         self.circulation = None
+        self.cellcomplex = None
         self.share_dir = "share"
         self.Extrusion = Extrusion
         self.Floor = Floor
@@ -86,6 +91,73 @@ class Molior:
                         condition,
                         hull,
                     )
+        if self.cellcomplex:
+            for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
+                if item.TargetView == "MODEL_VIEW":
+                    subcontext = item
+            surface_lookup = {}
+            # members should have been tagged with faces indices
+            for member in self.file.by_type("IfcStructuralSurfaceMember"):
+                pset_topology = ifcopenshell.util.element.get_psets(member).get(
+                    "EPset_Topology"
+                )
+                if pset_topology:
+                    surface_lookup[pset_topology["FaceIndex"]] = member
+            edges_stl = create_stl_list(Edge)
+            self.cellcomplex.Edges(edges_stl)
+            for edge in list(edges_stl):
+                v_start = edge.StartVertex()
+                v_end = edge.EndVertex()
+                start = [v_start.X(), v_start.Y(), v_start.Z()]
+                end = [v_end.X(), v_end.Y(), v_end.Z()]
+                connection = run(
+                    "root.create_entity",
+                    self.file,
+                    ifc_class="IfcStructuralCurveConnection",
+                    name="My Connection",
+                )
+                run(
+                    "structural.assign_structural_analysis_model",
+                    self.file,
+                    product=connection,
+                    structural_analysis_model=self.file.by_type(
+                        "IfcStructuralAnalysisModel"
+                    )[0],
+                )
+                connection.Axis = self.file.createIfcDirection([0.0, 0.0, 1.0])
+                run(
+                    "geometry.assign_representation",
+                    self.file,
+                    product=connection,
+                    representation=self.file.createIfcShapeRepresentation(
+                        subcontext,
+                        "Reference",
+                        "Edge",
+                        [
+                            self.file.createIfcEdge(
+                                self.file.createIfcVertexPoint(
+                                    self.file.createIfcCartesianPoint(start)
+                                ),
+                                self.file.createIfcVertexPoint(
+                                    self.file.createIfcCartesianPoint(end)
+                                ),
+                            )
+                        ],
+                    ),
+                )
+
+                faces_stl = create_stl_list(Face)
+                edge.Faces(faces_stl)
+                for face in list(faces_stl):
+                    index = face.Get("index")
+                    if index and index in surface_lookup:
+                        surface_member = surface_lookup[index]
+                        run(
+                            "structural.add_structural_member_connection",
+                            self.file,
+                            relating_structural_member=surface_member,
+                            related_structural_connection=connection,
+                        )
 
     def GetTraceIfc(
         self,

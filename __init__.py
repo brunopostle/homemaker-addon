@@ -110,6 +110,7 @@ class ObjectHomemaker(bpy.types.Operator):
                 traces=traces,
                 hulls=hulls,
                 normals=normals,
+                cellcomplex=cc,
             )
             molior_object.execute()
 

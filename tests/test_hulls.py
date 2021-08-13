@@ -129,6 +129,7 @@ class Tests(unittest.TestCase):
             traces=traces,
             hulls=hulls,
             normals=normals,
+            cellcomplex=self.cc,
         )
         molior_object.execute()
         ifc.write("_test.ifc")

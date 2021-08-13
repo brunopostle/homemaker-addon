@@ -61,6 +61,7 @@ molior_object = Molior(
     traces=traces,
     hulls=hulls,
     normals=normals,
+    cellcomplex=cc,
 )
 molior_object.execute()
 print("IFC model created", datetime.datetime.now())
