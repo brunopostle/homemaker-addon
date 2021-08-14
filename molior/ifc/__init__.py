@@ -46,6 +46,13 @@ def init(building_name, elevations):
         subcontext="Body",
         target_view="MODEL_VIEW",
     )
+    run(
+        "context.add_context",
+        ifc,
+        context="Model",
+        subcontext="Reference",
+        target_view="GRAPH_VIEW",
+    )
 
     # create a structural model
     run("structural.add_structural_analysis_model", ifc)
