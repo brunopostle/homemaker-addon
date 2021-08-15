@@ -37,12 +37,12 @@ class Shell(BaseClass):
             # need this for structure
             face_surface = self.file.createFaceSurface(vertices, normal)
 
-            # TODO generate structural connections
+            # generate structural surfaces
             structural_surface = run(
                 "root.create_entity",
                 self.file,
                 ifc_class="IfcStructuralSurfaceMember",
-                name="My Shell",
+                name=self.name,
             )
             self.add_topology_pset(structural_surface, *face[2])
             structural_surface.PredefinedType = "SHELL"

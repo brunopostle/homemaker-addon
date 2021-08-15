@@ -127,12 +127,16 @@ class Molior:
                 )
                 if abs(start[2] - end[2]) < 0.0001:
                     connection.Axis = self.file.createIfcDirection([0.0, 0.0, 1.0])
-                elif abs(start[0] - end[0]) < 0.0001 and abs(start[1] - end[1]) < 0.0001:
+                elif (
+                    abs(start[0] - end[0]) < 0.0001 and abs(start[1] - end[1]) < 0.0001
+                ):
                     connection.Axis = self.file.createIfcDirection([0.0, 1.0, 0.0])
                 else:
                     vec_1 = subtract_3d(end, start)
                     vec_2 = [vec_1[1], 0.0 - vec_1[0], 0.0]
-                    connection.Axis = self.file.createIfcDirection(x_product_3d(vec_1, vec_2))
+                    connection.Axis = self.file.createIfcDirection(
+                        x_product_3d(vec_1, vec_2)
+                    )
                 run(
                     "geometry.assign_representation",
                     self.file,

@@ -1,7 +1,7 @@
 import ifcopenshell.api
 import numpy
 
-from topologic import Edge
+from topologic import Vertex, Edge
 from topologist.helpers import create_stl_list, el
 from molior.baseclass import TraceClass
 import molior
@@ -63,7 +63,6 @@ class Wall(TraceClass):
             )
             matrix_reverse = numpy.linalg.inv(matrix_forward)
 
-            # TODO IfcWall elements should generate IfcStructuralSurfaceMember
             mywall = run(
                 "root.create_entity", self.file, ifc_class=self.ifc, name=self.name
             )
@@ -112,6 +111,44 @@ class Wall(TraceClass):
             back_cell = self.chain.graph[segment[0]][1][3]
             front_cell = self.chain.graph[segment[0]][1][4]
             self.add_topology_pset(mywall, face, back_cell, front_cell)
+
+            # structure
+            vertices_stl = create_stl_list(Vertex)
+            self.chain.graph[segment[0]][1][2].VerticesPerimeter(vertices_stl)
+            vertices = [
+                [vertex.X(), vertex.Y(), vertex.Z()] for vertex in list(vertices_stl)
+            ]
+            normal = self.chain.graph[segment[0]][1][2].Normal()
+            face_surface = self.file.createFaceSurface(vertices, normal)
+            # generate structural surfaces
+            structural_surface = run(
+                "root.create_entity",
+                self.file,
+                ifc_class="IfcStructuralSurfaceMember",
+                name=self.name,
+            )
+            self.add_topology_pset(structural_surface, face, back_cell, front_cell)
+            structural_surface.PredefinedType = "SHELL"
+            structural_surface.Thickness = self.thickness
+            run(
+                "structural.assign_structural_analysis_model",
+                self.file,
+                product=structural_surface,
+                structural_analysis_model=self.file.by_type(
+                    "IfcStructuralAnalysisModel"
+                )[0],
+            )
+            run(
+                "geometry.assign_representation",
+                self.file,
+                product=structural_surface,
+                representation=self.file.createIfcShapeRepresentation(
+                    self.context,
+                    "Reference",
+                    "Face",
+                    [face_surface],
+                ),
+            )
 
             # clip the top of the wall if face isn't rectangular
             edges_result = create_stl_list(Edge)
@@ -211,7 +248,6 @@ class Wall(TraceClass):
             )
             # TODO IfcRelConnectsPathElements
             # TODO draw wall surfaces for boundaries
-            # TODO draw centreline surface for structure
             segment = self.openings[id_segment]
             for id_opening in range(len(self.openings[id_segment])):
                 db = self.get_opening(segment[id_opening]["name"])
@@ -313,6 +349,13 @@ class Wall(TraceClass):
                 )
                 # use the opening to cut the wall, no need to assign a storey
                 run("void.add_opening", self.file, opening=myopening, element=mywall)
+                # # using the opening to cut the structural model isn't allowed
+                # run(
+                #     "void.add_opening",
+                #     self.file,
+                #     opening=myopening,
+                #     element=structural_surface,
+                # )
                 # associate the opening with our window
                 run("void.add_filling", self.file, opening=myopening, element=entity)
 
