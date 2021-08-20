@@ -170,6 +170,16 @@ class Molior:
                             relating_structural_member=surface_member,
                             related_structural_connection=connection,
                         )
+            # delete unused edge connections
+            for connection in self.file.by_type("IfcStructuralCurveConnection"):
+                if len(connection.ConnectsStructuralMembers) < 2:
+                    for relation in connection.ConnectsStructuralMembers:
+                        run(
+                            "structural.remove_structural_connection_condition",
+                            self.file,
+                            relation=relation,
+                        )
+                    run("root.remove_product", self.file, product=connection)
 
     def GetTraceIfc(
         self,
