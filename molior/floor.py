@@ -1,6 +1,6 @@
 import ifcopenshell.api
 
-from topologic import Face, Cell
+from topologic import Vertex, Face, Cell
 from topologist.helpers import create_stl_list
 
 from molior.baseclass import TraceClass
@@ -53,10 +53,59 @@ class Floor(TraceClass):
             self.add_pset(entity, "EPset_Topology", {"CellIndex": str(topology_index)})
             faces_bottom = create_stl_list(Face)
             cell.FacesBottom(faces_bottom)
-            faces_bottom = [str(face.Get("index")) for face in list(faces_bottom)]
+            faces_bottom_indices = [
+                str(face.Get("index")) for face in list(faces_bottom)
+            ]
             self.add_pset(
-                entity, "EPset_Topology", {"FaceIndices": " ".join(faces_bottom)}
+                entity,
+                "EPset_Topology",
+                {"FaceIndices": " ".join(faces_bottom_indices)},
             )
+            for face in list(faces_bottom):
+                vertices_perimeter = create_stl_list(Vertex)
+                face.VerticesPerimeter(vertices_perimeter)
+                vertices = [[v.X(), v.Y(), v.Z()] for v in vertices_perimeter]
+                normal = face.Normal()
+                # need this for boundaries
+                # nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
+                # bounded_plane = self.file.createCurveBoundedPlane(nodes_2d)
+                # need this for structure
+                face_surface = self.file.createFaceSurface(vertices, normal)
+
+                # generate structural surfaces
+                structural_surface = run(
+                    "root.create_entity",
+                    self.file,
+                    ifc_class="IfcStructuralSurfaceMember",
+                    name=self.name,
+                )
+                run(
+                    "geometry.edit_object_placement",
+                    self.file,
+                    product=structural_surface,
+                )
+                self.add_topology_pset(structural_surface, face, *face.CellsOrdered())
+                structural_surface.PredefinedType = "SHELL"
+                structural_surface.Thickness = self.thickness
+                run(
+                    "structural.assign_structural_analysis_model",
+                    self.file,
+                    product=structural_surface,
+                    structural_analysis_model=self.file.by_type(
+                        "IfcStructuralAnalysisModel"
+                    )[0],
+                )
+                run(
+                    "geometry.assign_representation",
+                    self.file,
+                    product=structural_surface,
+                    representation=self.file.createIfcShapeRepresentation(
+                        self.context,
+                        "Reference",
+                        "Face",
+                        [face_surface],
+                    ),
+                )
 
         # Usage isn't created until after type.assign_type
         mylayerset = ifcopenshell.util.element.get_material(myelement_type)
