@@ -36,7 +36,82 @@ class Extrusion(TraceClass):
         )
         self.add_psets(entity)
 
-        # TODO IfcBeam elements should generate IfcStructuralCurveMember
+        if entity.is_a("IfcBeam") or entity.is_a("IfcFooting"):
+            # generate structural edges
+            segments = self.segments()
+            for id_segment in range(segments):
+                start = [*self.corner_coor(id_segment), self.elevation + self.height]
+                end = [*self.corner_coor(id_segment + 1), self.elevation + self.height]
+                structural_member = run(
+                    "root.create_entity",
+                    self.file,
+                    ifc_class="IfcStructuralCurveMember",
+                    name=self.name,
+                )
+                run(
+                    "geometry.edit_object_placement",
+                    self.file,
+                    product=structural_member,
+                )
+                segment = self.chain.edges()[id_segment]
+                face = self.chain.graph[segment[0]][1][2]
+                back_cell = self.chain.graph[segment[0]][1][3]
+                front_cell = self.chain.graph[segment[0]][1][4]
+                self.add_topology_pset(structural_member, face, back_cell, front_cell)
+                structural_member.PredefinedType = "RIGID_JOINED_MEMBER"
+                structural_member.Axis = self.file.createIfcDirection([0.0, 0.0, 1.0])
+                run(
+                    "structural.assign_structural_analysis_model",
+                    self.file,
+                    product=structural_member,
+                    structural_analysis_model=self.file.by_type(
+                        "IfcStructuralAnalysisModel"
+                    )[0],
+                )
+                run(
+                    "geometry.assign_representation",
+                    self.file,
+                    product=structural_member,
+                    representation=self.file.createIfcShapeRepresentation(
+                        self.context,
+                        "Reference",
+                        "Edge",
+                        [
+                            self.file.createIfcEdge(
+                                self.file.createIfcVertexPoint(
+                                    self.file.createIfcCartesianPoint(start)
+                                ),
+                                self.file.createIfcVertexPoint(
+                                    self.file.createIfcCartesianPoint(end)
+                                ),
+                            )
+                        ],
+                    ),
+                )
+                # TODO define profile and material in style
+                profile = self.file.create_entity(
+                    "IfcRectangleProfileDef", ProfileType="AREA", XDim=0.2, YDim=0.3
+                )
+                rel = run(
+                    "material.assign_material",
+                    self.file,
+                    product=structural_member,
+                    type="IfcMaterialProfileSet",
+                )
+                profile_set = rel.RelatingMaterial
+                material_profile = ifcopenshell.api.run(
+                    "material.add_profile",
+                    self.file,
+                    profile_set=profile_set,
+                    material=run("material.add_material", self.file, name="Unknown"),
+                )
+                run(
+                    "material.assign_profile",
+                    self.file,
+                    material_profile=material_profile,
+                    profile=profile,
+                )
+
         # TODO assign materials
         self.file.assign_storey_byindex(entity, self.level)
         directrix = self.path

@@ -102,6 +102,7 @@ class Molior:
                 if item.TargetView == "MODEL_VIEW":
                     subcontext = item
             surface_lookup = {}
+            curve_lookup = {}
             # members should have been tagged with faces indices
             for member in self.file.by_type("IfcStructuralSurfaceMember"):
                 pset_topology = ifcopenshell.util.element.get_psets(member).get(
@@ -109,6 +110,12 @@ class Molior:
                 )
                 if pset_topology:
                     surface_lookup[pset_topology["FaceIndex"]] = member
+            for member in self.file.by_type("IfcStructuralCurveMember"):
+                pset_topology = ifcopenshell.util.element.get_psets(member).get(
+                    "EPset_Topology"
+                )
+                if pset_topology:
+                    curve_lookup[pset_topology["FaceIndex"]] = member
             edges_stl = create_stl_list(Edge)
             self.cellcomplex.Edges(edges_stl)
             for edge in list(edges_stl):
@@ -178,6 +185,63 @@ class Molior:
                             relating_structural_member=surface_member,
                             related_structural_connection=connection,
                         )
+                    if index and index in curve_lookup:
+                        if connection.Name == "Horizontal connection":
+                            curve_member = curve_lookup[index]
+                            connection_elevation = start[2]
+                            curve_edge = curve_member.Representation.Representations[
+                                0
+                            ].Items[0]
+                            if (
+                                abs(
+                                    curve_edge.EdgeStart.VertexGeometry.Coordinates[2]
+                                    - connection_elevation
+                                )
+                                > 0.001
+                            ):
+                                continue
+                            if (
+                                abs(
+                                    curve_edge.EdgeEnd.VertexGeometry.Coordinates[2]
+                                    - connection_elevation
+                                )
+                                > 0.001
+                            ):
+                                continue
+                            run(
+                                "structural.add_structural_member_connection",
+                                self.file,
+                                relating_structural_member=curve_member,
+                                related_structural_connection=connection,
+                            )
+                            # FIXME need better way to identify footing
+                            if curve_member.Name == "ground beam":
+                                run(
+                                    "structural.add_structural_boundary_condition",
+                                    self.file,
+                                    name="foundation",
+                                    connection=connection,
+                                )
+                                run(
+                                    "structural.edit_structural_boundary_condition",
+                                    self.file,
+                                    condition=connection.AppliedCondition,
+                                    attributes={
+                                        "TranslationalStiffnessByLengthX": {
+                                            "type": "IfcBoolean",
+                                            "value": True,
+                                        },
+                                        "TranslationalStiffnessByLengthY": {
+                                            "type": "IfcBoolean",
+                                            "value": True,
+                                        },
+                                        "TranslationalStiffnessByLengthZ": {
+                                            "type": "IfcBoolean",
+                                            "value": True,
+                                        },
+                                    },
+                                )
+
             # delete unused edge connections
             for connection in self.file.by_type("IfcStructuralCurveConnection"):
                 if len(connection.ConnectsStructuralMembers) < 2:
