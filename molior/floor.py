@@ -30,6 +30,11 @@ class Floor(TraceClass):
 
     def execute(self):
         """Generate some ifc"""
+        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
+            if item.ContextIdentifier == "Reference":
+                reference_context = item
+            if item.ContextIdentifier == "Body":
+                body_context = item
         entity = run(
             "root.create_entity",
             self.file,
@@ -100,7 +105,7 @@ class Floor(TraceClass):
                     self.file,
                     product=structural_surface,
                     representation=self.file.createIfcShapeRepresentation(
-                        self.context,
+                        reference_context,
                         "Reference",
                         "Face",
                         [face_surface],
@@ -115,7 +120,7 @@ class Floor(TraceClass):
 
         self.file.assign_storey_byindex(entity, self.level)
         shape = self.file.createIfcShapeRepresentation(
-            self.context,
+            body_context,
             "Body",
             "SweptSolid",
             [

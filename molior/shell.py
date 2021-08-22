@@ -27,6 +27,11 @@ class Shell(BaseClass):
 
     def execute(self):
         """Generate some ifc"""
+        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
+            if item.ContextIdentifier == "Reference":
+                reference_context = item
+            if item.ContextIdentifier == "Body":
+                body_context = item
         # TODO aggregate entities
         for face in self.hull.faces:
             vertices = [[*string_to_coor(node_str)] for node_str in face[0]]
@@ -61,7 +66,7 @@ class Shell(BaseClass):
                 self.file,
                 product=structural_surface,
                 representation=self.file.createIfcShapeRepresentation(
-                    self.context,
+                    reference_context,
                     "Reference",
                     "Face",
                     [face_surface],
@@ -101,7 +106,7 @@ class Shell(BaseClass):
                     float(normal_x[2]),
                 ]
             shape = self.file.createIfcShapeRepresentation(
-                self.context,
+                body_context,
                 "Body",
                 "SweptSolid",
                 [

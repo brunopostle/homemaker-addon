@@ -101,8 +101,8 @@ class Molior:
         # use the topologic model to connect stuff
         if self.cellcomplex:
             for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
-                if item.TargetView == "MODEL_VIEW":
-                    subcontext = item
+                if item.ContextIdentifier == "Reference":
+                    reference_context = item
 
             # lookup tables to connect members to face indices
             surface_lookup = {}
@@ -171,7 +171,7 @@ class Molior:
                     self.file,
                     product=curve_connection,
                     representation=self.file.createIfcShapeRepresentation(
-                        subcontext,
+                        reference_context,
                         "Reference",
                         "Edge",
                         [
@@ -286,7 +286,7 @@ class Molior:
                                     self.file,
                                     product=connection_base,
                                     representation=self.file.createIfcShapeRepresentation(
-                                        subcontext,
+                                        reference_context,
                                         "Reference",
                                         "Point",
                                         [
@@ -338,7 +338,7 @@ class Molior:
                                     self.file,
                                     product=connection_head,
                                     representation=self.file.createIfcShapeRepresentation(
-                                        subcontext,
+                                        reference_context,
                                         "Reference",
                                         "Point",
                                         [
@@ -370,7 +370,6 @@ class Molior:
             for item in point_list:
                 connection_point = item[0]
                 connection_curve = item[1]
-                print(connection_curve)
                 for rel in connection_curve.ConnectsStructuralMembers:
                     curve_member = rel.RelatingStructuralMember
                     if (
@@ -407,9 +406,6 @@ class Molior:
     ):
         """Retrieves IFC data and adds to model"""
         results = []
-        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
-            if item.TargetView == "MODEL_VIEW":
-                subcontext = item
         myconfig = Molior.style.get(stylename)
         for name in myconfig["traces"]:
             config = myconfig["traces"][name]
@@ -428,7 +424,6 @@ class Molior:
                     "path": path,
                     "chain": chain,
                     "circulation": self.circulation,
-                    "context": subcontext,
                     "file": self.file,
                     "name": name,
                     "elevation": elevation,
@@ -451,15 +446,11 @@ class Molior:
     def GetHullIfc(self, stylename, condition, hull):
         """Retrieves IFC data and adds to model"""
         results = []
-        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
-            if item.TargetView == "MODEL_VIEW":
-                subcontext = item
         myconfig = Molior.style.get(stylename)
         for name in myconfig["hulls"]:
             config = myconfig["hulls"][name]
             if "condition" in config and config["condition"] == condition:
                 vals = {
-                    "context": subcontext,
                     "file": self.file,
                     "name": name,
                     "style": stylename,

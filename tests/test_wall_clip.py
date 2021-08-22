@@ -16,8 +16,8 @@ class Tests(unittest.TestCase):
     def setUp(self):
         ifc = molior.ifc.init("Our House", {0.0: 2})
         for item in ifc.by_type("IfcGeometricRepresentationSubContext"):
-            if item.TargetView == "MODEL_VIEW":
-                context = item
+            if item.ContextIdentifier == "Body":
+                body_context = item
 
         # geometry for an unclipped wall
         shape = ifc.createIfcExtrudedAreaSolid(
@@ -97,7 +97,7 @@ class Tests(unittest.TestCase):
             ),
         )
         clipped_representation = ifc.createIfcShapeRepresentation(
-            context,
+            body_context,
             "Body",
             "Clipping",
             [clipped2],

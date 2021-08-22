@@ -28,6 +28,9 @@ class Space(TraceClass):
 
     def execute(self):
         """Generate some ifc"""
+        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
+            if item.ContextIdentifier == "Body":
+                body_context = item
         # the cell is the first cell attached to any edge in the chain
         string_coor_start = next(iter(self.chain.graph))
         cell = self.chain.graph[string_coor_start][1][3]
@@ -76,7 +79,7 @@ class Space(TraceClass):
             representationtype = "CSG"
 
         shape = self.file.createIfcShapeRepresentation(
-            self.context,
+            body_context,
             "Body",
             representationtype,
             [representation],

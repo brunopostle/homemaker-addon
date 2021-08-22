@@ -16,12 +16,14 @@ class Tests(unittest.TestCase):
     def setUp(self):
         ifc = molior.ifc.init("Building Name", {0.0: 0})
         for item in ifc.by_type("IfcGeometricRepresentationSubContext"):
-            if item.TargetView == "MODEL_VIEW":
-                bodycontext = item
+            if item.ContextIdentifier == "Body":
+                body_context = item
+            if item.ContextIdentifier == "Axis":
+                axis_context = item
 
         # a centreline axis
         poly = ifc.createIfcShapeRepresentation(
-            bodycontext,
+            axis_context,
             "Axis",
             "Curve2D",
             [
@@ -40,7 +42,7 @@ class Tests(unittest.TestCase):
 
         # a vertically extruded solid
         shape = ifc.createIfcShapeRepresentation(
-            bodycontext,
+            body_context,
             "Body",
             "SweptSolid",
             [ifc.createExtrudedAreaSolid([[0.0, 0.0], [5.0, 0.0], [5.0, 4.0]], 3.0)],
@@ -57,7 +59,7 @@ class Tests(unittest.TestCase):
 
         # load a DXF polyface mesh as a Tessellation
         brep = ifc.createIfcShapeRepresentation(
-            bodycontext,
+            body_context,
             "Body",
             "Tessellation",
             ifc.createTessellations_fromDXF("molior/style/share/shopfront.dxf"),
@@ -135,11 +137,11 @@ class Tests(unittest.TestCase):
 
         # make the ifc model available to other test methods
         self.ifc = ifc
-        self.bodycontext = bodycontext
+        self.body_context = body_context
 
     def test_write(self):
         ifc = self.ifc
-        bodycontext = self.bodycontext
+        body_context = self.body_context
         # create a lookup table of existing typeproducts in this ifc
         lookup = {}
         for typeproduct in ifc.by_type("IfcTypeProduct"):
@@ -191,7 +193,7 @@ class Tests(unittest.TestCase):
             ifc,
             product=mywall,
             representation=ifc.createIfcShapeRepresentation(
-                bodycontext,
+                body_context,
                 "Body",
                 "SweptSolid",
                 [
@@ -228,7 +230,7 @@ class Tests(unittest.TestCase):
             ifc,
             product=myopening,
             representation=ifc.createIfcShapeRepresentation(
-                bodycontext,
+                body_context,
                 "Body",
                 "SweptSolid",
                 [

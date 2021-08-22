@@ -37,7 +37,6 @@ def init(building_name, elevations):
 
     run("unit.assign_unit", ifc, length={"is_metric": True, "raw": "METERS"})
 
-    # TODO should create Plan, Footprint etc. contexts here
     run("context.add_context", ifc)
     run(
         "context.add_context",
@@ -51,6 +50,13 @@ def init(building_name, elevations):
         ifc,
         context="Model",
         subcontext="Reference",
+        target_view="GRAPH_VIEW",
+    )
+    run(
+        "context.add_context",
+        ifc,
+        context="Model",
+        subcontext="Axis",
         target_view="GRAPH_VIEW",
     )
 
@@ -199,7 +205,7 @@ def createFaceSurface(self, polygon, normal):
 
 
 def assign_extrusion_fromDXF(
-    self, bodycontext, element, directrix, stylename, path_dxf, transform
+    self, body_context, element, directrix, stylename, path_dxf, transform
 ):
     """Create an extrusion given a directrix and DXF profile filepath"""
     identifier = stylename + "/" + os.path.split(path_dxf)[-1]
@@ -262,7 +268,7 @@ def assign_extrusion_fromDXF(
         self,
         product=element,
         representation=self.createIfcShapeRepresentation(
-            bodycontext,
+            body_context,
             "Body",
             "AdvancedSweptSolid",
             [
@@ -330,7 +336,7 @@ def assign_storey_byindex(self, entity, index):
     )
 
 
-def assign_representation_fromDXF(self, bodycontext, element, stylename, path_dxf):
+def assign_representation_fromDXF(self, body_context, element, stylename, path_dxf):
     """Assign geometry from DXF unless a TypeProduct with this name already exists"""
     identifier = stylename + "/" + os.path.split(path_dxf)[-1]
 
@@ -355,7 +361,7 @@ def assign_representation_fromDXF(self, bodycontext, element, stylename, path_dx
     else:
         # load a DXF polyface mesh as a Tessellation and create the TypeProduct
         brep = self.createIfcShapeRepresentation(
-            bodycontext,
+            body_context,
             "Body",
             "Tessellation",
             self.createTessellations_fromDXF(path_dxf),
@@ -384,7 +390,7 @@ def assign_representation_fromDXF(self, bodycontext, element, stylename, path_dx
         )
 
 
-def get_material_by_name(self, context, material_name):
+def get_material_by_name(self, body_context, material_name):
     """Retrieve an IfcMaterial by name, creating it if necessary"""
     materials = {}
     for material in self.by_type("IfcMaterial"):
@@ -406,7 +412,7 @@ def get_material_by_name(self, context, material_name):
                 diffuse_colour=[1.0, 1.0, 1.0],
                 external_definition=None,
             ),
-            context=context,
+            context=body_context,
         )
     return mymaterial
 

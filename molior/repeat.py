@@ -36,6 +36,11 @@ class Repeat(TraceClass):
 
     def execute(self):
         """Generate some ifc"""
+        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
+            if item.ContextIdentifier == "Reference":
+                reference_context = item
+            if item.ContextIdentifier == "Body":
+                body_context = item
         style = molior.Molior.style
         myconfig = style.get(self.style)
         if self.asset in self.style_assets:
@@ -142,7 +147,7 @@ class Repeat(TraceClass):
                     )
                     # load geometry from a DXF file and assign to the entity
                     self.file.assign_representation_fromDXF(
-                        self.context, entity, self.style, dxf_path
+                        body_context, entity, self.style, dxf_path
                     )
 
                     # structural stuff
@@ -184,7 +189,7 @@ class Repeat(TraceClass):
                             self.file,
                             product=structural_member,
                             representation=self.file.createIfcShapeRepresentation(
-                                self.context,
+                                reference_context,
                                 "Reference",
                                 "Edge",
                                 [
@@ -243,7 +248,6 @@ class Repeat(TraceClass):
                                         ),
                                     ),
                                 ],
-                                "context": self.context,
                                 "file": self.file,
                                 "name": name,
                                 "elevation": self.elevation,

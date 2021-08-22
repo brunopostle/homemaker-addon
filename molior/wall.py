@@ -43,6 +43,13 @@ class Wall(TraceClass):
 
     def execute(self):
         """Generate some ifc"""
+        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
+            if item.ContextIdentifier == "Reference":
+                reference_context = item
+            if item.ContextIdentifier == "Body":
+                body_context = item
+            if item.ContextIdentifier == "Axis":
+                axis_context = item
         self.init_openings()
         style = molior.Molior.style
         segments = self.segments()
@@ -144,7 +151,7 @@ class Wall(TraceClass):
                 self.file,
                 product=structural_surface,
                 representation=self.file.createIfcShapeRepresentation(
-                    self.context,
+                    reference_context,
                     "Reference",
                     "Face",
                     [face_surface],
@@ -216,7 +223,7 @@ class Wall(TraceClass):
                 representationtype = "Clipping"
 
             shape = self.file.createIfcShapeRepresentation(
-                self.context,
+                body_context,
                 "Body",
                 representationtype,
                 [solid],
@@ -229,7 +236,7 @@ class Wall(TraceClass):
             )
 
             shape = self.file.createIfcShapeRepresentation(
-                self.context,
+                axis_context,
                 "Axis",
                 "Curve2D",
                 [axis],
@@ -296,7 +303,7 @@ class Wall(TraceClass):
 
                 # load geometry from a DXF file and assign to the entity
                 self.file.assign_representation_fromDXF(
-                    self.context, entity, self.style, dxf_path
+                    body_context, entity, self.style, dxf_path
                 )
 
                 # create an opening
@@ -322,7 +329,7 @@ class Wall(TraceClass):
                     self.file,
                     product=myopening,
                     representation=self.file.createIfcShapeRepresentation(
-                        self.context,
+                        body_context,
                         "Body",
                         "SweptSolid",
                         [

@@ -17,8 +17,8 @@ class Tests(unittest.TestCase):
     def setUp(self):
         ifc = molior.ifc.init("Building Name", {0.0: 0})
         for item in ifc.by_type("IfcGeometricRepresentationSubContext"):
-            if item.TargetView == "MODEL_VIEW":
-                bodycontext = item
+            if item.ContextIdentifier == "Body":
+                body_context = item
 
         element = run(
             "root.create_entity",
@@ -36,7 +36,7 @@ class Tests(unittest.TestCase):
         )
 
         ifc.assign_extrusion_fromDXF(
-            bodycontext,
+            body_context,
             element,
             directrix,
             "courtyard",
@@ -58,7 +58,7 @@ class Tests(unittest.TestCase):
         directrix = [[-5.0, 2.0], [-1.0, 2.0], [-1.0, 5.0], [-5.0, 5.0], [-5.0, 2.0]]
 
         ifc.assign_extrusion_fromDXF(
-            bodycontext,
+            body_context,
             element,
             directrix,
             "courtyard",

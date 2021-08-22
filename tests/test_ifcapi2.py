@@ -16,8 +16,8 @@ class Tests(unittest.TestCase):
     def setUp(self):
         ifc = molior.ifc.init("Building Name", {0.0: 0})
         for item in ifc.by_type("IfcGeometricRepresentationSubContext"):
-            if item.TargetView == "MODEL_VIEW":
-                bodycontext = item
+            if item.ContextIdentifier == "Body":
+                body_context = item
 
         # create a window
         myproduct = run(
@@ -45,7 +45,7 @@ class Tests(unittest.TestCase):
 
         # load geometry from a DXF file and assign to the window
         ifc.assign_representation_fromDXF(
-            bodycontext, myproduct, "default", "molior/style/share/shopfront.dxf"
+            body_context, myproduct, "default", "molior/style/share/shopfront.dxf"
         )
 
         # create a wall
@@ -56,7 +56,7 @@ class Tests(unittest.TestCase):
             ifc,
             product=mywall,
             representation=ifc.createIfcShapeRepresentation(
-                bodycontext,
+                body_context,
                 "Body",
                 "SweptSolid",
                 [
@@ -93,7 +93,7 @@ class Tests(unittest.TestCase):
             ifc,
             product=myopening,
             representation=ifc.createIfcShapeRepresentation(
-                bodycontext,
+                body_context,
                 "Body",
                 "SweptSolid",
                 [
@@ -141,7 +141,7 @@ class Tests(unittest.TestCase):
 
         # shopfront.dxf is already imported and mapped
         ifc.assign_representation_fromDXF(
-            bodycontext, myproduct, "default", "molior/style/share/shopfront.dxf"
+            body_context, myproduct, "default", "molior/style/share/shopfront.dxf"
         )
 
         # create an opening
@@ -163,7 +163,7 @@ class Tests(unittest.TestCase):
             ifc,
             product=myopening,
             representation=ifc.createIfcShapeRepresentation(
-                bodycontext,
+                body_context,
                 "Body",
                 "SweptSolid",
                 [

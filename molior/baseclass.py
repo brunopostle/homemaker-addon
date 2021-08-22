@@ -40,6 +40,9 @@ class BaseClass:
 
     def get_element_type(self):
         """Retrieve or create an Ifc Type definition for this Molior object"""
+        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
+            if item.ContextIdentifier == "Body":
+                body_context = item
         element_types = {}
         for element_type in self.file.by_type(self.ifc_class):
             element_types[element_type.Name] = element_type
@@ -74,7 +77,7 @@ class BaseClass:
                     "material.add_layer",
                     self.file,
                     layer_set=mylayerset,
-                    material=self.file.get_material_by_name(self.context, mylayer[1]),
+                    material=self.file.get_material_by_name(body_context, mylayer[1]),
                 )
                 layer.LayerThickness = mylayer[0]
                 layer.Name = mylayer[1]

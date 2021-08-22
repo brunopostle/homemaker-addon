@@ -26,6 +26,11 @@ class Extrusion(TraceClass):
 
     def execute(self):
         """Generate some ifc"""
+        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
+            if item.ContextIdentifier == "Reference":
+                reference_context = item
+            if item.ContextIdentifier == "Body":
+                body_context = item
         style = molior.Molior.style
         entity = run(
             "root.create_entity",
@@ -73,7 +78,7 @@ class Extrusion(TraceClass):
                     self.file,
                     product=structural_member,
                     representation=self.file.createIfcShapeRepresentation(
-                        self.context,
+                        reference_context,
                         "Reference",
                         "Edge",
                         [
@@ -133,7 +138,7 @@ class Extrusion(TraceClass):
         )
 
         self.file.assign_extrusion_fromDXF(
-            self.context,
+            body_context,
             entity,
             directrix,
             self.style,
