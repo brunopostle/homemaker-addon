@@ -26,6 +26,9 @@ class Repeat(TraceClass):
         self.spacing = 1.0
         self.traces = []
         self.type = "molior-repeat"
+        self.not_start = True
+        self.not_end = True
+        self.not_corner = False
         self.Extrusion = Extrusion
         self.Repeat = Repeat
         for arg in args:
@@ -50,7 +53,6 @@ class Repeat(TraceClass):
         self.outer += self.xshift
 
         for id_segment in range(segments):
-            # FIXME implement not_start, not_end and not_corners
             # FIXME large inset can result in a negative length
             inset = scale_2d(self.direction_segment(id_segment), self.inset)
             # outside face start and end coordinates
@@ -86,6 +88,26 @@ class Repeat(TraceClass):
                     or (id_segment == 0 and not self.closed)
                     or self.inset > 0.0
                 ):
+                    if self.inset == 0.0:
+                        if self.closed:
+                            if index == items - 1 and self.not_corner:
+                                continue
+                        else:
+                            if (
+                                (index == 0 and id_segment == 0 and self.not_start)
+                                or (
+                                    index == items - 1
+                                    and id_segment == segments - 1
+                                    and self.not_end
+                                )
+                                or (
+                                    index == items - 1
+                                    and id_segment != segments - 1
+                                    and self.not_corner
+                                )
+                            ):
+                                continue
+
                     location = add_2d(
                         v_out_a,
                         scale_2d(self.direction_segment(id_segment), index * spacing),
