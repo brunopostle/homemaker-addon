@@ -97,13 +97,17 @@ class Molior:
                         condition,
                         hull,
                     )
+
+        # use the topologic model to connect stuff
         if self.cellcomplex:
             for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
                 if item.TargetView == "MODEL_VIEW":
                     subcontext = item
+
+            # lookup tables to connect members to face indices
             surface_lookup = {}
-            curve_lookup = {}
-            # members should have been tagged with faces indices
+            # curve_lookup = {}
+            curve_list = []
             for member in self.file.by_type("IfcStructuralSurfaceMember"):
                 pset_topology = ifcopenshell.util.element.get_psets(member).get(
                     "EPset_Topology"
@@ -115,15 +119,21 @@ class Molior:
                     "EPset_Topology"
                 )
                 if pset_topology:
-                    curve_lookup[pset_topology["FaceIndex"]] = member
+                    # curve_lookup[pset_topology["FaceIndex"]] = member
+                    curve_list.append([pset_topology["FaceIndex"], member])
+
+            # iterate all the edges in the topologic model
             edges_stl = create_stl_list(Edge)
             self.cellcomplex.Edges(edges_stl)
+            point_list = []
             for edge in list(edges_stl):
                 v_start = edge.StartVertex()
                 v_end = edge.EndVertex()
                 start = [v_start.X(), v_start.Y(), v_start.Z()]
                 end = [v_end.X(), v_end.Y(), v_end.Z()]
-                connection = run(
+
+                # create an ifc curve connection for this topologic edge
+                curve_connection = run(
                     "root.create_entity",
                     self.file,
                     ifc_class="IfcStructuralCurveConnection",
@@ -132,30 +142,34 @@ class Molior:
                 run(
                     "structural.assign_structural_analysis_model",
                     self.file,
-                    product=connection,
+                    product=curve_connection,
                     structural_analysis_model=self.file.by_type(
                         "IfcStructuralAnalysisModel"
                     )[0],
                 )
                 if abs(start[2] - end[2]) < 0.0001:
-                    connection.Axis = self.file.createIfcDirection([0.0, 0.0, 1.0])
-                    connection.Name = "Horizontal connection"
+                    curve_connection.Axis = self.file.createIfcDirection(
+                        [0.0, 0.0, 1.0]
+                    )
+                    curve_connection.Name = "Horizontal connection"
                 elif (
                     abs(start[0] - end[0]) < 0.0001 and abs(start[1] - end[1]) < 0.0001
                 ):
-                    connection.Axis = self.file.createIfcDirection([0.0, 1.0, 0.0])
-                    connection.Name = "Vertical connection"
+                    curve_connection.Axis = self.file.createIfcDirection(
+                        [0.0, 1.0, 0.0]
+                    )
+                    curve_connection.Name = "Vertical connection"
                 else:
                     vec_1 = subtract_3d(end, start)
                     vec_2 = [vec_1[1], 0.0 - vec_1[0], 0.0]
-                    connection.Axis = self.file.createIfcDirection(
+                    curve_connection.Axis = self.file.createIfcDirection(
                         x_product_3d(vec_1, vec_2)
                     )
-                    connection.Name = "Inclined connection"
+                    curve_connection.Name = "Inclined connection"
                 run(
                     "geometry.assign_representation",
                     self.file,
-                    product=connection,
+                    product=curve_connection,
                     representation=self.file.createIfcShapeRepresentation(
                         subcontext,
                         "Reference",
@@ -173,85 +187,214 @@ class Molior:
                     ),
                 )
 
+                # loop though all the faces connected to this edge
                 faces_stl = create_stl_list(Face)
                 edge.Faces(faces_stl)
                 for face in list(faces_stl):
                     index = face.Get("index")
+                    # connect this surface member to this curve connection
                     if index and index in surface_lookup:
                         surface_member = surface_lookup[index]
                         run(
                             "structural.add_structural_member_connection",
                             self.file,
                             relating_structural_member=surface_member,
-                            related_structural_connection=connection,
+                            related_structural_connection=curve_connection,
                         )
-                    if index and index in curve_lookup:
-                        if connection.Name == "Horizontal connection":
-                            curve_member = curve_lookup[index]
+                    # there is a curve member with this face index
+                    for item in curve_list:
+                        curve_index = item[0]
+                        curve_member = item[1]
+                        if not curve_index == index:
+                            continue
+                        # if index and index in curve_lookup:
+                        if curve_connection.Name == "Horizontal connection":
+                            # curve_member = curve_lookup[index]
                             connection_elevation = start[2]
                             curve_edge = curve_member.Representation.Representations[
                                 0
                             ].Items[0]
+                            # horizontal curve member coincides with this horizontal connection
                             if (
                                 abs(
                                     curve_edge.EdgeStart.VertexGeometry.Coordinates[2]
                                     - connection_elevation
                                 )
-                                > 0.001
+                                < 0.001
+                                and abs(
+                                    curve_edge.EdgeEnd.VertexGeometry.Coordinates[2]
+                                    - connection_elevation
+                                )
+                                < 0.001
                             ):
-                                continue
-                            if (
+                                run(
+                                    "structural.add_structural_member_connection",
+                                    self.file,
+                                    relating_structural_member=curve_member,
+                                    related_structural_connection=curve_connection,
+                                )
+                                # footings can have XYZ fixity, do it
+                                # FIXME need better way to identify footing
+                                if curve_member.Name == "ground beam":
+                                    run(
+                                        "structural.add_structural_boundary_condition",
+                                        self.file,
+                                        name="foundation",
+                                        connection=curve_connection,
+                                    )
+                                    run(
+                                        "structural.edit_structural_boundary_condition",
+                                        self.file,
+                                        condition=curve_connection.AppliedCondition,
+                                        attributes={
+                                            "TranslationalStiffnessByLengthX": {
+                                                "type": "IfcBoolean",
+                                                "value": True,
+                                            },
+                                            "TranslationalStiffnessByLengthY": {
+                                                "type": "IfcBoolean",
+                                                "value": True,
+                                            },
+                                            "TranslationalStiffnessByLengthZ": {
+                                                "type": "IfcBoolean",
+                                                "value": True,
+                                            },
+                                        },
+                                    )
+
+                            # start point of non-horizontal curve member coincides with this horizontal connection
+                            elif (
                                 abs(
+                                    curve_edge.EdgeStart.VertexGeometry.Coordinates[2]
+                                    - connection_elevation
+                                )
+                                < 0.001
+                                and abs(
                                     curve_edge.EdgeEnd.VertexGeometry.Coordinates[2]
                                     - connection_elevation
                                 )
                                 > 0.001
                             ):
-                                continue
-                            run(
-                                "structural.add_structural_member_connection",
-                                self.file,
-                                relating_structural_member=curve_member,
-                                related_structural_connection=connection,
-                            )
-                            # FIXME need better way to identify footing
-                            if curve_member.Name == "ground beam":
-                                run(
-                                    "structural.add_structural_boundary_condition",
+                                connection_base = run(
+                                    "root.create_entity",
                                     self.file,
-                                    name="foundation",
-                                    connection=connection,
+                                    ifc_class="IfcStructuralPointConnection",
+                                    name="Column base connection",
                                 )
                                 run(
-                                    "structural.edit_structural_boundary_condition",
+                                    "geometry.assign_representation",
                                     self.file,
-                                    condition=connection.AppliedCondition,
-                                    attributes={
-                                        "TranslationalStiffnessByLengthX": {
-                                            "type": "IfcBoolean",
-                                            "value": True,
-                                        },
-                                        "TranslationalStiffnessByLengthY": {
-                                            "type": "IfcBoolean",
-                                            "value": True,
-                                        },
-                                        "TranslationalStiffnessByLengthZ": {
-                                            "type": "IfcBoolean",
-                                            "value": True,
-                                        },
-                                    },
+                                    product=connection_base,
+                                    representation=self.file.createIfcShapeRepresentation(
+                                        subcontext,
+                                        "Reference",
+                                        "Point",
+                                        [
+                                            self.file.createIfcVertexPoint(
+                                                self.file.createIfcCartesianPoint(
+                                                    curve_edge.EdgeStart.VertexGeometry.Coordinates
+                                                )
+                                            ),
+                                        ],
+                                    ),
                                 )
+                                run(
+                                    "structural.assign_structural_analysis_model",
+                                    self.file,
+                                    product=connection_base,
+                                    structural_analysis_model=self.file.by_type(
+                                        "IfcStructuralAnalysisModel"
+                                    )[0],
+                                )
+                                run(
+                                    "structural.add_structural_member_connection",
+                                    self.file,
+                                    relating_structural_member=curve_member,
+                                    related_structural_connection=connection_base,
+                                )
+                                point_list.append([connection_base, curve_connection])
 
-            # delete unused edge connections
-            for connection in self.file.by_type("IfcStructuralCurveConnection"):
-                if len(connection.ConnectsStructuralMembers) < 2:
-                    for relation in connection.ConnectsStructuralMembers:
+                            # end point of non-horizontal curve member coincides with this horizontal connection
+                            elif (
+                                abs(
+                                    curve_edge.EdgeStart.VertexGeometry.Coordinates[2]
+                                    - connection_elevation
+                                )
+                                > 0.001
+                                and abs(
+                                    curve_edge.EdgeEnd.VertexGeometry.Coordinates[2]
+                                    - connection_elevation
+                                )
+                                < 0.001
+                            ):
+                                connection_head = run(
+                                    "root.create_entity",
+                                    self.file,
+                                    ifc_class="IfcStructuralPointConnection",
+                                    name="Column head connection",
+                                )
+                                run(
+                                    "geometry.assign_representation",
+                                    self.file,
+                                    product=connection_head,
+                                    representation=self.file.createIfcShapeRepresentation(
+                                        subcontext,
+                                        "Reference",
+                                        "Point",
+                                        [
+                                            self.file.createIfcVertexPoint(
+                                                self.file.createIfcCartesianPoint(
+                                                    curve_edge.EdgeEnd.VertexGeometry.Coordinates
+                                                )
+                                            ),
+                                        ],
+                                    ),
+                                )
+                                run(
+                                    "structural.assign_structural_analysis_model",
+                                    self.file,
+                                    product=connection_head,
+                                    structural_analysis_model=self.file.by_type(
+                                        "IfcStructuralAnalysisModel"
+                                    )[0],
+                                )
+                                run(
+                                    "structural.add_structural_member_connection",
+                                    self.file,
+                                    relating_structural_member=curve_member,
+                                    related_structural_connection=connection_head,
+                                )
+                                point_list.append([connection_head, curve_connection])
+
+            # attach column point connections to beams/footings
+            for item in point_list:
+                connection_point = item[0]
+                connection_curve = item[1]
+                print(connection_curve)
+                for rel in connection_curve.ConnectsStructuralMembers:
+                    curve_member = rel.RelatingStructuralMember
+                    if (
+                        # FIXME need better way to identify beam or footing
+                        curve_member.Name == "ground beam"
+                        or curve_member.Name == "external beam"
+                    ):
+                        run(
+                            "structural.add_structural_member_connection",
+                            self.file,
+                            relating_structural_member=curve_member,
+                            related_structural_connection=connection_point,
+                        )
+
+            # delete unused curve connections
+            for curve_connection in self.file.by_type("IfcStructuralCurveConnection"):
+                if len(curve_connection.ConnectsStructuralMembers) < 2:
+                    for relation in curve_connection.ConnectsStructuralMembers:
                         run(
                             "structural.remove_structural_connection_condition",
                             self.file,
                             relation=relation,
                         )
-                    run("root.remove_product", self.file, product=connection)
+                    run("root.remove_product", self.file, product=curve_connection)
 
     def GetTraceIfc(
         self,
