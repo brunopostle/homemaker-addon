@@ -108,7 +108,9 @@ class Extrusion(TraceClass):
                     "material.add_profile",
                     self.file,
                     profile_set=profile_set,
-                    material=run("material.add_material", self.file, name="Unknown"),
+                    material=self.file.get_material_by_name(
+                        reference_context, "Concrete"
+                    ),
                 )
                 run(
                     "material.assign_profile",

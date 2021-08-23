@@ -111,7 +111,14 @@ class Floor(TraceClass):
                         [face_surface],
                     ),
                 )
-                # TODO structural surface needs a material
+                run(
+                    "material.assign_material",
+                    self.file,
+                    product=structural_surface,
+                    material=self.file.get_material_by_name(
+                        reference_context, "Concrete"
+                    ),
+                )
 
         # Usage isn't created until after type.assign_type
         mylayerset = ifcopenshell.util.element.get_material(myelement_type)

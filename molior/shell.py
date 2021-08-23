@@ -72,7 +72,12 @@ class Shell(BaseClass):
                     [face_surface],
                 ),
             )
-            # TODO structural surface needs a material
+            run(
+                "material.assign_material",
+                self.file,
+                product=structural_surface,
+                material=self.file.get_material_by_name(reference_context, "Concrete"),
+            )
 
             entity = run(
                 "root.create_entity", self.file, ifc_class=self.ifc, name=self.name

@@ -106,7 +106,6 @@ class Molior:
 
             # lookup tables to connect members to face indices
             surface_lookup = {}
-            # curve_lookup = {}
             curve_list = []
             for member in self.file.by_type("IfcStructuralSurfaceMember"):
                 pset_topology = ifcopenshell.util.element.get_psets(member).get(
@@ -119,7 +118,6 @@ class Molior:
                     "EPset_Topology"
                 )
                 if pset_topology:
-                    # curve_lookup[pset_topology["FaceIndex"]] = member
                     curve_list.append([pset_topology["FaceIndex"], member])
 
             # iterate all the edges in the topologic model
@@ -207,9 +205,8 @@ class Molior:
                         curve_member = item[1]
                         if not curve_index == index:
                             continue
-                        # if index and index in curve_lookup:
+                        # if index in curve_list:
                         if curve_connection.Name == "Horizontal connection":
-                            # curve_member = curve_lookup[index]
                             connection_elevation = start[2]
                             curve_edge = curve_member.Representation.Representations[
                                 0
@@ -258,6 +255,18 @@ class Molior:
                                             "TranslationalStiffnessByLengthZ": {
                                                 "type": "IfcBoolean",
                                                 "value": True,
+                                            },
+                                            "RotationalStiffnessByLengthX": {
+                                                "type": "IfcBoolean",
+                                                "value": False,
+                                            },
+                                            "RotationalStiffnessByLengthY": {
+                                                "type": "IfcBoolean",
+                                                "value": False,
+                                            },
+                                            "RotationalStiffnessByLengthZ": {
+                                                "type": "IfcBoolean",
+                                                "value": False,
                                             },
                                         },
                                     )

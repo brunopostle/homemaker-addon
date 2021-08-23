@@ -206,7 +206,10 @@ class Repeat(TraceClass):
                         )
                         # TODO define profile and material in style
                         profile = self.file.create_entity(
-                            "IfcCircleProfileDef", ProfileType="AREA", Radius=0.15
+                            "IfcRectangleProfileDef",
+                            ProfileType="AREA",
+                            XDim=0.2,
+                            YDim=0.2,
                         )
                         rel = run(
                             "material.assign_material",
@@ -219,8 +222,8 @@ class Repeat(TraceClass):
                             "material.add_profile",
                             self.file,
                             profile_set=profile_set,
-                            material=run(
-                                "material.add_material", self.file, name="Unknown"
+                            material=self.file.get_material_by_name(
+                                reference_context, "Stone"
                             ),
                         )
                         run(
