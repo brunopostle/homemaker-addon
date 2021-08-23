@@ -375,23 +375,18 @@ class Molior:
                                 )
                                 point_list.append([connection_head, curve_connection])
 
-            # attach column point connections to beams/footings
+            # attach column point connections to beams/footings/slabs/walls
             for item in point_list:
                 connection_point = item[0]
                 connection_curve = item[1]
                 for rel in connection_curve.ConnectsStructuralMembers:
-                    curve_member = rel.RelatingStructuralMember
-                    if (
-                        # FIXME need better way to identify beam or footing
-                        curve_member.Name == "ground beam"
-                        or curve_member.Name == "external beam"
-                    ):
-                        run(
-                            "structural.add_structural_member_connection",
-                            self.file,
-                            relating_structural_member=curve_member,
-                            related_structural_connection=connection_point,
-                        )
+                    member = rel.RelatingStructuralMember
+                    run(
+                        "structural.add_structural_member_connection",
+                        self.file,
+                        relating_structural_member=member,
+                        related_structural_connection=connection_point,
+                    )
 
             # delete unused curve connections
             for curve_connection in self.file.by_type("IfcStructuralCurveConnection"):
