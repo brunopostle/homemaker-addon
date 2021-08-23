@@ -288,7 +288,7 @@ class Molior:
                                     representation=self.file.createIfcShapeRepresentation(
                                         reference_context,
                                         "Reference",
-                                        "Point",
+                                        "Vertex",
                                         [
                                             self.file.createIfcVertexPoint(
                                                 self.file.createIfcCartesianPoint(
@@ -340,7 +340,7 @@ class Molior:
                                     representation=self.file.createIfcShapeRepresentation(
                                         reference_context,
                                         "Reference",
-                                        "Point",
+                                        "Vertex",
                                         [
                                             self.file.createIfcVertexPoint(
                                                 self.file.createIfcCartesianPoint(

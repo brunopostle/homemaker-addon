@@ -72,6 +72,7 @@ class Shell(BaseClass):
                     [face_surface],
                 ),
             )
+            # TODO structural surface needs a material
 
             entity = run(
                 "root.create_entity", self.file, ifc_class=self.ifc, name=self.name

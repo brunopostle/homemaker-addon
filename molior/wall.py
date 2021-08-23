@@ -157,6 +157,7 @@ class Wall(TraceClass):
                     [face_surface],
                 ),
             )
+            # TODO structural surface needs a material
 
             # clip the top of the wall if face isn't rectangular
             edges_result = create_stl_list(Edge)
