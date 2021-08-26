@@ -408,9 +408,10 @@ class Molior:
 
             # attach spaces to space boundaries
             for boundary in self.file.by_type("IfcRelSpaceBoundary2ndLevel"):
-                items = boundary.Description.split()
-                if len(items) == 2 and items[0] == "CellIndex":
-                    boundary.RelatingSpace = space_lookup[items[1]]
+                if boundary.Description:
+                    items = boundary.Description.split()
+                    if len(items) == 2 and items[0] == "CellIndex":
+                        boundary.RelatingSpace = space_lookup[items[1]]
 
     def GetTraceIfc(
         self,
