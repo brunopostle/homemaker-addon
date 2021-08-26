@@ -158,16 +158,18 @@ def clipSolid(self, solid, start, end):
     )
 
 
-def createCurveBoundedPlane(self, polygon):
+def createCurveBoundedPlane(self, polygon, matrix):
     """Create a bounded shape in the Z=0 plane"""
     return self.createIfcCurveBoundedPlane(
         self.createIfcPlane(
             self.createIfcAxis2Placement3D(
-                self.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
+                self.createIfcCartesianPoint(matrix[:, 3][0:3].tolist()),
+                self.createIfcDirection(matrix[:, 2][0:3].tolist()),
+                self.createIfcDirection(matrix[:, 0][0:3].tolist()),
             )
         ),
         self.createIfcPolyline(
-            [self.createIfcCartesianPoint(point) for point in [*polygon, polygon[0]]]
+            [self.createIfcCartesianPoint(point) for point in polygon]
         ),
         [],
     )

@@ -37,8 +37,6 @@ class Shell(BaseClass):
             vertices = [[*string_to_coor(node_str)] for node_str in face[0]]
             normal = face[1]
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
-            # need this for boundaries
-            bounded_plane = self.file.createCurveBoundedPlane(nodes_2d)
             # need this for structure
             face_surface = self.file.createFaceSurface(vertices, normal)
 
@@ -135,3 +133,26 @@ class Shell(BaseClass):
                 product=entity,
                 matrix=matrix,
             )
+
+            # generate space boundary for back cell
+            if face[2][1]:
+                bounded_plane = self.file.createCurveBoundedPlane(nodes_2d, matrix)
+                back_boundary = self.file.create_entity(
+                    "IfcRelSpaceBoundary2ndLevel",
+                    **{
+                        "GlobalId": ifcopenshell.guid.new(),
+                        "OwnerHistory": ifcopenshell.api.run(
+                            "owner.create_owner_history", self.file
+                        ),
+                        "RelatedBuildingElement": entity,
+                        "ConnectionGeometry": self.file.createIfcConnectionSurfaceGeometry(
+                            bounded_plane
+                        ),
+                        "PhysicalOrVirtualBoundary": "PHYSICAL",
+                        "InternalOrExternalBoundary": "EXTERNAL",
+                    }
+                )
+                cell_index = face[2][1].Get("index")
+                if not cell_index == None:
+                    # can't assign psets to an IfcRelationship, use Description instead
+                    back_boundary.Description = "CellIndex " + str(cell_index)

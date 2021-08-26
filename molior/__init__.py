@@ -107,6 +107,7 @@ class Molior:
             # lookup tables to connect members to face indices
             surface_lookup = {}
             curve_list = []
+            space_lookup = {}
             for member in self.file.by_type("IfcStructuralSurfaceMember"):
                 pset_topology = ifcopenshell.util.element.get_psets(member).get(
                     "EPset_Topology"
@@ -119,6 +120,12 @@ class Molior:
                 )
                 if pset_topology:
                     curve_list.append([pset_topology["FaceIndex"], member])
+            for space in self.file.by_type("IfcSpace"):
+                pset_topology = ifcopenshell.util.element.get_psets(space).get(
+                    "EPset_Topology"
+                )
+                if pset_topology:
+                    space_lookup[pset_topology["CellIndex"]] = space
 
             # iterate all the edges in the topologic model
             edges_stl = create_stl_list(Edge)
@@ -398,6 +405,12 @@ class Molior:
                             relation=relation,
                         )
                     run("root.remove_product", self.file, product=curve_connection)
+
+            # attach spaces to space boundaries
+            for boundary in self.file.by_type("IfcRelSpaceBoundary2ndLevel"):
+                items = boundary.Description.split()
+                if len(items) == 2 and items[0] == "CellIndex":
+                    boundary.RelatingSpace = space_lookup[items[1]]
 
     def GetTraceIfc(
         self,
