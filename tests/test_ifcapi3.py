@@ -8,6 +8,7 @@ import ifcopenshell.api
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior.ifc
+from molior.ifc import assign_storey_byindex, assign_extrusion_fromDXF
 from molior.geometry import matrix_align
 
 run = ifcopenshell.api.run
@@ -35,7 +36,8 @@ class Tests(unittest.TestCase):
             1.0,
         )
 
-        ifc.assign_extrusion_fromDXF(
+        assign_extrusion_fromDXF(
+            ifc,
             body_context,
             element,
             directrix,
@@ -45,7 +47,7 @@ class Tests(unittest.TestCase):
         )
 
         run("geometry.edit_object_placement", ifc, product=element, matrix=numpy.eye(4))
-        ifc.assign_storey_byindex(element, 0)
+        assign_storey_byindex(ifc, element, 0)
 
         # do it again, hopefully dxf isn't reloaded
 
@@ -57,7 +59,8 @@ class Tests(unittest.TestCase):
         )
         directrix = [[-5.0, 2.0], [-1.0, 2.0], [-1.0, 5.0], [-5.0, 5.0], [-5.0, 2.0]]
 
-        ifc.assign_extrusion_fromDXF(
+        assign_extrusion_fromDXF(
+            ifc,
             body_context,
             element,
             directrix,
@@ -72,7 +75,7 @@ class Tests(unittest.TestCase):
             product=element,
             matrix=matrix_align([0.0, 0.0, 1.0], [1.0, 0.0, 1.0]),
         )
-        ifc.assign_storey_byindex(element, 0)
+        assign_storey_byindex(ifc, element, 0)
 
         ifc.write("_test.ifc")
 

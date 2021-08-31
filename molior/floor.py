@@ -5,6 +5,13 @@ from topologist.helpers import create_stl_list
 
 from molior.baseclass import TraceClass
 from molior.geometry import matrix_align
+from molior.ifc import (
+    createExtrudedAreaSolid,
+    createCurveBoundedPlane,
+    createFaceSurface,
+    assign_storey_byindex,
+    get_material_by_name,
+)
 
 run = ifcopenshell.api.run
 
@@ -73,9 +80,9 @@ class Floor(TraceClass):
                 normal = face.Normal()
                 # need this for boundaries
                 # nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
-                # bounded_plane = self.file.createCurveBoundedPlane(nodes_2d)
+                # bounded_plane = createCurveBoundedPlane(self.file, nodes_2d)
                 # need this for structure
-                face_surface = self.file.createFaceSurface(vertices, normal)
+                face_surface = createFaceSurface(self.file, vertices, normal)
 
                 # generate structural surfaces
                 structural_surface = run(
@@ -115,8 +122,8 @@ class Floor(TraceClass):
                     "material.assign_material",
                     self.file,
                     product=structural_surface,
-                    material=self.file.get_material_by_name(
-                        reference_context, "Concrete"
+                    material=get_material_by_name(
+                        self.file, reference_context, "Concrete"
                     ),
                 )
 
@@ -126,13 +133,14 @@ class Floor(TraceClass):
             if inverse.is_a("IfcMaterialLayerSetUsage"):
                 inverse.OffsetFromReferenceLine = 0.0 - self.below
 
-        self.file.assign_storey_byindex(entity, self.level)
+        assign_storey_byindex(self.file, entity, self.level)
         shape = self.file.createIfcShapeRepresentation(
             body_context,
             "Body",
             "SweptSolid",
             [
-                self.file.createExtrudedAreaSolid(
+                createExtrudedAreaSolid(
+                    self.file,
                     [self.corner_in(index) for index in range(len(self.path))],
                     self.thickness,
                 )

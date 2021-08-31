@@ -3,8 +3,8 @@ import numpy
 
 from topologic import Vertex, Edge
 from topologist.helpers import create_stl_list, el
-from molior.baseclass import TraceClass
 import molior
+from molior.baseclass import TraceClass
 from molior.geometry import (
     matrix_align,
     add_2d,
@@ -13,6 +13,14 @@ from molior.geometry import (
     subtract_3d,
     add_3d,
     transform,
+)
+from molior.ifc import (
+    createExtrudedAreaSolid,
+    clipSolid,
+    createFaceSurface,
+    assign_representation_fromDXF,
+    assign_storey_byindex,
+    get_material_by_name,
 )
 
 run = ifcopenshell.api.run
@@ -73,7 +81,7 @@ class Wall(TraceClass):
             mywall = run(
                 "root.create_entity", self.file, ifc_class=self.ifc, name=self.name
             )
-            self.file.assign_storey_byindex(mywall, self.level)
+            assign_storey_byindex(self.file, mywall, self.level)
 
             myelement_type = self.get_element_type()
             run(
@@ -91,7 +99,8 @@ class Wall(TraceClass):
                     inverse.OffsetFromReferenceLine = 0.0 - self.outer
 
             # wall is a plan shape extruded vertically
-            solid = self.file.createExtrudedAreaSolid(
+            solid = createExtrudedAreaSolid(
+                self.file,
                 [
                     transform(matrix_reverse, vertex)
                     for vertex in [v_in_a, v_out_a, v_out_b, v_in_b]
@@ -126,7 +135,7 @@ class Wall(TraceClass):
                 [vertex.X(), vertex.Y(), vertex.Z()] for vertex in list(vertices_stl)
             ]
             normal = self.chain.graph[segment[0]][1][2].Normal()
-            face_surface = self.file.createFaceSurface(vertices, normal)
+            face_surface = createFaceSurface(self.file, vertices, normal)
             # generate structural surfaces
             structural_surface = run(
                 "root.create_entity",
@@ -161,7 +170,7 @@ class Wall(TraceClass):
                 "material.assign_material",
                 self.file,
                 product=structural_surface,
-                material=self.file.get_material_by_name(reference_context, "Masonry"),
+                material=get_material_by_name(self.file, reference_context, "Masonry"),
             )
 
             # clip the top of the wall if face isn't rectangular
@@ -174,7 +183,8 @@ class Wall(TraceClass):
                 end_coor = transform(
                     matrix_reverse, list(edge.EndVertex().Coordinates())
                 )
-                solid = self.file.clipSolid(
+                solid = clipSolid(
+                    self.file,
                     solid,
                     subtract_3d(
                         start_coor,
@@ -191,7 +201,8 @@ class Wall(TraceClass):
                     )
                     < 0.001
                 ):
-                    solid = self.file.clipSolid(
+                    solid = clipSolid(
+                        self.file,
                         solid,
                         subtract_3d(
                             start_coor,
@@ -211,7 +222,8 @@ class Wall(TraceClass):
                     )
                     < 0.001
                 ):
-                    solid = self.file.clipSolid(
+                    solid = clipSolid(
+                        self.file,
                         solid,
                         subtract_3d(
                             end_coor,
@@ -305,11 +317,11 @@ class Wall(TraceClass):
                     ),
                 )
                 # assign the entity to a storey
-                self.file.assign_storey_byindex(entity, self.level)
+                assign_storey_byindex(self.file, entity, self.level)
 
                 # load geometry from a DXF file and assign to the entity
-                self.file.assign_representation_fromDXF(
-                    body_context, entity, self.style, dxf_path
+                assign_representation_fromDXF(
+                    self.file, body_context, entity, self.style, dxf_path
                 )
 
                 # create an opening
@@ -339,7 +351,8 @@ class Wall(TraceClass):
                         "Body",
                         "SweptSolid",
                         [
-                            self.file.createExtrudedAreaSolid(
+                            createExtrudedAreaSolid(
+                                self.file,
                                 [
                                     [0.0, outer],
                                     [opening["width"], outer],
@@ -379,9 +392,6 @@ class Wall(TraceClass):
             self.openings = []
             for _ in range(self.segments()):
                 self.openings.append([])
-
-        # TODO Face information is needed to connect walls to spaces in
-        # relspaceboundary.
 
         # part may be a wall, add some openings
         if "do_populate_exterior_openings" in self.__dict__:

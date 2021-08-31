@@ -11,6 +11,7 @@ from molior.geometry import (
     subtract_2d,
     line_intersection,
 )
+from molior.ifc import get_material_by_name
 
 run = ifcopenshell.api.run
 
@@ -77,7 +78,7 @@ class BaseClass:
                     "material.add_layer",
                     self.file,
                     layer_set=mylayerset,
-                    material=self.file.get_material_by_name(body_context, mylayer[1]),
+                    material=get_material_by_name(self.file, body_context, mylayer[1]),
                 )
                 layer.LayerThickness = mylayer[0]
                 layer.Name = mylayer[1]

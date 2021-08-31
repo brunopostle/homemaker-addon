@@ -3,6 +3,11 @@ import ifcopenshell.api
 import molior
 from molior.baseclass import TraceClass
 from molior.geometry import matrix_align, add_2d
+from molior.ifc import (
+    assign_storey_byindex,
+    assign_extrusion_fromDXF,
+    get_material_by_name,
+)
 
 run = ifcopenshell.api.run
 
@@ -108,8 +113,8 @@ class Extrusion(TraceClass):
                     "material.add_profile",
                     self.file,
                     profile_set=profile_set,
-                    material=self.file.get_material_by_name(
-                        reference_context, "Concrete"
+                    material=get_material_by_name(
+                        self.file, reference_context, "Concrete"
                     ),
                 )
                 run(
@@ -120,7 +125,7 @@ class Extrusion(TraceClass):
                 )
 
         # TODO assign materials
-        self.file.assign_storey_byindex(entity, self.level)
+        assign_storey_byindex(self.file, entity, self.level)
         directrix = self.path
         if self.closed:
             directrix.append(directrix[0])
@@ -139,7 +144,8 @@ class Extrusion(TraceClass):
             self.scale,
         )
 
-        self.file.assign_extrusion_fromDXF(
+        assign_extrusion_fromDXF(
+            self.file,
             body_context,
             entity,
             directrix,

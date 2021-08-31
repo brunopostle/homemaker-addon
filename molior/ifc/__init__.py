@@ -1,12 +1,10 @@
 """ Domain-specific extensions to IfcOpenShell
 
-A collection of code for commonly used IFC related tasks, generally
-implemented as methods overloaded onto ifcopenshell.file
+A collection of code for commonly used IFC related tasks
 
 """
 
 import os
-from ifcopenshell.file import file as ifcfile
 import ezdxf
 import ifcopenshell.api
 from molior.geometry import (
@@ -66,11 +64,8 @@ def init(building_name, elevations):
     # create and relate site and building
     site = run("root.create_entity", ifc, ifc_class="IfcSite", name="My Site")
     run("aggregate.assign_object", ifc, product=site, relating_object=project)
-    ifc.createBuilding(site, building_name, elevations)
+    createBuilding(ifc, site, building_name, elevations)
     return ifc
-
-
-# FIXME subclass methods instead of stomping all over ifcopenshell.file namespace
 
 
 def createBuilding(self, site, building_name, elevations):
@@ -306,7 +301,8 @@ def createTessellations_fromDXF(self, path_dxf):
             vertices, faces = entity.indexed_faces()
 
             tessellations.append(
-                self.createTessellation_fromMesh(
+                createTessellation_fromMesh(
+                    self,
                     [vertex.dxf.location for vertex in vertices],
                     [face.indices for face in faces],
                 )
@@ -366,7 +362,7 @@ def assign_representation_fromDXF(self, body_context, element, stylename, path_d
             body_context,
             "Body",
             "Tessellation",
-            self.createTessellations_fromDXF(path_dxf),
+            createTessellations_fromDXF(self, path_dxf),
         )
 
         # create a mapped item that can be reused
@@ -417,16 +413,3 @@ def get_material_by_name(self, body_context, material_name):
             context=body_context,
         )
     return mymaterial
-
-
-setattr(ifcfile, "assign_representation_fromDXF", assign_representation_fromDXF)
-setattr(ifcfile, "assign_storey_byindex", assign_storey_byindex)
-setattr(ifcfile, "createBuilding", createBuilding)
-setattr(ifcfile, "createExtrudedAreaSolid", createExtrudedAreaSolid)
-setattr(ifcfile, "clipSolid", clipSolid)
-setattr(ifcfile, "createCurveBoundedPlane", createCurveBoundedPlane)
-setattr(ifcfile, "createFaceSurface", createFaceSurface)
-setattr(ifcfile, "createTessellation_fromMesh", createTessellation_fromMesh)
-setattr(ifcfile, "assign_extrusion_fromDXF", assign_extrusion_fromDXF)
-setattr(ifcfile, "createTessellations_fromDXF", createTessellations_fromDXF)
-setattr(ifcfile, "get_material_by_name", get_material_by_name)

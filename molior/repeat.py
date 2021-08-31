@@ -1,8 +1,13 @@
 import ifcopenshell.api
 
-from molior.baseclass import TraceClass
 import molior
+from molior.baseclass import TraceClass
 from molior.geometry import add_2d, subtract_2d, scale_2d, distance_2d, matrix_align
+from molior.ifc import (
+    assign_representation_fromDXF,
+    assign_storey_byindex,
+    get_material_by_name,
+)
 from molior.extrusion import Extrusion
 
 run = ifcopenshell.api.run
@@ -85,7 +90,7 @@ class Repeat(TraceClass):
                 name=self.style + "/" + self.condition,
             )
             # assign the aggregate to a storey
-            self.file.assign_storey_byindex(aggregate, self.level)
+            assign_storey_byindex(self.file, aggregate, self.level)
 
             for index in range(items):
                 if (
@@ -99,6 +104,7 @@ class Repeat(TraceClass):
                                 continue
                         else:
                             if (
+                                # FIXME doesn't recurse first segment
                                 (index == 0 and id_segment == 0 and self.not_start)
                                 or (
                                     index == items - 1
@@ -146,8 +152,8 @@ class Repeat(TraceClass):
                         relating_object=aggregate,
                     )
                     # load geometry from a DXF file and assign to the entity
-                    self.file.assign_representation_fromDXF(
-                        body_context, entity, self.style, dxf_path
+                    assign_representation_fromDXF(
+                        self.file, body_context, entity, self.style, dxf_path
                     )
 
                     # structural stuff
@@ -222,8 +228,8 @@ class Repeat(TraceClass):
                             "material.add_profile",
                             self.file,
                             profile_set=profile_set,
-                            material=self.file.get_material_by_name(
-                                reference_context, "Stone"
+                            material=get_material_by_name(
+                                self.file, reference_context, "Stone"
                             ),
                         )
                         run(

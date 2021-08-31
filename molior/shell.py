@@ -1,8 +1,15 @@
 import ifcopenshell.api
 
+from topologist.helpers import string_to_coor
 from molior.baseclass import BaseClass
 from molior.geometry import map_to_2d
-from topologist.helpers import string_to_coor
+from molior.ifc import (
+    createExtrudedAreaSolid,
+    createCurveBoundedPlane,
+    createFaceSurface,
+    assign_storey_byindex,
+    get_material_by_name,
+)
 
 run = ifcopenshell.api.run
 
@@ -38,7 +45,7 @@ class Shell(BaseClass):
             normal = face[1]
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
             # need this for structure
-            face_surface = self.file.createFaceSurface(vertices, normal)
+            face_surface = createFaceSurface(self.file, vertices, normal)
 
             # generate structural surfaces
             structural_surface = run(
@@ -74,7 +81,7 @@ class Shell(BaseClass):
                 "material.assign_material",
                 self.file,
                 product=structural_surface,
-                material=self.file.get_material_by_name(reference_context, "Concrete"),
+                material=get_material_by_name(self.file, reference_context, "Concrete"),
             )
 
             entity = run(
@@ -98,7 +105,7 @@ class Shell(BaseClass):
                     inverse.OffsetFromReferenceLine = 0.0 - self.inner
 
             # FIXME this puts roofs in the ground floor
-            self.file.assign_storey_byindex(entity, 0)
+            assign_storey_byindex(self.file, entity, 0)
             if abs(float(normal_x[2])) < 0.001:
                 extrude_height = self.outer
                 extrude_direction = [0.0, 0.0, 1.0]
@@ -114,7 +121,8 @@ class Shell(BaseClass):
                 "Body",
                 "SweptSolid",
                 [
-                    self.file.createExtrudedAreaSolid(
+                    createExtrudedAreaSolid(
+                        self.file,
                         nodes_2d,
                         extrude_height,
                         extrude_direction,
@@ -136,7 +144,7 @@ class Shell(BaseClass):
 
             # generate space boundary for back cell
             if face[2][1]:
-                bounded_plane = self.file.createCurveBoundedPlane(nodes_2d, matrix)
+                bounded_plane = createCurveBoundedPlane(self.file, nodes_2d, matrix)
                 back_boundary = self.file.create_entity(
                     "IfcRelSpaceBoundary2ndLevel",
                     **{

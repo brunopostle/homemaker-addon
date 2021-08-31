@@ -5,6 +5,11 @@ from topologic import Face
 from topologist.helpers import create_stl_list
 from molior.baseclass import TraceClass
 from molior.geometry import matrix_align
+from molior.ifc import (
+    createExtrudedAreaSolid,
+    createTessellation_fromMesh,
+    assign_storey_byindex,
+)
 
 run = ifcopenshell.api.run
 
@@ -56,9 +61,10 @@ class Space(TraceClass):
         # FIXME should create IfcSpaceType for this
         self.add_psets(entity)
 
-        self.file.assign_storey_byindex(entity, self.level)
+        assign_storey_byindex(self.file, entity, self.level)
         # simple extruded representation
-        representation = self.file.createExtrudedAreaSolid(
+        representation = createExtrudedAreaSolid(
+            self.file,
             [self.corner_in(index) for index in range(len(self.path))],
             self.height - self.ceiling,
         )
@@ -72,7 +78,7 @@ class Space(TraceClass):
             vertices = [
                 [v[0], v[1], v[2] - self.elevation - self.floor] for v in vertices
             ]
-            tessellation = self.file.createTessellation_fromMesh(vertices, faces)
+            tessellation = createTessellation_fromMesh(self.file, vertices, faces)
             representation = self.file.createIfcBooleanResult(
                 "INTERSECTION", representation, tessellation
             )

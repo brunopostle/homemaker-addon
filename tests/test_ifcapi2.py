@@ -7,6 +7,11 @@ import ifcopenshell.api
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior.ifc
+from molior.ifc import (
+    createExtrudedAreaSolid,
+    assign_representation_fromDXF,
+    assign_storey_byindex,
+)
 from molior.geometry import matrix_align
 
 run = ifcopenshell.api.run
@@ -41,11 +46,11 @@ class Tests(unittest.TestCase):
             matrix=matrix_align([11.0, 0.0, 3.0], [11.0, 2.0, 0.0]),
         )
         # assign the window to a storey
-        ifc.assign_storey_byindex(myproduct, 0)
+        assign_storey_byindex(ifc, myproduct, 0)
 
         # load geometry from a DXF file and assign to the window
-        ifc.assign_representation_fromDXF(
-            body_context, myproduct, "default", "molior/style/share/shopfront.dxf"
+        assign_representation_fromDXF(
+            ifc, body_context, myproduct, "default", "molior/style/share/shopfront.dxf"
         )
 
         # create a wall
@@ -60,7 +65,8 @@ class Tests(unittest.TestCase):
                 "Body",
                 "SweptSolid",
                 [
-                    ifc.createExtrudedAreaSolid(
+                    createExtrudedAreaSolid(
+                        ifc,
                         [[0.0, -0.25], [12.0, -0.25], [12.0, 0.08], [0.0, 0.08]],
                         4.0,
                     )
@@ -75,7 +81,7 @@ class Tests(unittest.TestCase):
             matrix=matrix_align([11.0, -0.5, 3.0], [11.0, 2.0, 0.0]),
         )
         # assign the wall to a storey
-        ifc.assign_storey_byindex(mywall, 0)
+        assign_storey_byindex(ifc, mywall, 0)
 
         # create an opening
         myopening = run(
@@ -97,8 +103,8 @@ class Tests(unittest.TestCase):
                 "Body",
                 "SweptSolid",
                 [
-                    ifc.createExtrudedAreaSolid(
-                        [[0.5, -1.0], [5.5, -1.0], [5.5, 1.0], [0.5, 1.0]], 2.545
+                    createExtrudedAreaSolid(
+                        ifc, [[0.5, -1.0], [5.5, -1.0], [5.5, 1.0], [0.5, 1.0]], 2.545
                     )
                 ],
             ),
@@ -137,11 +143,11 @@ class Tests(unittest.TestCase):
             matrix=matrix_align([11.0, 6.0, 3.0], [11.0, 9.0, 0.0]),
         )
         # assign the window to a storey
-        ifc.assign_storey_byindex(myproduct, 0)
+        assign_storey_byindex(ifc, myproduct, 0)
 
         # shopfront.dxf is already imported and mapped
-        ifc.assign_representation_fromDXF(
-            body_context, myproduct, "default", "molior/style/share/shopfront.dxf"
+        assign_representation_fromDXF(
+            ifc, body_context, myproduct, "default", "molior/style/share/shopfront.dxf"
         )
 
         # create an opening
@@ -167,8 +173,8 @@ class Tests(unittest.TestCase):
                 "Body",
                 "SweptSolid",
                 [
-                    ifc.createExtrudedAreaSolid(
-                        [[0.5, -1.0], [5.5, -1.0], [5.5, 1.0], [0.5, 1.0]], 2.545
+                    createExtrudedAreaSolid(
+                        ifc, [[0.5, -1.0], [5.5, -1.0], [5.5, 1.0], [0.5, 1.0]], 2.545
                     )
                 ],
             ),
