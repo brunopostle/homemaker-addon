@@ -141,9 +141,7 @@ class Shell(BaseClass):
                     "IfcRelSpaceBoundary2ndLevel",
                     **{
                         "GlobalId": ifcopenshell.guid.new(),
-                        "OwnerHistory": ifcopenshell.api.run(
-                            "owner.create_owner_history", self.file
-                        ),
+                        "OwnerHistory": run("owner.create_owner_history", self.file),
                         "RelatedBuildingElement": entity,
                         "ConnectionGeometry": self.file.createIfcConnectionSurfaceGeometry(
                             bounded_plane

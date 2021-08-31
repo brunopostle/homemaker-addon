@@ -218,7 +218,7 @@ class Repeat(TraceClass):
                             type="IfcMaterialProfileSet",
                         )
                         profile_set = rel.RelatingMaterial
-                        material_profile = ifcopenshell.api.run(
+                        material_profile = run(
                             "material.add_profile",
                             self.file,
                             profile_set=profile_set,
