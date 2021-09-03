@@ -144,21 +144,21 @@ class Shell(BaseClass):
 
             # generate space boundary for back cell
             if face[2][1]:
-                bounded_plane = createCurveBoundedPlane(self.file, nodes_2d, matrix)
-                back_boundary = self.file.create_entity(
-                    "IfcRelSpaceBoundary2ndLevel",
-                    **{
-                        "GlobalId": ifcopenshell.guid.new(),
-                        "OwnerHistory": run("owner.create_owner_history", self.file),
-                        "RelatedBuildingElement": entity,
-                        "ConnectionGeometry": self.file.createIfcConnectionSurfaceGeometry(
-                            bounded_plane
-                        ),
-                        "PhysicalOrVirtualBoundary": "PHYSICAL",
-                        "InternalOrExternalBoundary": "EXTERNAL",
-                    }
+                boundary = run(
+                    "root.create_entity",
+                    self.file,
+                    ifc_class="IfcRelSpaceBoundary2ndLevel",
                 )
+                boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
+                boundary.InternalOrExternalBoundary = "EXTERNAL"
+                boundary.RelatedBuildingElement = entity
+                boundary.ConnectionGeometry = (
+                    self.file.createIfcConnectionSurfaceGeometry(
+                        createCurveBoundedPlane(self.file, nodes_2d, matrix)
+                    )
+                )
+
                 cell_index = face[2][1].Get("index")
                 if not cell_index == None:
                     # can't assign psets to an IfcRelationship, use Description instead
-                    back_boundary.Description = "CellIndex " + str(cell_index)
+                    boundary.Description = "CellIndex " + str(cell_index)
