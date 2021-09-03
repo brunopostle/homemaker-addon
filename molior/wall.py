@@ -13,6 +13,7 @@ from molior.geometry import (
     subtract_3d,
     add_3d,
     transform,
+    map_to_2d,
 )
 from molior.ifc import (
     createExtrudedAreaSolid,
@@ -21,6 +22,7 @@ from molior.ifc import (
     assign_representation_fromDXF,
     assign_storey_byindex,
     get_material_by_name,
+    createCurveBoundedPlane,
 )
 
 run = ifcopenshell.api.run
@@ -173,6 +175,38 @@ class Wall(TraceClass):
                 material=get_material_by_name(self.file, reference_context, "Masonry"),
             )
 
+            # generate space boundaries
+            boundaries = []
+            nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
+            curve_bounded_plane = createCurveBoundedPlane(self.file, nodes_2d, matrix)
+            for cell in face.CellsOrdered():
+                if cell == None:
+                    boundaries.append(None)
+                    continue
+                boundary = run(
+                    "root.create_entity",
+                    self.file,
+                    ifc_class="IfcRelSpaceBoundary2ndLevel",
+                )
+                if face.IsInternal():
+                    boundary.InternalOrExternalBoundary = "INTERNAL"
+                    boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
+                elif face.IsExternal():
+                    boundary.InternalOrExternalBoundary = "EXTERNAL"
+                    boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
+                else:
+                    boundary.InternalOrExternalBoundary = "EXTERNAL"
+                    boundary.PhysicalOrVirtualBoundary = "VIRTUAL"
+                boundary.RelatedBuildingElement = mywall
+                boundary.ConnectionGeometry = (
+                    self.file.createIfcConnectionSurfaceGeometry(curve_bounded_plane)
+                )
+                cell_index = cell.Get("index")
+                if not cell_index == None:
+                    # can't assign psets to an IfcRelationship, use Description instead
+                    boundary.Description = "CellIndex " + str(cell_index)
+                boundaries.append(boundary)
+
             # clip the top of the wall if face isn't rectangular
             edges_result = create_stl_list(Edge)
             face.EdgesCrop(edges_result)
@@ -273,7 +307,6 @@ class Wall(TraceClass):
                 @ matrix_align([0.0, 0.0, self.elevation], [1.0, 0.0, 0.0]),
             )
             # TODO IfcRelConnectsPathElements
-            # TODO draw wall surfaces for boundaries
             segment = self.openings[id_segment]
             for id_opening in range(len(self.openings[id_segment])):
                 db = self.get_opening(segment[id_opening]["name"])
@@ -385,6 +418,43 @@ class Wall(TraceClass):
                 # )
                 # associate the opening with our window
                 run("void.add_filling", self.file, opening=myopening, element=entity)
+
+                # openings are also space boundaries
+                cill = self.elevation + db["cill"]
+                soffit = cill + opening["height"]
+                vertices = [
+                    [*left_2d, cill],
+                    [*right_2d, cill],
+                    [*right_2d, soffit],
+                    [*left_2d, soffit],
+                ]
+                nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
+                curve_bounded_plane = createCurveBoundedPlane(
+                    self.file, nodes_2d, matrix
+                )
+                cell_id = 0
+                for cell in face.CellsOrdered():
+                    parent_boundary = boundaries[cell_id]
+                    cell_id += 1
+                    if cell == None:
+                        continue
+                    boundary = run(
+                        "root.create_entity",
+                        self.file,
+                        ifc_class="IfcRelSpaceBoundary2ndLevel",
+                    )
+                    boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
+                    boundary.InternalOrExternalBoundary = (
+                        parent_boundary.InternalOrExternalBoundary
+                    )
+                    boundary.RelatedBuildingElement = myopening
+                    boundary.ConnectionGeometry = (
+                        self.file.createIfcConnectionSurfaceGeometry(
+                            curve_bounded_plane
+                        )
+                    )
+                    boundary.Description = parent_boundary.Description
+                    boundary.ParentBoundary = parent_boundary
 
     def init_openings(self):
         """We need an array for openings the same size as wall segments array"""
