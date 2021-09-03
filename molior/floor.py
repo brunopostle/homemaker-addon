@@ -4,7 +4,7 @@ from topologic import Vertex, Face, Cell
 from topologist.helpers import create_stl_list
 
 from molior.baseclass import TraceClass
-from molior.geometry import matrix_align
+from molior.geometry import matrix_align, map_to_2d
 from molior.ifc import (
     createExtrudedAreaSolid,
     createCurveBoundedPlane,
@@ -79,8 +79,7 @@ class Floor(TraceClass):
                 vertices = [[v.X(), v.Y(), v.Z()] for v in vertices_perimeter]
                 normal = face.Normal()
                 # need this for boundaries
-                # nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
-                # bounded_plane = createCurveBoundedPlane(self.file, nodes_2d)
+                nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
                 # need this for structure
                 face_surface = createFaceSurface(self.file, vertices, normal)
 
@@ -126,6 +125,35 @@ class Floor(TraceClass):
                         self.file, reference_context, "Concrete"
                     ),
                 )
+
+                # generate space boundaries
+                curve_bounded_plane = createCurveBoundedPlane(
+                    self.file, nodes_2d, matrix
+                )
+                for cell in face.CellsOrdered():
+                    if cell == None:
+                        continue
+                    boundary = run(
+                        "root.create_entity",
+                        self.file,
+                        ifc_class="IfcRelSpaceBoundary2ndLevel",
+                    )
+                    boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
+                    if face.IsInternal():
+                        boundary.InternalOrExternalBoundary = "INTERNAL"
+                    else:
+                        boundary.InternalOrExternalBoundary = "EXTERNAL"
+                    boundary.RelatedBuildingElement = entity
+                    boundary.ConnectionGeometry = (
+                        self.file.createIfcConnectionSurfaceGeometry(
+                            curve_bounded_plane
+                        )
+                    )
+
+                    cell_index = cell.Get("index")
+                    if not cell_index == None:
+                        # can't assign psets to an IfcRelationship, use Description instead
+                        boundary.Description = "CellIndex " + str(cell_index)
 
         # Usage isn't created until after type.assign_type
         mylayerset = ifcopenshell.util.element.get_material(myelement_type)
