@@ -13,7 +13,7 @@ import molior.ifc
 
 import tempfile
 import logging
-from blenderbim import import_ifc
+from blenderbim.bim import import_ifc
 import bpy
 
 bl_info = {
