@@ -194,7 +194,7 @@ class Repeat(TraceClass):
                             "geometry.assign_representation",
                             self.file,
                             product=structural_member,
-                            representation=self.file.createIfcShapeRepresentation(
+                            representation=self.file.createIfcTopologyRepresentation(
                                 reference_context,
                                 "Reference",
                                 "Edge",

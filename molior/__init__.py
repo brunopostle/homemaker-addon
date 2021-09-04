@@ -175,7 +175,7 @@ class Molior:
                     "geometry.assign_representation",
                     self.file,
                     product=curve_connection,
-                    representation=self.file.createIfcShapeRepresentation(
+                    representation=self.file.createIfcTopologyRepresentation(
                         reference_context,
                         "Reference",
                         "Edge",
@@ -301,7 +301,7 @@ class Molior:
                                     "geometry.assign_representation",
                                     self.file,
                                     product=connection_base,
-                                    representation=self.file.createIfcShapeRepresentation(
+                                    representation=self.file.createIfcTopologyRepresentation(
                                         reference_context,
                                         "Reference",
                                         "Vertex",
@@ -353,7 +353,7 @@ class Molior:
                                     "geometry.assign_representation",
                                     self.file,
                                     product=connection_head,
-                                    representation=self.file.createIfcShapeRepresentation(
+                                    representation=self.file.createIfcTopologyRepresentation(
                                         reference_context,
                                         "Reference",
                                         "Vertex",
