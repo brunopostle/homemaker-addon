@@ -176,7 +176,7 @@ def createFaceSurface(self, polygon, normal):
         self.createIfcAxis2Placement3D(
             self.createIfcCartesianPoint(polygon[0]),
             self.createIfcDirection(normal),
-            None,
+            self.createIfcDirection(normalise_3d(subtract_3d(polygon[1], polygon[0]))),
         )
     )
     face_bound = self.createIfcFaceBound(
