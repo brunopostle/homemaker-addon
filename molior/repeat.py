@@ -166,11 +166,6 @@ class Repeat(TraceClass):
                             ifc_class="IfcStructuralCurveMember",
                             name=self.name,
                         )
-                        run(
-                            "geometry.edit_object_placement",
-                            self.file,
-                            product=structural_member,
-                        )
                         segment = self.chain.edges()[id_segment]
                         face = self.chain.graph[segment[0]][1][2]
                         back_cell = self.chain.graph[segment[0]][1][3]

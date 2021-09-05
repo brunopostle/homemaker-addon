@@ -90,11 +90,6 @@ class Floor(TraceClass):
                     ifc_class="IfcStructuralSurfaceMember",
                     name=self.name,
                 )
-                run(
-                    "geometry.edit_object_placement",
-                    self.file,
-                    product=structural_surface,
-                )
                 self.add_topology_pset(structural_surface, face, *face.CellsOrdered())
                 structural_surface.PredefinedType = "SHELL"
                 structural_surface.Thickness = self.thickness
