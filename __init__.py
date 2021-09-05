@@ -126,6 +126,7 @@ class ObjectHomemaker(bpy.types.Operator):
             )
             ifc_importer = import_ifc.IfcImporter(ifc_import_settings)
             ifc_importer.execute()
+            bpy.data.collections.get("StructuralItems").hide_viewport = True
         return {"FINISHED"}
 
 
