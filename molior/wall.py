@@ -64,7 +64,13 @@ class Wall(TraceClass):
         style = molior.Molior.style
         segments = self.segments()
 
-        # TODO aggregate entities
+        aggregate = run(
+            "root.create_entity",
+            self.file,
+            ifc_class=self.ifc,
+            name=self.name,
+        )
+        assign_storey_byindex(self.file, aggregate, self.level)
         for id_segment in range(segments):
             # outside face start and end coordinates
             v_out_a = self.corner_out(id_segment)
@@ -83,7 +89,12 @@ class Wall(TraceClass):
             mywall = run(
                 "root.create_entity", self.file, ifc_class=self.ifc, name=self.name
             )
-            assign_storey_byindex(self.file, mywall, self.level)
+            run(
+                "aggregate.assign_object",
+                self.file,
+                product=mywall,
+                relating_object=aggregate,
+            )
 
             myelement_type = self.get_element_type()
             run(
@@ -305,7 +316,7 @@ class Wall(TraceClass):
                 matrix=matrix_forward
                 @ matrix_align([0.0, 0.0, self.elevation], [1.0, 0.0, 0.0]),
             )
-            # TODO IfcRelConnectsPathElements
+
             segment = self.openings[id_segment]
             for id_opening in range(len(self.openings[id_segment])):
                 db = self.get_opening(segment[id_opening]["name"])

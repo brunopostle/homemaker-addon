@@ -39,7 +39,14 @@ class Shell(BaseClass):
                 reference_context = item
             if item.ContextIdentifier == "Body":
                 body_context = item
-        # TODO aggregate entities
+        aggregate = run(
+            "root.create_entity",
+            self.file,
+            ifc_class=self.ifc,
+            name=self.name,
+        )
+        # FIXME this puts roofs in the ground floor
+        assign_storey_byindex(self.file, aggregate, 0)
         for face in self.hull.faces:
             vertices = [[*string_to_coor(node_str)] for node_str in face[0]]
             normal = face[1]
@@ -86,6 +93,12 @@ class Shell(BaseClass):
             entity = run(
                 "root.create_entity", self.file, ifc_class=self.ifc, name=self.name
             )
+            run(
+                "aggregate.assign_object",
+                self.file,
+                product=entity,
+                relating_object=aggregate,
+            )
             self.add_topology_pset(entity, *face[2])
 
             myelement_type = self.get_element_type()
@@ -103,8 +116,6 @@ class Shell(BaseClass):
                 if inverse.is_a("IfcMaterialLayerSetUsage"):
                     inverse.OffsetFromReferenceLine = 0.0 - self.inner
 
-            # FIXME this puts roofs in the ground floor
-            assign_storey_byindex(self.file, entity, 0)
             if abs(float(normal_x[2])) < 0.001:
                 extrude_height = self.outer
                 extrude_direction = [0.0, 0.0, 1.0]
