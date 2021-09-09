@@ -22,7 +22,7 @@ such as FreeCAD.
 enough to define cells for rooms.  The only assumption is that walls are
 vertical and floors are horizontal.
 
-- Adaptable style system, styles can be subclassed or overrriden entirely.
+- Adaptable style system, styles can be subclassed or overriden entirely.
 Different parts of buildings can be assigned different styles.
 
 - Fully compliant industry standard IFC output.
