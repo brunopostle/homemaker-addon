@@ -322,7 +322,7 @@ def createTessellation_fromMesh(self, vertices, faces):
 
 def assign_storey_byindex(self, entity, index):
     """Assign object to a storey by index"""
-    # FIXME will fail if there are not enough storeys defined or they are unordered"""
+    # FIXME will fail if there are not enough storeys defined or they are unordered
     storeys = {}
     for storey in self.by_type("IfcBuildingStorey"):
         storeys[storey.Name] = storey

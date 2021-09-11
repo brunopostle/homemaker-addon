@@ -58,6 +58,12 @@ class Extrusion(TraceClass):
                     ifc_class="IfcStructuralCurveMember",
                     name=self.name,
                 )
+                assignment = run(
+                    "root.create_entity", self.file, ifc_class="IfcRelAssignsToProduct"
+                )
+                assignment.RelatingProduct = structural_member
+                assignment.RelatedObjects = [entity]
+
                 segment = self.chain.edges()[id_segment]
                 face = self.chain.graph[segment[0]][1][2]
                 back_cell = self.chain.graph[segment[0]][1][3]

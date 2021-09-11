@@ -93,6 +93,11 @@ class Shell(BaseClass):
             entity = run(
                 "root.create_entity", self.file, ifc_class=self.ifc, name=self.name
             )
+            assignment = run(
+                "root.create_entity", self.file, ifc_class="IfcRelAssignsToProduct"
+            )
+            assignment.RelatingProduct = structural_surface
+            assignment.RelatedObjects = [entity]
             run(
                 "aggregate.assign_object",
                 self.file,

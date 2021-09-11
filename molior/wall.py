@@ -156,6 +156,11 @@ class Wall(TraceClass):
                 ifc_class="IfcStructuralSurfaceMember",
                 name=self.name,
             )
+            assignment = run(
+                "root.create_entity", self.file, ifc_class="IfcRelAssignsToProduct"
+            )
+            assignment.RelatingProduct = structural_surface
+            assignment.RelatedObjects = [mywall]
             self.add_topology_pset(structural_surface, face, back_cell, front_cell)
             structural_surface.PredefinedType = "SHELL"
             structural_surface.Thickness = self.thickness

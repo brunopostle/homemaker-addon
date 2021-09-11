@@ -238,8 +238,12 @@ class Molior:
                                     related_structural_connection=curve_connection,
                                 )
                                 # footings can have XYZ fixity, do it
-                                # FIXME need better way to identify footing
-                                if curve_member.Name == "ground beam":
+                                is_footing = False
+                                for referenced_by in curve_member.ReferencedBy:
+                                    for related_object in referenced_by.RelatedObjects:
+                                        if related_object.is_a("IfcFooting"):
+                                            is_footing = True
+                                if is_footing:
                                     run(
                                         "structural.add_structural_boundary_condition",
                                         self.file,
