@@ -367,6 +367,12 @@ def assign_representation_fromDXF(self, subcontext, element, stylename, path_dxf
             ifc_class=ifc_type,
             name=identifier,
         )
+        run(
+            "project.assign_declaration",
+            self,
+            definition=type_product,
+            relating_context=get_library_by_name(self, stylename),
+        )
         # FIXME PredefinedType and PartitioningType are not set by assets.yml file
         run(
             "geometry.assign_representation",
@@ -379,7 +385,21 @@ def assign_representation_fromDXF(self, subcontext, element, stylename, path_dxf
         )
 
 
-# TODO method that gets or creates a Library keyed by stylename
+def get_library_by_name(self, library_name):
+    """Retrieve a Project Library by name, creating it if necessary"""
+    for library in self.by_type("IfcProjectLibrary"):
+        if library.Name == library_name:
+            return library
+    library = run(
+        "root.create_entity", self, ifc_class="IfcProjectLibrary", name=library_name
+    )
+    run(
+        "project.assign_declaration",
+        self,
+        definition=library,
+        relating_context=self.by_type("IfcProject")[0],
+    )
+    return library
 
 
 def get_material_by_name(self, subcontext, material_name):
