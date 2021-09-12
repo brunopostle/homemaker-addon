@@ -205,7 +205,8 @@ def assign_extrusion_fromDXF(
     self, body_context, element, directrix, stylename, path_dxf, transform
 ):
     """Create an extrusion given a directrix and DXF profile filepath"""
-    identifier = stylename + "/" + os.path.split(path_dxf)[-1]
+    # FIXME stop passing body_context as a parameter to all these methods
+    identifier = stylename + "/" + os.path.splitext(os.path.split(path_dxf)[-1])[0]
 
     # let's see if there is an existing MaterialProfileSet recorded
     materialprofilesets = {}
@@ -336,55 +337,46 @@ def assign_storey_byindex(self, entity, index):
 
 def assign_representation_fromDXF(self, body_context, element, stylename, path_dxf):
     """Assign geometry from DXF unless a TypeProduct with this name already exists"""
-    identifier = stylename + "/" + os.path.split(path_dxf)[-1]
+    # FIXME stop assigning type, should be get_type_by_identifier() and assign type in calling function
+    identifier = stylename + "/" + os.path.splitext(os.path.split(path_dxf)[-1])[0]
 
-    # let's see if there is an existing TypeProduct defined
-    typeproducts = {}
-    for typeproduct in self.by_type("IfcTypeProduct"):
-        typeproducts[typeproduct.Name] = typeproduct
+    ifc_type = element.is_a() + "Type"
 
-    if identifier in typeproducts:
-        # The TypeProduct knows what MappedRepresentations to use
-        for representationmap in typeproducts[identifier].RepresentationMaps:
-            run(
-                "geometry.assign_representation",
-                self,
-                product=element,
-                representation=run(
-                    "geometry.map_representation",
-                    self,
-                    representation=representationmap.MappedRepresentation,
-                ),
-            )
+    # let's see if there is an existing Type Product defined
+    type_products = {}
+    for type_product in self.by_type(ifc_type):
+        type_products[type_product.Name] = type_product
+
+    if identifier in type_products:
+        run(
+            "type.assign_type",
+            self,
+            related_object=element,
+            relating_type=type_products[identifier],
+        )
     else:
-        # load a DXF polyface mesh as a Tessellation and create the TypeProduct
+        # load a DXF polyface mesh as a Tessellation
         brep = self.createIfcShapeRepresentation(
             body_context,
             "Body",
             "Tessellation",
             createTessellations_fromDXF(self, path_dxf),
         )
-
-        # create a mapped item that can be reused
+        type_product = run(
+            "root.create_entity",
+            self,
+            ifc_class=ifc_type,
+            name=identifier,
+        )
+        # FIXME PredefinedType and PartitioningType are not set by assets.yml file
         run(
             "geometry.assign_representation",
             self,
-            product=run(
-                "root.create_entity",
-                self,
-                ifc_class="IfcTypeProduct",
-                name=identifier,
-            ),
+            product=type_product,
             representation=brep,
         )
-
         run(
-            "geometry.assign_representation",
-            self,
-            product=element,
-            representation=run(
-                "geometry.map_representation", self, representation=brep
-            ),
+            "type.assign_type", self, related_object=element, relating_type=type_product
         )
 
 

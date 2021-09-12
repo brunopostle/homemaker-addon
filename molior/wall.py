@@ -96,6 +96,7 @@ class Wall(TraceClass):
                 relating_object=aggregate,
             )
 
+            # FIXME all walls in all styles get the same type and psets here
             myelement_type = self.get_element_type()
             run(
                 "type.assign_type",
@@ -343,8 +344,7 @@ class Wall(TraceClass):
                     ifc_class=ifc_class,
                     name=segment[id_opening]["name"],
                 )
-                # TODO need to create IfcWindowType and IfcDoorType
-                # windows/doors have width and height attributes
+                # FIXME window/door width and height attributes should be set in Type
                 run(
                     "attribute.edit_attributes",
                     self.file,
