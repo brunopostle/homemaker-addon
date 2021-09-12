@@ -198,7 +198,7 @@ class Repeat(TraceClass):
                             product=structural_member,
                             representation=self.file.createIfcTopologyRepresentation(
                                 reference_context,
-                                "Reference",
+                                reference_context.ContextIdentifier,
                                 "Edge",
                                 [
                                     self.file.createIfcEdge(

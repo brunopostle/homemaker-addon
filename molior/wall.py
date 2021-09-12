@@ -179,7 +179,7 @@ class Wall(TraceClass):
                 product=structural_surface,
                 representation=self.file.createIfcTopologyRepresentation(
                     reference_context,
-                    "Reference",
+                    reference_context.ContextIdentifier,
                     "Face",
                     [face_surface],
                 ),
@@ -292,7 +292,7 @@ class Wall(TraceClass):
 
             shape = self.file.createIfcShapeRepresentation(
                 body_context,
-                "Body",
+                body_context.ContextIdentifier,
                 representationtype,
                 [solid],
             )
@@ -305,7 +305,7 @@ class Wall(TraceClass):
 
             shape = self.file.createIfcShapeRepresentation(
                 axis_context,
-                "Axis",
+                axis_context.ContextIdentifier,
                 "Curve2D",
                 [axis],
             )
@@ -396,7 +396,7 @@ class Wall(TraceClass):
                     product=myopening,
                     representation=self.file.createIfcShapeRepresentation(
                         body_context,
-                        "Body",
+                        body_context.ContextIdentifier,
                         "SweptSolid",
                         [
                             createExtrudedAreaSolid(

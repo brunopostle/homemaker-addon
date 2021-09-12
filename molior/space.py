@@ -86,7 +86,7 @@ class Space(TraceClass):
 
         shape = self.file.createIfcShapeRepresentation(
             body_context,
-            "Body",
+            body_context.ContextIdentifier,
             representationtype,
             [representation],
         )

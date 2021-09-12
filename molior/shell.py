@@ -78,7 +78,7 @@ class Shell(BaseClass):
                 product=structural_surface,
                 representation=self.file.createIfcTopologyRepresentation(
                     reference_context,
-                    "Reference",
+                    reference_context.ContextIdentifier,
                     "Face",
                     [face_surface],
                 ),

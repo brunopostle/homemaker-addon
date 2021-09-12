@@ -112,7 +112,7 @@ class Floor(TraceClass):
                     product=structural_surface,
                     representation=self.file.createIfcTopologyRepresentation(
                         reference_context,
-                        "Reference",
+                        reference_context.ContextIdentifier,
                         "Face",
                         [face_surface],
                     ),
@@ -164,7 +164,7 @@ class Floor(TraceClass):
         assign_storey_byindex(self.file, entity, self.level)
         shape = self.file.createIfcShapeRepresentation(
             body_context,
-            "Body",
+            body_context.ContextIdentifier,
             "SweptSolid",
             [
                 createExtrudedAreaSolid(

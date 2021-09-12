@@ -177,7 +177,7 @@ class Molior:
                     product=curve_connection,
                     representation=self.file.createIfcTopologyRepresentation(
                         reference_context,
-                        "Reference",
+                        reference_context.ContextIdentifier,
                         "Edge",
                         [
                             self.file.createIfcEdge(
@@ -307,7 +307,7 @@ class Molior:
                                     product=connection_base,
                                     representation=self.file.createIfcTopologyRepresentation(
                                         reference_context,
-                                        "Reference",
+                                        reference_context.ContextIdentifier,
                                         "Vertex",
                                         [
                                             self.file.createIfcVertexPoint(
@@ -359,7 +359,7 @@ class Molior:
                                     product=connection_head,
                                     representation=self.file.createIfcTopologyRepresentation(
                                         reference_context,
-                                        "Reference",
+                                        reference_context.ContextIdentifier,
                                         "Vertex",
                                         [
                                             self.file.createIfcVertexPoint(

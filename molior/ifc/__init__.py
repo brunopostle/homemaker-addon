@@ -202,10 +202,9 @@ def createFaceSurface(self, polygon, normal):
 
 
 def assign_extrusion_fromDXF(
-    self, body_context, element, directrix, stylename, path_dxf, transform
+    self, subcontext, element, directrix, stylename, path_dxf, transform
 ):
     """Create an extrusion given a directrix and DXF profile filepath"""
-    # FIXME stop passing body_context as a parameter to all these methods
     identifier = stylename + "/" + os.path.splitext(os.path.split(path_dxf)[-1])[0]
 
     # let's see if there is an existing MaterialProfileSet recorded
@@ -266,8 +265,8 @@ def assign_extrusion_fromDXF(
         self,
         product=element,
         representation=self.createIfcShapeRepresentation(
-            body_context,
-            "Body",
+            subcontext,
+            subcontext.ContextIdentifier,
             "AdvancedSweptSolid",
             [
                 self.createIfcSurfaceCurveSweptAreaSolid(
@@ -335,7 +334,7 @@ def assign_storey_byindex(self, entity, index):
     )
 
 
-def assign_representation_fromDXF(self, body_context, element, stylename, path_dxf):
+def assign_representation_fromDXF(self, subcontext, element, stylename, path_dxf):
     """Assign geometry from DXF unless a TypeProduct with this name already exists"""
     # FIXME stop assigning type, should be get_type_by_identifier() and assign type in calling function
     identifier = stylename + "/" + os.path.splitext(os.path.split(path_dxf)[-1])[0]
@@ -357,8 +356,8 @@ def assign_representation_fromDXF(self, body_context, element, stylename, path_d
     else:
         # load a DXF polyface mesh as a Tessellation
         brep = self.createIfcShapeRepresentation(
-            body_context,
-            "Body",
+            subcontext,
+            subcontext.ContextIdentifier,
             "Tessellation",
             createTessellations_fromDXF(self, path_dxf),
         )
@@ -380,7 +379,10 @@ def assign_representation_fromDXF(self, body_context, element, stylename, path_d
         )
 
 
-def get_material_by_name(self, body_context, material_name):
+# TODO method that gets or creates a Library keyed by stylename
+
+
+def get_material_by_name(self, subcontext, material_name):
     """Retrieve an IfcMaterial by name, creating it if necessary"""
     materials = {}
     for material in self.by_type("IfcMaterial"):
@@ -402,6 +404,6 @@ def get_material_by_name(self, body_context, material_name):
                 diffuse_colour=[1.0, 1.0, 1.0],
                 external_definition=None,
             ),
-            context=body_context,
+            context=subcontext,
         )
     return mymaterial
