@@ -376,7 +376,12 @@ def get_type_by_dxf(self, subcontext, ifc_type, stylename, path_dxf):
         definition=type_product,
         relating_context=get_library_by_name(self, stylename),
     )
-    # FIXME PredefinedType and PartitioningType are not set by assets.yml file
+    if type_product.is_a("IfcDoorType"):
+        type_product.PredefinedType = "DOOR"
+        type_product.OperationType = "SINGLE_SWING_LEFT"
+    elif type_product.is_a("IfcWindowType"):
+        type_product.PredefinedType = "WINDOW"
+        type_product.PartitioningType = "SINGLE_PANEL"
     run(
         "geometry.assign_representation",
         self,
