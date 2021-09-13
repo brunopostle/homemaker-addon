@@ -322,7 +322,6 @@ def createTessellation_fromMesh(self, vertices, faces):
 
 def assign_storey_byindex(self, entity, index):
     """Assign object to a storey by index"""
-    # FIXME will fail if there are not enough storeys defined or they are unordered
     storeys = {}
     for storey in self.by_type("IfcBuildingStorey"):
         storeys[storey.Name] = storey
@@ -336,53 +335,55 @@ def assign_storey_byindex(self, entity, index):
 
 def assign_representation_fromDXF(self, subcontext, element, stylename, path_dxf):
     """Assign geometry from DXF unless a TypeProduct with this name already exists"""
-    # FIXME stop assigning type, should be get_type_by_identifier() and assign type in calling function
+    product_type = get_type_by_dxf(
+        self, subcontext, element.is_a() + "Type", stylename, path_dxf
+    )
+    run(
+        "type.assign_type",
+        self,
+        related_object=element,
+        relating_type=product_type,
+    )
+
+
+def get_type_by_dxf(self, subcontext, ifc_type, stylename, path_dxf):
+    """Fetch a TypeProduct from DXF geometry unless a TypeProduct with this name already exists"""
     identifier = stylename + "/" + os.path.splitext(os.path.split(path_dxf)[-1])[0]
 
-    ifc_type = element.is_a() + "Type"
-
-    # let's see if there is an existing Type Product defined
-    type_products = {}
-    for type_product in self.by_type(ifc_type):
-        type_products[type_product.Name] = type_product
-
-    if identifier in type_products:
-        run(
-            "type.assign_type",
-            self,
-            related_object=element,
-            relating_type=type_products[identifier],
-        )
-    else:
-        # load a DXF polyface mesh as a Tessellation
-        brep = self.createIfcShapeRepresentation(
-            subcontext,
-            subcontext.ContextIdentifier,
-            "Tessellation",
-            createTessellations_fromDXF(self, path_dxf),
-        )
-        type_product = run(
-            "root.create_entity",
-            self,
-            ifc_class=ifc_type,
-            name=identifier,
-        )
-        run(
-            "project.assign_declaration",
-            self,
-            definition=type_product,
-            relating_context=get_library_by_name(self, stylename),
-        )
-        # FIXME PredefinedType and PartitioningType are not set by assets.yml file
-        run(
-            "geometry.assign_representation",
-            self,
-            product=type_product,
-            representation=brep,
-        )
-        run(
-            "type.assign_type", self, related_object=element, relating_type=type_product
-        )
+    # let's see if there is an existing Type Product defined in the relevant library
+    for library in self.by_type("IfcProjectLibrary"):
+        if library.Name == stylename:
+            for declares in library.Declares:
+                for definition in declares.RelatedDefinitions:
+                    if definition.is_a(ifc_type) and definition.Name == identifier:
+                        return definition
+    # otherwise, load a DXF polyface mesh as a Tessellation
+    brep = self.createIfcShapeRepresentation(
+        subcontext,
+        subcontext.ContextIdentifier,
+        "Tessellation",
+        createTessellations_fromDXF(self, path_dxf),
+    )
+    type_product = run(
+        "root.create_entity",
+        self,
+        ifc_class=ifc_type,
+        name=identifier,
+    )
+    run(
+        "project.assign_declaration",
+        self,
+        definition=type_product,
+        relating_context=get_library_by_name(self, stylename),
+    )
+    # FIXME PredefinedType and PartitioningType are not set by assets.yml file
+    run(
+        "geometry.assign_representation",
+        self,
+        product=type_product,
+        representation=brep,
+    )
+    return type_product
 
 
 def get_library_by_name(self, library_name):
