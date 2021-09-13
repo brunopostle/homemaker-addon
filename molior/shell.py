@@ -20,7 +20,6 @@ class Shell(BaseClass):
     def __init__(self, args={}):
         super().__init__(args)
         self.ifc = "IfcRoof"
-        self.ifc_class = "IfcRoofType"
         self.predefined_type = "USERDEFINED"
         self.layerset = [[0.03, "Plaster"], [0.2, "Insulation"], [0.05, "Tiles"]]
         self.inner = 0.08

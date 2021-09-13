@@ -23,7 +23,6 @@ class Floor(TraceClass):
         super().__init__(args)
         self.below = 0.2
         self.ifc = "IfcSlab"
-        self.ifc_class = "IfcSlabType"
         self.predefined_type = "FLOOR"
         self.layerset = [[0.2, "Concrete"], [0.02, "Screed"]]
         self.path = []

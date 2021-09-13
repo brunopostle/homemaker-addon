@@ -34,7 +34,6 @@ class BaseClass:
         self.style = "default"
         self.file = None
         self.ifc = "IfcBuildingElementProxy"
-        self.ifc_class = "IfcBuildingElementProxyType"
         self.predefined_type = "USERDEFINED"
         for arg in args:
             self.__dict__[arg] = args[arg]
@@ -45,7 +44,7 @@ class BaseClass:
             if item.ContextIdentifier == "Body":
                 body_context = item
         element_types = {}
-        for element_type in self.file.by_type(self.ifc_class):
+        for element_type in self.file.by_type(self.ifc + "Type"):
             element_types[element_type.Name] = element_type
         if self.name in element_types:
             myelement_type = element_types[self.name]
@@ -54,7 +53,7 @@ class BaseClass:
             myelement_type = run(
                 "root.create_entity",
                 self.file,
-                ifc_class=self.ifc_class,
+                ifc_class=self.ifc + "Type",
                 name=self.name,
                 predefined_type=self.predefined_type,
             )

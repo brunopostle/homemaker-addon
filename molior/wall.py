@@ -38,7 +38,6 @@ class Wall(TraceClass):
         self.closed = 0
         self.floor = 0.02
         self.ifc = "IfcWall"
-        self.ifc_class = "IfcWallType"
         self.predefined_type = "SOLIDWALL"
         self.layerset = [[0.3, "Masonry"], [0.03, "Plaster"]]
         self.openings = []
