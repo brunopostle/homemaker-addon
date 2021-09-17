@@ -343,7 +343,7 @@ class Wall(TraceClass):
                     ifc_class=ifc_class,
                     name=segment[id_opening]["name"],
                 )
-                # FIXME window/door width and height attributes should be set in Type
+                # window/door width and height attributes can't be set in Type
                 run(
                     "attribute.edit_attributes",
                     self.file,

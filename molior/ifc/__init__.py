@@ -325,12 +325,20 @@ def assign_storey_byindex(self, entity, index):
     storeys = {}
     for storey in self.by_type("IfcBuildingStorey"):
         storeys[storey.Name] = storey
-    run(
-        "aggregate.assign_object",
-        self,
-        product=entity,
-        relating_object=storeys[str(index)],
-    )
+    if entity.is_a("IfcSpatialElement"):
+        run(
+            "aggregate.assign_object",
+            self,
+            product=entity,
+            relating_object=storeys[str(index)],
+        )
+    else:
+        run(
+            "spatial.assign_container",
+            self,
+            product=entity,
+            relating_structure=storeys[str(index)],
+        )
 
 
 def assign_representation_fromDXF(self, subcontext, element, stylename, path_dxf):
