@@ -390,6 +390,10 @@ def get_type_by_dxf(self, subcontext, ifc_type, stylename, path_dxf):
     elif type_product.is_a("IfcWindowType"):
         type_product.PredefinedType = "WINDOW"
         type_product.PartitioningType = "SINGLE_PANEL"
+    elif type_product.is_a("IfcColumnType"):
+        type_product.PredefinedType = "COLUMN"
+    elif type_product.is_a("IfcRailingType"):
+        type_product.PredefinedType = "BALUSTRADE"
     run(
         "geometry.assign_representation",
         self,
