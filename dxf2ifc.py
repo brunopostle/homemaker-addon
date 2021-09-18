@@ -45,17 +45,15 @@ profiler.start()
 # cc.ApplyDictionary(faces_ptr)
 # Assign Cell usages from widgets
 cc.AllocateCells([])
-# Collect unique elevations and assign storey numbers
-elevations = cc.Elevations()
 # Generate a cirulation Graph
 circulation = Graph.Adjacency(cc)
 circulation.Circulation(cc)
 
+# Traces are 2D paths that define walls, extrusions and rooms
+traces, hulls, normals, elevations = cc.GetTraces()
+
 # generate an IFC object
 ifc = molior.ifc.init("dxf2ifc building", elevations)
-
-# Traces are 2D paths that define walls, extrusions and rooms
-traces, hulls, normals = cc.GetTraces()
 
 molior_object = Molior(
     file=ifc,

@@ -34,10 +34,13 @@ def GetTraces(self):
     mytraces = topologist.traces.Traces()
     myhulls = topologist.hulls.Hulls()
     mynormals = topologist.normals.Normals()
+    elevations = {}
     faces = create_stl_list(Face)
     self.Faces(faces)
 
     for face in faces:
+        # labelling "badnormal" faces should be a separate method but here is convenient for now
+        face.BadNormal()
         stylename = face.Get("stylename")
         if not stylename:
             stylename = "default"
@@ -71,6 +74,7 @@ def GetTraces(self):
                             axis,
                             face,
                         )
+                elevations[elevation] = 0
             else:
                 # face has no horizontal bottom edge, add to hull for wall panels
                 myhulls.add_face("panel", stylename, face)
@@ -94,6 +98,7 @@ def GetTraces(self):
                     )
                     mynormals.add_vector("top", edge.StartVertex(), normal)
                     mynormals.add_vector("top", edge.EndVertex(), normal)
+                    elevations[el(elevation + height)] = 0
 
                 for condition in face.BottomLevelConditions():
                     edge = condition[0]
@@ -134,37 +139,18 @@ def GetTraces(self):
 
             usage = cell.Usage()
             mytraces.add_trace(usage, elevation, height, stylename, perimeter)
+            elevations[elevation] = 0
 
     mytraces.process()
     myhulls.process()
     mynormals.process()
-    return (
-        mytraces.traces,
-        myhulls.hulls,
-        mynormals.normals,
-    )
-
-
-def Elevations(self):
-    """Identify all unique elevations, allocate level index"""
-    elevations = {}
-
-    # FIXME doesn't collect all horizontal top edges
-    faces = create_stl_list(Face)
-    self.Faces(faces)
-    for face in faces:
-        elevation = face.Elevation()
-        elevations[float(elevation)] = 0
-        # labelling "badnormal" faces should be a separate method but here is convenient for now
-        face.BadNormal()
-
     level = 0
     keys = list(elevations.keys())
     keys.sort()
     for elevation in keys:
         elevations[elevation] = level
         level += 1
-    return elevations
+    return (mytraces.traces, myhulls.hulls, mynormals.normals, elevations)
 
 
 def ApplyDictionary(self, source_faces):
@@ -189,5 +175,4 @@ def ApplyDictionary(self, source_faces):
 
 setattr(topologic.CellComplex, "AllocateCells", AllocateCells)
 setattr(topologic.CellComplex, "GetTraces", GetTraces)
-setattr(topologic.CellComplex, "Elevations", Elevations)
 setattr(topologic.CellComplex, "ApplyDictionary", ApplyDictionary)

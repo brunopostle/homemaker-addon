@@ -98,7 +98,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(len(cells), 1)
 
     def test_traces(self):
-        traces, hulls, normals = self.cc.GetTraces()
+        traces, hulls, normals, elevations = self.cc.GetTraces()
 
         traces_external = traces["external"]
         self.assertEqual(len(traces_external), 1)
@@ -119,9 +119,8 @@ class Tests(unittest.TestCase):
         self.assertEqual(len(normals["bottom"].keys()), 4)
 
     def test_ifc(self):
-        elevations = self.cc.Elevations()
+        traces, hulls, normals, elevations = self.cc.GetTraces()
         ifc = molior.ifc.init("My House", elevations)
-        traces, hulls, normals = self.cc.GetTraces()
         molior_object = Molior(
             file=ifc,
             circulation=None,

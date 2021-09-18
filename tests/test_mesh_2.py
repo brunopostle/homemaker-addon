@@ -180,7 +180,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(len(faces_horizontal), 5)
 
     def test_graph(self):
-        traces, hulls, normals = self.cc.GetTraces()
+        traces, hulls, normals, elevations = self.cc.GetTraces()
         traces_external = traces["external"]
         self.assertEqual(len(traces_external), 2)
         self.assertEqual(len(traces_external[0.0]), 1)
@@ -240,7 +240,7 @@ class Tests(unittest.TestCase):
                 self.assertEqual(face.Type(), 8)
 
     def test_elevations(self):
-        elevations = self.cc.Elevations()
+        traces, hulls, normals, elevations = self.cc.GetTraces()
         self.assertEqual(len(elevations), 3)
         self.assertEqual(elevations[0.0], 0)
         self.assertEqual(elevations[10.0], 1)

@@ -158,19 +158,18 @@ class ObjectHomemaker(bpy.types.Operator):
             cc.ApplyDictionary(faces_ptr)
             # Assign Cell usages from widgets
             cc.AllocateCells(widgets)
-            # Collect unique elevations and assign storey numbers
-            elevations = cc.Elevations()
             # Generate a cirulation Graph
             circulation = Graph.Adjacency(cc)
             circulation.Circulation(cc)
             # print(circulation.Dot(cc))
 
-            # generate an IFC object
-            ifc = molior.ifc.init(mesh.name, elevations)
-
             # Traces are 2D paths that define walls, extrusions and rooms
             # Hulls are 3D shells that define pitched roofs and soffits
-            traces, hulls, normals = cc.GetTraces()
+            # Collect unique elevations and assign storey numbers
+            traces, hulls, normals, elevations = cc.GetTraces()
+
+            # generate an IFC object
+            ifc = molior.ifc.init(mesh.name, elevations)
 
             # TODO enable user defined location for share_dir
             molior_object = Molior(

@@ -39,20 +39,17 @@ print("CellComplex created", datetime.datetime.now())
 # cc.ApplyDictionary(faces_ptr)
 # Assign Cell usages from widgets
 cc.AllocateCells([])
-# Collect unique elevations and assign storey numbers
-elevations = cc.Elevations()
-print(str(len(elevations)), "Elevations", datetime.datetime.now())
 # Generate a cirulation Graph
 circulation = Graph.Adjacency(cc)
 circulation.Circulation(cc)
 print("Circulation Graph generated", datetime.datetime.now())
 
+# Traces are 2D paths that define walls, extrusions and rooms
+traces, hulls, normals, elevations = cc.GetTraces()
+print("Traces calculated", datetime.datetime.now())
+
 # generate an IFC object
 ifc = molior.ifc.init("brep2ifc building", elevations)
-
-# Traces are 2D paths that define walls, extrusions and rooms
-traces, hulls, normals = cc.GetTraces()
-print("Traces calculated", datetime.datetime.now())
 
 molior_object = Molior(
     file=ifc,
