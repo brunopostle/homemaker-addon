@@ -223,6 +223,7 @@ def assign_extrusion_fromDXF(
         doc = ezdxf.readfile(path_dxf)
         model = doc.modelspace()
         closedprofiledefs = []
+        profile_index = 0
         for entity in model:
             if entity.get_mode() == "AcDb2dPolyline":
                 profile = list(entity.points())
@@ -232,7 +233,7 @@ def assign_extrusion_fromDXF(
                 closedprofiledefs.append(
                     self.createIfcArbitraryClosedProfileDef(
                         "AREA",
-                        None,
+                        identifier + "_" + str(profile_index),
                         self.createIfcPolyline(
                             [
                                 self.createIfcCartesianPoint([point[1], point[0]])
@@ -241,6 +242,7 @@ def assign_extrusion_fromDXF(
                         ),
                     ),
                 )
+                profile_index += 1
         # record profile(s) in a MaterialProfileSet so we can find them again
         self.createIfcMaterialProfileSet(
             identifier,
