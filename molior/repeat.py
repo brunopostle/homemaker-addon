@@ -38,6 +38,7 @@ class Repeat(TraceClass):
         self.Repeat = Repeat
         for arg in args:
             self.__dict__[arg] = args[arg]
+        self.identifier = self.style + "/" + self.name
 
     def execute(self):
         """Generate some ifc"""
@@ -87,7 +88,7 @@ class Repeat(TraceClass):
                 "root.create_entity",
                 self.file,
                 ifc_class=self.ifc,
-                name=self.style + "/" + self.condition,
+                name=self.identifier,
             )
             # assign the aggregate to a storey
             assign_storey_byindex(self.file, aggregate, self.level)
@@ -127,7 +128,7 @@ class Repeat(TraceClass):
                         "root.create_entity",
                         self.file,
                         ifc_class=self.ifc,
-                        name=self.style + "/" + self.condition,
+                        name=self.identifier,
                     )
                     self.add_psets(entity)
                     # place the entity in space
@@ -155,6 +156,7 @@ class Repeat(TraceClass):
                     assign_representation_fromDXF(
                         self.file, body_context, entity, self.style, dxf_path
                     )
+                    # TODO assign materials to assets
 
                     # structural stuff
                     if entity.is_a("IfcColumn"):

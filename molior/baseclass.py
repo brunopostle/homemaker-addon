@@ -37,6 +37,7 @@ class BaseClass:
         self.predefined_type = "USERDEFINED"
         for arg in args:
             self.__dict__[arg] = args[arg]
+        self.identifier = self.style + "/" + self.name
 
     def get_element_type(self):
         """Retrieve or create an Ifc Type definition for this Molior object"""
@@ -46,15 +47,15 @@ class BaseClass:
         element_types = {}
         for element_type in self.file.by_type(self.ifc + "Type"):
             element_types[element_type.Name] = element_type
-        if self.name in element_types:
-            myelement_type = element_types[self.name]
+        if self.identifier in element_types:
+            myelement_type = element_types[self.identifier]
         else:
             # we need to create a new Type
             myelement_type = run(
                 "root.create_entity",
                 self.file,
                 ifc_class=self.ifc + "Type",
-                name=self.name,
+                name=self.identifier,
                 predefined_type=self.predefined_type,
             )
             run(
@@ -71,7 +72,7 @@ class BaseClass:
             )
 
             mylayerset = ifcopenshell.util.element.get_material(myelement_type)
-            mylayerset.LayerSetName = self.style + "/" + self.name
+            mylayerset.LayerSetName = self.identifier
             for mylayer in self.layerset:
                 layer = run(
                     "material.add_layer",

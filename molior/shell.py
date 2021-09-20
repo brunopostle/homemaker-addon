@@ -30,6 +30,7 @@ class Shell(BaseClass):
         self.thickness = 0.0
         for layer in self.layerset:
             self.thickness += layer[0]
+        self.identifier = self.style + "/" + self.name
 
     def execute(self):
         """Generate some ifc"""
@@ -42,7 +43,7 @@ class Shell(BaseClass):
             "root.create_entity",
             self.file,
             ifc_class=self.ifc,
-            name=self.name,
+            name=self.identifier,
         )
         # FIXME this puts roofs in the ground floor
         assign_storey_byindex(self.file, aggregate, 0)
@@ -58,7 +59,7 @@ class Shell(BaseClass):
                 "root.create_entity",
                 self.file,
                 ifc_class="IfcStructuralSurfaceMember",
-                name=self.name,
+                name=self.identifier,
             )
             self.add_topology_pset(structural_surface, *face[2])
             structural_surface.PredefinedType = "SHELL"
@@ -90,7 +91,10 @@ class Shell(BaseClass):
             )
 
             entity = run(
-                "root.create_entity", self.file, ifc_class=self.ifc, name=self.name
+                "root.create_entity",
+                self.file,
+                ifc_class=self.ifc,
+                name=self.identifier,
             )
             assignment = run(
                 "root.create_entity", self.file, ifc_class="IfcRelAssignsToProduct"

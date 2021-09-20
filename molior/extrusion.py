@@ -28,6 +28,7 @@ class Extrusion(TraceClass):
         self.type = "molior-extrusion"
         for arg in args:
             self.__dict__[arg] = args[arg]
+        self.identifier = self.style + "/" + self.name
 
     def execute(self):
         """Generate some ifc"""
@@ -41,7 +42,7 @@ class Extrusion(TraceClass):
             "root.create_entity",
             self.file,
             ifc_class=self.ifc,
-            name=self.name,
+            name=self.identifier,
             predefined_type=self.predefined_type,
         )
         self.add_psets(entity)
@@ -56,7 +57,7 @@ class Extrusion(TraceClass):
                     "root.create_entity",
                     self.file,
                     ifc_class="IfcStructuralCurveMember",
-                    name=self.name,
+                    name=self.identifier,
                 )
                 assignment = run(
                     "root.create_entity", self.file, ifc_class="IfcRelAssignsToProduct"
@@ -125,7 +126,7 @@ class Extrusion(TraceClass):
                     profile=profile,
                 )
 
-        # TODO assign materials
+        # TODO assign materials to extrusions
         assign_storey_byindex(self.file, entity, self.level)
         directrix = self.path
         if self.closed:

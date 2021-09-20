@@ -49,6 +49,7 @@ class Wall(TraceClass):
         for layer in self.layerset:
             self.thickness += layer[0]
         self.inner = self.thickness - self.outer
+        self.identifier = self.style + "/" + self.name
 
     def execute(self):
         """Generate some ifc"""
@@ -67,7 +68,7 @@ class Wall(TraceClass):
             "root.create_entity",
             self.file,
             ifc_class=self.ifc,
-            name=self.name,
+            name=self.identifier,
         )
         assign_storey_byindex(self.file, aggregate, self.level)
         for id_segment in range(segments):
@@ -86,7 +87,10 @@ class Wall(TraceClass):
             matrix_reverse = numpy.linalg.inv(matrix_forward)
 
             mywall = run(
-                "root.create_entity", self.file, ifc_class=self.ifc, name=self.name
+                "root.create_entity",
+                self.file,
+                ifc_class=self.ifc,
+                name=self.identifier,
             )
             run(
                 "aggregate.assign_object",
@@ -95,7 +99,6 @@ class Wall(TraceClass):
                 relating_object=aggregate,
             )
 
-            # FIXME all walls in all styles get the same type and psets here
             myelement_type = self.get_element_type()
             run(
                 "type.assign_type",
@@ -154,7 +157,7 @@ class Wall(TraceClass):
                 "root.create_entity",
                 self.file,
                 ifc_class="IfcStructuralSurfaceMember",
-                name=self.name,
+                name=self.identifier,
             )
             assignment = run(
                 "root.create_entity", self.file, ifc_class="IfcRelAssignsToProduct"
@@ -189,6 +192,7 @@ class Wall(TraceClass):
                 product=structural_surface,
                 material=get_material_by_name(self.file, reference_context, "Masonry"),
             )
+            # TODO define material in style
 
             # generate space boundaries
             boundaries = []
@@ -365,6 +369,7 @@ class Wall(TraceClass):
                 )
                 # assign the entity to a storey
                 assign_storey_byindex(self.file, entity, self.level)
+                # TODO assign materials to assets
 
                 # load geometry from a DXF file and assign to the entity
                 assign_representation_fromDXF(
