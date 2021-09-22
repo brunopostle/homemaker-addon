@@ -233,7 +233,10 @@ class Repeat(TraceClass):
                             self.file,
                             profile_set=profile_set,
                             material=get_material_by_name(
-                                self.file, reference_context, "Stone"
+                                self.file,
+                                reference_context,
+                                "Stone",
+                                self.style_materials,
                             ),
                         )
                         run(
@@ -273,6 +276,7 @@ class Repeat(TraceClass):
                                 "style": self.style,
                                 "level": self.level,
                                 "style_assets": self.style_assets,
+                                "style_materials": self.style_materials,
                             }
                             vals.update(config)
                             part = getattr(self, config["class"])(vals)

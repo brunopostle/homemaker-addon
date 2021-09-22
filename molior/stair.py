@@ -7,7 +7,6 @@ class Stair(TraceClass):
     def __init__(self, args={}):
         super().__init__(args)
         self.ceiling = 0.2
-        self.colour = 255
         self.corners_in_use = []
         self.floor = 0.02
         self.going = 0.25

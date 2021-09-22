@@ -1,0 +1,41 @@
+---
+Masonry:
+    surface_colour: [1.0, 0.8, 0.6]
+    diffuse_colour: [1.0, 0.8, 0.6]
+    psets:
+        Pset_MaterialCommon:
+            MassDensity: 2500
+        Pset_MaterialEnergy:
+            ThermalConductivityTemperatureDerivative: 0.8
+Plaster:
+    surface_colour: [1.0, 1.0, 0.8]
+    diffuse_colour: [1.0, 1.0, 0.8]
+    psets:
+        Pset_MaterialCommon:
+            MassDensity: 800
+        Pset_MaterialEnergy:
+            ThermalConductivityTemperatureDerivative: 0.7
+Concrete:
+    surface_colour: [0.6, 0.6, 0.6]
+    diffuse_colour: [0.6, 0.6, 0.6]
+    psets:
+        Pset_MaterialCommon:
+            MassDensity: 2800
+        Pset_MaterialEnergy:
+            ThermalConductivityTemperatureDerivative: 0.8
+Insulation:
+    surface_colour: [1.0, 0.6, 0.6]
+    diffuse_colour: [1.0, 0.6, 0.6]
+    psets:
+        Pset_MaterialCommon:
+            MassDensity: 100
+        Pset_MaterialEnergy:
+            ThermalConductivityTemperatureDerivative: 0.1
+Tiles:
+    surface_colour: [1.0, 0.5, 0.2]
+    diffuse_colour: [1.0, 0.5, 0.2]
+    psets:
+        Pset_MaterialCommon:
+            MassDensity: 1500
+        Pset_MaterialEnergy:
+            ThermalConductivityTemperatureDerivative: 0.7

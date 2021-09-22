@@ -422,7 +422,7 @@ def get_library_by_name(self, library_name):
     return library
 
 
-def get_material_by_name(self, subcontext, material_name):
+def get_material_by_name(self, subcontext, material_name, style_materials):
     """Retrieve an IfcMaterial by name, creating it if necessary"""
     materials = {}
     for material in self.by_type("IfcMaterial"):
@@ -432,6 +432,23 @@ def get_material_by_name(self, subcontext, material_name):
     else:
         # we need to create a new material
         mymaterial = run("material.add_material", self, name=material_name)
+        params = {
+            "surface_colour": [0.9, 0.9, 0.9],
+            "diffuse_colour": [1.0, 1.0, 1.0],
+            "transparency": 0.0,
+            "external_definition": None,
+        }
+        if material_name in style_materials:
+            params.update(style_materials[material_name])
+            if "psets" in style_materials[material_name]:
+                for name, properties in style_materials[material_name]["psets"].items():
+                    pset = run("pset.add_pset", self, product=mymaterial, name=name)
+                    run(
+                        "pset.edit_pset",
+                        self,
+                        pset=pset,
+                        properties=properties,
+                    )
         run(
             "style.assign_material_style",
             self,
@@ -440,9 +457,10 @@ def get_material_by_name(self, subcontext, material_name):
                 "style.add_style",
                 self,
                 name=material_name,
-                surface_colour=[0.9, 0.9, 0.9],
-                diffuse_colour=[1.0, 1.0, 1.0],
-                external_definition=None,
+                surface_colour=params["surface_colour"],
+                diffuse_colour=params["diffuse_colour"],
+                transparency=params["transparency"],
+                external_definition=params["external_definition"],
             ),
             context=subcontext,
         )

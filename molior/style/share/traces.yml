@@ -19,6 +19,7 @@ ground beam:
   condition: bottom-backward-level
   outer: 0.0
   extension: 0.25
+  material: Concrete
 interior:
   class: Wall
   ifc: IfcWall

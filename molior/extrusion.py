@@ -24,6 +24,7 @@ class Extrusion(TraceClass):
         self.scale = 1.0
         self.xshift = 0.0
         self.yshift = 0.0
+        self.material = "Pixie Dust"
         self.path = []
         self.type = "molior-extrusion"
         for arg in args:
@@ -116,7 +117,7 @@ class Extrusion(TraceClass):
                     self.file,
                     profile_set=profile_set,
                     material=get_material_by_name(
-                        self.file, reference_context, "Concrete"
+                        self.file, reference_context, "Concrete", self.style_materials
                     ),
                 )
                 run(
@@ -126,7 +127,15 @@ class Extrusion(TraceClass):
                     profile=profile,
                 )
 
-        # TODO assign materials to extrusions
+        run(
+            "material.assign_material",
+            self.file,
+            product=entity,
+            material=get_material_by_name(
+                self.file, body_context, self.material, self.style_materials
+            ),
+        )
+
         assign_storey_byindex(self.file, entity, self.level)
         directrix = self.path
         if self.closed:

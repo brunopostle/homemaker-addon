@@ -78,7 +78,9 @@ class BaseClass:
                     "material.add_layer",
                     self.file,
                     layer_set=mylayerset,
-                    material=get_material_by_name(self.file, body_context, mylayer[1]),
+                    material=get_material_by_name(
+                        self.file, body_context, mylayer[1], self.style_materials
+                    ),
                 )
                 layer.LayerThickness = mylayer[0]
                 layer.Name = mylayer[1]

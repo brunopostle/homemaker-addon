@@ -87,7 +87,9 @@ class Shell(BaseClass):
                 "material.assign_material",
                 self.file,
                 product=structural_surface,
-                material=get_material_by_name(self.file, reference_context, "Concrete"),
+                material=get_material_by_name(
+                    self.file, reference_context, "Concrete", self.style_materials
+                ),
             )
 
             entity = run(

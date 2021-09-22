@@ -190,7 +190,9 @@ class Wall(TraceClass):
                 "material.assign_material",
                 self.file,
                 product=structural_surface,
-                material=get_material_by_name(self.file, reference_context, "Masonry"),
+                material=get_material_by_name(
+                    self.file, reference_context, "Masonry", self.style_materials
+                ),
             )
             # TODO define material in style
 
@@ -368,6 +370,7 @@ class Wall(TraceClass):
                     ),
                 )
                 # assign the entity to a storey
+                # FIXME windows and doors should be assigned to Space not Storey
                 assign_storey_byindex(self.file, entity, self.level)
                 # TODO assign materials to assets
 

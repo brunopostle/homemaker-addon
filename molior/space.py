@@ -20,7 +20,6 @@ class Space(TraceClass):
     def __init__(self, args={}):
         super().__init__(args)
         self.ceiling = 0.2
-        self.colour = 255
         self.floor = 0.02
         self.ifc = "IfcSpace"
         self.inner = 0.08
