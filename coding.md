@@ -19,6 +19,9 @@ May be used in *Relationship* entities, for *RelatingObject* and
 *RelatedObjects* e.g in aggregation (beware that `object` is a python
 reserved word).
 
+Create rooted Object entities using the `root.create_entity` API, this looks
+after all the *GlobalId* and *OwnerHistory* stuff.
+
 ## Product
 
 Any `IfcProduct` sub-class. Includes *Element* entities (such as
@@ -35,6 +38,7 @@ A *Product* also has *ObjectPlacement* and *Representation* attributes.
 Any `IfcElement` sub-class, all *Element* entities are by inheritance
 *Object* and *Product* entities. *Element* entities are physically
 existing things such a `IfcWall` that have a *Shape Representation*.
+Distinct from a *Spatial Element* such as a `IfcBuilding`.
 
 ## Item
 
@@ -45,3 +49,69 @@ Representation Item* (such as a *Placement*, *Point* or *Solid Model*).
 don't have *GlobalId* or *OwnerHistory* attributes. There are other
 entities that are also named *Item*, such as *Structural Item* that
 actually are derived from `IfcRoot`, go figure.
+
+## Some typical entities and where they fit in
+
+- Root
+    - Object
+        - Product
+            - Spatial Element
+                - `IfcBuilding`
+                - `IfcBuildingStorey`
+                - `IfcSite`
+            - Element
+                - `IfcBeam`
+                - `IfcBuildingElementProxy`
+                - `IfcColumn`
+                - `IfcDoor`
+                - `IfcFooting`
+                - `IfcOpeningElement`
+                - `IfcRailing`
+                - `IfcRoof`
+                - `IfcWall`
+                - `IfcWindow`
+            - Structural Item
+                - `IfcStructuralCurveConnection`
+                - `IfcStructuralCurveMember`
+                - `IfcStructuralPointConnection`
+                - `IfcStructuralSurfaceMember`
+    - `IfcProject`
+    - `IfcProjectLibrary`
+    - Relationship
+        - `IfcRelAssignsToProduct`
+        - `IfcRelSpaceBoundary2ndLevel`
+- Representation
+    - `IfcShapeRepresentation`
+    - `IfcTopologyRepresentation`
+- Representation Item
+    - Geometric Representation Item
+        - `IfcAxis2Placement3D`
+        - `IfcBooleanClippingResult`
+        - `IfcBooleanResult`
+        - `IfcCartesianPoint`
+        - `IfcCartesianPointList3D`
+        - `IfcCartesianTransformationOperator2D`
+        - `IfcCurveBoundedPlane`
+        - `IfcDirection`
+        - `IfcExtrudedAreaSolid`
+        - `IfcIndexedPolygonalFace`
+        - `IfcPlane`
+        - `IfcPolygonalBoundedHalfSpace`
+        - `IfcPolygonalFaceSet`
+        - `IfcPolyline`
+        - `IfcSurfaceCurveSweptAreaSolid`
+    - Topological Representation Item
+        - `IfcEdge`
+        - `IfcEdgeLoop`
+        - `IfcFaceBound`
+        - `IfcFaceSurface`
+        - `IfcOrientedEdge`
+        - `IfcVertexPoint`
+- Connection Geometry
+    - `IfcConnectionSurfaceGeometry`
+- Profile Def
+    - `IfcArbitraryClosedProfileDef`
+    - `IfcDerivedProfileDef`
+- Material Definition
+    - `IfcMaterialProfile`
+    - `IfcMaterialProfileSet`
