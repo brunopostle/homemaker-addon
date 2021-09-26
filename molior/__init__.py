@@ -104,17 +104,28 @@ class Molior:
                 if item.ContextIdentifier == "Reference":
                     reference_context = item
 
+            structural_placement = self.file.createIfcLocalPlacement(
+                None,
+                self.file.createIfcAxis2Placement3D(
+                    self.file.createIfcCartesianPoint([0.0, 0.0, 0.0]),
+                    self.file.createIfcDirection([0.0, 0.0, 1.0]),
+                    self.file.createIfcDirection([1.0, 0.0, 0.0]),
+                ),
+            )
+
             # lookup tables to connect members to face indices
             surface_lookup = {}
             curve_list = []
             space_lookup = {}
             for member in self.file.by_type("IfcStructuralSurfaceMember"):
+                member.ObjectPlacement = structural_placement
                 pset_topology = ifcopenshell.util.element.get_psets(member).get(
                     "EPset_Topology"
                 )
                 if pset_topology:
                     surface_lookup[pset_topology["FaceIndex"]] = member
             for member in self.file.by_type("IfcStructuralCurveMember"):
+                member.ObjectPlacement = structural_placement
                 pset_topology = ifcopenshell.util.element.get_psets(member).get(
                     "EPset_Topology"
                 )
@@ -144,6 +155,7 @@ class Molior:
                     ifc_class="IfcStructuralCurveConnection",
                     name="My Connection",
                 )
+                curve_connection.ObjectPlacement = structural_placement
                 run(
                     "structural.assign_structural_analysis_model",
                     self.file,
@@ -301,6 +313,7 @@ class Molior:
                                     ifc_class="IfcStructuralPointConnection",
                                     name="Column base connection",
                                 )
+                                connection_base.ObjectPlacement = structural_placement
                                 run(
                                     "geometry.assign_representation",
                                     self.file,
@@ -353,6 +366,7 @@ class Molior:
                                     ifc_class="IfcStructuralPointConnection",
                                     name="Column head connection",
                                 )
+                                connection_head.ObjectPlacement = structural_placement
                                 run(
                                     "geometry.assign_representation",
                                     self.file,
