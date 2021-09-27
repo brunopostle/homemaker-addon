@@ -5,7 +5,7 @@ exterior:
   inner: 0.305
   outer: 0.305
   layerset:
-    - [0.61, "Masonry"]
+    - [0.61, "Sandstone"]
   psets:
       Pset_WallCommon:
           IsExternal: true
@@ -21,6 +21,7 @@ balustrade_small:
   outer: 0.0
   inset: 0.125
   spacing: 0.12
+  material: Wrought Iron
 bar:
   class: Extrusion
   ifc: IfcRailing
@@ -31,3 +32,4 @@ bar:
   xshift: 0.0
   yshift: 0.1
   extension: -0.025
+  material: Wrought Iron

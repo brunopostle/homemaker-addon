@@ -7,6 +7,20 @@ Masonry:
             MassDensity: 2500
         Pset_MaterialEnergy:
             ThermalConductivityTemperatureDerivative: 0.8
+Sandstone:
+    surface_colour: [1.0, 1.0, 0.6]
+    diffuse_colour: [1.0, 1.0, 0.6]
+    psets:
+        Pset_MaterialCommon:
+            MassDensity: 2500
+        Pset_MaterialEnergy:
+            ThermalConductivityTemperatureDerivative: 0.8
+Wrought Iron:
+    surface_colour: [0.4, 0.4, 0.4]
+    diffuse_colour: [0.4, 0.4, 0.4]
+    psets:
+        Pset_MaterialCommon:
+            MassDensity: 7800
 Plaster:
     surface_colour: [1.0, 1.0, 0.8]
     diffuse_colour: [1.0, 1.0, 0.8]

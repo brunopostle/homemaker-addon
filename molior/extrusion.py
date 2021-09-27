@@ -24,7 +24,8 @@ class Extrusion(TraceClass):
         self.scale = 1.0
         self.xshift = 0.0
         self.yshift = 0.0
-        self.material = "Pixie Dust"
+        self.material = "Travertine"
+        self.structural_material = "Concrete"
         self.path = []
         self.type = "molior-extrusion"
         for arg in args:
@@ -101,7 +102,7 @@ class Extrusion(TraceClass):
                         ],
                     ),
                 )
-                # TODO define profile and material in style
+                # TODO define profile in style
                 profile = self.file.create_entity(
                     "IfcRectangleProfileDef", ProfileType="AREA", XDim=0.2, YDim=0.3
                 )
@@ -117,7 +118,10 @@ class Extrusion(TraceClass):
                     self.file,
                     profile_set=profile_set,
                     material=get_material_by_name(
-                        self.file, reference_context, "Concrete", self.style_materials
+                        self.file,
+                        reference_context,
+                        self.structural_material,
+                        self.style_materials,
                     ),
                 )
                 run(

@@ -25,6 +25,7 @@ class Floor(TraceClass):
         self.ifc = "IfcSlab"
         self.predefined_type = "FLOOR"
         self.layerset = [[0.2, "Concrete"], [0.02, "Screed"]]
+        self.structural_material = "Concrete"
         self.path = []
         self.type = "molior-floor"
         for arg in args:
@@ -121,7 +122,10 @@ class Floor(TraceClass):
                     self.file,
                     product=structural_surface,
                     material=get_material_by_name(
-                        self.file, reference_context, "Concrete", self.style_materials
+                        self.file,
+                        reference_context,
+                        self.structural_material,
+                        self.style_materials,
                     ),
                 )
 

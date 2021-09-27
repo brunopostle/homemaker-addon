@@ -27,6 +27,8 @@ class Repeat(TraceClass):
         self.xshift = 0.0
         self.yshift = 0.0
         self.outer = 0.08
+        self.material = "Sandstone"
+        self.structural_material = "Concrete"
         self.path = []
         self.spacing = 1.0
         self.traces = []
@@ -156,7 +158,14 @@ class Repeat(TraceClass):
                     assign_representation_fromDXF(
                         self.file, body_context, entity, self.style, dxf_path
                     )
-                    # TODO assign materials to assets
+                    run(
+                        "material.assign_material",
+                        self.file,
+                        product=entity,
+                        material=get_material_by_name(
+                            self.file, body_context, self.material, self.style_materials
+                        ),
+                    )
 
                     # structural stuff
                     if entity.is_a("IfcColumn"):
@@ -214,7 +223,7 @@ class Repeat(TraceClass):
                                 ],
                             ),
                         )
-                        # TODO define profile and material in style
+                        # TODO define profile in style
                         profile = self.file.create_entity(
                             "IfcRectangleProfileDef",
                             ProfileType="AREA",
@@ -235,7 +244,7 @@ class Repeat(TraceClass):
                             material=get_material_by_name(
                                 self.file,
                                 reference_context,
-                                "Stone",
+                                self.structural_material,
                                 self.style_materials,
                             ),
                         )

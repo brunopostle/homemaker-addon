@@ -3,3 +3,4 @@ living outside window:
   name: arch
   type: window
   cill: 0.0
+  material: Sandstone

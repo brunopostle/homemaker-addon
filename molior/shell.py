@@ -22,6 +22,7 @@ class Shell(BaseClass):
         self.ifc = "IfcRoof"
         self.predefined_type = "USERDEFINED"
         self.layerset = [[0.03, "Plaster"], [0.2, "Insulation"], [0.05, "Tiles"]]
+        self.structural_material = "Concrete"
         self.inner = 0.08
         self.outer = 0.20
         self.type = "molior-shell"
@@ -88,7 +89,10 @@ class Shell(BaseClass):
                 self.file,
                 product=structural_surface,
                 material=get_material_by_name(
-                    self.file, reference_context, "Concrete", self.style_materials
+                    self.file,
+                    reference_context,
+                    self.structural_material,
+                    self.style_materials,
                 ),
             )
 

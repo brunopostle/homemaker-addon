@@ -40,6 +40,8 @@ class Wall(TraceClass):
         self.ifc = "IfcWall"
         self.predefined_type = "SOLIDWALL"
         self.layerset = [[0.3, "Masonry"], [0.03, "Plaster"]]
+        self.structural_material = "Masonry"
+        self.opening_material = "Timber"
         self.openings = []
         self.path = []
         self.type = "molior-wall"
@@ -191,10 +193,12 @@ class Wall(TraceClass):
                 self.file,
                 product=structural_surface,
                 material=get_material_by_name(
-                    self.file, reference_context, "Masonry", self.style_materials
+                    self.file,
+                    reference_context,
+                    self.structural_material,
+                    self.style_materials,
                 ),
             )
-            # TODO define material in style
 
             # generate space boundaries
             boundaries = []
@@ -372,8 +376,15 @@ class Wall(TraceClass):
                 # assign the entity to a storey
                 # FIXME windows and doors should be assigned to Space not Storey
                 assign_storey_byindex(self.file, entity, self.level)
-                # TODO assign materials to assets
-
+                # assign a material
+                run(
+                    "material.assign_material",
+                    self.file,
+                    product=entity,
+                    material=get_material_by_name(
+                        self.file, body_context, db["material"], self.style_materials
+                    ),
+                )
                 # load geometry from a DXF file and assign to the entity
                 assign_representation_fromDXF(
                     self.file, body_context, entity, self.style, dxf_path
@@ -584,10 +595,14 @@ class Wall(TraceClass):
         if usage in self.style_openings:
             opening = self.style_openings[usage]
             if opening["name"] in self.style_assets:
+                opening_material = self.opening_material
+                if "material" in opening:
+                    opening_material = opening["material"]
                 return {
                     "list": self.style_assets[opening["name"]],
                     "type": opening["type"],
                     "cill": opening["cill"],
+                    "material": opening_material,
                 }
         return {
             "list": [
@@ -622,6 +637,7 @@ class Wall(TraceClass):
             ],
             "type": "window",
             "cill": 1.0,
+            "material": "Error",
         }
 
     def fix_heights(self, id_segment):

@@ -6,7 +6,7 @@ exterior:
   inner: 0.305
   outer: 0.305
   layerset:
-    - [0.61, "Masonry"]
+    - [0.61, "Sandstone"]
   psets:
       Pset_WallCommon:
           IsExternal: true
@@ -22,5 +22,6 @@ crown:
   yshift: -0.24
   outer: 0.0
   extension: 0.305
+  material: Sandstone
 parapet:
   condition: noop

@@ -7,7 +7,7 @@ exterior:
   inner: 0.254
   outer: 0.254
   layerset:
-    - [0.508, "Masonry"]
+    - [0.508, "Sandstone"]
   psets:
       Pset_WallCommon:
           IsExternal: true
@@ -22,6 +22,7 @@ colonnade:
   inset: 0.0
   spacing: 2.54
   traces: [handrail, balustrade_large]
+  material: Sandstone
   psets:
       Pset_ColumnCommon:
           IsExternal: true
@@ -36,6 +37,7 @@ external beam:
   yshift: -0.535
   outer: 0.0
   extension: 0.254
+  material: Sandstone
   psets:
       Pset_BeamCommon:
           IsExternal: true
@@ -53,6 +55,7 @@ crown:
   xshift: 0.0
   yshift: -0.535
   extension: 0.254
+  material: Sandstone
 handrail:
   class: Extrusion
   ifc: IfcRailing
@@ -63,6 +66,7 @@ handrail:
   xshift: 0.0
   yshift: 1.02
   extension: -0.35
+  material: Mahogany
 balustrade_large:
   class: Repeat
   ifc: IfcRailing
@@ -71,4 +75,5 @@ balustrade_large:
   outer: 0.0
   inset: 0.4
   spacing: 1.2
+  material: Wrought Iron
   traces: [balustrade_small, bar]
