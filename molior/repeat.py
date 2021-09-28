@@ -263,6 +263,7 @@ class Repeat(TraceClass):
                         if name == condition:
                             config = myconfig["traces"][name]
                             vals = {
+                                "cellcomplex": self.cellcomplex,
                                 "closed": 0,
                                 "path": [
                                     location,

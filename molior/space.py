@@ -103,7 +103,7 @@ class Space(TraceClass):
                 transparency=0.5,
                 external_definition=None,
             )
-            # FIXME report 159 LIGHT ON TWO SIDES: custom psets? STDERR? IfcConstraint?
+            # FIXME report 159 LIGHT ON TWO SIDES: custom psets? STDERR?
         else:
             style = run(
                 "style.add_style",

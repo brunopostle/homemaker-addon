@@ -458,6 +458,7 @@ class Molior:
                 vals = {
                     "closed": closed,
                     "path": path,
+                    "cellcomplex": self.cellcomplex,
                     "chain": chain,
                     "circulation": self.circulation,
                     "file": self.file,
@@ -488,6 +489,7 @@ class Molior:
             config = myconfig["hulls"][name]
             if "condition" in config and config["condition"] == condition:
                 vals = {
+                    "cellcomplex": self.cellcomplex,
                     "file": self.file,
                     "name": name,
                     "style": stylename,

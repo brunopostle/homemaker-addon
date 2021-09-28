@@ -204,7 +204,6 @@ sahn-floor:
 stair-floor:
   class: Floor
   condition: stair
-  not_if_stair_below: 1
   psets:
       Pset_SlabCommon:
           IsExternal: false

@@ -66,6 +66,7 @@ class Wall(TraceClass):
         style = molior.Molior.style
         segments = self.segments()
 
+        # FIXME support Virtual Element
         aggregate = run(
             "root.create_entity",
             self.file,
@@ -80,6 +81,7 @@ class Wall(TraceClass):
             # inside face start and end coordinates
             v_in_a = self.corner_in(id_segment)
             v_in_b = self.corner_in(id_segment + 1)
+            # FIXME add Rel Connects Path Elements
 
             # mapping from normalised X-axis to this rotated axis
             matrix_forward = matrix_align(
