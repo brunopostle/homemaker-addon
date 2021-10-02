@@ -346,6 +346,31 @@ def assign_storey_byindex(self, entity, index):
         )
 
 
+def assign_space_byindex(self, entity, index):
+    """Assign object to a Space by index"""
+    spaces = {}
+    for space in self.by_type("IfcSpace"):
+        pset_topology = ifcopenshell.util.element.get_psets(space).get("EPset_Topology")
+        if pset_topology:
+            spaces[pset_topology["CellIndex"]] = space
+    if not spaces[str(index)]:
+        return
+    if entity.is_a("IfcSpatialElement"):
+        run(
+            "aggregate.assign_object",
+            self,
+            product=entity,
+            relating_object=spaces[str(index)],
+        )
+    else:
+        run(
+            "spatial.assign_container",
+            self,
+            product=entity,
+            relating_structure=spaces[str(index)],
+        )
+
+
 def assign_representation_fromDXF(self, subcontext, element, stylename, path_dxf):
     """Assign geometry from DXF unless a TypeProduct with this name already exists"""
     product_type = get_type_by_dxf(

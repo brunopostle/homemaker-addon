@@ -60,26 +60,27 @@ class Floor(TraceClass):
             "root.create_entity",
             self.file,
             ifc_class=self.ifc,
-            name=self.name,
+            name=self.name + "/" + str(cell.Get("index")),
         )
-        # FIXME Slab should be assigned to Space not Storey
+        # Slab will be re-assigned to Space later
         assign_storey_byindex(self.file, entity, self.level)
 
         if cell.__class__ == Cell:
             faces_bottom = create_stl_list(Face)
             cell.FacesBottom(faces_bottom)
-            self.add_pset(
-                entity, "EPset_Topology", {"CellIndex": str(cell.Get("index"))}
-            )
-            self.add_pset(
-                entity,
-                "EPset_Topology",
-                {
-                    "FaceIndices": " ".join(
-                        [str(face.Get("index")) for face in list(faces_bottom)]
-                    )
-                },
-            )
+            if not cell.Get("index") == None:
+                self.add_pset(
+                    entity, "EPset_Topology", {"CellIndex": str(cell.Get("index"))}
+                )
+                self.add_pset(
+                    entity,
+                    "EPset_Topology",
+                    {
+                        "FaceIndices": " ".join(
+                            [str(face.Get("index")) for face in list(faces_bottom)]
+                        )
+                    },
+                )
             for face in list(faces_bottom):
                 vertices_perimeter = create_stl_list(Vertex)
                 face.VerticesPerimeter(vertices_perimeter)

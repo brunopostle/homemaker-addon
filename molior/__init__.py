@@ -42,6 +42,9 @@ from molior.repeat import Repeat
 
 from molior.style import Style
 from molior.geometry import subtract_3d, x_product_3d
+from molior.ifc import (
+    assign_space_byindex,
+)
 from topologic import Edge, Face
 from topologist.helpers import create_stl_list, string_to_coor_2d
 
@@ -430,6 +433,15 @@ class Molior:
                     items = boundary.Description.split()
                     if len(items) == 2 and items[0] == "CellIndex":
                         boundary.RelatingSpace = space_lookup[items[1]]
+
+            # attach Slab elements to relevant Space
+            for slab in self.file.by_type("IfcSlab"):
+                pset_topology = ifcopenshell.util.element.get_psets(slab).get(
+                    "EPset_Topology"
+                )
+                if pset_topology:
+                    print(pset_topology)
+                    assign_space_byindex(self.file, slab, pset_topology["CellIndex"])
 
     def GetTraceIfc(
         self,
