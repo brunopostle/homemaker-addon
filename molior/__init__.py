@@ -435,13 +435,23 @@ class Molior:
                         boundary.RelatingSpace = space_lookup[items[1]]
 
             # attach Slab elements to relevant Space
-            for slab in self.file.by_type("IfcSlab"):
-                pset_topology = ifcopenshell.util.element.get_psets(slab).get(
+            for element in self.file.by_type("IfcSlab"):
+                pset_topology = ifcopenshell.util.element.get_psets(element).get(
                     "EPset_Topology"
                 )
                 if pset_topology:
-                    print(pset_topology)
-                    assign_space_byindex(self.file, slab, pset_topology["CellIndex"])
+                    assign_space_byindex(self.file, element, pset_topology["CellIndex"])
+
+            # attach Window elements to relevant Space
+            # TODO attach Door elements to Space
+            for element in self.file.by_type("IfcWindow"):
+                pset_topology = ifcopenshell.util.element.get_psets(element).get(
+                    "EPset_Topology"
+                )
+                if pset_topology:
+                    assign_space_byindex(
+                        self.file, element, pset_topology["BackCellIndex"]
+                    )
 
     def GetTraceIfc(
         self,

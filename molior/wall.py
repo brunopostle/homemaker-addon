@@ -355,6 +355,7 @@ class Wall(TraceClass):
                     ifc_class=ifc_class,
                     name=segment[id_opening]["name"],
                 )
+                self.add_topology_pset(entity, face, back_cell, front_cell)
                 # window/door width and height attributes can't be set in Type
                 run(
                     "attribute.edit_attributes",
@@ -376,7 +377,6 @@ class Wall(TraceClass):
                     ),
                 )
                 # assign the entity to a storey
-                # FIXME windows and doors should be assigned to Space not Storey
                 assign_storey_byindex(self.file, entity, self.level)
                 # assign a material
                 run(
