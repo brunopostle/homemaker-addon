@@ -21,51 +21,54 @@ run = ifcopenshell.api.run
 
 def init(building_name, elevations):
     """Creates and sets up an ifc 'file' object"""
-    ifc = run("project.create_file")
+    file = run("project.create_file")
 
-    run("owner.add_person", ifc)
-    run("owner.add_organisation", ifc)
+    run("owner.add_person", file)
+    run("owner.add_organisation", file)
 
     project = run(
         "root.create_entity",
-        ifc,
+        file,
         ifc_class="IfcProject",
         name="My Project",
     )
 
-    run("unit.assign_unit", ifc, length={"is_metric": True, "raw": "METERS"})
+    run("unit.assign_unit", file, length={"is_metric": True, "raw": "METERS"})
 
-    run("context.add_context", ifc)
+    parent_context = run("context.add_context", file, context_type="Model")
     run(
         "context.add_context",
-        ifc,
-        context="Model",
-        subcontext="Body",
+        file,
+        context_identifier="Body",
+        context_type=parent_context.ContextType,
+        parent=parent_context,
         target_view="MODEL_VIEW",
     )
     run(
         "context.add_context",
-        ifc,
-        context="Model",
-        subcontext="Reference",
+        file,
+        context_identifier="Reference",
+        context_type=parent_context.ContextType,
+        parent=parent_context,
         target_view="GRAPH_VIEW",
     )
     run(
         "context.add_context",
-        ifc,
-        context="Model",
-        subcontext="Axis",
+        file,
+        context_identifier="Axis",
+        context_type=parent_context.ContextType,
+        parent=parent_context,
         target_view="GRAPH_VIEW",
     )
 
     # create a structural model
-    run("structural.add_structural_analysis_model", ifc)
+    run("structural.add_structural_analysis_model", file)
 
     # create and relate site and building
-    site = run("root.create_entity", ifc, ifc_class="IfcSite", name="My Site")
-    run("aggregate.assign_object", ifc, product=site, relating_object=project)
-    createBuilding(ifc, site, building_name, elevations)
-    return ifc
+    site = run("root.create_entity", file, ifc_class="IfcSite", name="My Site")
+    run("aggregate.assign_object", file, product=site, relating_object=project)
+    createBuilding(file, site, building_name, elevations)
+    return file
 
 
 def createBuilding(self, site, building_name, elevations):
