@@ -103,7 +103,7 @@ class Floor(TraceClass):
                         self.file,
                         ifc_class="IfcRelSpaceBoundary2ndLevel",
                     )
-                    if self.ifc == "IfcVirtualElement":
+                    if entity.is_a("IfcVirtualElement"):
                         boundary.PhysicalOrVirtualBoundary = "VIRTUAL"
                     else:
                         boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
@@ -124,7 +124,7 @@ class Floor(TraceClass):
                     boundary.RelatedBuildingElement = entity
 
                 # don't generate structural surfaces if this is only a boundary between cells
-                if self.ifc == "IfcVirtualElement":
+                if entity.is_a("IfcVirtualElement"):
                     continue
                 structural_surface = run(
                     "root.create_entity",
@@ -171,7 +171,7 @@ class Floor(TraceClass):
                     ),
                 )
 
-        if self.ifc == "IfcVirtualElement":
+        if entity.is_a("IfcVirtualElement"):
             return
         # assign a type and place a representation
         myelement_type = self.get_element_type()

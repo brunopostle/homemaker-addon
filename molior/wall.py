@@ -64,9 +64,8 @@ class Wall(TraceClass):
                 axis_context = item
         self.init_openings()
         style = molior.Molior.style
-        segments = self.segments()
 
-        # FIXME support Virtual Element
+        # traces have one or more segments, aggregate them
         aggregate = run(
             "root.create_entity",
             self.file,
@@ -74,22 +73,9 @@ class Wall(TraceClass):
             name=self.identifier,
         )
         assign_storey_byindex(self.file, aggregate, self.level)
+
+        segments = self.segments()
         for id_segment in range(segments):
-            # outside face start and end coordinates
-            v_out_a = self.corner_out(id_segment)
-            v_out_b = self.corner_out(id_segment + 1)
-            # inside face start and end coordinates
-            v_in_a = self.corner_in(id_segment)
-            v_in_b = self.corner_in(id_segment + 1)
-            # FIXME add Rel Connects Path Elements
-
-            # mapping from normalised X-axis to this rotated axis
-            matrix_forward = matrix_align(
-                [*self.corner_coor(id_segment), 0.0],
-                [*self.corner_coor(id_segment + 1), 0.0],
-            )
-            matrix_reverse = numpy.linalg.inv(matrix_forward)
-
             mywall = run(
                 "root.create_entity",
                 self.file,
@@ -103,6 +89,51 @@ class Wall(TraceClass):
                 relating_object=aggregate,
             )
 
+            segment = self.chain.edges()[id_segment]
+            face = self.chain.graph[segment[0]][1][2]
+            vertices_stl = create_stl_list(Vertex)
+            self.chain.graph[segment[0]][1][2].VerticesPerimeter(vertices_stl)
+            vertices = [
+                [vertex.X(), vertex.Y(), vertex.Z()] for vertex in list(vertices_stl)
+            ]
+            normal = self.chain.graph[segment[0]][1][2].Normal()
+
+            # generate space boundaries
+            boundaries = []
+            nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
+            curve_bounded_plane = createCurveBoundedPlane(self.file, nodes_2d, matrix)
+            for cell in face.CellsOrdered():
+                if cell == None:
+                    boundaries.append(None)
+                    continue
+                boundary = run(
+                    "root.create_entity",
+                    self.file,
+                    ifc_class="IfcRelSpaceBoundary2ndLevel",
+                )
+                if face.IsInternal():
+                    boundary.InternalOrExternalBoundary = "INTERNAL"
+                else:
+                    boundary.InternalOrExternalBoundary = "EXTERNAL"
+                if mywall.is_a("IfcVirtualElement"):
+                    boundary.PhysicalOrVirtualBoundary = "VIRTUAL"
+                else:
+                    boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
+
+                boundary.RelatedBuildingElement = mywall
+                boundary.ConnectionGeometry = (
+                    self.file.createIfcConnectionSurfaceGeometry(curve_bounded_plane)
+                )
+                cell_index = cell.Get("index")
+                if not cell_index == None:
+                    # can't assign psets to an IfcRelationship, use Description instead
+                    boundary.Description = "CellIndex " + str(cell_index)
+                boundaries.append(boundary)
+
+            if mywall.is_a("IfcVirtualElement"):
+                continue
+
+            # reuse (or create) a Type
             myelement_type = self.get_element_type()
             run(
                 "type.assign_type",
@@ -117,6 +148,21 @@ class Wall(TraceClass):
             for inverse in self.file.get_inverse(mylayerset):
                 if inverse.is_a("IfcMaterialLayerSetUsage"):
                     inverse.OffsetFromReferenceLine = 0.0 - self.outer
+
+            # mapping from normalised X-axis to this rotated axis
+            matrix_forward = matrix_align(
+                [*self.corner_coor(id_segment), 0.0],
+                [*self.corner_coor(id_segment + 1), 0.0],
+            )
+            matrix_reverse = numpy.linalg.inv(matrix_forward)
+
+            # outside face start and end coordinates
+            v_out_a = self.corner_out(id_segment)
+            v_out_b = self.corner_out(id_segment + 1)
+            # inside face start and end coordinates
+            v_in_a = self.corner_in(id_segment)
+            v_in_b = self.corner_in(id_segment + 1)
+            # FIXME add Rel Connects Path Elements
 
             # wall is a plan shape extruded vertically
             solid = createExtrudedAreaSolid(
@@ -142,19 +188,11 @@ class Wall(TraceClass):
                 ]
             )
 
-            segment = self.chain.edges()[id_segment]
-            face = self.chain.graph[segment[0]][1][2]
             back_cell = self.chain.graph[segment[0]][1][3]
             front_cell = self.chain.graph[segment[0]][1][4]
             self.add_topology_pset(mywall, face, back_cell, front_cell)
 
             # structure
-            vertices_stl = create_stl_list(Vertex)
-            self.chain.graph[segment[0]][1][2].VerticesPerimeter(vertices_stl)
-            vertices = [
-                [vertex.X(), vertex.Y(), vertex.Z()] for vertex in list(vertices_stl)
-            ]
-            normal = self.chain.graph[segment[0]][1][2].Normal()
             face_surface = createFaceSurface(self.file, vertices, normal)
             # generate structural surfaces
             structural_surface = run(
@@ -201,38 +239,6 @@ class Wall(TraceClass):
                     self.style_materials,
                 ),
             )
-
-            # generate space boundaries
-            boundaries = []
-            nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
-            curve_bounded_plane = createCurveBoundedPlane(self.file, nodes_2d, matrix)
-            for cell in face.CellsOrdered():
-                if cell == None:
-                    boundaries.append(None)
-                    continue
-                boundary = run(
-                    "root.create_entity",
-                    self.file,
-                    ifc_class="IfcRelSpaceBoundary2ndLevel",
-                )
-                if face.IsInternal():
-                    boundary.InternalOrExternalBoundary = "INTERNAL"
-                    boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
-                elif face.IsExternal():
-                    boundary.InternalOrExternalBoundary = "EXTERNAL"
-                    boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
-                else:
-                    boundary.InternalOrExternalBoundary = "EXTERNAL"
-                    boundary.PhysicalOrVirtualBoundary = "VIRTUAL"
-                boundary.RelatedBuildingElement = mywall
-                boundary.ConnectionGeometry = (
-                    self.file.createIfcConnectionSurfaceGeometry(curve_bounded_plane)
-                )
-                cell_index = cell.Get("index")
-                if not cell_index == None:
-                    # can't assign psets to an IfcRelationship, use Description instead
-                    boundary.Description = "CellIndex " + str(cell_index)
-                boundaries.append(boundary)
 
             # clip the top of the wall if face isn't rectangular
             edges_result = create_stl_list(Edge)
