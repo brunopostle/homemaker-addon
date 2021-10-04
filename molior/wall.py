@@ -74,6 +74,7 @@ class Wall(TraceClass):
         )
         assign_storey_byindex(self.file, aggregate, self.level)
 
+        previous_wall = None
         segments = self.segments()
         for id_segment in range(segments):
             mywall = run(
@@ -162,7 +163,6 @@ class Wall(TraceClass):
             # inside face start and end coordinates
             v_in_a = self.corner_in(id_segment)
             v_in_b = self.corner_in(id_segment + 1)
-            # FIXME add Rel Connects Path Elements
 
             # wall is a plan shape extruded vertically
             solid = createExtrudedAreaSolid(
@@ -173,6 +173,67 @@ class Wall(TraceClass):
                 ],
                 self.height,
             )
+
+            # Rel Connects Path Elements
+            if previous_wall == None:
+                first_wall = mywall
+            else:
+                rel_connects = run(
+                    "root.create_entity",
+                    self.file,
+                    ifc_class="IfcRelConnectsPathElements",
+                    name=self.identifier,
+                )
+                rel_connects.RelatingElement = mywall
+                rel_connects.RelatingConnectionType = "ATSTART"
+                rel_connects.RelatingPriorities = []
+                rel_connects.ConnectionGeometry = (
+                    self.file.createIfcConnectionCurveGeometry(
+                        self.file.createIfcPolyline(
+                            [
+                                self.file.createIfcCartesianPoint(
+                                    transform(matrix_reverse, v_in_a)
+                                ),
+                                self.file.createIfcCartesianPoint(
+                                    transform(matrix_reverse, v_out_a)
+                                ),
+                            ]
+                        ),
+                        None,
+                    )
+                )
+                rel_connects.RelatedElement = previous_wall
+                rel_connects.RelatedConnectionType = "ATEND"
+                rel_connects.RelatedPriorities = []
+            if self.closed and id_segment == len(self.path) - 1:
+                rel_connects = run(
+                    "root.create_entity",
+                    self.file,
+                    ifc_class="IfcRelConnectsPathElements",
+                    name=self.identifier,
+                )
+                rel_connects.RelatingElement = mywall
+                rel_connects.RelatingConnectionType = "ATEND"
+                rel_connects.RelatingPriorities = []
+                rel_connects.ConnectionGeometry = (
+                    self.file.createIfcConnectionCurveGeometry(
+                        self.file.createIfcPolyline(
+                            [
+                                self.file.createIfcCartesianPoint(
+                                    transform(matrix_reverse, v_in_b)
+                                ),
+                                self.file.createIfcCartesianPoint(
+                                    transform(matrix_reverse, v_out_b)
+                                ),
+                            ]
+                        ),
+                        None,
+                    )
+                )
+                rel_connects.RelatedElement = first_wall
+                rel_connects.RelatedConnectionType = "ATSTART"
+                rel_connects.RelatedPriorities = []
+            previous_wall = mywall
 
             # axis is a straight line
             axis = self.file.createIfcPolyline(
@@ -187,6 +248,8 @@ class Wall(TraceClass):
                     ]
                 ]
             )
+
+            # TODO add Qto_WallBaseQuantities
 
             back_cell = self.chain.graph[segment[0]][1][3]
             front_cell = self.chain.graph[segment[0]][1][4]
