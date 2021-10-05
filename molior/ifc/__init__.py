@@ -353,7 +353,7 @@ def assign_space_byindex(self, entity, index):
         pset_topology = ifcopenshell.util.element.get_psets(space).get("EPset_Topology")
         if pset_topology:
             spaces[pset_topology["CellIndex"]] = space
-    if not spaces[str(index)]:
+    if not str(index) in spaces:
         return
     if entity.is_a("IfcSpatialElement"):
         run(

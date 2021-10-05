@@ -432,7 +432,8 @@ class Molior:
                 if boundary.Description:
                     items = boundary.Description.split()
                     if len(items) == 2 and items[0] == "CellIndex":
-                        boundary.RelatingSpace = space_lookup[items[1]]
+                        if items[1] in space_lookup:
+                            boundary.RelatingSpace = space_lookup[items[1]]
 
             # attach Slab elements to relevant Space
             for element in self.file.by_type("IfcSlab"):
