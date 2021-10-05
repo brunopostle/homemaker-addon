@@ -9,3 +9,17 @@ exterior:
       Pset_WallCommon:
           IsExternal: true
           LoadBearing: true
+column:
+  condition: noop
+external beam:
+  condition: noop
+openwall:
+  class: Wall
+  ifc: IfcWall
+  condition: open
+  inner: 0.08
+  outer: 0.25
+  psets:
+      Pset_WallCommon:
+          IsExternal: true
+          LoadBearing: true

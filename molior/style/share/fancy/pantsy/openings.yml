@@ -11,6 +11,10 @@ bedroom outside window:
   name: fancy sash window
   type: window
   cill: 0.75
+kitchen outside window:
+  name: fancy sash window
+  type: window
+  cill: 0.75
 living street window:
   name: fancy sash window
   type: window
