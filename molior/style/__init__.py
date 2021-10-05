@@ -50,18 +50,18 @@ class Style:
                 if stylename == ".":
                     stylename = "default"
 
+                if not stylename in self.data:
+                    self.data[stylename] = {}
+                if not stylename in self.files:
+                    self.files[stylename] = {}
                 if ext == ".yml":
                     fh = open(os.path.join(root, name), "rb")
                     data = yaml.safe_load(fh.read())
                     fh.close()
 
-                    if not stylename in self.data:
-                        self.data[stylename] = {}
                     self.data[stylename][prefix] = data
                     self.data[stylename]["ancestors"] = ancestors
                 else:
-                    if not stylename in self.files:
-                        self.files[stylename] = {}
                     self.files[stylename][name] = os.path.join(root, name)
 
     def get(self, stylename):
