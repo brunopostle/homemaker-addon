@@ -583,7 +583,14 @@ class Wall(TraceClass):
                     interior_type = edge[1][3].Usage()
                 except:
                     interior_type = None
-                self.populate_exterior_openings(segment, interior_type, 0)
+                try:
+                    exterior_type = edge[1][4].Usage()
+                except:
+                    exterior_type = None
+                access = 0
+                if exterior_type == "outside":
+                    access = 1
+                self.populate_exterior_openings(segment, interior_type, access)
                 self.fix_heights(segment)
                 self.fix_segment(segment)
         elif "do_populate_interior_openings" in self.__dict__:
@@ -646,7 +653,7 @@ class Wall(TraceClass):
             self.openings[segment_id].append(
                 {"name": "retail entrance", "along": 0.5, "size": 0}
             )
-        if interior_type == "circulation" and self.level == 0:
+        if interior_type in ("circulation", "stair") and self.level == 0:
             self.openings[segment_id].append(
                 {"name": "house entrance", "along": 0.5, "size": 0}
             )
