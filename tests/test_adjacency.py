@@ -85,10 +85,10 @@ class Tests(unittest.TestCase):
         # only three of the fourteen faces are represented in the graph
         self.assertEqual(len(faces), 3)
         for face in faces:
-            self.assertEqual(face.__class__, Face)
+            self.assertEqual(type(face), Face)
             # this Face has to have a Vertex in the Graph, that represents a Face
             vertex = face.GraphVertex(graph)
-            self.assertEqual(vertex.__class__, Vertex)
+            self.assertEqual(type(vertex), Vertex)
             self.assertEqual(vertex.Get("class"), "Face")
             # it should be the same Face
             entity = graph.GetEntity(self.cc, vertex)
@@ -99,7 +99,7 @@ class Tests(unittest.TestCase):
         cells = graph.Cells(self.cc)
         self.assertEqual(len(cells), 3)
         for cell in cells:
-            self.assertEqual(cell.__class__, Cell)
+            self.assertEqual(type(cell), Cell)
 
     def test_graphvertex(self):
         graph = Graph.Adjacency(self.cc)
@@ -110,11 +110,11 @@ class Tests(unittest.TestCase):
             # vertex is the node in the Graph that corresponds to this Cell
             vertex = cell.GraphVertex(graph)
             # it should be a Vertex, representing a Cell
-            self.assertEqual(vertex.__class__, Vertex)
+            self.assertEqual(type(vertex), Vertex)
             self.assertEqual(vertex.Get("class"), "Cell")
             # the equivalent entity in the CellComplex, should be a Cell
             entity = graph.GetEntity(self.cc, vertex)
-            self.assertEqual(entity.__class__, Cell)
+            self.assertEqual(type(entity), Cell)
             # it should be the same Cell we started with
             self.assertTrue(cell.IsSame(entity))
 
@@ -130,11 +130,11 @@ class Tests(unittest.TestCase):
             if vertex == None:
                 continue
             # it should be a Vertex, representing a Face
-            self.assertEqual(vertex.__class__, Vertex)
+            self.assertEqual(type(vertex), Vertex)
             self.assertEqual(vertex.Get("class"), "Face")
             # the equivalent entity in the CellComplex, should be a Face
             entity = graph.GetEntity(self.cc, vertex)
-            self.assertEqual(entity.__class__, Face)
+            self.assertEqual(type(entity), Face)
             # it should be the same Face we started with
             self.assertTrue(face.IsSame(entity))
 
@@ -167,7 +167,7 @@ class Tests(unittest.TestCase):
 
         self.assertFalse(graph.IsConnected())
         dot = graph.Dot(self.cc)
-        self.assertTrue(dot.__class__ == str)
+        self.assertTrue(type(dot) == str)
 
 
 if __name__ == "__main__":

@@ -125,14 +125,16 @@ class Shell(BaseClass):
             self.add_psets(myelement_type)
 
             # Usage isn't created until after type.assign_type
-            mylayerset = ifcopenshell.util.element.get_material(myelement_type)
-            for inverse in self.file.get_inverse(mylayerset):
+            for inverse in self.file.get_inverse(
+                ifcopenshell.util.element.get_material(myelement_type)
+            ):
                 if inverse.is_a("IfcMaterialLayerSetUsage"):
                     inverse.OffsetFromReferenceLine = 0.0 - self.inner
 
             if abs(float(normal_x[2])) < 0.001:
                 extrude_height = self.outer
                 extrude_direction = [0.0, 0.0, 1.0]
+            # TODO set extrude normal/vertical in style
             else:
                 extrude_height = self.outer / float(normal_x[2])
                 extrude_direction = [
@@ -166,6 +168,7 @@ class Shell(BaseClass):
                 matrix=matrix,
             )
 
+            # TODO Virtual Element with boundary only
             # generate space boundary for back cell
             if face[2][1]:
                 boundary = run(

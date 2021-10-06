@@ -3,7 +3,7 @@
 import cppyy
 from cppyy.gbl.std import string
 import topologic
-from topologic import Vertex, Edge, Face, Cell, StringAttribute
+from topologic import Vertex, Edge, Face, StringAttribute
 from topologist.helpers import create_stl_list, el
 
 
@@ -148,10 +148,7 @@ def DumpDictionary(self):
 
 def GraphVertex(self, graph):
     index = self.Get("index")
-    if self.__class__ == Face:
-        myclass = "Face"
-    if self.__class__ == Cell:
-        myclass = "Cell"
+    myclass = type(self).__name__
     if not index == None:
         vertices = create_stl_list(Vertex)
         graph.Vertices(vertices)

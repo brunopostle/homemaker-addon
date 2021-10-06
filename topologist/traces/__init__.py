@@ -108,10 +108,7 @@ class Traces:
             for elevation in traces[label]:
                 for height in traces[label][elevation]:
                     for stylename in traces[label][elevation][height]:
-                        if (
-                            traces[label][elevation][height][stylename].__class__
-                            == [].__class__
-                        ):
+                        if type(traces[label][elevation][height][stylename]) == list:
                             continue
                         graphs = traces[label][elevation][height][
                             stylename

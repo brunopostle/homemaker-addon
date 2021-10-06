@@ -145,8 +145,9 @@ class Wall(TraceClass):
             self.add_psets(myelement_type)
 
             # Usage isn't created until after type.assign_type
-            mylayerset = ifcopenshell.util.element.get_material(myelement_type)
-            for inverse in self.file.get_inverse(mylayerset):
+            for inverse in self.file.get_inverse(
+                ifcopenshell.util.element.get_material(myelement_type)
+            ):
                 if inverse.is_a("IfcMaterialLayerSetUsage"):
                     inverse.OffsetFromReferenceLine = 0.0 - self.outer
 

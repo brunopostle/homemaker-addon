@@ -42,11 +42,13 @@ class Floor(TraceClass):
             if item.ContextIdentifier == "Body":
                 body_context = item
 
-        string_coor_start = next(iter(self.chain.graph))
-        cell = self.chain.graph[string_coor_start][1][3]
+        # every node in the graph references the cell, pick one
+        cell = self.chain.graph[next(iter(self.chain.graph))][1][3]
+
+        # with stairs we want a Virtual Element instead of a Slab
         if (
-            cell.__class__ == Cell
-            and self.cellcomplex.__class__ == CellComplex
+            type(cell) == Cell
+            and type(self.cellcomplex) == CellComplex
             and cell.Get("usage") == "stair"
         ):
             cells_below = create_stl_list(Cell)
@@ -56,24 +58,26 @@ class Floor(TraceClass):
                     self.ifc = "IfcVirtualElement"
                     break
 
-        entity = run(
+        element = run(
             "root.create_entity",
             self.file,
             ifc_class=self.ifc,
             name=self.name + "/" + str(cell.Get("index")),
         )
         # Slab will be re-assigned to Space later
-        assign_storey_byindex(self.file, entity, self.level)
+        assign_storey_byindex(self.file, element, self.level)
 
-        if cell.__class__ == Cell:
+        if type(cell) == Cell:
             faces_bottom = create_stl_list(Face)
             cell.FacesBottom(faces_bottom)
-            if not cell.Get("index") == None:
+
+            # topology stuff
+            if cell.Get("index") != None:
                 self.add_pset(
-                    entity, "EPset_Topology", {"CellIndex": str(cell.Get("index"))}
+                    element, "EPset_Topology", {"CellIndex": cell.Get("index")}
                 )
                 self.add_pset(
-                    entity,
+                    element,
                     "EPset_Topology",
                     {
                         "FaceIndices": " ".join(
@@ -103,7 +107,13 @@ class Floor(TraceClass):
                         self.file,
                         ifc_class="IfcRelSpaceBoundary2ndLevel",
                     )
-                    if entity.is_a("IfcVirtualElement"):
+                    boundary.ConnectionGeometry = (
+                        self.file.createIfcConnectionSurfaceGeometry(
+                            curve_bounded_plane
+                        )
+                    )
+                    boundary.RelatedBuildingElement = element
+                    if element.is_a("IfcVirtualElement"):
                         boundary.PhysicalOrVirtualBoundary = "VIRTUAL"
                     else:
                         boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
@@ -111,20 +121,13 @@ class Floor(TraceClass):
                         boundary.InternalOrExternalBoundary = "INTERNAL"
                     else:
                         boundary.InternalOrExternalBoundary = "EXTERNAL"
-                    boundary.ConnectionGeometry = (
-                        self.file.createIfcConnectionSurfaceGeometry(
-                            curve_bounded_plane
-                        )
-                    )
                     cell_index = cell.Get("index")
-                    if not cell_index == None:
+                    if cell_index != None:
                         # can't assign psets to an IfcRelationship, use Description instead
-                        boundary.Description = "CellIndex " + str(cell_index)
-
-                    boundary.RelatedBuildingElement = entity
+                        boundary.Description = "CellIndex " + cell_index
 
                 # don't generate structural surfaces if this is only a boundary between cells
-                if entity.is_a("IfcVirtualElement"):
+                if element.is_a("IfcVirtualElement"):
                     continue
                 structural_surface = run(
                     "root.create_entity",
@@ -132,14 +135,16 @@ class Floor(TraceClass):
                     ifc_class="IfcStructuralSurfaceMember",
                     name=self.name,
                 )
+                structural_surface.PredefinedType = "SHELL"
+                structural_surface.Thickness = self.thickness
+
                 assignment = run(
                     "root.create_entity", self.file, ifc_class="IfcRelAssignsToProduct"
                 )
                 assignment.RelatingProduct = structural_surface
-                assignment.RelatedObjects = [entity]
+                assignment.RelatedObjects = [element]
+
                 self.add_topology_pset(structural_surface, face, *face.CellsOrdered())
-                structural_surface.PredefinedType = "SHELL"
-                structural_surface.Thickness = self.thickness
                 run(
                     "structural.assign_structural_analysis_model",
                     self.file,
@@ -171,19 +176,20 @@ class Floor(TraceClass):
                     ),
                 )
 
-        if entity.is_a("IfcVirtualElement"):
+        if element.is_a("IfcVirtualElement"):
             return
         # assign a type and place a representation
         myelement_type = self.get_element_type()
         run(
             "type.assign_type",
             self.file,
-            related_object=entity,
+            related_object=element,
             relating_type=myelement_type,
         )
         self.add_psets(myelement_type)
-        mylayerset = ifcopenshell.util.element.get_material(myelement_type)
-        for inverse in self.file.get_inverse(mylayerset):
+        for inverse in self.file.get_inverse(
+            ifcopenshell.util.element.get_material(myelement_type)
+        ):
             if inverse.is_a("IfcMaterialLayerSetUsage"):
                 inverse.OffsetFromReferenceLine = 0.0 - self.below
 
@@ -202,13 +208,13 @@ class Floor(TraceClass):
         run(
             "geometry.assign_representation",
             self.file,
-            product=entity,
+            product=element,
             representation=shape,
         )
         run(
             "geometry.edit_object_placement",
             self.file,
-            product=entity,
+            product=element,
             matrix=matrix_align(
                 [0.0, 0.0, self.elevation - self.below], [1.0, 0.0, 0.0]
             ),

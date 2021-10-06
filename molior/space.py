@@ -36,8 +36,7 @@ class Space(TraceClass):
             if item.ContextIdentifier == "Body":
                 body_context = item
         # the cell is the first cell attached to any edge in the chain
-        string_coor_start = next(iter(self.chain.graph))
-        cell = self.chain.graph[string_coor_start][1][3]
+        cell = self.chain.graph[next(iter(self.chain.graph))][1][3]
 
         entity = run(
             "root.create_entity",
@@ -61,6 +60,8 @@ class Space(TraceClass):
         self.add_psets(entity)
 
         assign_storey_byindex(self.file, entity, self.level)
+
+        # TODO allow skipping representation in style
         # simple extruded representation
         representation = createExtrudedAreaSolid(
             self.file,
