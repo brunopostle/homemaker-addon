@@ -38,7 +38,7 @@ class Space(TraceClass):
         # the cell is the first cell attached to any edge in the chain
         cell = self.chain.graph[next(iter(self.chain.graph))][1][3]
 
-        entity = run(
+        element = run(
             "root.create_entity",
             self.file,
             ifc_class=self.ifc,
@@ -51,15 +51,15 @@ class Space(TraceClass):
         except:
             is_external = False
             crinkliness = 1.0
-        self.add_pset(entity, "EPset_Pattern", {"Crinkliness": str(crinkliness)})
+        self.add_pset(element, "EPset_Pattern", {"Crinkliness": str(crinkliness)})
         topology_index = cell.Get("index")
         if not topology_index == None:
-            self.add_pset(entity, "EPset_Topology", {"CellIndex": str(topology_index)})
+            self.add_pset(element, "EPset_Topology", {"CellIndex": str(topology_index)})
 
         # FIXME should create IfcSpaceType for this
-        self.add_psets(entity)
+        self.add_psets(element)
 
-        assign_storey_byindex(self.file, entity, self.level)
+        assign_storey_byindex(self.file, element, self.level)
 
         # TODO allow skipping representation in style
         # simple extruded representation
@@ -125,13 +125,13 @@ class Space(TraceClass):
         run(
             "geometry.assign_representation",
             self.file,
-            product=entity,
+            product=element,
             representation=shape,
         )
         run(
             "geometry.edit_object_placement",
             self.file,
-            product=entity,
+            product=element,
             matrix=matrix_align(
                 [0.0, 0.0, self.elevation + self.floor], [1.0, 0.0, 0.0]
             ),

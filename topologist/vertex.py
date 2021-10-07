@@ -4,7 +4,7 @@ import topologic
 
 
 def CoorAsString(self):
-    return str(self.X()) + "__" + str(self.Y()) + "__" + str(self.Z())
+    return "__".join(str(item) for item in list(self.Coordinates()))
 
 
 setattr(topologic.Vertex, "CoorAsString", CoorAsString)

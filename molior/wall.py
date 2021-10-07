@@ -94,9 +94,7 @@ class Wall(TraceClass):
             face = self.chain.graph[segment[0]][1][2]
             vertices_stl = create_stl_list(Vertex)
             self.chain.graph[segment[0]][1][2].VerticesPerimeter(vertices_stl)
-            vertices = [
-                [vertex.X(), vertex.Y(), vertex.Z()] for vertex in list(vertices_stl)
-            ]
+            vertices = [list(vertex.Coordinates()) for vertex in list(vertices_stl)]
             normal = self.chain.graph[segment[0]][1][2].Normal()
 
             # generate space boundaries
@@ -264,6 +262,7 @@ class Wall(TraceClass):
                 self.file,
                 ifc_class="IfcStructuralSurfaceMember",
                 name=self.identifier,
+                predefined_type="SHELL",
             )
             assignment = run(
                 "root.create_entity", self.file, ifc_class="IfcRelAssignsToProduct"
@@ -271,7 +270,6 @@ class Wall(TraceClass):
             assignment.RelatingProduct = structural_surface
             assignment.RelatedObjects = [mywall]
             self.add_topology_pset(structural_surface, face, back_cell, front_cell)
-            structural_surface.PredefinedType = "SHELL"
             structural_surface.Thickness = self.thickness
             run(
                 "structural.assign_structural_analysis_model",
@@ -468,12 +466,7 @@ class Wall(TraceClass):
                     self.file,
                     ifc_class="IfcOpeningElement",
                     name="My Opening",
-                )
-                run(
-                    "attribute.edit_attributes",
-                    self.file,
-                    product=myopening,
-                    attributes={"PredefinedType": "OPENING"},
+                    predefined_type="OPENING",
                 )
 
                 # give the opening a Body representation

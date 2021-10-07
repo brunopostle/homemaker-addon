@@ -148,8 +148,8 @@ class Molior:
             for edge in list(edges_stl):
                 v_start = edge.StartVertex()
                 v_end = edge.EndVertex()
-                start = [v_start.X(), v_start.Y(), v_start.Z()]
-                end = [v_end.X(), v_end.Y(), v_end.Z()]
+                start = list(v_start.Coordinates())
+                end = list(v_end.Coordinates())
 
                 # create an ifc curve connection for this topologic edge
                 curve_connection = run(

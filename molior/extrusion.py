@@ -40,16 +40,16 @@ class Extrusion(TraceClass):
             if item.ContextIdentifier == "Body":
                 body_context = item
         style = molior.Molior.style
-        entity = run(
+        element = run(
             "root.create_entity",
             self.file,
             ifc_class=self.ifc,
             name=self.identifier,
             predefined_type=self.predefined_type,
         )
-        self.add_psets(entity)
+        self.add_psets(element)
 
-        if entity.is_a("IfcBeam") or entity.is_a("IfcFooting"):
+        if element.is_a("IfcBeam") or element.is_a("IfcFooting"):
             # generate structural edges
             segments = self.segments()
             for id_segment in range(segments):
@@ -60,19 +60,19 @@ class Extrusion(TraceClass):
                     self.file,
                     ifc_class="IfcStructuralCurveMember",
                     name=self.identifier,
+                    predefined_type="RIGID_JOINED_MEMBER",
                 )
                 assignment = run(
                     "root.create_entity", self.file, ifc_class="IfcRelAssignsToProduct"
                 )
                 assignment.RelatingProduct = structural_member
-                assignment.RelatedObjects = [entity]
+                assignment.RelatedObjects = [element]
 
                 segment = self.chain.edges()[id_segment]
                 face = self.chain.graph[segment[0]][1][2]
                 back_cell = self.chain.graph[segment[0]][1][3]
                 front_cell = self.chain.graph[segment[0]][1][4]
                 self.add_topology_pset(structural_member, face, back_cell, front_cell)
-                structural_member.PredefinedType = "RIGID_JOINED_MEMBER"
                 structural_member.Axis = self.file.createIfcDirection([0.0, 0.0, 1.0])
                 run(
                     "structural.assign_structural_analysis_model",
@@ -134,13 +134,13 @@ class Extrusion(TraceClass):
         run(
             "material.assign_material",
             self.file,
-            product=entity,
+            product=element,
             material=get_material_by_name(
                 self.file, body_context, self.material, self.style_materials
             ),
         )
 
-        assign_storey_byindex(self.file, entity, self.level)
+        assign_storey_byindex(self.file, element, self.level)
         directrix = self.path
         if self.closed:
             directrix.append(directrix[0])
@@ -162,7 +162,7 @@ class Extrusion(TraceClass):
         assign_extrusion_fromDXF(
             self.file,
             body_context,
-            entity,
+            element,
             directrix,
             self.style,
             dxf_path,
@@ -172,7 +172,7 @@ class Extrusion(TraceClass):
         run(
             "geometry.edit_object_placement",
             self.file,
-            product=entity,
+            product=element,
             matrix=matrix_align(
                 [0.0, 0.0, self.elevation + self.height], [1.0, 0.0, 0.0]
             ),

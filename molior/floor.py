@@ -88,7 +88,7 @@ class Floor(TraceClass):
             for face in list(faces_bottom):
                 vertices_perimeter = create_stl_list(Vertex)
                 face.VerticesPerimeter(vertices_perimeter)
-                vertices = [[v.X(), v.Y(), v.Z()] for v in vertices_perimeter]
+                vertices = [list(v.Coordinates()) for v in vertices_perimeter]
                 normal = face.Normal()
                 # need this for boundaries
                 nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
@@ -134,8 +134,8 @@ class Floor(TraceClass):
                     self.file,
                     ifc_class="IfcStructuralSurfaceMember",
                     name=self.name,
+                    predefined_type="SHELL",
                 )
-                structural_surface.PredefinedType = "SHELL"
                 structural_surface.Thickness = self.thickness
 
                 assignment = run(

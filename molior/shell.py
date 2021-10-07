@@ -40,6 +40,7 @@ class Shell(BaseClass):
                 reference_context = item
             if item.ContextIdentifier == "Body":
                 body_context = item
+
         aggregate = run(
             "root.create_entity",
             self.file,
@@ -48,12 +49,52 @@ class Shell(BaseClass):
         )
         # FIXME this puts roofs in the ground floor
         assign_storey_byindex(self.file, aggregate, 0)
+
         for face in self.hull.faces:
             vertices = [[*string_to_coor(node_str)] for node_str in face[0]]
             normal = face[1]
+            # need this for boundaries
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
             # need this for structure
             face_surface = createFaceSurface(self.file, vertices, normal)
+
+            element = run(
+                "root.create_entity",
+                self.file,
+                ifc_class=self.ifc,
+                name=self.identifier,
+            )
+            run(
+                "aggregate.assign_object",
+                self.file,
+                product=element,
+                relating_object=aggregate,
+            )
+            self.add_topology_pset(element, *face[2])
+
+            # generate space boundary for back cell
+            boundary = run(
+                "root.create_entity",
+                self.file,
+                ifc_class="IfcRelSpaceBoundary2ndLevel",
+            )
+            boundary.ConnectionGeometry = self.file.createIfcConnectionSurfaceGeometry(
+                createCurveBoundedPlane(self.file, nodes_2d, matrix)
+            )
+            if element.is_a("IfcVirtualElement"):
+                boundary.PhysicalOrVirtualBoundary = "VIRTUAL"
+            else:
+                boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
+            boundary.InternalOrExternalBoundary = "EXTERNAL"
+            boundary.RelatedBuildingElement = element
+
+            cell_index = face[2][1].Get("index")
+            if cell_index != None:
+                # can't assign psets to an IfcRelationship, use Description instead
+                boundary.Description = "CellIndex " + str(cell_index)
+
+            if element.is_a("IfcVirtualElement"):
+                continue
 
             # generate structural surfaces
             structural_surface = run(
@@ -61,9 +102,9 @@ class Shell(BaseClass):
                 self.file,
                 ifc_class="IfcStructuralSurfaceMember",
                 name=self.identifier,
+                predefined_type="SHELL",
             )
             self.add_topology_pset(structural_surface, *face[2])
-            structural_surface.PredefinedType = "SHELL"
             structural_surface.Thickness = self.thickness
             run(
                 "structural.assign_structural_analysis_model",
@@ -96,30 +137,18 @@ class Shell(BaseClass):
                 ),
             )
 
-            entity = run(
-                "root.create_entity",
-                self.file,
-                ifc_class=self.ifc,
-                name=self.identifier,
-            )
             assignment = run(
                 "root.create_entity", self.file, ifc_class="IfcRelAssignsToProduct"
             )
             assignment.RelatingProduct = structural_surface
-            assignment.RelatedObjects = [entity]
-            run(
-                "aggregate.assign_object",
-                self.file,
-                product=entity,
-                relating_object=aggregate,
-            )
-            self.add_topology_pset(entity, *face[2])
+            assignment.RelatedObjects = [element]
 
+            # get or create a Type
             myelement_type = self.get_element_type()
             run(
                 "type.assign_type",
                 self.file,
-                related_object=entity,
+                related_object=element,
                 relating_type=myelement_type,
             )
             self.add_psets(myelement_type)
@@ -131,6 +160,7 @@ class Shell(BaseClass):
                 if inverse.is_a("IfcMaterialLayerSetUsage"):
                     inverse.OffsetFromReferenceLine = 0.0 - self.inner
 
+            # create a representation
             if abs(float(normal_x[2])) < 0.001:
                 extrude_height = self.outer
                 extrude_direction = [0.0, 0.0, 1.0]
@@ -158,34 +188,12 @@ class Shell(BaseClass):
             run(
                 "geometry.assign_representation",
                 self.file,
-                product=entity,
+                product=element,
                 representation=shape,
             )
             run(
                 "geometry.edit_object_placement",
                 self.file,
-                product=entity,
+                product=element,
                 matrix=matrix,
             )
-
-            # TODO Virtual Element with boundary only
-            # generate space boundary for back cell
-            if face[2][1]:
-                boundary = run(
-                    "root.create_entity",
-                    self.file,
-                    ifc_class="IfcRelSpaceBoundary2ndLevel",
-                )
-                boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
-                boundary.InternalOrExternalBoundary = "EXTERNAL"
-                boundary.RelatedBuildingElement = entity
-                boundary.ConnectionGeometry = (
-                    self.file.createIfcConnectionSurfaceGeometry(
-                        createCurveBoundedPlane(self.file, nodes_2d, matrix)
-                    )
-                )
-
-                cell_index = face[2][1].Get("index")
-                if not cell_index == None:
-                    # can't assign psets to an IfcRelationship, use Description instead
-                    boundary.Description = "CellIndex " + str(cell_index)
