@@ -169,7 +169,7 @@ def ApplyDictionary(self, source_faces):
             if FaceUtility.IsInside(source_face, vertex, 0.001):
                 dictionary = source_face.GetDictionary()
                 for key in dictionary.Keys():
-                    face.Set(key, source_face.Get(key))
+                    face.Set(key, source_face.Get(key).split(".")[0])
                 break
 
 
