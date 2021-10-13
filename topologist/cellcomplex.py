@@ -41,6 +41,7 @@ def GetTraces(self):
     for face in faces:
         # labelling "badnormal" faces should be a separate method but here is convenient for now
         face.BadNormal()
+    for face in faces:
         stylename = face.Get("stylename")
         if not stylename:
             stylename = "default"
