@@ -13,8 +13,7 @@ import sys, os, datetime
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
-from topologic import Graph, Topology, Vertex, Face, CellComplex, TopologyUtility
-from topologist.helpers import create_stl_list
+from topologic import Graph, Topology, Vertex, CellComplex, TopologyUtility
 from molior import Molior
 import molior.ifc
 
@@ -28,7 +27,7 @@ origin = Vertex.ByCoordinates(0.0, 0.0, 0.0)
 # print("BREP scale from feet to metres", datetime.datetime.now())
 topology_scaled = TopologyUtility.Scale(topology, origin, 1.0, 1.0, 1.0)
 
-faces_ptr = create_stl_list(Face)
+faces_ptr = []
 topology_scaled.Faces(faces_ptr)
 print(str(len(faces_ptr)), "faces", datetime.datetime.now())
 

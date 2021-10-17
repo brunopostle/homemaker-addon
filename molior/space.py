@@ -1,8 +1,6 @@
 import ifcopenshell.api
 import numpy
 
-from topologic import Face
-from topologist.helpers import create_stl_list
 from molior.baseclass import TraceClass
 from molior.geometry import matrix_align
 from molior.ifc import (
@@ -72,7 +70,7 @@ class Space(TraceClass):
         representationtype = "SweptSolid"
 
         # clip if original cell has non-horizontal ceiling
-        faces_ptr = create_stl_list(Face)
+        faces_ptr = []
         cell.FacesInclined(faces_ptr)
         if len(faces_ptr) > 0:
             vertices, faces = cell.Mesh()

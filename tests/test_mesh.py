@@ -4,10 +4,9 @@ import os
 import sys
 import unittest
 
-from topologic import Vertex, Face, Cell, CellComplex, CellUtility, Topology
+from topologic import Vertex, Face, CellComplex, CellUtility, Topology
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from topologist.helpers import create_stl_list
 
 points = [
     [0.0, 0.0, 0.0],
@@ -46,14 +45,21 @@ for face_by_id in faces_by_vertex_id:
     face_by_vertices = Face.ByVertices(vertices_face)
     faces.append(face_by_vertices)
 
-faces_ptr = create_stl_list(Face)
+faces_ptr = []
 for face in faces:
-    faces_ptr.push_back(face)
+    faces_ptr.append(face)
 cc = CellComplex.ByFaces(faces_ptr, 0.0001)
 
 
 class Tests(unittest.TestCase):
     """Nine faces and two cells formed by a cube sliced on the diagonal"""
+
+    def test_upward(self):
+        vertices = []
+        cc.Vertices(vertices)
+        cells = []
+        vertices[0].Cells(cells)
+        self.assertEqual(len(cells), 2)
 
     def test_vertices(self):
         self.assertEqual(points[0][0], 0.0)
@@ -75,22 +81,22 @@ class Tests(unittest.TestCase):
 
     def test_faces_cc(self):
 
-        faces_ptr = create_stl_list(Face)
+        faces_ptr = []
         cc.Faces(faces_ptr)
         self.assertEqual(len(faces_ptr), 9)
         for face in faces_ptr:
-            cells_ptr = create_stl_list(Cell)
+            cells_ptr = []
             face.Cells(cells_ptr)
             self.assertGreater(len(cells_ptr), 0)
             self.assertLess(len(cells_ptr), 3)
 
-        vertical_faces_ptr = create_stl_list(Face)
+        vertical_faces_ptr = []
         cc.FacesVertical(vertical_faces_ptr)
         self.assertEqual(len(vertical_faces_ptr), 5)
         for face in vertical_faces_ptr:
             self.assertTrue(face.IsVertical())
 
-        horizontal_faces_ptr = create_stl_list(Face)
+        horizontal_faces_ptr = []
         cc.FacesHorizontal(horizontal_faces_ptr)
         self.assertEqual(len(horizontal_faces_ptr), 4)
         for face in horizontal_faces_ptr:
@@ -103,7 +109,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(centroid.Y(), 5.0)
         self.assertEqual(centroid.Z(), 5.0)
 
-        cells_ptr = create_stl_list(Cell)
+        cells_ptr = []
         cc.Cells(cells_ptr)
         self.assertEqual(len(cells_ptr), 2)
 
@@ -115,7 +121,7 @@ class Tests(unittest.TestCase):
             self.assertEqual(cell.Elevation(), 0.0)
             self.assertEqual(cell.Height(), 10.0)
 
-            vertical_faces_ptr = create_stl_list(Face)
+            vertical_faces_ptr = []
             cell.FacesVertical(vertical_faces_ptr)
             self.assertEqual(len(vertical_faces_ptr), 3)
 
@@ -126,14 +132,14 @@ class Tests(unittest.TestCase):
             face_internal = False
             face_world = False
             for face in vertical_faces_ptr:
-                adjacent_cells_ptr = create_stl_list(Cell)
+                adjacent_cells_ptr = []
                 face.Cells(adjacent_cells_ptr)
                 if len(adjacent_cells_ptr) == 2:
                     cell_adjacent = True
                 elif len(adjacent_cells_ptr) == 1:
                     nowt_adjacent = True
 
-                horiz_faces_ptr = create_stl_list(Face)
+                horiz_faces_ptr = []
                 face.HorizontalFacesSideways(horiz_faces_ptr)
                 if len(horiz_faces_ptr) == 1:
                     horiz_1 = True
@@ -153,11 +159,11 @@ class Tests(unittest.TestCase):
             self.assertTrue(face_internal)
             self.assertTrue(face_world)
 
-            horizontal_faces_ptr = create_stl_list(Face)
+            horizontal_faces_ptr = []
             cell.FacesHorizontal(horizontal_faces_ptr)
             self.assertEqual(len(horizontal_faces_ptr), 2)
 
-            top_faces_ptr = create_stl_list(Face)
+            top_faces_ptr = []
             cell.FacesTop(top_faces_ptr)
             self.assertEqual(len(top_faces_ptr), 1)
             for face in top_faces_ptr:
@@ -165,7 +171,7 @@ class Tests(unittest.TestCase):
                 self.assertEqual(face.Elevation(), 10.0)
                 self.assertEqual(face.Height(), 0.0)
 
-            bottom_faces_ptr = create_stl_list(Face)
+            bottom_faces_ptr = []
             cell.FacesBottom(bottom_faces_ptr)
             self.assertEqual(len(bottom_faces_ptr), 1)
             for face in bottom_faces_ptr:

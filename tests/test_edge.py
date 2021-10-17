@@ -6,7 +6,6 @@ import unittest
 from topologic import Vertex, Edge, Face, Cell, CellUtility
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from topologist.helpers import create_stl_list
 
 
 class Tests(unittest.TestCase):
@@ -34,7 +33,7 @@ class Tests(unittest.TestCase):
         self.assertFalse(self.edge_c.IsVertical())
 
     def test_below(self):
-        edges_ptr = create_stl_list(Edge)
+        edges_ptr = []
         self.cell.Edges(edges_ptr)
         faces_above = 0
         faces_below = 0

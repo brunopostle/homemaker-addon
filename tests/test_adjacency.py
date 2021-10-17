@@ -4,10 +4,9 @@ import os
 import sys
 import unittest
 
-from topologic import Vertex, Edge, Face, Cell, CellComplex, Graph
+from topologic import Vertex, Face, Cell, CellComplex, Graph
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from topologist.helpers import create_stl_list
 
 
 class Tests(unittest.TestCase):
@@ -60,15 +59,15 @@ class Tests(unittest.TestCase):
             face_by_vertices = Face.ByVertices(vertices_face)
             faces.append(face_by_vertices)
 
-        faces_ptr = create_stl_list(Face)
+        faces_ptr = []
         for face in faces:
-            faces_ptr.push_back(face)
+            faces_ptr.append(face)
         self.cc = CellComplex.ByFaces(faces_ptr, 0.0001)
 
     def test_vertices(self):
         graph = Graph.Adjacency(self.cc)
 
-        vertices_ptr = create_stl_list(Vertex)
+        vertices_ptr = []
         graph.Vertices(vertices_ptr)
         self.assertEqual(len(vertices_ptr), 6)
         for vertex in vertices_ptr:
@@ -103,7 +102,7 @@ class Tests(unittest.TestCase):
 
     def test_graphvertex(self):
         graph = Graph.Adjacency(self.cc)
-        cells_ptr = create_stl_list(Cell)
+        cells_ptr = []
         self.cc.Cells(cells_ptr)
         self.assertEqual(len(cells_ptr), 3)
         for cell in cells_ptr:
@@ -120,7 +119,7 @@ class Tests(unittest.TestCase):
 
     def test_graphvertex2(self):
         graph = Graph.Adjacency(self.cc)
-        faces_ptr = create_stl_list(Face)
+        faces_ptr = []
         self.cc.Faces(faces_ptr)
         self.assertEqual(len(faces_ptr), 14)
         for face in faces_ptr:
@@ -146,22 +145,22 @@ class Tests(unittest.TestCase):
         graph = Graph.Adjacency(self.cc)
 
         # 3 faces and 3 cells = 6 vertices
-        vertices_ptr = create_stl_list(Vertex)
+        vertices_ptr = []
         graph.Vertices(vertices_ptr)
         self.assertEqual(len(vertices_ptr), 6)
 
-        edges_ptr = create_stl_list(Edge)
+        edges_ptr = []
         graph.Edges(edges_ptr)
         self.assertEqual(len(edges_ptr), 6)
 
         graph.Circulation(self.cc)
 
         # 2 horizontal faces removed = 4 vertices
-        vertices_ptr = create_stl_list(Vertex)
+        vertices_ptr = []
         graph.Vertices(vertices_ptr)
         self.assertEqual(len(vertices_ptr), 4)
 
-        edges_ptr = create_stl_list(Edge)
+        edges_ptr = []
         graph.Edges(edges_ptr)
         self.assertEqual(len(edges_ptr), 2)
 
@@ -180,9 +179,9 @@ class Tests(unittest.TestCase):
         graph = Graph.Adjacency(self.cc)
         table = graph.ShortestPathTable()
         graph.Connectedness(table)
-        vertices_ptr = create_stl_list(Vertex)
+        vertices_ptr = []
         graph.Vertices(vertices_ptr)
-        for vertex in list(vertices_ptr):
+        for vertex in vertices_ptr:
             if vertex.Get("class") == "Cell":
                 self.assertTrue(float(vertex.Get("connectedness")) > 0.0)
 

@@ -6,14 +6,12 @@ import unittest
 
 from topologic import (
     Vertex,
-    Edge,
     Face,
     EdgeUtility,
     FaceUtility,
 )
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from topologist.helpers import create_stl_list
 from molior.geometry import (
     x_product_3d,
     normalise_3d,
@@ -43,26 +41,26 @@ class Tests(unittest.TestCase):
     def test_faces(self):
         self.assertEqual(FaceUtility.Area(self.face), 15.0)
 
-        top_edge_ptr = create_stl_list(Edge)
+        top_edge_ptr = []
         self.face.EdgesTop(top_edge_ptr)
 
-        bottom_edge_ptr = create_stl_list(Edge)
+        bottom_edge_ptr = []
         self.face.EdgesBottom(bottom_edge_ptr)
 
-        crop_edge_ptr = create_stl_list(Edge)
+        crop_edge_ptr = []
         self.face.EdgesCrop(crop_edge_ptr)
 
-        self.assertEqual(len(list(top_edge_ptr)), 1)
-        self.assertEqual(len(list(bottom_edge_ptr)), 1)
-        self.assertEqual(len(list(crop_edge_ptr)), 2)
+        self.assertEqual(len(top_edge_ptr), 1)
+        self.assertEqual(len(bottom_edge_ptr), 1)
+        self.assertEqual(len(crop_edge_ptr), 2)
 
-        self.assertAlmostEqual(EdgeUtility.Length(list(crop_edge_ptr)[0]) ** 2, 2)
-        self.assertAlmostEqual(EdgeUtility.Length(list(crop_edge_ptr)[1]) ** 2, 2)
+        self.assertAlmostEqual(EdgeUtility.Length(crop_edge_ptr[0]) ** 2, 2)
+        self.assertAlmostEqual(EdgeUtility.Length(crop_edge_ptr[1]) ** 2, 2)
 
     def test_plane(self):
-        crop_edge_ptr = create_stl_list(Edge)
+        crop_edge_ptr = []
         self.face.EdgesCrop(crop_edge_ptr)
-        edge0 = list(crop_edge_ptr)[0]
+        edge0 = crop_edge_ptr[0]
         start = edge0.StartVertex().Coordinates()
         end = edge0.EndVertex().Coordinates()
         vector = subtract_3d(end, start)

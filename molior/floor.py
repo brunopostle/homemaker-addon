@@ -1,7 +1,6 @@
 import ifcopenshell.api
 
-from topologic import Vertex, Face, Cell, CellComplex
-from topologist.helpers import create_stl_list
+from topologic import Cell, CellComplex
 
 from molior.baseclass import TraceClass
 from molior.geometry import matrix_align, map_to_2d
@@ -51,7 +50,7 @@ class Floor(TraceClass):
             and type(self.cellcomplex) == CellComplex
             and cell.Get("usage") == "stair"
         ):
-            below_cells_ptr = create_stl_list(Cell)
+            below_cells_ptr = []
             cell.CellsBelow(self.cellcomplex, below_cells_ptr)
             for cell_below in below_cells_ptr:
                 if cell_below.Get("usage") == "stair":
@@ -68,7 +67,7 @@ class Floor(TraceClass):
         assign_storey_byindex(self.file, element, self.level)
 
         if type(cell) == Cell:
-            bottom_faces_ptr = create_stl_list(Face)
+            bottom_faces_ptr = []
             cell.FacesBottom(bottom_faces_ptr)
 
             # topology stuff
@@ -81,12 +80,12 @@ class Floor(TraceClass):
                     "EPset_Topology",
                     {
                         "FaceIndices": " ".join(
-                            [str(face.Get("index")) for face in list(bottom_faces_ptr)]
+                            [str(face.Get("index")) for face in bottom_faces_ptr]
                         )
                     },
                 )
-            for face in list(bottom_faces_ptr):
-                perimeter_vertices_ptr = create_stl_list(Vertex)
+            for face in bottom_faces_ptr:
+                perimeter_vertices_ptr = []
                 face.VerticesPerimeter(perimeter_vertices_ptr)
                 vertices = [list(v.Coordinates()) for v in perimeter_vertices_ptr]
                 normal = face.Normal()

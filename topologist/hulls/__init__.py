@@ -4,8 +4,6 @@ soffits etc.
 
 """
 
-from topologic import Vertex
-from topologist.helpers import create_stl_list
 import topologist.ushell as ushell
 
 
@@ -21,7 +19,7 @@ class Hulls:
         if not stylename in hulls[label]:
             hulls[label][stylename] = ushell.shell()
 
-        vertices_ptr = create_stl_list(Vertex)
+        vertices_ptr = []
         face.VerticesPerimeter(vertices_ptr)
         cells = face.CellsOrdered()
 

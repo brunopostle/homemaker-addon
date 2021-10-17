@@ -7,7 +7,6 @@ sys.path.append("/home/bruno/src/homemaker-addon")
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + "/libs/site/packages"))
 
 from topologic import Vertex, Face, CellComplex, Graph
-from topologist.helpers import create_stl_list
 from molior import Molior
 import molior.ifc
 
@@ -49,7 +48,7 @@ class ObjectTopologise(bpy.types.Operator):
                 meshes.append(blender_object)
 
         # remaining meshes become a single cellcomplex
-        faces_ptr = create_stl_list(Face)
+        faces_ptr = []
         for mesh in meshes:
             vertices = [Vertex.ByCoordinates(*v.co) for v in mesh.data.vertices]
 
@@ -63,22 +62,22 @@ class ObjectTopologise(bpy.types.Operator):
                     ].material.name
                 face_ptr = Face.ByVertices([vertices[v] for v in polygon.vertices])
                 face_ptr.Set("stylename", stylename)
-                faces_ptr.push_back(face_ptr)
+                faces_ptr.append(face_ptr)
             mesh.hide_viewport = True
 
         # Generate a Topologic CellComplex
         cc = CellComplex.ByFaces(faces_ptr, 0.0001)
-        faces_ptr = create_stl_list(Face)
+        faces_ptr = []
         cc.Faces(faces_ptr)
         vertices = []
         faces = []
         materials = []
         vertex_id = 0
         for face_ptr in faces_ptr:
-            vertices_ptr = create_stl_list(Vertex)
+            vertices_ptr = []
             face_ptr.VerticesPerimeter(vertices_ptr)
             face = []
-            for vertex in list(vertices_ptr):
+            for vertex in vertices_ptr:
                 vertices.append([vertex.X(), vertex.Y(), vertex.Z()])
                 face.append(vertex_id)
                 vertex_id += 1
@@ -135,7 +134,7 @@ class ObjectHomemaker(bpy.types.Operator):
         # FIXME should all end-up in the same IfcProject
         for mesh in meshes:
             vertices = [Vertex.ByCoordinates(*v.co) for v in mesh.data.vertices]
-            faces_ptr = create_stl_list(Face)
+            faces_ptr = []
 
             for polygon in mesh.data.polygons:
                 if polygon.area < 0.00001:
@@ -149,7 +148,7 @@ class ObjectHomemaker(bpy.types.Operator):
                     stylename = "default"
                 face_ptr = Face.ByVertices([vertices[v] for v in polygon.vertices])
                 face_ptr.Set("stylename", stylename)
-                faces_ptr.push_back(face_ptr)
+                faces_ptr.append(face_ptr)
             mesh.hide_viewport = True
 
             # Generate a Topologic CellComplex

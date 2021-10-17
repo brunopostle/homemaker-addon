@@ -1,48 +1,46 @@
 """Overloads domain-specific methods onto topologic.Topology"""
 
-import cppyy
-from cppyy.gbl.std import string
 import topologic
-from topologic import Vertex, Edge, Face, StringAttribute
-from topologist.helpers import create_stl_list, el
+from topologic import StringAttribute
+from topologist.helpers import el
 
 
 def FacesVertical(self, faces_ptr):
-    elements_ptr = create_stl_list(Face)
+    elements_ptr = []
     self.Faces(elements_ptr)
     for face in elements_ptr:
         if face.IsVertical():
-            faces_ptr.push_back(face)
+            faces_ptr.append(face)
 
 
 def FacesHorizontal(self, faces_ptr):
-    elements_ptr = create_stl_list(Face)
+    elements_ptr = []
     self.Faces(elements_ptr)
     for face in elements_ptr:
         if face.IsHorizontal():
-            faces_ptr.push_back(face)
+            faces_ptr.append(face)
 
 
 def FacesInclined(self, faces_ptr):
-    elements_ptr = create_stl_list(Face)
+    elements_ptr = []
     self.Faces(elements_ptr)
     for face in elements_ptr:
         if not face.IsHorizontal() and not face.IsVertical():
-            faces_ptr.push_back(face)
+            faces_ptr.append(face)
 
 
 def FacesExternal(self, faces_ptr):
-    elements_ptr = create_stl_list(Face)
+    elements_ptr = []
     self.Faces(elements_ptr)
     for face in elements_ptr:
         if face.IsExternal():
-            faces_ptr.push_back(face)
+            faces_ptr.append(face)
     return faces_ptr
 
 
 def Elevation(self):
     lowest = 9999999.9
-    vertices_ptr = create_stl_list(Vertex)
+    vertices_ptr = []
     self.Vertices(vertices_ptr)
     for vertex in vertices_ptr:
         if vertex.Z() < lowest:
@@ -52,7 +50,7 @@ def Elevation(self):
 
 def Height(self):
     highest = -9999999.9
-    vertices_ptr = create_stl_list(Vertex)
+    vertices_ptr = []
     self.Vertices(vertices_ptr)
     for vertex in vertices_ptr:
         if vertex.Z() > highest:
@@ -62,15 +60,15 @@ def Height(self):
 
 def Mesh(self):
     """A list of node coordinates and a list of faces"""
-    vertices_ptr = create_stl_list(Vertex)
+    vertices_ptr = []
     self.Vertices(vertices_ptr)
     vertices = [vertex.Coordinates() for vertex in vertices_ptr]
 
-    faces_ptr = create_stl_list(Face)
+    faces_ptr = []
     self.Faces(faces_ptr)
     faces = []
     for face in faces_ptr:
-        wire_vertices_ptr = create_stl_list(Vertex)
+        wire_vertices_ptr = []
         face.ExternalBoundary().Vertices(wire_vertices_ptr)
         faces.append([self.VertexId(vertex) for vertex in wire_vertices_ptr])
     return vertices, faces
@@ -78,31 +76,31 @@ def Mesh(self):
 
 def EdgesTop(self, result_edges_ptr):
     """A list of horizontal edges at the highest level of this face"""
-    edges_ptr = create_stl_list(Edge)
+    edges_ptr = []
     self.Edges(edges_ptr)
     level = el(self.Elevation() + self.Height())
     for edge in edges_ptr:
         vertex_start = edge.StartVertex()
         vertex_end = edge.EndVertex()
         if el(vertex_start.Z()) == level and el(vertex_end.Z()) == level:
-            result_edges_ptr.push_back(edge)
+            result_edges_ptr.append(edge)
 
 
 def EdgesBottom(self, result_edges_ptr):
     """A list of horizontal edges at the lowest level of this face"""
-    edges_ptr = create_stl_list(Edge)
+    edges_ptr = []
     self.Edges(edges_ptr)
     level = self.Elevation()
     for edge in edges_ptr:
         vertex_start = edge.StartVertex()
         vertex_end = edge.EndVertex()
         if el(vertex_start.Z()) == level and el(vertex_end.Z()) == level:
-            result_edges_ptr.push_back(edge)
+            result_edges_ptr.append(edge)
 
 
 def EdgesCrop(self, result_edges_ptr):
     """Which edges are not vertical or top/bottom?"""
-    edges_ptr = create_stl_list(Edge)
+    edges_ptr = []
     self.Edges(edges_ptr)
     bottom = self.Elevation()
     top = el(self.Elevation() + self.Height())
@@ -115,24 +113,24 @@ def EdgesCrop(self, result_edges_ptr):
             continue
         elif edge.IsVertical():
             continue
-        result_edges_ptr.push_back(edge)
+        result_edges_ptr.append(edge)
 
 
 def Set(self, key, value):
     """Simple string value dictionary access"""
     dictionary = self.GetDictionary()
-    if dictionary.ContainsKey(string(key)):
-        dictionary.Remove(string(key))
-    dictionary.Add(string(str(key)), StringAttribute(str(value)))
+    if dictionary.ContainsKey(str(key)):
+        dictionary.Remove(str(key))
+    dictionary.Add(str(str(key)), StringAttribute(str(value)))
     self.SetDictionary(dictionary)
 
 
 def Get(self, key):
     """Simple string value dictionary access"""
     dictionary = self.GetDictionary()
-    if dictionary.ContainsKey(string(key)):
+    if dictionary.ContainsKey(str(key)):
         value = dictionary.ValueAtKey(str(key))
-        return str(cppyy.bind_object(value.Value(), "std::string"))
+        return str(value.StringValue())
     return None
 
 
@@ -150,7 +148,7 @@ def GraphVertex(self, graph):
     index = self.Get("index")
     myclass = type(self).__name__
     if not index == None:
-        vertices_ptr = create_stl_list(Vertex)
+        vertices_ptr = []
         graph.Vertices(vertices_ptr)
         for vertex in vertices_ptr:
             if vertex.Get("index") == index and vertex.Get("class") == myclass:
@@ -159,7 +157,7 @@ def GraphVertex(self, graph):
 
 def VertexId(self, vertex):
     i = 0
-    vertices_ptr = create_stl_list(Vertex)
+    vertices_ptr = []
     self.Vertices(vertices_ptr)
     for v in vertices_ptr:
         if v.IsSame(vertex):

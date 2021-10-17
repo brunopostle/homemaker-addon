@@ -4,10 +4,9 @@ import os
 import sys
 import unittest
 
-from topologic import Vertex, Face, Cell, CellComplex
+from topologic import Vertex, Face, CellComplex
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from topologist.helpers import create_stl_list
 
 
 class Tests(unittest.TestCase):
@@ -59,13 +58,13 @@ class Tests(unittest.TestCase):
             face_by_vertices = Face.ByVertices(vertices_face)
             faces.append(face_by_vertices)
 
-        faces_ptr = create_stl_list(Face)
+        faces_ptr = []
         for face in faces:
-            faces_ptr.push_back(face)
+            faces_ptr.append(face)
         self.cc = CellComplex.ByFaces(faces_ptr, 0.0001)
 
     def test_perimeter(self):
-        cells_ptr = create_stl_list(Cell)
+        cells_ptr = []
         self.cc.Cells(cells_ptr)
         for cell in cells_ptr:
             perimeter = cell.Perimeter()

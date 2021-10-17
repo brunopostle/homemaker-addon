@@ -7,7 +7,6 @@ import unittest
 from topologic import Vertex, Face, CellComplex
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from topologist.helpers import create_stl_list
 
 
 class Tests(unittest.TestCase):
@@ -39,7 +38,7 @@ class Tests(unittest.TestCase):
             [4, 5, 6, 7],
         ]
 
-        self.faces_ptr = create_stl_list(Face)
+        self.faces_ptr = []
         for face_by_id in faces_by_vertex_id:
             vertices_face = []
             for point_id in face_by_id:
@@ -48,7 +47,7 @@ class Tests(unittest.TestCase):
 
             face = Face.ByVertices(vertices_face)
             face.Set("stylename", "orange")
-            self.faces_ptr.push_back(face)
+            self.faces_ptr.append(face)
 
         self.cellcomplex = CellComplex.ByFaces(self.faces_ptr, 0.0001)
         self.cellcomplex.ApplyDictionary(self.faces_ptr)
@@ -59,7 +58,7 @@ class Tests(unittest.TestCase):
             self.assertEqual(face.Get("stylename"), "orange")
 
     def test_faces_cellcomplex(self):
-        faces_ptr = create_stl_list(Face)
+        faces_ptr = []
         self.cellcomplex.Faces(faces_ptr)
         self.assertEqual(len(faces_ptr), 6)
         for face in faces_ptr:

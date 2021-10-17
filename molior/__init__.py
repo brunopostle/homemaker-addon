@@ -45,8 +45,7 @@ from molior.geometry import subtract_3d, x_product_3d
 from molior.ifc import (
     assign_space_byindex,
 )
-from topologic import Edge, Face
-from topologist.helpers import create_stl_list, string_to_coor_2d
+from topologist.helpers import string_to_coor_2d
 
 run = ifcopenshell.api.run
 
@@ -142,10 +141,10 @@ class Molior:
                     space_lookup[pset_topology["CellIndex"]] = space
 
             # iterate all the edges in the topologic model
-            edges_ptr = create_stl_list(Edge)
+            edges_ptr = []
             self.cellcomplex.Edges(edges_ptr)
             point_list = []
-            for edge in list(edges_ptr):
+            for edge in edges_ptr:
                 v_start = edge.StartVertex()
                 v_end = edge.EndVertex()
                 start = list(v_start.Coordinates())
@@ -208,9 +207,9 @@ class Molior:
                 )
 
                 # loop though all the faces connected to this edge
-                faces_ptr = create_stl_list(Face)
+                faces_ptr = []
                 edge.Faces(faces_ptr)
-                for face in list(faces_ptr):
+                for face in faces_ptr:
                     index = face.Get("index")
                     # connect this surface member to this curve connection
                     if index and index in surface_lookup:

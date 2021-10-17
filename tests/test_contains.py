@@ -17,10 +17,10 @@ class Tests(unittest.TestCase):
 
     def test_contains(self):
         """0 == INSIDE, 1 = ON_BOUNDARY, 2 = OUTSIDE"""
-        self.assertEqual(CellUtility.Contains(self.cell, self.point1), 2)
         self.assertEqual(CellUtility.Contains(self.cell, self.point1, 0.001), 2)
-        self.assertEqual(CellUtility.Contains(self.cell, self.point2), 0)
-        self.assertEqual(CellUtility.Contains(self.cell, self.point3), 1)
+        self.assertEqual(CellUtility.Contains(self.cell, self.point1, 0.001), 2)
+        self.assertEqual(CellUtility.Contains(self.cell, self.point2, 0.001), 0)
+        self.assertEqual(CellUtility.Contains(self.cell, self.point3, 0.001), 1)
 
 
 if __name__ == "__main__":

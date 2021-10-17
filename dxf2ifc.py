@@ -14,7 +14,6 @@ import sys, os
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 from topologic import Graph, Vertex, Face, FaceUtility, CellComplex
-from topologist.helpers import create_stl_list
 from molior import Molior
 import molior.ifc
 import ezdxf
@@ -23,7 +22,7 @@ from pyinstrument import Profiler
 profiler = Profiler()
 
 # convert DXF meshes into a list of Topologic Faces
-faces_ptr = create_stl_list(Face)
+faces_ptr = []
 doc = ezdxf.readfile(sys.argv[1])
 model = doc.modelspace()
 for entity in model:
@@ -34,7 +33,7 @@ for entity in model:
         for face in faces:
             face_stl = Face.ByVertices([pointlist[index] for index in face.indices])
             if FaceUtility.Area(face_stl) > 0.00001:
-                faces_ptr.push_back(face_stl)
+                faces_ptr.append(face_stl)
 
 # generate a CellComplex from the Face data
 cc = CellComplex.ByFaces(faces_ptr, 0.0001)

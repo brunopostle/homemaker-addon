@@ -1,8 +1,8 @@
 """Overloads domain-specific methods onto topologic.CellComplex"""
 
 import topologic
-from topologic import Face, Cell, FaceUtility, CellUtility
-from topologist.helpers import create_stl_list, el
+from topologic import FaceUtility, CellUtility
+from topologist.helpers import el
 import topologist.traces
 import topologist.hulls
 import topologist.normals
@@ -12,7 +12,7 @@ def AllocateCells(self, widgets):
     """Set cell types using widgets, or default to 'Outside'"""
     if len(widgets) == 0:
         return
-    cells_ptr = create_stl_list(Cell)
+    cells_ptr = []
     self.Cells(cells_ptr)
     for cell in cells_ptr:
         cell.Set("usage", "outside")
@@ -21,7 +21,7 @@ def AllocateCells(self, widgets):
             cell.Set("usage", "void")
             continue
         for widget in widgets:
-            if CellUtility.Contains(cell, widget[1]) == 0:
+            if CellUtility.Contains(cell, widget[1], 0.001) == 0:
                 cell.Set("usage", widget[0].lower())
                 break
 
@@ -35,7 +35,7 @@ def GetTraces(self):
     myhulls = topologist.hulls.Hulls()
     mynormals = topologist.normals.Normals()
     elevations = {}
-    faces_ptr = create_stl_list(Face)
+    faces_ptr = []
     self.Faces(faces_ptr)
 
     for face in faces_ptr:
@@ -129,7 +129,7 @@ def GetTraces(self):
             else:
                 myhulls.add_face("soffit", stylename, face)
 
-    cells_ptr = create_stl_list(Cell)
+    cells_ptr = []
     self.Cells(cells_ptr)
     for cell in cells_ptr:
         perimeter = cell.Perimeter()
@@ -156,13 +156,13 @@ def GetTraces(self):
 
 def ApplyDictionary(self, source_faces_ptr):
     """Copy Dictionary items from a collection of faces"""
-    faces_ptr = create_stl_list(Face)
+    faces_ptr = []
     self.Faces(faces_ptr)
     for face in faces_ptr:
         # currently only copying material names to/from vertical faces
         if not face.IsVertical():
             continue
-        vertex = FaceUtility.InternalVertex(face)
+        vertex = FaceUtility.InternalVertex(face, 0.001)
         for source_face in source_faces_ptr:
             if not source_face.IsVertical():
                 continue

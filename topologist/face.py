@@ -1,27 +1,23 @@
 """Overloads domain-specific methods onto topologic.Face"""
 
 import topologic
-from topologic import Vertex, Edge, Wire, Face, FaceUtility, Cell, CellUtility
-from topologist.helpers import create_stl_list
+from topologic import Vertex, Edge, Face, FaceUtility, CellUtility
 import topologist.ugraph as ugraph
 
 
 def ByVertices(vertices):
     """Create a Face from an ordered set of Vertices"""
-    edges = []
+    edges_ptr = []
     for i in range(len(vertices) - 1):
         v1 = vertices[i]
         v2 = vertices[i + 1]
         e1 = Edge.ByStartVertexEndVertex(v1, v2)
-        edges.append(e1)
+        edges_ptr.append(e1)
     # connect the last vertex to the first one
     v1 = vertices[len(vertices) - 1]
     v2 = vertices[0]
     e1 = Edge.ByStartVertexEndVertex(v1, v2)
-    edges.append(e1)
-    edges_ptr = create_stl_list(Edge)
-    for edge in edges:
-        edges_ptr.push_back(edge)
+    edges_ptr.append(e1)
     return Face.ByEdges(edges_ptr)
 
 
@@ -43,22 +39,22 @@ def CellsOrdered(self):
         centroid[2] - (normal[2] / 10),
     )
 
-    cells_ptr = create_stl_list(Cell)
+    cells_ptr = []
     self.Cells(cells_ptr)
     results = [None, None]
     for cell in cells_ptr:
-        if CellUtility.Contains(cell, vertex_front) == 0:
+        if CellUtility.Contains(cell, vertex_front, 0.001) == 0:
             results[0] = cell
-        elif CellUtility.Contains(cell, vertex_back) == 0:
+        elif CellUtility.Contains(cell, vertex_back, 0.001) == 0:
             results[1] = cell
     return results
 
 
 def VerticesPerimeter(self, vertices_ptr):
     """Vertices, tracing the outer perimeter"""
-    wires_ptr = create_stl_list(Wire)
+    wires_ptr = []
     self.Wires(wires_ptr)
-    list(wires_ptr)[0].Vertices(vertices_ptr)
+    wires_ptr[0].Vertices(vertices_ptr)
     return vertices_ptr
 
 
@@ -79,14 +75,14 @@ def BadNormal(self):
 def IsVertical(self):
 
     normal_stl = FaceUtility.NormalAtParameters(self, 0.5, 0.5)
-    if abs(normal_stl.Z()) < 0.0001:
+    if abs(normal_stl[2]) < 0.0001:
         return True
     return False
 
 
 def IsHorizontal(self):
     normal_stl = FaceUtility.NormalAtParameters(self, 0.5, 0.5)
-    if abs(normal_stl.Z()) > 0.9999:
+    if abs(normal_stl[2]) > 0.9999:
         return True
     return False
 
@@ -100,7 +96,7 @@ def IsUpward(self):
 
 def AxisOuter(self):
     """2D bottom edge of a vertical face, for external walls, anti-clockwise in plan"""
-    edges_ptr = create_stl_list(Edge)
+    edges_ptr = []
     self.EdgesBottom(edges_ptr)
     if len(edges_ptr) > 0:
         unordered = ugraph.graph()
@@ -122,7 +118,7 @@ def AxisOuter(self):
 
 def AxisOuterTop(self):
     """2D top edge of a vertical face, for external walls, anti-clockwise in plan"""
-    edges_ptr = create_stl_list(Edge)
+    edges_ptr = []
     self.EdgesTop(edges_ptr)
     if len(edges_ptr) > 0:
         unordered = ugraph.graph()
@@ -144,7 +140,7 @@ def AxisOuterTop(self):
 
 def IsInternal(self):
     """Face between two indoor cells"""
-    cells_ptr = create_stl_list(Cell)
+    cells_ptr = []
     self.Cells(cells_ptr)
     if len(cells_ptr) == 2:
         for cell in cells_ptr:
@@ -156,7 +152,7 @@ def IsInternal(self):
 
 def IsExternal(self):
     """Face between indoor cell and (outdoor cell or world)"""
-    cells_ptr = create_stl_list(Cell)
+    cells_ptr = []
     self.Cells(cells_ptr)
     cells = []
     for cell in cells_ptr:
@@ -174,7 +170,7 @@ def IsExternal(self):
 
 def IsWorld(self):
     """Face on outside of mesh"""
-    cells_ptr = create_stl_list(Cell)
+    cells_ptr = []
     self.Cells(cells_ptr)
     if len(cells_ptr) == 1:
         return True
@@ -183,7 +179,7 @@ def IsWorld(self):
 
 def IsOpen(self):
     """Face on outdoor cell on outside of mesh"""
-    cells_ptr = create_stl_list(Cell)
+    cells_ptr = []
     self.Cells(cells_ptr)
     if len(cells_ptr) == 1:
         for cell in cells_ptr:
@@ -194,10 +190,10 @@ def IsOpen(self):
 
 def FaceAbove(self):
     """Does vertical face have a vertical face attached to a horizontal top?"""
-    edges_ptr = create_stl_list(Edge)
+    edges_ptr = []
     self.EdgesTop(edges_ptr)
     for edge in edges_ptr:
-        faces_ptr = create_stl_list(Face)
+        faces_ptr = []
         edge.Faces(faces_ptr)
         for face in faces_ptr:
             if face.IsVertical() and not face.IsSame(self):
@@ -207,10 +203,10 @@ def FaceAbove(self):
 
 def FaceBelow(self):
     """Does vertical face have a vertical face attached to a horizontal bottom?"""
-    edges_ptr = create_stl_list(Edge)
+    edges_ptr = []
     self.EdgesBottom(edges_ptr)
     for edge in edges_ptr:
-        faces_ptr = create_stl_list(Face)
+        faces_ptr = []
         edge.Faces(faces_ptr)
         for face in faces_ptr:
             if face.IsVertical() and not face.IsSame(self):
@@ -220,32 +216,32 @@ def FaceBelow(self):
 
 def HorizontalFacesSideways(self, result_faces_ptr):
     """Which horizontal faces are attached to the bottom of this vertical face?"""
-    edges_ptr = create_stl_list(Edge)
+    edges_ptr = []
     self.EdgesBottom(edges_ptr)
     for edge in edges_ptr:
-        faces_ptr = create_stl_list(Face)
+        faces_ptr = []
         edge.Faces(faces_ptr)
         for face in faces_ptr:
             if face.IsHorizontal() and not face.IsSame(self):
-                result_faces_ptr.push_back(face)
+                result_faces_ptr.append(face)
     return result_faces_ptr
 
 
 def Normal(self):
     normal_stl = FaceUtility.NormalAtParameters(self, 0.5, 0.5)
     if self.Get("badnormal"):
-        return [-normal_stl.X(), -normal_stl.Y(), -normal_stl.Z()]
+        return [-normal_stl[0], -normal_stl[1], -normal_stl[2]]
     else:
-        return [normal_stl.X(), normal_stl.Y(), normal_stl.Z()]
+        return [normal_stl[0], normal_stl[1], normal_stl[2]]
 
 
 def TopLevelConditions(self):
     """Assuming this is a vertical external wall, how do the top edges continue?"""
     result = []
-    edges_ptr = create_stl_list(Edge)
+    edges_ptr = []
     self.EdgesTop(edges_ptr)
     for edge in edges_ptr:
-        faces_ptr = create_stl_list(Face)
+        faces_ptr = []
         edge.FacesExternal(faces_ptr)
         for (
             face
@@ -275,10 +271,10 @@ def TopLevelConditions(self):
 def BottomLevelConditions(self):
     """Assuming this is a vertical external wall, how do the bottom edges continue?"""
     result = []
-    edges_ptr = create_stl_list(Edge)
+    edges_ptr = []
     self.EdgesBottom(edges_ptr)
     for edge in edges_ptr:
-        faces_ptr = create_stl_list(Face)
+        faces_ptr = []
         edge.FacesExternal(faces_ptr)
         for (
             face

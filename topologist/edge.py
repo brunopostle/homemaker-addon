@@ -1,8 +1,8 @@
 """Overloads domain-specific methods onto topologic.Edge"""
 
 import topologic
-from topologic import Face, Cell, VertexUtility
-from topologist.helpers import create_stl_list, el
+from topologic import VertexUtility
+from topologist.helpers import el
 
 
 def IsHorizontal(self):
@@ -22,7 +22,7 @@ def IsVertical(self):
 
 def FaceAbove(self):
     """Is there a vertical face attached above?"""
-    faces_ptr = create_stl_list(Face)
+    faces_ptr = []
     self.Faces(faces_ptr)
     for face in faces_ptr:
         if face.IsVertical() and face.Centroid().Z() > self.Centroid().Z():
@@ -32,7 +32,7 @@ def FaceAbove(self):
 
 def FaceBelow(self):
     """Is there a vertical face attached below?"""
-    faces_ptr = create_stl_list(Face)
+    faces_ptr = []
     self.Faces(faces_ptr)
     for face in faces_ptr:
         if face.IsVertical() and face.Centroid().Z() < self.Centroid().Z():
@@ -42,12 +42,12 @@ def FaceBelow(self):
 
 def CellsBelow(self):
     """Are there Cells below this edge?"""
-    result_cells_ptr = create_stl_list(Cell)
-    cells_ptr = create_stl_list(Cell)
+    result_cells_ptr = []
+    cells_ptr = []
     self.Cells(cells_ptr)
     for cell in cells_ptr:
         if cell.Centroid().Z() < self.Centroid().Z():
-            result_cells_ptr.push_back(cell)
+            result_cells_ptr.append(cell)
     return result_cells_ptr
 
 

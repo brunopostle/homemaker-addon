@@ -7,7 +7,6 @@ import unittest
 from topologic import Vertex, Edge, Wire, Face, CellComplex
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from topologist.helpers import create_stl_list
 
 
 class Tests(unittest.TestCase):
@@ -49,19 +48,19 @@ class Tests(unittest.TestCase):
             face_by_vertices = Face.ByVertices(vertices_face)
             faces.append(face_by_vertices)
 
-        faces_ptr = create_stl_list(Face)
+        faces_ptr = []
         for face in faces:
-            faces_ptr.push_back(face)
+            faces_ptr.append(face)
         self.cc = CellComplex.ByFaces(faces_ptr, 0.0001)
 
     def test_faces_cc(self):
 
-        vertical_faces_ptr = create_stl_list(Face)
+        vertical_faces_ptr = []
         self.cc.FacesVertical(vertical_faces_ptr)
         self.assertEqual(len(vertical_faces_ptr), 4)
 
-        outer_edges_ptr = create_stl_list(Edge)
-        outer_top_edges_ptr = create_stl_list(Edge)
+        outer_edges_ptr = []
+        outer_top_edges_ptr = []
 
         # four vertical outer faces
         for face in vertical_faces_ptr:
@@ -71,10 +70,10 @@ class Tests(unittest.TestCase):
             axis_outer = face.AxisOuter()
             axis_outer_top = face.AxisOuterTop()
 
-            outer_edges_ptr.push_back(
+            outer_edges_ptr.append(
                 Edge.ByStartVertexEndVertex(axis_outer[0], axis_outer[1])
             )
-            outer_top_edges_ptr.push_back(
+            outer_top_edges_ptr.append(
                 Edge.ByStartVertexEndVertex(axis_outer_top[0], axis_outer_top[1])
             )
 
@@ -82,8 +81,8 @@ class Tests(unittest.TestCase):
         wire_axis = Wire.ByEdges(outer_edges_ptr)
         wire_axis_top = Wire.ByEdges(outer_top_edges_ptr)
 
-        axis_vertices_ptr = create_stl_list(Vertex)
-        axis_top_vertices_ptr = create_stl_list(Vertex)
+        axis_vertices_ptr = []
+        axis_top_vertices_ptr = []
 
         wire_axis.Vertices(axis_vertices_ptr)
         wire_axis_top.Vertices(axis_top_vertices_ptr)
@@ -91,8 +90,8 @@ class Tests(unittest.TestCase):
         self.assertEqual(len(axis_vertices_ptr), 4)
         self.assertEqual(len(axis_top_vertices_ptr), 4)
 
-        face_axis = Face.ByVertices(list(axis_vertices_ptr))
-        face_axis_top = Face.ByVertices(list(axis_top_vertices_ptr))
+        face_axis = Face.ByVertices(axis_vertices_ptr)
+        face_axis_top = Face.ByVertices(axis_top_vertices_ptr)
 
         # this should work ??!?
         # face_axis = Face.ByWire(wire_axis)

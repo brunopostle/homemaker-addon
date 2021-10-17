@@ -7,12 +7,10 @@ import unittest
 from topologic import (
     Vertex,
     Face,
-    Cell,
     CellComplex,
 )
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from topologist.helpers import create_stl_list
 from molior import Molior
 import molior.ifc
 
@@ -57,14 +55,14 @@ class Tests(unittest.TestCase):
             face_by_vertices = Face.ByVertices(vertices_face)
             faces.append(face_by_vertices)
 
-        faces_ptr = create_stl_list(Face)
+        faces_ptr = []
         for face in faces:
-            faces_ptr.push_back(face)
+            faces_ptr.append(face)
         self.cc = CellComplex.ByFaces(faces_ptr, 0.0001)
 
     def test_faces_cc(self):
 
-        all_faces_ptr = create_stl_list(Face)
+        all_faces_ptr = []
         self.cc.Faces(all_faces_ptr)
         self.assertEqual(len(all_faces_ptr), 7)
 
@@ -74,15 +72,15 @@ class Tests(unittest.TestCase):
                 count += 1
         self.assertEqual(count, 2)
 
-        vertical_faces_ptr = create_stl_list(Face)
+        vertical_faces_ptr = []
         self.cc.FacesVertical(vertical_faces_ptr)
         self.assertEqual(len(vertical_faces_ptr), 4)
 
-        horizontal_faces_ptr = create_stl_list(Face)
+        horizontal_faces_ptr = []
         self.cc.FacesHorizontal(horizontal_faces_ptr)
         self.assertEqual(len(horizontal_faces_ptr), 1)
 
-        inclined_faces_ptr = create_stl_list(Face)
+        inclined_faces_ptr = []
         self.cc.FacesInclined(inclined_faces_ptr)
         self.assertEqual(len(inclined_faces_ptr), 2)
 
@@ -93,7 +91,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(centroid.Y(), 6.0)
         self.assertEqual(centroid.Z(), 7.0)  # average of vertex positions
 
-        cells_ptr = create_stl_list(Cell)
+        cells_ptr = []
         self.cc.Cells(cells_ptr)
         self.assertEqual(len(cells_ptr), 1)
 

@@ -1,8 +1,7 @@
 import ifcopenshell.api
 import numpy
 
-from topologic import Vertex, Edge
-from topologist.helpers import create_stl_list, el
+from topologist.helpers import el
 import molior
 from molior.baseclass import TraceClass
 from molior.geometry import (
@@ -92,9 +91,9 @@ class Wall(TraceClass):
 
             segment = self.chain.edges()[id_segment]
             face = self.chain.graph[segment[0]][1][2]
-            vertices_ptr = create_stl_list(Vertex)
+            vertices_ptr = []
             self.chain.graph[segment[0]][1][2].VerticesPerimeter(vertices_ptr)
-            vertices = [list(vertex.Coordinates()) for vertex in list(vertices_ptr)]
+            vertices = [list(vertex.Coordinates()) for vertex in vertices_ptr]
             normal = self.chain.graph[segment[0]][1][2].Normal()
 
             # generate space boundaries
@@ -303,7 +302,7 @@ class Wall(TraceClass):
             )
 
             # clip the top of the wall if face isn't rectangular
-            edges_ptr = create_stl_list(Edge)
+            edges_ptr = []
             face.EdgesCrop(edges_ptr)
             for edge in edges_ptr:
                 start_coor = transform(
@@ -364,7 +363,7 @@ class Wall(TraceClass):
                         ),
                     )
 
-            if len(list(edges_ptr)) == 0:
+            if len(edges_ptr) == 0:
                 representationtype = "SweptSolid"
             else:
                 representationtype = "Clipping"
