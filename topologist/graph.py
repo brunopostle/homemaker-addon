@@ -96,6 +96,53 @@ def IsConnected(self):
     return connected
 
 
+def ShortestPathTable(self):
+    """Calculates shortest path distance between all pairs of cells and returns a lookup table"""
+    result = {}
+    if not self.IsConnected():
+        return result
+    vertices = create_stl_list(Vertex)
+    self.Vertices(vertices)
+    vertices_list = []
+    for vertex in list(vertices):
+        if vertex.Get("class") == "Cell":
+            vertices_list.append(vertex)
+    for i in range(len(vertices_list)):
+        for j in range(len(vertices_list)):
+            if j <= i:
+                continue
+            wire = self.ShortestPath(vertices_list[i], vertices_list[j], "", "length")
+            edges_stl = create_stl_list(Edge)
+            wire.Edges(edges_stl)
+            length = 0.0
+            for edge in list(edges_stl):
+                length += edge.Length()
+            i_index = vertices_list[i].Get("index")
+            j_index = vertices_list[j].Get("index")
+            if not i_index in result:
+                result[i_index] = {}
+            if not j_index in result:
+                result[j_index] = {}
+            result[i_index][j_index] = length
+            result[j_index][i_index] = length
+    return result
+
+
+def Connectedness(self, table):
+    """Tags 'cell' vertices with average travel distance to all other cells"""
+    if table == {}:
+        return
+    vertices = create_stl_list(Vertex)
+    self.Vertices(vertices)
+    for vertex in list(vertices):
+        if vertex.Get("class") == "Cell":
+            index = vertex.Get("index")
+            total_length = 0.0
+            for length in table[index].values():
+                total_length += length
+            vertex.Set("connectedness", str(total_length / len(table[index])))
+
+
 def Faces(self, cellcomplex):
     """Return all the Faces from a CellComplex corresponding to this Graph"""
     vertices = create_stl_list(Vertex)
@@ -162,6 +209,8 @@ def Dot(self, cellcomplex):
 setattr(topologic.Graph, "Adjacency", Adjacency)
 setattr(topologic.Graph, "Circulation", Circulation)
 setattr(topologic.Graph, "IsConnected", IsConnected)
+setattr(topologic.Graph, "ShortestPathTable", ShortestPathTable)
+setattr(topologic.Graph, "Connectedness", Connectedness)
 setattr(topologic.Graph, "Faces", Faces)
 setattr(topologic.Graph, "Cells", Cells)
 setattr(topologic.Graph, "GetEntity", GetEntity)

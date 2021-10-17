@@ -1,7 +1,7 @@
 """Overloads domain-specific methods onto topologic.Edge"""
 
 import topologic
-from topologic import Face, Cell
+from topologic import Face, Cell, VertexUtility
 from topologist.helpers import create_stl_list, el
 
 
@@ -51,8 +51,14 @@ def CellsBelow(self):
     return result
 
 
+def Length(self):
+    """Straight-line distance between start and end vertex"""
+    return VertexUtility.Distance(self.StartVertex(), self.EndVertex())
+
+
 setattr(topologic.Edge, "IsHorizontal", IsHorizontal)
 setattr(topologic.Edge, "IsVertical", IsVertical)
 setattr(topologic.Edge, "FaceAbove", FaceAbove)
 setattr(topologic.Edge, "FaceBelow", FaceBelow)
 setattr(topologic.Edge, "CellsBelow", CellsBelow)
+setattr(topologic.Edge, "Length", Length)

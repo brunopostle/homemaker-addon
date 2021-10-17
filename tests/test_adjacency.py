@@ -169,6 +169,23 @@ class Tests(unittest.TestCase):
         dot = graph.Dot(self.cc)
         self.assertTrue(type(dot) == str)
 
+    def test_shortest_path(self):
+        graph = Graph.Adjacency(self.cc)
+        table = graph.ShortestPathTable()
+        self.assertEqual(table["0"]["2"], table["2"]["0"])
+        self.assertEqual(table["1"]["2"], table["2"]["1"])
+        self.assertEqual(table["1"]["0"], table["0"]["1"])
+
+    def test_connectedness(self):
+        graph = Graph.Adjacency(self.cc)
+        table = graph.ShortestPathTable()
+        graph.Connectedness(table)
+        vertices = create_stl_list(Vertex)
+        graph.Vertices(vertices)
+        for vertex in list(vertices):
+            if vertex.Get("class") == "Cell":
+                self.assertTrue(float(vertex.Get("connectedness")) > 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()
