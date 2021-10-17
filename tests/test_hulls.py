@@ -64,27 +64,27 @@ class Tests(unittest.TestCase):
 
     def test_faces_cc(self):
 
-        faces_all = create_stl_list(Face)
-        self.cc.Faces(faces_all)
-        self.assertEqual(len(faces_all), 7)
+        all_faces_ptr = create_stl_list(Face)
+        self.cc.Faces(all_faces_ptr)
+        self.assertEqual(len(all_faces_ptr), 7)
 
         count = 0
-        for face in faces_all:
+        for face in all_faces_ptr:
             if face.IsUpward():
                 count += 1
         self.assertEqual(count, 2)
 
-        faces_vertical = create_stl_list(Face)
-        self.cc.FacesVertical(faces_vertical)
-        self.assertEqual(len(faces_vertical), 4)
+        vertical_faces_ptr = create_stl_list(Face)
+        self.cc.FacesVertical(vertical_faces_ptr)
+        self.assertEqual(len(vertical_faces_ptr), 4)
 
-        faces_horizontal = create_stl_list(Face)
-        self.cc.FacesHorizontal(faces_horizontal)
-        self.assertEqual(len(faces_horizontal), 1)
+        horizontal_faces_ptr = create_stl_list(Face)
+        self.cc.FacesHorizontal(horizontal_faces_ptr)
+        self.assertEqual(len(horizontal_faces_ptr), 1)
 
-        faces_inclined = create_stl_list(Face)
-        self.cc.FacesInclined(faces_inclined)
-        self.assertEqual(len(faces_inclined), 2)
+        inclined_faces_ptr = create_stl_list(Face)
+        self.cc.FacesInclined(inclined_faces_ptr)
+        self.assertEqual(len(inclined_faces_ptr), 2)
 
     def test_cells(self):
 
@@ -93,9 +93,9 @@ class Tests(unittest.TestCase):
         self.assertEqual(centroid.Y(), 6.0)
         self.assertEqual(centroid.Z(), 7.0)  # average of vertex positions
 
-        cells = create_stl_list(Cell)
-        self.cc.Cells(cells)
-        self.assertEqual(len(cells), 1)
+        cells_ptr = create_stl_list(Cell)
+        self.cc.Cells(cells_ptr)
+        self.assertEqual(len(cells_ptr), 1)
 
     def test_traces(self):
         traces, hulls, normals, elevations = self.cc.GetTraces()

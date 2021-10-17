@@ -51,9 +51,9 @@ class Floor(TraceClass):
             and type(self.cellcomplex) == CellComplex
             and cell.Get("usage") == "stair"
         ):
-            cells_below = create_stl_list(Cell)
-            cell.CellsBelow(self.cellcomplex, cells_below)
-            for cell_below in cells_below:
+            below_cells_ptr = create_stl_list(Cell)
+            cell.CellsBelow(self.cellcomplex, below_cells_ptr)
+            for cell_below in below_cells_ptr:
                 if cell_below.Get("usage") == "stair":
                     self.ifc = "IfcVirtualElement"
                     break
@@ -68,8 +68,8 @@ class Floor(TraceClass):
         assign_storey_byindex(self.file, element, self.level)
 
         if type(cell) == Cell:
-            faces_bottom = create_stl_list(Face)
-            cell.FacesBottom(faces_bottom)
+            bottom_faces_ptr = create_stl_list(Face)
+            cell.FacesBottom(bottom_faces_ptr)
 
             # topology stuff
             if cell.Get("index") != None:
@@ -81,14 +81,14 @@ class Floor(TraceClass):
                     "EPset_Topology",
                     {
                         "FaceIndices": " ".join(
-                            [str(face.Get("index")) for face in list(faces_bottom)]
+                            [str(face.Get("index")) for face in list(bottom_faces_ptr)]
                         )
                     },
                 )
-            for face in list(faces_bottom):
-                vertices_perimeter = create_stl_list(Vertex)
-                face.VerticesPerimeter(vertices_perimeter)
-                vertices = [list(v.Coordinates()) for v in vertices_perimeter]
+            for face in list(bottom_faces_ptr):
+                perimeter_vertices_ptr = create_stl_list(Vertex)
+                face.VerticesPerimeter(perimeter_vertices_ptr)
+                vertices = [list(v.Coordinates()) for v in perimeter_vertices_ptr]
                 normal = face.Normal()
                 # need this for boundaries
                 nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)

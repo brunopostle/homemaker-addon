@@ -22,9 +22,9 @@ def IsVertical(self):
 
 def FaceAbove(self):
     """Is there a vertical face attached above?"""
-    faces = create_stl_list(Face)
-    self.Faces(faces)
-    for face in faces:
+    faces_ptr = create_stl_list(Face)
+    self.Faces(faces_ptr)
+    for face in faces_ptr:
         if face.IsVertical() and face.Centroid().Z() > self.Centroid().Z():
             return face
     return None
@@ -32,9 +32,9 @@ def FaceAbove(self):
 
 def FaceBelow(self):
     """Is there a vertical face attached below?"""
-    faces = create_stl_list(Face)
-    self.Faces(faces)
-    for face in faces:
+    faces_ptr = create_stl_list(Face)
+    self.Faces(faces_ptr)
+    for face in faces_ptr:
         if face.IsVertical() and face.Centroid().Z() < self.Centroid().Z():
             return face
     return None
@@ -42,13 +42,13 @@ def FaceBelow(self):
 
 def CellsBelow(self):
     """Are there Cells below this edge?"""
-    result = create_stl_list(Cell)
-    cells = create_stl_list(Cell)
-    self.Cells(cells)
-    for cell in cells:
+    result_cells_ptr = create_stl_list(Cell)
+    cells_ptr = create_stl_list(Cell)
+    self.Cells(cells_ptr)
+    for cell in cells_ptr:
         if cell.Centroid().Z() < self.Centroid().Z():
-            result.push_back(cell)
-    return result
+            result_cells_ptr.push_back(cell)
+    return result_cells_ptr
 
 
 def Length(self):

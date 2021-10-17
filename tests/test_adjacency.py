@@ -68,10 +68,10 @@ class Tests(unittest.TestCase):
     def test_vertices(self):
         graph = Graph.Adjacency(self.cc)
 
-        vertices = create_stl_list(Vertex)
-        graph.Vertices(vertices)
-        self.assertEqual(len(vertices), 6)
-        for vertex in vertices:
+        vertices_ptr = create_stl_list(Vertex)
+        graph.Vertices(vertices_ptr)
+        self.assertEqual(len(vertices_ptr), 6)
+        for vertex in vertices_ptr:
             if vertex.Get("class") == "Face":
                 self.assertFalse(vertex.Get("index") == None)
             elif vertex.Get("class") == "Cell":
@@ -103,10 +103,10 @@ class Tests(unittest.TestCase):
 
     def test_graphvertex(self):
         graph = Graph.Adjacency(self.cc)
-        cells = create_stl_list(Cell)
-        self.cc.Cells(cells)
-        self.assertEqual(len(cells), 3)
-        for cell in cells:
+        cells_ptr = create_stl_list(Cell)
+        self.cc.Cells(cells_ptr)
+        self.assertEqual(len(cells_ptr), 3)
+        for cell in cells_ptr:
             # vertex is the node in the Graph that corresponds to this Cell
             vertex = cell.GraphVertex(graph)
             # it should be a Vertex, representing a Cell
@@ -120,10 +120,10 @@ class Tests(unittest.TestCase):
 
     def test_graphvertex2(self):
         graph = Graph.Adjacency(self.cc)
-        faces = create_stl_list(Face)
-        self.cc.Faces(faces)
-        self.assertEqual(len(faces), 14)
-        for face in faces:
+        faces_ptr = create_stl_list(Face)
+        self.cc.Faces(faces_ptr)
+        self.assertEqual(len(faces_ptr), 14)
+        for face in faces_ptr:
             # vertex is the node in the Graph that corresponds to this Face
             vertex = face.GraphVertex(graph)
             # the Graph may not have a node for this Face (e.g. purged, external wall)
@@ -146,24 +146,24 @@ class Tests(unittest.TestCase):
         graph = Graph.Adjacency(self.cc)
 
         # 3 faces and 3 cells = 6 vertices
-        vertices = create_stl_list(Vertex)
-        graph.Vertices(vertices)
-        self.assertEqual(len(vertices), 6)
+        vertices_ptr = create_stl_list(Vertex)
+        graph.Vertices(vertices_ptr)
+        self.assertEqual(len(vertices_ptr), 6)
 
-        edges = create_stl_list(Edge)
-        graph.Edges(edges)
-        self.assertEqual(len(edges), 6)
+        edges_ptr = create_stl_list(Edge)
+        graph.Edges(edges_ptr)
+        self.assertEqual(len(edges_ptr), 6)
 
         graph.Circulation(self.cc)
 
         # 2 horizontal faces removed = 4 vertices
-        vertices = create_stl_list(Vertex)
-        graph.Vertices(vertices)
-        self.assertEqual(len(vertices), 4)
+        vertices_ptr = create_stl_list(Vertex)
+        graph.Vertices(vertices_ptr)
+        self.assertEqual(len(vertices_ptr), 4)
 
-        edges = create_stl_list(Edge)
-        graph.Edges(edges)
-        self.assertEqual(len(edges), 2)
+        edges_ptr = create_stl_list(Edge)
+        graph.Edges(edges_ptr)
+        self.assertEqual(len(edges_ptr), 2)
 
         self.assertFalse(graph.IsConnected())
         dot = graph.Dot(self.cc)
@@ -180,9 +180,9 @@ class Tests(unittest.TestCase):
         graph = Graph.Adjacency(self.cc)
         table = graph.ShortestPathTable()
         graph.Connectedness(table)
-        vertices = create_stl_list(Vertex)
-        graph.Vertices(vertices)
-        for vertex in list(vertices):
+        vertices_ptr = create_stl_list(Vertex)
+        graph.Vertices(vertices_ptr)
+        for vertex in list(vertices_ptr):
             if vertex.Get("class") == "Cell":
                 self.assertTrue(float(vertex.Get("connectedness")) > 0.0)
 

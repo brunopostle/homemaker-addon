@@ -56,43 +56,43 @@ class Tests(unittest.TestCase):
 
     def test_faces_cc(self):
 
-        faces_vertical = create_stl_list(Face)
-        self.cc.FacesVertical(faces_vertical)
-        self.assertEqual(len(faces_vertical), 4)
+        vertical_faces_ptr = create_stl_list(Face)
+        self.cc.FacesVertical(vertical_faces_ptr)
+        self.assertEqual(len(vertical_faces_ptr), 4)
 
-        edges_outer = create_stl_list(Edge)
-        edges_outer_top = create_stl_list(Edge)
+        outer_edges_ptr = create_stl_list(Edge)
+        outer_top_edges_ptr = create_stl_list(Edge)
 
         # four vertical outer faces
-        for face in faces_vertical:
+        for face in vertical_faces_ptr:
             self.assertTrue(face.IsVertical())
 
             # faces face out, so axis_outer and axis_outer_top should be anticlockwise
             axis_outer = face.AxisOuter()
             axis_outer_top = face.AxisOuterTop()
 
-            edges_outer.push_back(
+            outer_edges_ptr.push_back(
                 Edge.ByStartVertexEndVertex(axis_outer[0], axis_outer[1])
             )
-            edges_outer_top.push_back(
+            outer_top_edges_ptr.push_back(
                 Edge.ByStartVertexEndVertex(axis_outer_top[0], axis_outer_top[1])
             )
 
         # construct four sided wires for top and bottom
-        wire_axis = Wire.ByEdges(edges_outer)
-        wire_axis_top = Wire.ByEdges(edges_outer_top)
+        wire_axis = Wire.ByEdges(outer_edges_ptr)
+        wire_axis_top = Wire.ByEdges(outer_top_edges_ptr)
 
-        vertices_axis = create_stl_list(Vertex)
-        vertices_axis_top = create_stl_list(Vertex)
+        axis_vertices_ptr = create_stl_list(Vertex)
+        axis_top_vertices_ptr = create_stl_list(Vertex)
 
-        wire_axis.Vertices(vertices_axis)
-        wire_axis_top.Vertices(vertices_axis_top)
+        wire_axis.Vertices(axis_vertices_ptr)
+        wire_axis_top.Vertices(axis_top_vertices_ptr)
 
-        self.assertEqual(len(vertices_axis), 4)
-        self.assertEqual(len(vertices_axis_top), 4)
+        self.assertEqual(len(axis_vertices_ptr), 4)
+        self.assertEqual(len(axis_top_vertices_ptr), 4)
 
-        face_axis = Face.ByVertices(list(vertices_axis))
-        face_axis_top = Face.ByVertices(list(vertices_axis_top))
+        face_axis = Face.ByVertices(list(axis_vertices_ptr))
+        face_axis_top = Face.ByVertices(list(axis_top_vertices_ptr))
 
         # this should work ??!?
         # face_axis = Face.ByWire(wire_axis)

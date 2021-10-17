@@ -12,9 +12,9 @@ def AllocateCells(self, widgets):
     """Set cell types using widgets, or default to 'Outside'"""
     if len(widgets) == 0:
         return
-    cells = create_stl_list(Cell)
-    self.Cells(cells)
-    for cell in cells:
+    cells_ptr = create_stl_list(Cell)
+    self.Cells(cells_ptr)
+    for cell in cells_ptr:
         cell.Set("usage", "outside")
         # a usable space has vertical faces on all sides
         if not cell.Perimeter().is_simple_cycle():
@@ -35,13 +35,13 @@ def GetTraces(self):
     myhulls = topologist.hulls.Hulls()
     mynormals = topologist.normals.Normals()
     elevations = {}
-    faces = create_stl_list(Face)
-    self.Faces(faces)
+    faces_ptr = create_stl_list(Face)
+    self.Faces(faces_ptr)
 
-    for face in faces:
+    for face in faces_ptr:
         # labelling "badnormal" faces should be a separate method but here is convenient for now
         face.BadNormal()
-    for face in faces:
+    for face in faces_ptr:
         stylename = face.Get("stylename")
         if not stylename:
             stylename = "default"
@@ -129,9 +129,9 @@ def GetTraces(self):
             else:
                 myhulls.add_face("soffit", stylename, face)
 
-    cells = create_stl_list(Cell)
-    self.Cells(cells)
-    for cell in cells:
+    cells_ptr = create_stl_list(Cell)
+    self.Cells(cells_ptr)
+    for cell in cells_ptr:
         perimeter = cell.Perimeter()
         if perimeter.is_simple_cycle():
             elevation = cell.Elevation()
@@ -154,16 +154,16 @@ def GetTraces(self):
     return (mytraces.traces, myhulls.hulls, mynormals.normals, elevations)
 
 
-def ApplyDictionary(self, source_faces):
+def ApplyDictionary(self, source_faces_ptr):
     """Copy Dictionary items from a collection of faces"""
-    faces = create_stl_list(Face)
-    self.Faces(faces)
-    for face in faces:
+    faces_ptr = create_stl_list(Face)
+    self.Faces(faces_ptr)
+    for face in faces_ptr:
         # currently only copying material names to/from vertical faces
         if not face.IsVertical():
             continue
         vertex = FaceUtility.InternalVertex(face)
-        for source_face in source_faces:
+        for source_face in source_faces_ptr:
             if not source_face.IsVertical():
                 continue
             # FIXME calling IsInside() many times slows subsequent code!!

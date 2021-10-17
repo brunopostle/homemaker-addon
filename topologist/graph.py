@@ -8,18 +8,18 @@ from topologist.helpers import create_stl_list
 def Adjacency(cellcomplex):
     """Index all cells and faces, return a circulation graph with the same indexing"""
     """Adjacency graph has nodes for cells, and nodes for faces that connect them"""
-    cells = create_stl_list(Cell)
-    cellcomplex.Cells(cells)
+    cells_ptr = create_stl_list(Cell)
+    cellcomplex.Cells(cells_ptr)
     index = 0
-    for cell in cells:
+    for cell in cells_ptr:
         cell.Set("index", str(index))
         cell.Set("class", "Cell")
         index += 1
 
-    faces = create_stl_list(Face)
-    cellcomplex.Faces(faces)
+    faces_ptr = create_stl_list(Face)
+    cellcomplex.Faces(faces_ptr)
     index = 0
-    for face in faces:
+    for face in faces_ptr:
         face.Set("index", str(index))
         face.Set("class", "Face")
         index += 1
@@ -33,7 +33,7 @@ def Adjacency(cellcomplex):
 
 def Circulation(self, cellcomplex):
     """Reduce adjacency graph to a circulation graph"""
-    vertices = create_stl_list(Vertex)
+    vertices_ptr = create_stl_list(Vertex)
     for face in self.Faces(cellcomplex):
         vertex = face.GraphVertex(self)
         if face.IsVertical():
@@ -41,51 +41,51 @@ def Circulation(self, cellcomplex):
             axis = face.AxisOuter()
             if VertexUtility.Distance(axis[0], axis[1]) < 1.0:
                 # is too narrow for a door
-                vertices.push_back(vertex)
+                vertices_ptr.push_back(vertex)
             else:
-                cells = create_stl_list(Cell)
-                face.Cells(cells)
-                cells = list(cells)
+                cells_ptr = create_stl_list(Cell)
+                face.Cells(cells_ptr)
+                cells = list(cells_ptr)
                 if cells[0].Elevation() != cells[1].Elevation():
                     # floors either side are not at the same level
-                    vertices.push_back(vertex)
+                    vertices_ptr.push_back(vertex)
                 else:
                     usage_a = cells[0].Usage()
                     usage_b = cells[1].Usage()
                     if (usage_a == "bedroom" or usage_a == "toilet") and not (
                         usage_b == "stair" or usage_b == "circulation"
                     ):
-                        vertices.push_back(vertex)
+                        vertices_ptr.push_back(vertex)
                     elif (usage_b == "bedroom" or usage_b == "toilet") and not (
                         usage_a == "stair" or usage_a == "circulation"
                     ):
-                        vertices.push_back(vertex)
+                        vertices_ptr.push_back(vertex)
 
         elif face.IsHorizontal():
             # floor
-            cells = create_stl_list(Cell)
-            face.Cells(cells)
+            cells_ptr = create_stl_list(Cell)
+            face.Cells(cells_ptr)
             if (
-                len(cells) == 2
-                and list(cells)[0].Usage() == "stair"
-                and list(cells)[1].Usage() == "stair"
+                len(cells_ptr) == 2
+                and list(cells_ptr)[0].Usage() == "stair"
+                and list(cells_ptr)[1].Usage() == "stair"
             ):
                 continue
             # is not in a stair flight
-            vertices.push_back(vertex)
+            vertices_ptr.push_back(vertex)
         else:
             # neither vertical or horizontal
-            vertices.push_back(vertex)
-    self.RemoveVertices(vertices)
+            vertices_ptr.push_back(vertex)
+    self.RemoveVertices(vertices_ptr)
 
 
 def IsConnected(self):
     """Checks that all Vertices can be reached from all other Vertices"""
     connected = True
-    vertices = create_stl_list(Vertex)
-    self.Vertices(vertices)
-    vertex_a = list(vertices)[0]
-    for vertex_b in vertices:
+    vertices_ptr = create_stl_list(Vertex)
+    self.Vertices(vertices_ptr)
+    vertex_a = list(vertices_ptr)[0]
+    for vertex_b in vertices_ptr:
         if vertex_b.Get("class") == "Face":
             continue
         if vertex_a.IsSame(vertex_b):
@@ -101,10 +101,10 @@ def ShortestPathTable(self):
     result = {}
     if not self.IsConnected():
         return result
-    vertices = create_stl_list(Vertex)
-    self.Vertices(vertices)
+    vertices_ptr = create_stl_list(Vertex)
+    self.Vertices(vertices_ptr)
     vertices_list = []
-    for vertex in list(vertices):
+    for vertex in list(vertices_ptr):
         if vertex.Get("class") == "Cell":
             vertices_list.append(vertex)
     for i in range(len(vertices_list)):
@@ -112,10 +112,10 @@ def ShortestPathTable(self):
             if j <= i:
                 continue
             wire = self.ShortestPath(vertices_list[i], vertices_list[j], "", "length")
-            edges_stl = create_stl_list(Edge)
-            wire.Edges(edges_stl)
+            edges_ptr = create_stl_list(Edge)
+            wire.Edges(edges_ptr)
             length = 0.0
-            for edge in list(edges_stl):
+            for edge in list(edges_ptr):
                 length += edge.Length()
             i_index = vertices_list[i].Get("index")
             j_index = vertices_list[j].Get("index")
@@ -132,9 +132,9 @@ def Connectedness(self, table):
     """Tags 'cell' vertices with average travel distance to all other cells"""
     if table == {}:
         return
-    vertices = create_stl_list(Vertex)
-    self.Vertices(vertices)
-    for vertex in list(vertices):
+    vertices_ptr = create_stl_list(Vertex)
+    self.Vertices(vertices_ptr)
+    for vertex in list(vertices_ptr):
         if vertex.Get("class") == "Cell":
             index = vertex.Get("index")
             total_length = 0.0
@@ -145,40 +145,40 @@ def Connectedness(self, table):
 
 def Faces(self, cellcomplex):
     """Return all the Faces from a CellComplex corresponding to this Graph"""
-    vertices = create_stl_list(Vertex)
-    self.Vertices(vertices)
-    faces = create_stl_list(Face)
-    for vertex in vertices:
+    vertices_ptr = create_stl_list(Vertex)
+    self.Vertices(vertices_ptr)
+    faces_ptr = create_stl_list(Face)
+    for vertex in vertices_ptr:
         if vertex.Get("class") == "Face":
             face = self.GetEntity(cellcomplex, vertex)
-            faces.push_back(face)
-    return faces
+            faces_ptr.push_back(face)
+    return faces_ptr
 
 
 def Cells(self, cellcomplex):
     """Return all the Cells from a CellComplex corresponding to this Graph"""
-    vertices = create_stl_list(Vertex)
-    self.Vertices(vertices)
-    cells = create_stl_list(Cell)
-    for vertex in vertices:
+    vertices_ptr = create_stl_list(Vertex)
+    self.Vertices(vertices_ptr)
+    cells_ptr = create_stl_list(Cell)
+    for vertex in vertices_ptr:
         if vertex.Get("class") == "Cell":
             cell = self.GetEntity(cellcomplex, vertex)
-            cells.push_back(cell)
-    return cells
+            cells_ptr.push_back(cell)
+    return cells_ptr
 
 
 def GetEntity(self, cellcomplex, vertex):
     """Return the entity from a CellComplex (Face or Cell) corresponding to this Vertex)"""
     index = vertex.Get("index")
     if vertex.Get("class") == "Face":
-        entities = create_stl_list(Face)
-        cellcomplex.Faces(entities)
+        topologies_ptr = create_stl_list(Face)
+        cellcomplex.Faces(topologies_ptr)
     elif vertex.Get("class") == "Cell":
-        entities = create_stl_list(Cell)
-        cellcomplex.Cells(entities)
+        topologies_ptr = create_stl_list(Cell)
+        cellcomplex.Cells(topologies_ptr)
     else:
         return None
-    for entity in entities:
+    for entity in topologies_ptr:
         if entity.Get("index") == index:
             return entity
 
@@ -189,16 +189,16 @@ def Dot(self, cellcomplex):
     string = "strict graph G {\n"
     string += "graph [overlap=false];\n"
 
-    vertices = create_stl_list(Vertex)
-    self.Vertices(vertices)
+    vertices_ptr = create_stl_list(Vertex)
+    self.Vertices(vertices_ptr)
 
-    edges = create_stl_list(Edge)
-    self.Edges(edges)
+    edges_ptr = create_stl_list(Edge)
+    self.Edges(edges_ptr)
 
-    for vertex in vertices:
+    for vertex in vertices_ptr:
         text = str(self.GetEntity(cellcomplex, vertex).DumpDictionary())
         string += '"' + text + '" [color="#666666",style=filled];\n'
-    for edge in edges:
+    for edge in edges_ptr:
         text0 = str(self.GetEntity(cellcomplex, edge.StartVertex()).DumpDictionary())
         text1 = str(self.GetEntity(cellcomplex, edge.EndVertex()).DumpDictionary())
         string += '"' + text0 + '"--"' + text1 + '"\n'

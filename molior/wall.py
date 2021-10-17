@@ -92,9 +92,9 @@ class Wall(TraceClass):
 
             segment = self.chain.edges()[id_segment]
             face = self.chain.graph[segment[0]][1][2]
-            vertices_stl = create_stl_list(Vertex)
-            self.chain.graph[segment[0]][1][2].VerticesPerimeter(vertices_stl)
-            vertices = [list(vertex.Coordinates()) for vertex in list(vertices_stl)]
+            vertices_ptr = create_stl_list(Vertex)
+            self.chain.graph[segment[0]][1][2].VerticesPerimeter(vertices_ptr)
+            vertices = [list(vertex.Coordinates()) for vertex in list(vertices_ptr)]
             normal = self.chain.graph[segment[0]][1][2].Normal()
 
             # generate space boundaries
@@ -303,9 +303,9 @@ class Wall(TraceClass):
             )
 
             # clip the top of the wall if face isn't rectangular
-            edges_result = create_stl_list(Edge)
-            face.EdgesCrop(edges_result)
-            for edge in edges_result:
+            edges_ptr = create_stl_list(Edge)
+            face.EdgesCrop(edges_ptr)
+            for edge in edges_ptr:
                 start_coor = transform(
                     matrix_reverse, list(edge.StartVertex().Coordinates())
                 )
@@ -364,7 +364,7 @@ class Wall(TraceClass):
                         ),
                     )
 
-            if len(list(edges_result)) == 0:
+            if len(list(edges_ptr)) == 0:
                 representationtype = "SweptSolid"
             else:
                 representationtype = "Clipping"

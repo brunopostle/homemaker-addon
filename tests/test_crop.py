@@ -43,26 +43,26 @@ class Tests(unittest.TestCase):
     def test_faces(self):
         self.assertEqual(FaceUtility.Area(self.face), 15.0)
 
-        top = create_stl_list(Edge)
-        self.face.EdgesTop(top)
+        top_edge_ptr = create_stl_list(Edge)
+        self.face.EdgesTop(top_edge_ptr)
 
-        bottom = create_stl_list(Edge)
-        self.face.EdgesBottom(bottom)
+        bottom_edge_ptr = create_stl_list(Edge)
+        self.face.EdgesBottom(bottom_edge_ptr)
 
-        crop = create_stl_list(Edge)
-        self.face.EdgesCrop(crop)
+        crop_edge_ptr = create_stl_list(Edge)
+        self.face.EdgesCrop(crop_edge_ptr)
 
-        self.assertEqual(len(list(top)), 1)
-        self.assertEqual(len(list(bottom)), 1)
-        self.assertEqual(len(list(crop)), 2)
+        self.assertEqual(len(list(top_edge_ptr)), 1)
+        self.assertEqual(len(list(bottom_edge_ptr)), 1)
+        self.assertEqual(len(list(crop_edge_ptr)), 2)
 
-        self.assertAlmostEqual(EdgeUtility.Length(list(crop)[0]) ** 2, 2)
-        self.assertAlmostEqual(EdgeUtility.Length(list(crop)[1]) ** 2, 2)
+        self.assertAlmostEqual(EdgeUtility.Length(list(crop_edge_ptr)[0]) ** 2, 2)
+        self.assertAlmostEqual(EdgeUtility.Length(list(crop_edge_ptr)[1]) ** 2, 2)
 
     def test_plane(self):
-        crop = create_stl_list(Edge)
-        self.face.EdgesCrop(crop)
-        edge0 = list(crop)[0]
+        crop_edge_ptr = create_stl_list(Edge)
+        self.face.EdgesCrop(crop_edge_ptr)
+        edge0 = list(crop_edge_ptr)[0]
         start = edge0.StartVertex().Coordinates()
         end = edge0.EndVertex().Coordinates()
         vector = subtract_3d(end, start)

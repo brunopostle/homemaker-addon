@@ -43,8 +43,8 @@ class Tests(unittest.TestCase):
         edge = edge.AddContents(face_ptr, 0)
 
         # read Contents from the Edge
-        contents = create_stl_list(Topology)
-        edge.Contents(contents)
+        topologies_ptr = create_stl_list(Topology)
+        edge.Contents(topologies_ptr)
 
 
 if __name__ == "__main__":

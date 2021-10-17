@@ -43,10 +43,10 @@ def CellsOrdered(self):
         centroid[2] - (normal[2] / 10),
     )
 
-    cells = create_stl_list(Cell)
-    self.Cells(cells)
+    cells_ptr = create_stl_list(Cell)
+    self.Cells(cells_ptr)
     results = [None, None]
-    for cell in cells:
+    for cell in cells_ptr:
         if CellUtility.Contains(cell, vertex_front) == 0:
             results[0] = cell
         elif CellUtility.Contains(cell, vertex_back) == 0:
@@ -54,12 +54,12 @@ def CellsOrdered(self):
     return results
 
 
-def VerticesPerimeter(self, vertices_result):
+def VerticesPerimeter(self, vertices_ptr):
     """Vertices, tracing the outer perimeter"""
-    wires = create_stl_list(Wire)
-    self.Wires(wires)
-    list(wires)[0].Vertices(vertices_result)
-    return vertices_result
+    wires_ptr = create_stl_list(Wire)
+    self.Wires(wires_ptr)
+    list(wires_ptr)[0].Vertices(vertices_ptr)
+    return vertices_ptr
 
 
 def BadNormal(self):
@@ -100,11 +100,11 @@ def IsUpward(self):
 
 def AxisOuter(self):
     """2D bottom edge of a vertical face, for external walls, anti-clockwise in plan"""
-    edges = create_stl_list(Edge)
-    self.EdgesBottom(edges)
-    if len(edges) > 0:
+    edges_ptr = create_stl_list(Edge)
+    self.EdgesBottom(edges_ptr)
+    if len(edges_ptr) > 0:
         unordered = ugraph.graph()
-        for edge in edges:
+        for edge in edges_ptr:
             start_coor = edge.StartVertex().CoorAsString()
             end_coor = edge.EndVertex().CoorAsString()
             unordered.add_edge(
@@ -122,11 +122,11 @@ def AxisOuter(self):
 
 def AxisOuterTop(self):
     """2D top edge of a vertical face, for external walls, anti-clockwise in plan"""
-    edges = create_stl_list(Edge)
-    self.EdgesTop(edges)
-    if len(edges) > 0:
+    edges_ptr = create_stl_list(Edge)
+    self.EdgesTop(edges_ptr)
+    if len(edges_ptr) > 0:
         unordered = ugraph.graph()
-        for edge in edges:
+        for edge in edges_ptr:
             start_coor = edge.StartVertex().CoorAsString()
             end_coor = edge.EndVertex().CoorAsString()
             unordered.add_edge(
@@ -194,12 +194,12 @@ def IsOpen(self):
 
 def FaceAbove(self):
     """Does vertical face have a vertical face attached to a horizontal top?"""
-    edges = create_stl_list(Edge)
-    self.EdgesTop(edges)
-    for edge in edges:
-        faces = create_stl_list(Face)
-        edge.Faces(faces)
-        for face in faces:
+    edges_ptr = create_stl_list(Edge)
+    self.EdgesTop(edges_ptr)
+    for edge in edges_ptr:
+        faces_ptr = create_stl_list(Face)
+        edge.Faces(faces_ptr)
+        for face in faces_ptr:
             if face.IsVertical() and not face.IsSame(self):
                 return face
     return None
@@ -207,28 +207,28 @@ def FaceAbove(self):
 
 def FaceBelow(self):
     """Does vertical face have a vertical face attached to a horizontal bottom?"""
-    edges = create_stl_list(Edge)
-    self.EdgesBottom(edges)
-    for edge in edges:
-        faces = create_stl_list(Face)
-        edge.Faces(faces)
-        for face in faces:
+    edges_ptr = create_stl_list(Edge)
+    self.EdgesBottom(edges_ptr)
+    for edge in edges_ptr:
+        faces_ptr = create_stl_list(Face)
+        edge.Faces(faces_ptr)
+        for face in faces_ptr:
             if face.IsVertical() and not face.IsSame(self):
                 return face
     return None
 
 
-def HorizontalFacesSideways(self, faces_result):
+def HorizontalFacesSideways(self, result_faces_ptr):
     """Which horizontal faces are attached to the bottom of this vertical face?"""
-    edges = create_stl_list(Edge)
-    self.EdgesBottom(edges)
-    for edge in edges:
-        faces = create_stl_list(Face)
-        edge.Faces(faces)
-        for face in faces:
+    edges_ptr = create_stl_list(Edge)
+    self.EdgesBottom(edges_ptr)
+    for edge in edges_ptr:
+        faces_ptr = create_stl_list(Face)
+        edge.Faces(faces_ptr)
+        for face in faces_ptr:
             if face.IsHorizontal() and not face.IsSame(self):
-                faces_result.push_back(face)
-    return faces_result
+                result_faces_ptr.push_back(face)
+    return result_faces_ptr
 
 
 def Normal(self):
@@ -242,14 +242,14 @@ def Normal(self):
 def TopLevelConditions(self):
     """Assuming this is a vertical external wall, how do the top edges continue?"""
     result = []
-    edges = create_stl_list(Edge)
-    self.EdgesTop(edges)
-    for edge in edges:
-        faces = create_stl_list(Face)
-        edge.FacesExternal(faces)
+    edges_ptr = create_stl_list(Edge)
+    self.EdgesTop(edges_ptr)
+    for edge in edges_ptr:
+        faces_ptr = create_stl_list(Face)
+        edge.FacesExternal(faces_ptr)
         for (
             face
-        ) in faces:  # there should only be one external face (not including self)
+        ) in faces_ptr:  # there should only be one external face (not including self)
             if face.IsSame(self):
                 continue
             # top face tilts backward (roof) if normal faces up, forward (soffit) if faces down
@@ -275,14 +275,14 @@ def TopLevelConditions(self):
 def BottomLevelConditions(self):
     """Assuming this is a vertical external wall, how do the bottom edges continue?"""
     result = []
-    edges = create_stl_list(Edge)
-    self.EdgesBottom(edges)
-    for edge in edges:
-        faces = create_stl_list(Face)
-        edge.FacesExternal(faces)
+    edges_ptr = create_stl_list(Edge)
+    self.EdgesBottom(edges_ptr)
+    for edge in edges_ptr:
+        faces_ptr = create_stl_list(Face)
+        edge.FacesExternal(faces_ptr)
         for (
             face
-        ) in faces:  # there should only be one external face (not including self)
+        ) in faces_ptr:  # there should only be one external face (not including self)
             if face.IsSame(self):
                 continue
             # bottom face tilts forward (roof) if normal faces up, backward (soffit) if faces down

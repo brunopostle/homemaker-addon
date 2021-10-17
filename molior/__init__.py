@@ -142,10 +142,10 @@ class Molior:
                     space_lookup[pset_topology["CellIndex"]] = space
 
             # iterate all the edges in the topologic model
-            edges_stl = create_stl_list(Edge)
-            self.cellcomplex.Edges(edges_stl)
+            edges_ptr = create_stl_list(Edge)
+            self.cellcomplex.Edges(edges_ptr)
             point_list = []
-            for edge in list(edges_stl):
+            for edge in list(edges_ptr):
                 v_start = edge.StartVertex()
                 v_end = edge.EndVertex()
                 start = list(v_start.Coordinates())
@@ -208,9 +208,9 @@ class Molior:
                 )
 
                 # loop though all the faces connected to this edge
-                faces_stl = create_stl_list(Face)
-                edge.Faces(faces_stl)
-                for face in list(faces_stl):
+                faces_ptr = create_stl_list(Face)
+                edge.Faces(faces_ptr)
+                for face in list(faces_ptr):
                     index = face.Get("index")
                     # connect this surface member to this curve connection
                     if index and index in surface_lookup:

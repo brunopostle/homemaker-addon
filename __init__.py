@@ -68,22 +68,22 @@ class ObjectTopologise(bpy.types.Operator):
 
         # Generate a Topologic CellComplex
         cc = CellComplex.ByFaces(faces_ptr, 0.0001)
-        stl_faces = create_stl_list(Face)
-        cc.Faces(stl_faces)
+        faces_ptr = create_stl_list(Face)
+        cc.Faces(faces_ptr)
         vertices = []
         faces = []
         materials = []
         vertex_id = 0
-        for stl_face in stl_faces:
-            stl_vertices = create_stl_list(Vertex)
-            stl_face.VerticesPerimeter(stl_vertices)
+        for face_ptr in faces_ptr:
+            vertices_ptr = create_stl_list(Vertex)
+            face_ptr.VerticesPerimeter(vertices_ptr)
             face = []
-            for vertex in list(stl_vertices):
+            for vertex in list(vertices_ptr):
                 vertices.append([vertex.X(), vertex.Y(), vertex.Z()])
                 face.append(vertex_id)
                 vertex_id += 1
             faces.append(face)
-            materials.append(stl_face.Get("stylename"))
+            materials.append(face_ptr.Get("stylename"))
 
         new_mesh = bpy.data.meshes.new("faces")
         new_mesh.from_pydata(vertices, [], faces)

@@ -21,12 +21,12 @@ class Hulls:
         if not stylename in hulls[label]:
             hulls[label][stylename] = ushell.shell()
 
-        vertices = create_stl_list(Vertex)
-        face.VerticesPerimeter(vertices)
+        vertices_ptr = create_stl_list(Vertex)
+        face.VerticesPerimeter(vertices_ptr)
         cells = face.CellsOrdered()
 
         hulls[label][stylename].add_face(
-            [vertex.Coordinates() for vertex in vertices],
+            [vertex.Coordinates() for vertex in vertices_ptr],
             face.Normal(),
             [face, cells[1], cells[0]],
         )

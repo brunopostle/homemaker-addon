@@ -65,9 +65,9 @@ class Tests(unittest.TestCase):
         self.cc = CellComplex.ByFaces(faces_ptr, 0.0001)
 
     def test_perimeter(self):
-        cells = create_stl_list(Cell)
-        self.cc.Cells(cells)
-        for cell in cells:
+        cells_ptr = create_stl_list(Cell)
+        self.cc.Cells(cells_ptr)
+        for cell in cells_ptr:
             perimeter = cell.Perimeter()
             if len(perimeter.nodes()) == 3:
                 self.assertEqual(len(perimeter.edges()), 3)

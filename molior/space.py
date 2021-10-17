@@ -72,9 +72,9 @@ class Space(TraceClass):
         representationtype = "SweptSolid"
 
         # clip if original cell has non-horizontal ceiling
-        faces_stl = create_stl_list(Face)
-        cell.FacesInclined(faces_stl)
-        if len(faces_stl) > 0:
+        faces_ptr = create_stl_list(Face)
+        cell.FacesInclined(faces_ptr)
+        if len(faces_ptr) > 0:
             vertices, faces = cell.Mesh()
             vertices = [
                 [v[0], v[1], v[2] - self.elevation - self.floor] for v in vertices

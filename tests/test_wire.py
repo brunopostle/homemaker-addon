@@ -45,37 +45,37 @@ class Tests(unittest.TestCase):
 
     def test_cluster(self):
         """add edges to a cluster, self-merge, extract Wires"""
-        edges = create_stl_list(Topology)
-        edges.push_back(self.edge_2)
-        edges.push_back(self.edge_1)
-        edges.push_back(self.edge_0)
-        edges.push_back(self.edge_3)
-        edges.push_back(self.edge_8)
-        edges.push_back(self.edge_9)
-        cluster = Cluster.ByTopologies(edges)
+        edges_ptr = create_stl_list(Topology)
+        edges_ptr.push_back(self.edge_2)
+        edges_ptr.push_back(self.edge_1)
+        edges_ptr.push_back(self.edge_0)
+        edges_ptr.push_back(self.edge_3)
+        edges_ptr.push_back(self.edge_8)
+        edges_ptr.push_back(self.edge_9)
+        cluster = Cluster.ByTopologies(edges_ptr)
         merged = cluster.SelfMerge()
-        wires = create_stl_list(Wire)
-        merged.Wires(wires)
-        for wire in wires:
-            vertices = create_stl_list(Vertex)
-            wire.Vertices(vertices)
-            if len(list(vertices)) == 4:
+        wires_ptr = create_stl_list(Wire)
+        merged.Wires(wires_ptr)
+        for wire in wires_ptr:
+            vertices_ptr = create_stl_list(Vertex)
+            wire.Vertices(vertices_ptr)
+            if len(list(vertices_ptr)) == 4:
                 self.assertTrue(wire.IsClosed())
-            if len(list(vertices)) == 3:
+            if len(list(vertices_ptr)) == 3:
                 self.assertFalse(wire.IsClosed())
 
     def test_anticlockwise(self):
         """Four points, three segments, anti-clockwise"""
-        edges = create_stl_list(Edge)
-        edges.push_back(self.edge_2)
-        edges.push_back(self.edge_1)
-        edges.push_back(self.edge_0)
-        wire = Wire.ByEdges(edges)
+        edges_ptr = create_stl_list(Edge)
+        edges_ptr.push_back(self.edge_2)
+        edges_ptr.push_back(self.edge_1)
+        edges_ptr.push_back(self.edge_0)
+        wire = Wire.ByEdges(edges_ptr)
         self.assertFalse(wire.IsClosed())
 
-        vertices_stl = create_stl_list(Vertex)
-        wire.Vertices(vertices_stl)
-        vertices = list(vertices_stl)
+        vertices_ptr = create_stl_list(Vertex)
+        wire.Vertices(vertices_ptr)
+        vertices = list(vertices_ptr)
         self.assertEqual(vertices[0].X(), 0.0)
         self.assertEqual(vertices[0].Y(), 0.0)
         self.assertEqual(vertices[1].X(), 10.0)
@@ -87,16 +87,16 @@ class Tests(unittest.TestCase):
 
     def test_clockwise(self):
         """Four points, three segments, clockwise"""
-        edges = create_stl_list(Edge)
-        edges.push_back(self.edge_6)
-        edges.push_back(self.edge_4)
-        edges.push_back(self.edge_5)
-        wire = Wire.ByEdges(edges)
+        edges_ptr = create_stl_list(Edge)
+        edges_ptr.push_back(self.edge_6)
+        edges_ptr.push_back(self.edge_4)
+        edges_ptr.push_back(self.edge_5)
+        wire = Wire.ByEdges(edges_ptr)
         self.assertFalse(wire.IsClosed())
 
-        vertices_stl = create_stl_list(Vertex)
-        wire.Vertices(vertices_stl)
-        vertices = list(vertices_stl)
+        vertices_ptr = create_stl_list(Vertex)
+        wire.Vertices(vertices_ptr)
+        vertices = list(vertices_ptr)
         self.assertEqual(vertices[0].X(), 0.0)
         self.assertEqual(vertices[0].Y(), 10.0)
         self.assertEqual(vertices[1].X(), 10.0)
@@ -108,17 +108,17 @@ class Tests(unittest.TestCase):
 
     def test_clockwise_closed(self):
         """Four points, four segments, clockwise"""
-        edges = create_stl_list(Edge)
-        edges.push_back(self.edge_6)
-        edges.push_back(self.edge_4)
-        edges.push_back(self.edge_7)
-        edges.push_back(self.edge_5)
-        wire = Wire.ByEdges(edges)
+        edges_ptr = create_stl_list(Edge)
+        edges_ptr.push_back(self.edge_6)
+        edges_ptr.push_back(self.edge_4)
+        edges_ptr.push_back(self.edge_7)
+        edges_ptr.push_back(self.edge_5)
+        wire = Wire.ByEdges(edges_ptr)
         self.assertTrue(wire.IsClosed())
 
-        vertices_stl = create_stl_list(Vertex)
-        wire.Vertices(vertices_stl)
-        vertices = list(vertices_stl)
+        vertices_ptr = create_stl_list(Vertex)
+        wire.Vertices(vertices_ptr)
+        vertices = list(vertices_ptr)
         self.assertEqual(vertices[0].X(), 10.0)
         self.assertEqual(vertices[0].Y(), 0.0)
         self.assertEqual(vertices[1].X(), 0.0)

@@ -28,11 +28,11 @@ origin = Vertex.ByCoordinates(0.0, 0.0, 0.0)
 # print("BREP scale from feet to metres", datetime.datetime.now())
 topology_scaled = TopologyUtility.Scale(topology, origin, 1.0, 1.0, 1.0)
 
-faces_stl = create_stl_list(Face)
-topology_scaled.Faces(faces_stl)
-print(str(len(faces_stl)), "faces", datetime.datetime.now())
+faces_ptr = create_stl_list(Face)
+topology_scaled.Faces(faces_ptr)
+print(str(len(faces_ptr)), "faces", datetime.datetime.now())
 
-cc = CellComplex.ByFaces(faces_stl, 0.0001)
+cc = CellComplex.ByFaces(faces_ptr, 0.0001)
 print("CellComplex created", datetime.datetime.now())
 
 # Copy styles from Faces to the CellComplex

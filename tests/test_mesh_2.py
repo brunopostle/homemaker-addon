@@ -74,25 +74,25 @@ class Tests(unittest.TestCase):
 
     def test_faces_cc(self):
 
-        faces_all = create_stl_list(Face)
-        self.cc.Faces(faces_all)
-        self.assertEqual(len(faces_all), 14)
-        for face in faces_all:
-            cells = create_stl_list(Cell)
-            face.Cells(cells)
-            self.assertGreater(len(cells), 0)
-            self.assertLess(len(cells), 3)
+        all_faces_ptr = create_stl_list(Face)
+        self.cc.Faces(all_faces_ptr)
+        self.assertEqual(len(all_faces_ptr), 14)
+        for face in all_faces_ptr:
+            cells_ptr = create_stl_list(Cell)
+            face.Cells(cells_ptr)
+            self.assertGreater(len(cells_ptr), 0)
+            self.assertLess(len(cells_ptr), 3)
 
-        faces_vertical = create_stl_list(Face)
-        self.cc.FacesVertical(faces_vertical)
-        self.assertEqual(len(faces_vertical), 9)
-        for face in faces_vertical:
+        vertical_faces_ptr = create_stl_list(Face)
+        self.cc.FacesVertical(vertical_faces_ptr)
+        self.assertEqual(len(vertical_faces_ptr), 9)
+        for face in vertical_faces_ptr:
             self.assertTrue(face.IsVertical())
 
-        faces_horizontal = create_stl_list(Face)
-        self.cc.FacesHorizontal(faces_horizontal)
-        self.assertEqual(len(faces_horizontal), 5)
-        for face in faces_horizontal:
+        horizontal_faces_ptr = create_stl_list(Face)
+        self.cc.FacesHorizontal(horizontal_faces_ptr)
+        self.assertEqual(len(horizontal_faces_ptr), 5)
+        for face in horizontal_faces_ptr:
             self.assertTrue(face.IsHorizontal())
 
     def test_cells(self):
@@ -102,67 +102,67 @@ class Tests(unittest.TestCase):
         self.assertEqual(centroid.Y(), 5.0)
         self.assertEqual(centroid.Z(), 10.0)
 
-        cells = create_stl_list(Cell)
-        self.cc.Cells(cells)
-        self.assertEqual(len(cells), 3)
+        cells_ptr = create_stl_list(Cell)
+        self.cc.Cells(cells_ptr)
+        self.assertEqual(len(cells_ptr), 3)
 
-        for cell in cells:
+        for cell in cells_ptr:
             centroid = cell.Centroid()
             volume = CellUtility.Volume(cell)
             planarea = cell.PlanArea()
             externalwallarea = cell.ExternalWallArea()
             crinkliness = cell.Crinkliness()
 
-            faces_vertical = create_stl_list(Face)
-            cell.FacesVertical(faces_vertical)
+            vertical_faces_ptr = create_stl_list(Face)
+            cell.FacesVertical(vertical_faces_ptr)
 
-            faces_horizontal = create_stl_list(Face)
-            cell.FacesHorizontal(faces_horizontal)
+            horizontal_faces_ptr = create_stl_list(Face)
+            cell.FacesHorizontal(horizontal_faces_ptr)
 
-            cells_above = create_stl_list(Cell)
-            cell.CellsAbove(self.cc, cells_above)
-            if len(cells_above) == 1:
+            above_cells_ptr = create_stl_list(Cell)
+            cell.CellsAbove(self.cc, above_cells_ptr)
+            if len(above_cells_ptr) == 1:
                 self.assertAlmostEqual(volume, 500.0)
                 self.assertAlmostEqual(planarea, 50.0)
                 self.assertAlmostEqual(externalwallarea, 200.0)
                 self.assertAlmostEqual(crinkliness, 4.0)
                 cell.Set("usage", "Kitchen")
-            elif len(cells_above) == 0:
+            elif len(above_cells_ptr) == 0:
                 self.assertAlmostEqual(volume, 1000.0)
                 self.assertAlmostEqual(planarea, 100.0)
                 self.assertAlmostEqual(externalwallarea, 400.0)
                 self.assertAlmostEqual(crinkliness, 4.0)
                 cell.Set("usage", "Bedroom")
 
-                faces_vertical = create_stl_list(Face)
-                cell.FacesVertical(faces_vertical)
+                vertical_faces_ptr = create_stl_list(Face)
+                cell.FacesVertical(vertical_faces_ptr)
 
-                for face in faces_vertical:
-                    top_edges = create_stl_list(Edge)
-                    bottom_edges = create_stl_list(Edge)
+                for face in vertical_faces_ptr:
+                    top_edges_ptr = create_stl_list(Edge)
+                    bottom_edges_ptr = create_stl_list(Edge)
 
-                    face.EdgesTop(top_edges)
-                    face.EdgesBottom(bottom_edges)
-                    self.assertEqual(len(top_edges), 1)
-                    self.assertEqual(len(bottom_edges), 1)
+                    face.EdgesTop(top_edges_ptr)
+                    face.EdgesBottom(bottom_edges_ptr)
+                    self.assertEqual(len(top_edges_ptr), 1)
+                    self.assertEqual(len(bottom_edges_ptr), 1)
 
                     self.assertFalse(face.FaceAbove())
                     self.assertTrue(face.FaceBelow())
 
-            cells_below = create_stl_list(Cell)
-            cell.CellsBelow(self.cc, cells_below)
-            if len(cells_below) == 2:
+            below_cells_ptr = create_stl_list(Cell)
+            cell.CellsBelow(self.cc, below_cells_ptr)
+            if len(below_cells_ptr) == 2:
                 self.assertAlmostEqual(volume, 1000.0)
                 self.assertEqual(cell.Usage(), "Bedroom")
-            elif len(cells_below) == 0:
+            elif len(below_cells_ptr) == 0:
                 self.assertAlmostEqual(volume, 500.0)
                 self.assertEqual(cell.Usage(), "Kitchen")
 
-        cells2 = create_stl_list(Cell)
-        self.cc.Cells(cells2)
+        cells_ptr = create_stl_list(Cell)
+        self.cc.Cells(cells_ptr)
         has_kitchen = False
         has_bedroom = False
-        for cell in cells2:
+        for cell in cells_ptr:
             if cell.Usage() == "Bedroom":
                 has_bedroom = True
             if cell.Usage() == "Kitchen":
@@ -171,13 +171,13 @@ class Tests(unittest.TestCase):
         self.assertTrue(has_kitchen)
 
     def test_faces(self):
-        faces_vertical = create_stl_list(Face)
-        self.cc.FacesVertical(faces_vertical)
-        self.assertEqual(len(faces_vertical), 9)
+        vertical_faces_ptr = create_stl_list(Face)
+        self.cc.FacesVertical(vertical_faces_ptr)
+        self.assertEqual(len(vertical_faces_ptr), 9)
 
-        faces_horizontal = create_stl_list(Face)
-        self.cc.FacesHorizontal(faces_horizontal)
-        self.assertEqual(len(faces_horizontal), 5)
+        horizontal_faces_ptr = create_stl_list(Face)
+        self.cc.FacesHorizontal(horizontal_faces_ptr)
+        self.assertEqual(len(horizontal_faces_ptr), 5)
 
     def test_graph(self):
         traces, hulls, normals, elevations = self.cc.GetTraces()
@@ -201,12 +201,12 @@ class Tests(unittest.TestCase):
         self.assertEqual(data[2].GetType(), 8)  # Face == 8
         self.assertEqual(data[3].GetType(), 32)  # Cell == 32
         self.assertEqual(data[4], None)  # no outer Cell
-        faces2 = create_stl_list(Face)
-        data[0].Faces(faces2)
-        self.assertEqual(len(faces2), 3)  # vertex is connected to 3 faces
-        faces3 = create_stl_list(Face)
-        data[2].AdjacentFaces(faces3)
-        self.assertEqual(len(faces3), 6)  # face is connected to 6 faces
+        faces_ptr = create_stl_list(Face)
+        data[0].Faces(faces_ptr)
+        self.assertEqual(len(faces_ptr), 3)  # vertex is connected to 3 faces
+        faces_ptr = create_stl_list(Face)
+        data[2].AdjacentFaces(faces_ptr)
+        self.assertEqual(len(faces_ptr), 6)  # face is connected to 6 faces
 
         upper = traces_external[10.0][10.0]["default"]
         self.assertEqual(len(upper[0].nodes()), 4)
@@ -251,9 +251,9 @@ class Tests(unittest.TestCase):
             self.cc, True, False, False, False, False, False, 0.0001
         )
         topology = graph.Topology()
-        edges = create_stl_list(Edge)
-        topology.Edges(edges)
-        self.assertEqual(len(edges), 3)
+        edges_ptr = create_stl_list(Edge)
+        topology.Edges(edges_ptr)
+        self.assertEqual(len(edges_ptr), 3)
 
 
 if __name__ == "__main__":

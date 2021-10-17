@@ -59,10 +59,10 @@ class Tests(unittest.TestCase):
             self.assertEqual(face.Get("stylename"), "orange")
 
     def test_faces_cellcomplex(self):
-        faces_all = create_stl_list(Face)
-        self.cellcomplex.Faces(faces_all)
-        self.assertEqual(len(faces_all), 6)
-        for face in faces_all:
+        faces_ptr = create_stl_list(Face)
+        self.cellcomplex.Faces(faces_ptr)
+        self.assertEqual(len(faces_ptr), 6)
+        for face in faces_ptr:
             if not face.IsVertical():
                 continue
             self.assertEqual(face.Get("stylename"), "orange")

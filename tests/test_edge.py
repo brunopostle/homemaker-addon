@@ -34,12 +34,12 @@ class Tests(unittest.TestCase):
         self.assertFalse(self.edge_c.IsVertical())
 
     def test_below(self):
-        edges = create_stl_list(Edge)
-        self.cell.Edges(edges)
+        edges_ptr = create_stl_list(Edge)
+        self.cell.Edges(edges_ptr)
         faces_above = 0
         faces_below = 0
         cells_below = 0
-        for edge in edges:
+        for edge in edges_ptr:
             if edge.IsHorizontal():
                 if edge.FaceBelow():
                     faces_below += 1
