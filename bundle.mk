@@ -13,6 +13,7 @@ dist:
 
 	cd dist/working && wget https://files.pythonhosted.org/packages/ac/dd/f6fc54a770ba0222261b33d60d9c9e01aa35d989f1cdfe892ae84e319779/ezdxf-0.16.3-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl
 	cd dist/working && wget https://files.pythonhosted.org/packages/8a/bb/488841f56197b13700afd5658fc279a2025a39e22449b7cf29864669b15d/pyparsing-2.4.7-py2.py3-none-any.whl
+	cd dist/working && wget https://files.pythonhosted.org/packages/12/fc/a4d5a7554e0067677823f7265cb3ae22aed8a238560b5133b58cda252dad/PyYAML-6.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl
 	cd dist/working && wget https://github.com/brunopostle/Topologic-1/releases/download/2021-10-18/Topologic_2021-10-18_buster.zip
 
 	# TOPOLOGIC
@@ -28,9 +29,8 @@ dist:
 	cd dist/working && unzip pyparsing-2.4.7-*.whl
 	cp dist/working/pyparsing.py dist/homemaker/libs/site/packages/
 
-	# PyYAML
-
-	pip install PyYAML -t dist/homemaker/libs/site/packages/
+	cd dist/working && unzip PyYAML-6.0-*.whl
+	cp -r dist/working/yaml dist/homemaker/libs/site/packages/
 
 	cd dist && zip -r blender-homemaker-$(VERSION)-$(PLATFORM).zip ./homemaker
 	#rm -rf dist/homemaker
