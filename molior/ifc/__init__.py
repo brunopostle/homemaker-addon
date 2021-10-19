@@ -477,19 +477,33 @@ def get_material_by_name(self, subcontext, material_name, style_materials):
                         pset=pset,
                         properties=properties,
                     )
+        style = run("style.add_style", self, name=material_name)
+        run(
+            "style.add_surface_style",
+            self,
+            style=style,
+            attributes={
+                "SurfaceColour": {
+                    "Name": None,
+                    "Red": params["surface_colour"][0],
+                    "Green": params["surface_colour"][1],
+                    "Blue": params["surface_colour"][2],
+                },
+                "DiffuseColour": {
+                    "Name": None,
+                    "Red": params["diffuse_colour"][0],
+                    "Green": params["diffuse_colour"][1],
+                    "Blue": params["diffuse_colour"][2],
+                },
+                "Transparency": params["transparency"],
+                "ReflectanceMethod": "PLASTIC",
+            },
+        )
         run(
             "style.assign_material_style",
             self,
             material=mymaterial,
-            style=run(
-                "style.add_style",
-                self,
-                name=material_name,
-                surface_colour=params["surface_colour"],
-                diffuse_colour=params["diffuse_colour"],
-                transparency=params["transparency"],
-                external_definition=params["external_definition"],
-            ),
+            style=style,
             context=subcontext,
         )
     return mymaterial

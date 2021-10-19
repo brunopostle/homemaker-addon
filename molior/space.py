@@ -95,24 +95,52 @@ class Space(TraceClass):
             green = numpy.clip(crinkliness, 0.0, 1.0)
             blue = numpy.clip(crinkliness - 1.0, 0.0, 1.0)
             style = run(
-                "style.add_style",
+                "style.add_style", self.file, name="Crinkliness " + str(crinkliness)
+            )
+            run(
+                "style.add_surface_style",
                 self.file,
-                name="Crinkliness " + str(crinkliness),
-                surface_colour=[red, green, blue],
-                diffuse_colour=[red, green, blue],
-                transparency=0.5,
-                external_definition=None,
+                style=style,
+                attributes={
+                    "SurfaceColour": {
+                        "Name": None,
+                        "Red": red,
+                        "Green": green,
+                        "Blue": blue,
+                    },
+                    "DiffuseColour": {
+                        "Name": None,
+                        "Red": red,
+                        "Green": green,
+                        "Blue": blue,
+                    },
+                    "Transparency": 0.5,
+                    "ReflectanceMethod": "PLASTIC",
+                },
             )
             # FIXME report 159 LIGHT ON TWO SIDES: custom psets? STDERR?
         else:
-            style = run(
-                "style.add_style",
+            style = run("style.add_style", self.file, name="Outdoor Space")
+            run(
+                "style.add_surface_style",
                 self.file,
-                name="Outdoor Space",
-                surface_colour=[1.0, 1.0, 1.0],
-                diffuse_colour=[1.0, 1.0, 1.0],
-                transparency=0.9,
-                external_definition=None,
+                style=style,
+                attributes={
+                    "SurfaceColour": {
+                        "Name": None,
+                        "Red": 1.0,
+                        "Green": 1.0,
+                        "Blue": 1.0,
+                    },
+                    "DiffuseColour": {
+                        "Name": None,
+                        "Red": 1.0,
+                        "Green": 1.0,
+                        "Blue": 1.0,
+                    },
+                    "Transparency": 0.9,
+                    "ReflectanceMethod": "PLASTIC",
+                },
             )
         run(
             "style.assign_representation_styles",
