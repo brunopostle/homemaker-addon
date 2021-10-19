@@ -175,15 +175,15 @@ class Tests(unittest.TestCase):
         self.assertEqual(table["1"]["2"], table["2"]["1"])
         self.assertEqual(table["1"]["0"], table["0"]["1"])
 
-    def test_connectedness(self):
+    def test_separation(self):
         graph = Graph.Adjacency(self.cc)
         table = graph.ShortestPathTable()
-        graph.Connectedness(table)
+        graph.Separation(table)
         vertices_ptr = []
         graph.Vertices(vertices_ptr)
         for vertex in vertices_ptr:
             if vertex.Get("class") == "Cell":
-                self.assertTrue(float(vertex.Get("connectedness")) > 0.0)
+                self.assertTrue(float(vertex.Get("separation")) > 0.0)
 
 
 if __name__ == "__main__":

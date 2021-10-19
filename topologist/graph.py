@@ -127,7 +127,7 @@ def ShortestPathTable(self):
     return result
 
 
-def Connectedness(self, table):
+def Separation(self, table):
     """Tags 'cell' vertices with average travel distance to all other cells"""
     if table == {}:
         return
@@ -139,7 +139,7 @@ def Connectedness(self, table):
             total_length = 0.0
             for length in table[index].values():
                 total_length += length
-            vertex.Set("connectedness", str(total_length / len(table[index])))
+            vertex.Set("separation", str(total_length / len(table[index])))
 
 
 def Faces(self, cellcomplex):
@@ -209,7 +209,7 @@ setattr(topologic.Graph, "Adjacency", Adjacency)
 setattr(topologic.Graph, "Circulation", Circulation)
 setattr(topologic.Graph, "IsConnected", IsConnected)
 setattr(topologic.Graph, "ShortestPathTable", ShortestPathTable)
-setattr(topologic.Graph, "Connectedness", Connectedness)
+setattr(topologic.Graph, "Separation", Separation)
 setattr(topologic.Graph, "Faces", Faces)
 setattr(topologic.Graph, "Cells", Cells)
 setattr(topologic.Graph, "GetEntity", GetEntity)
