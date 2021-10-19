@@ -51,30 +51,25 @@ needs reimplementing.
 
 - Extended style system, buildings can be styled with an extensive inheritable
 style system, but this is just the start, there is lots more that needs to
-be done: repeating and nested elements, subtractive geometry etc.
+be done: grillages, subtractive geometry etc.
 
 - Assets such as windows, doors and extrusion profiles are currently provided
-in DXF format, we need a really good system for creating and editing these
-as native IFC objects.
+in DXF format, these need to be ported to a native IFC Library.
 
-- Materials have been lost in the process of porting from Perl, we need to be
-able to control what our buildings are made-from.
+- Costing, Carbon and Life Cycle Analysis. IFC can hold detailed information on
+quantities, costs and scheduling, the library needs to make this stuff easy.
 
-- Costing. IFC can hold detailed information on quantities, costs and
-scheduling, the library needs to make this stuff easy.
-
-- Structural and environmental analysis. The high-level models used in this
-library are well-suited for providing input to structural and thermal
-analysis software.
+- Structural and environmental analysis. The generated models contain IFC
+Structural Model data and 2nd Level Space Boundary data for thermal analysis,
+these need testing in a range of analysis software.
 
 - But not least, let's take architecture out of the hands of architects and put
 it back in the hands of people who need good ordinary buildings.
 
 ## Requirements
 
-- [topologicPy](https://github.com/wassimj/topologicPy) a python interface to the TopologicCore library. Install it with `sudo python setup.py install`
-  - [cppyy](https://pypi.org/project/cppyy/) C++ python interface, this consists of four packages: `cppyy-cling`, `cppyy_backend`, `CPyCppyy` and `cppyy`, but you can probably install it all with `sudo pip install cppyy`
-  - [TopologicCore](https://github.com/NonManifoldTopology/Topologic). This is a C++ library which you build and install using the standard cmake build system. It requires the opencascade library and headers which should be available from your distribution.
+- [topologic](https://github.com/wassimj/Topologic) a pybind11 python interface to the TopologicCore library.
+  - [TopologicCore](https://github.com/wassimj/Topologic). This is a C++ library which you build and install using the standard cmake build system. It requires the opencascade library and headers which should be available from your distribution.
 - [blenderbim](https://blenderbim.org/) blender add-on, just download the ZIP and install from the blender preferences menu.
 - [pyyaml](https://pyyaml.org/) python module.
 - [ezdxf](https://ezdxf.readthedocs.io/en/stable/index.html) python module for reading assets, which are in DXF format until we can figure out how to use IFC asset libraries.
