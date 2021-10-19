@@ -7,6 +7,9 @@ import unittest
 from topologic import Vertex, Face, Cell, CellComplex, Graph
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from topologist.helpers import el
+
+el(42)
 
 
 class Tests(unittest.TestCase):
@@ -178,7 +181,7 @@ class Tests(unittest.TestCase):
     def test_separation(self):
         graph = Graph.Adjacency(self.cc)
         table = graph.ShortestPathTable()
-        graph.Separation(table)
+        graph.Separation(table, self.cc)
         vertices_ptr = []
         graph.Vertices(vertices_ptr)
         for vertex in vertices_ptr:

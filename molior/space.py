@@ -50,7 +50,15 @@ class Space(TraceClass):
         except:
             is_external = False
             crinkliness = 1.0
-        self.add_pset(element, "EPset_Pattern", {"Crinkliness": str(crinkliness)})
+        separation = cell.Get("separation")
+        if separation != None:
+            separation = float(separation)
+
+        self.add_pset(
+            element,
+            "EPset_Pattern",
+            {"Crinkliness": crinkliness, "Separation": separation},
+        )
         topology_index = cell.Get("index")
         if not topology_index == None:
             self.add_pset(element, "EPset_Topology", {"CellIndex": str(topology_index)})

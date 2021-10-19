@@ -83,6 +83,8 @@ def IsConnected(self):
     connected = True
     vertices_ptr = []
     self.Vertices(vertices_ptr)
+    if len(vertices_ptr) == 0:
+        return connected
     vertex_a = vertices_ptr[0]
     for vertex_b in vertices_ptr:
         if vertex_b.Get("class") == "Face":
@@ -127,7 +129,7 @@ def ShortestPathTable(self):
     return result
 
 
-def Separation(self, table):
+def Separation(self, table, cellcomplex):
     """Tags 'cell' vertices with average travel distance to all other cells"""
     if table == {}:
         return
@@ -139,7 +141,9 @@ def Separation(self, table):
             total_length = 0.0
             for length in table[index].values():
                 total_length += length
-            vertex.Set("separation", str(total_length / len(table[index])))
+            separation = str(total_length / len(table[index]))
+            vertex.Set("separation", separation)
+            self.GetEntity(cellcomplex, vertex).Set("separation", separation)
 
 
 def Faces(self, cellcomplex):

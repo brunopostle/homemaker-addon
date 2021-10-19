@@ -157,9 +157,11 @@ class ObjectHomemaker(bpy.types.Operator):
             cc.ApplyDictionary(faces_ptr)
             # Assign Cell usages from widgets
             cc.AllocateCells(widgets)
-            # Generate a cirulation Graph
+            # Generate a circulation Graph
             circulation = Graph.Adjacency(cc)
             circulation.Circulation(cc)
+            circulation.Separation(circulation.ShortestPathTable(), cc)
+
             # print(circulation.Dot(cc))
 
             # Traces are 2D paths that define walls, extrusions and rooms

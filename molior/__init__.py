@@ -453,6 +453,40 @@ class Molior:
                         self.file, element, pset_topology["BackCellIndex"]
                     )
 
+            cells_ptr = []
+            self.cellcomplex.Cells(cells_ptr)
+            cells = {}
+            for cell in cells_ptr:
+                cells[cell.Get("index")] = cell
+
+            for element in self.file.by_type("IfcDoor"):
+                pset_topology = ifcopenshell.util.element.get_psets(element).get(
+                    "EPset_Topology"
+                )
+                if pset_topology:
+                    if not "FrontCellIndex" in pset_topology or (
+                        "FrontCellIndex" in pset_topology
+                        and cells[pset_topology["FrontCellIndex"]].IsOutside()
+                    ):
+                        assign_space_byindex(
+                            self.file, element, pset_topology["BackCellIndex"]
+                        )
+                    else:
+                        if cells[pset_topology["FrontCellIndex"]].Get(
+                            "separation"
+                        ) and float(
+                            cells[pset_topology["FrontCellIndex"]].Get("separation")
+                        ) > float(
+                            cells[pset_topology["BackCellIndex"]].Get("separation")
+                        ):
+                            assign_space_byindex(
+                                self.file, element, pset_topology["FrontCellIndex"]
+                            )
+                        else:
+                            assign_space_byindex(
+                                self.file, element, pset_topology["BackCellIndex"]
+                            )
+
     def GetTraceIfc(
         self,
         stylename,
