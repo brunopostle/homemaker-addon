@@ -29,23 +29,21 @@ def matrix_align(A, B):
 
 def transform(matrix, A):
     """Transform a 2d or 3d vector using a 4x4 matrix"""
-    # FIXME this is ridiculous
     if len(A) == 3:
-        vertex = numpy.array([[A[0]], [A[1]], [A[2]], [1.0]])
+        vertex = numpy.array([[*A, 1.0]]).T
         result = matrix @ vertex
-        return [float(result[0][0]), float(result[1][0]), float(result[2][0])]
+        return result.T.tolist()[0][:3]
     elif len(A) == 2:
-        vertex = numpy.array([[A[0]], [A[1]], [0.0], [1.0]])
+        vertex = numpy.array([[*A, 0.0, 1.0]]).T
         result = matrix @ vertex
-        return [float(result[0][0]), float(result[1][0])]
+        return result.T.tolist()[0][:2]
 
 
 def map_to_2d(vertices, normal_vector):
     """Transform 3d nodes and their normal to 2d nodes, a return matrix and a vertical vector"""
 
     # coordinates need to be vertical in 4 high matrix
-    nodes_3d = numpy.array([[*vertex, 1.0] for vertex in vertices])
-    nodes_3d = numpy.transpose(nodes_3d)
+    nodes_3d = numpy.array([[*vertex, 1.0] for vertex in vertices]).T
 
     # normal has to be a 1x4 matrix
     normal = [[normal_vector[0]], [normal_vector[1]], [normal_vector[2]], [1.0]]
