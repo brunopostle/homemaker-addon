@@ -443,7 +443,6 @@ class Molior:
                     assign_space_byindex(self.file, element, pset_topology["CellIndex"])
 
             # attach Window elements to relevant Space
-            # TODO attach Door elements to Space
             for element in self.file.by_type("IfcWindow"):
                 pset_topology = ifcopenshell.util.element.get_psets(element).get(
                     "EPset_Topology"
@@ -453,6 +452,7 @@ class Molior:
                         self.file, element, pset_topology["BackCellIndex"]
                     )
 
+            # attach Door elements to Space
             cells_ptr = []
             self.cellcomplex.Cells(cells_ptr)
             cells = {}
@@ -470,6 +470,10 @@ class Molior:
                     ):
                         assign_space_byindex(
                             self.file, element, pset_topology["BackCellIndex"]
+                        )
+                    elif cells[pset_topology["BackCellIndex"]].IsOutside():
+                        assign_space_byindex(
+                            self.file, element, pset_topology["FrontCellIndex"]
                         )
                     else:
                         if cells[pset_topology["FrontCellIndex"]].Get(
