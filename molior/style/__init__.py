@@ -54,6 +54,7 @@ class Style:
                     self.data[stylename] = {}
                 if not stylename in self.files:
                     self.files[stylename] = {}
+                # TODO support json, then deprecate yaml
                 if ext == ".yml":
                     fh = open(os.path.join(root, name), "rb")
                     data = yaml.safe_load(fh.read())
