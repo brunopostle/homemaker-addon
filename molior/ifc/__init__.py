@@ -77,6 +77,8 @@ def createBuilding(self, site, building_name, elevations):
         "root.create_entity", self, ifc_class="IfcBuilding", name=building_name
     )
     run("aggregate.assign_object", self, product=building, relating_object=site)
+    if elevations == {}:
+        elevations[0.0] = 0
     for elevation in sorted(elevations):
         mystorey = run(
             "root.create_entity",
