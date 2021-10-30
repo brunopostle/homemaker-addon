@@ -50,6 +50,14 @@ class Shell(BaseClass):
         # FIXME this puts roofs in the ground floor
         assign_storey_byindex(self.file, aggregate, 0)
 
+        inclines = []
+        uniform_pitch = False
+        for face in self.hull.faces:
+            normal = face[1]
+            inclines.append(normal[2])
+        if abs(max(inclines) - min(inclines)) < 0.01:
+            uniform_pitch = True
+
         for face in self.hull.faces:
             vertices = [[*string_to_coor(node_str)] for node_str in face[0]]
             normal = face[1]
@@ -161,10 +169,9 @@ class Shell(BaseClass):
                     inverse.OffsetFromReferenceLine = 0.0 - self.inner
 
             # create a representation
-            if abs(float(normal_x[2])) < 0.001:
+            if float(normal_x[2]) < 0.001 or not uniform_pitch:
                 extrude_height = self.outer
                 extrude_direction = [0.0, 0.0, 1.0]
-            # TODO set extrude normal/vertical in style
             else:
                 extrude_height = self.outer / float(normal_x[2])
                 extrude_direction = [
