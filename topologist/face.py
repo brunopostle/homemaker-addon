@@ -26,7 +26,7 @@ setattr(topologic.Face, "ByVertices", ByVertices)
 
 def CellsOrdered(self):
     """Front Cell and back Cell, can be None"""
-    centroid = list(self.Centroid().Coordinates())
+    centroid = FaceUtility.InternalVertex(self, 0.001).Coordinates()
     normal = self.Normal()
     vertex_front = Vertex.ByCoordinates(
         centroid[0] + (normal[0] / 10),
