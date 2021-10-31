@@ -87,7 +87,7 @@ class Floor(TraceClass):
             for face in bottom_faces_ptr:
                 perimeter_vertices_ptr = []
                 face.VerticesPerimeter(perimeter_vertices_ptr)
-                vertices = [list(v.Coordinates()) for v in perimeter_vertices_ptr]
+                vertices = [v.Coordinates() for v in perimeter_vertices_ptr]
                 normal = face.Normal()
                 # need this for boundaries
                 nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)

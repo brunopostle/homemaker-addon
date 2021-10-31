@@ -93,7 +93,7 @@ class Wall(TraceClass):
             face = self.chain.graph[segment[0]][1][2]
             vertices_ptr = []
             self.chain.graph[segment[0]][1][2].VerticesPerimeter(vertices_ptr)
-            vertices = [list(vertex.Coordinates()) for vertex in vertices_ptr]
+            vertices = [vertex.Coordinates() for vertex in vertices_ptr]
             normal = self.chain.graph[segment[0]][1][2].Normal()
 
             # generate space boundaries
@@ -305,12 +305,8 @@ class Wall(TraceClass):
             edges_ptr = []
             face.EdgesCrop(edges_ptr)
             for edge in edges_ptr:
-                start_coor = transform(
-                    matrix_reverse, list(edge.StartVertex().Coordinates())
-                )
-                end_coor = transform(
-                    matrix_reverse, list(edge.EndVertex().Coordinates())
-                )
+                start_coor = transform(matrix_reverse, edge.StartVertex().Coordinates())
+                end_coor = transform(matrix_reverse, edge.EndVertex().Coordinates())
                 solid = clipSolid(
                     self.file,
                     solid,
