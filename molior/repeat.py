@@ -96,6 +96,49 @@ class Repeat(TraceClass):
             assign_storey_byindex(self.file, aggregate, self.level)
 
             for index in range(items):
+                location = add_2d(
+                    v_out_a,
+                    scale_2d(self.direction_segment(id_segment), index * spacing),
+                )
+
+                # fill space between
+                if index != items - 1:
+                    for condition in self.traces:
+                        for name in myconfig["traces"]:
+                            if name == condition:
+                                config = myconfig["traces"][name]
+                                vals = {
+                                    "cellcomplex": self.cellcomplex,
+                                    "closed": 0,
+                                    "path": [
+                                        location,
+                                        add_2d(
+                                            location,
+                                            scale_2d(
+                                                self.direction_segment(id_segment),
+                                                spacing,
+                                            ),
+                                        ),
+                                    ],
+                                    "file": self.file,
+                                    "name": name,
+                                    "elevation": self.elevation,
+                                    "height": self.height - self.yshift,
+                                    "ceiling": self.ceiling,
+                                    "xshift": self.xshift,
+                                    "yshift": self.yshift,
+                                    "normals": self.normals,
+                                    "normal_set": self.normal_set,
+                                    "style": self.style,
+                                    "level": self.level,
+                                    "style_assets": self.style_assets,
+                                    "style_materials": self.style_materials,
+                                }
+                                vals.update(config)
+                                part = getattr(self, config["class"])(vals)
+
+                                part.execute()
+
                 if (
                     index > 0
                     or (id_segment == 0 and not self.closed)
@@ -107,7 +150,6 @@ class Repeat(TraceClass):
                                 continue
                         else:
                             if (
-                                # FIXME doesn't recurse first segment
                                 (index == 0 and id_segment == 0 and self.not_start)
                                 or (
                                     index == items - 1
@@ -122,10 +164,6 @@ class Repeat(TraceClass):
                             ):
                                 continue
 
-                    location = add_2d(
-                        v_out_a,
-                        scale_2d(self.direction_segment(id_segment), index * spacing),
-                    )
                     entity = run(
                         "root.create_entity",
                         self.file,
@@ -254,41 +292,3 @@ class Repeat(TraceClass):
                             material_profile=material_profile,
                             profile=profile,
                         )
-
-                # fill space between
-                if index == items - 1:
-                    continue
-                for condition in self.traces:
-                    for name in myconfig["traces"]:
-                        if name == condition:
-                            config = myconfig["traces"][name]
-                            vals = {
-                                "cellcomplex": self.cellcomplex,
-                                "closed": 0,
-                                "path": [
-                                    location,
-                                    add_2d(
-                                        location,
-                                        scale_2d(
-                                            self.direction_segment(id_segment), spacing
-                                        ),
-                                    ),
-                                ],
-                                "file": self.file,
-                                "name": name,
-                                "elevation": self.elevation,
-                                "height": self.height - self.yshift,
-                                "ceiling": self.ceiling,
-                                "xshift": self.xshift,
-                                "yshift": self.yshift,
-                                "normals": self.normals,
-                                "normal_set": self.normal_set,
-                                "style": self.style,
-                                "level": self.level,
-                                "style_assets": self.style_assets,
-                                "style_materials": self.style_materials,
-                            }
-                            vals.update(config)
-                            part = getattr(self, config["class"])(vals)
-
-                            part.execute()
