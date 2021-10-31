@@ -38,7 +38,7 @@ def Circulation(self, cellcomplex):
         if face.IsVertical():
             # wall
             axis = face.AxisOuter()
-            if VertexUtility.Distance(axis[0], axis[1]) < 1.0:
+            if axis == None or VertexUtility.Distance(axis[0], axis[1]) < 1.0:
                 # is too narrow for a door
                 vertices_ptr.append(vertex)
             else:
