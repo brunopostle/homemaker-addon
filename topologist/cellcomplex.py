@@ -15,7 +15,7 @@ def AllocateCells(self, widgets):
     cells_ptr = []
     self.Cells(cells_ptr)
     for cell in cells_ptr:
-        cell.Set("usage", "outside")
+        cell.Set("usage", "living")
         # a usable space has vertical faces on all sides
         if not cell.Perimeter().is_simple_cycle():
             cell.Set("usage", "void")

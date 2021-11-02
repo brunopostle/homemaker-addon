@@ -133,6 +133,7 @@ class Molior:
                 )
                 if pset_topology:
                     curve_list.append([pset_topology["FaceIndex"], member])
+            # TODO create Space entities for 'void' cells
             for space in self.file.by_type("IfcSpace"):
                 pset_topology = ifcopenshell.util.element.get_psets(space).get(
                     "EPset_Topology"

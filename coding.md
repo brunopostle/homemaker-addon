@@ -59,6 +59,7 @@ actually are derived from `IfcRoot`, go figure.
                 - `IfcBuilding`
                 - `IfcBuildingStorey`
                 - `IfcSite`
+                - `IfcSpace`
             - Element
                 - `IfcBeam`
                 - `IfcBuildingElementProxy`
