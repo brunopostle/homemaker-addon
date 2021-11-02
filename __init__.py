@@ -102,6 +102,7 @@ class ObjectHomemaker(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
+        # FIXME this resets widget origins which looks ugly
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
         meshes = []
         widgets = []
@@ -151,6 +152,7 @@ class ObjectHomemaker(bpy.types.Operator):
                 faces_ptr.append(face_ptr)
             mesh.hide_viewport = True
 
+            # TODO ifc = SomeFunction(faces, widgets, name, user_share_dir)
             # Generate a Topologic CellComplex
             cc = CellComplex.ByFaces(faces_ptr, 0.0001)
             # Copy styles from Faces to the CellComplex
