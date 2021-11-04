@@ -40,6 +40,7 @@ class Shell(BaseClass):
                 reference_context = item
             if item.ContextIdentifier == "Body":
                 body_context = item
+        # FIXME style inheritance doesn't work
 
         aggregate = run(
             "root.create_entity",

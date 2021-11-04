@@ -53,3 +53,6 @@ Tiles:
             MassDensity: 1500
         Pset_MaterialEnergy:
             ThermalConductivityTemperatureDerivative: 0.7
+Error:
+    surface_colour: [1.0, 0.0, 0.0]
+    diffuse_colour: [1.0, 0.0, 0.0]

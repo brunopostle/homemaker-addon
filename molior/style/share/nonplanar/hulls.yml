@@ -1,0 +1,37 @@
+---
+pitched-roof:
+  class: Shell
+  ifc: IfcRoof
+  predefined_type: FREEFORM
+  condition: roof
+  layerset:
+    - [0.16, "Error"]
+  inner: 0.08
+  outer: 0.08
+inclined-soffit:
+  class: Shell
+  ifc: IfcBuildingElementProxy
+  predefined_type: USERDEFINED
+  condition: soffit
+  layerset:
+    - [0.16, "Error"]
+  inner: 0.08
+  outer: 0.08
+wall-panel:
+  class: Shell
+  ifc: IfcWall
+  predefined_type: USERDEFINED
+  condition: panel
+  layerset:
+    - [0.16, "Error"]
+  inner: 0.08
+  outer: 0.08
+flat-roof:
+  class: Shell
+  ifc: IfcRoof
+  predefined_type: FLAT_ROOF
+  condition: flat
+  layerset:
+    - [0.16, "Error"]
+  inner: 0.08
+  outer: 0.08

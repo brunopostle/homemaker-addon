@@ -14,6 +14,7 @@ import tempfile
 import logging
 from blenderbim.bim import import_ifc
 import bpy
+import bmesh
 
 bl_info = {
     "name": "Homemaker Topologise",
@@ -50,6 +51,28 @@ class ObjectTopologise(bpy.types.Operator):
         # remaining meshes become a single cellcomplex
         faces_ptr = []
         for mesh in meshes:
+
+            # triangulate non-planar faces
+            bpy.ops.object.mode_set(mode='EDIT')
+            md = bmesh.from_edit_mesh(mesh.data)
+            output = bmesh.ops.connect_verts_nonplanar(md,angle_limit = 0.001,faces = md.faces)
+            faces = output["faces"]
+            if len(faces) > 0:
+                bpy.ops.mesh.select_all(action='DESELECT')
+                bpy.ops.object.material_slot_add()
+                try:
+                    e_mat = bpy.data.materials["nonplanar"]
+                except:
+                    e_mat = bpy.data.materials.new(name= "nonplanar")
+                e_mat.use_nodes = True
+                bpy.context.object.active_material = e_mat
+                p_node = e_mat.node_tree.nodes.get('Principled BSDF')
+                p_node.inputs[0].default_value = [1,0,0,1]
+                for face in faces:
+                    face.select_set(True)
+                bpy.ops.object.material_slot_assign()
+            bpy.ops.object.mode_set(mode='OBJECT')
+
             vertices = [Vertex.ByCoordinates(*v.co) for v in mesh.data.vertices]
 
             for polygon in mesh.data.polygons:
@@ -134,6 +157,28 @@ class ObjectHomemaker(bpy.types.Operator):
         # Each remaining mesh becomes a separate building
         # FIXME should all end-up in the same IfcProject
         for mesh in meshes:
+
+            # triangulate non-planar faces
+            bpy.ops.object.mode_set(mode='EDIT')
+            md = bmesh.from_edit_mesh(mesh.data)
+            output = bmesh.ops.connect_verts_nonplanar(md,angle_limit = 0.001,faces = md.faces)
+            faces = output["faces"]
+            if len(faces) > 0:
+                bpy.ops.mesh.select_all(action='DESELECT')
+                bpy.ops.object.material_slot_add()
+                try:
+                    e_mat = bpy.data.materials["nonplanar"]
+                except:
+                    e_mat = bpy.data.materials.new(name= "nonplanar")
+                e_mat.use_nodes = True
+                bpy.context.object.active_material = e_mat
+                p_node = e_mat.node_tree.nodes.get('Principled BSDF')
+                p_node.inputs[0].default_value = [1,0,0,1]
+                for face in faces:
+                    face.select_set(True)
+                bpy.ops.object.material_slot_assign()
+            bpy.ops.object.mode_set(mode='OBJECT')
+
             vertices = [Vertex.ByCoordinates(*v.co) for v in mesh.data.vertices]
             faces_ptr = []
 

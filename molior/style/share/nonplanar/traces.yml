@@ -1,0 +1,17 @@
+---
+exterior:
+  class: Wall
+  ifc: IfcWall
+  condition: external
+  outer: 0.08
+  layerset:
+    - [0.16, "Error"]
+interior:
+  class: Wall
+  ifc: IfcWall
+  condition: internal
+  outer: 0.08
+  layerset:
+    - [0.16, "Error"]
+  extension: 0.0
+  cycles: 0
