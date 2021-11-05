@@ -32,7 +32,7 @@ class ObjectTopologise(bpy.types.Operator):
 
     def execute(self, context):
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-        meshes = []
+        blender_objects = []
 
         for blender_object in context.selected_objects:
             if not blender_object.type == "MESH":
@@ -46,27 +46,29 @@ class ObjectTopologise(bpy.types.Operator):
             if label:
                 continue
             else:
-                meshes.append(blender_object)
+                blender_objects.append(blender_object)
 
-        # remaining meshes become a single cellcomplex
+        # remaining blender_objects become a single cellcomplex
         faces_ptr = []
-        for mesh in meshes:
-            triangulate_nonplanar(mesh)
+        for blender_object in blender_objects:
+            triangulate_nonplanar(blender_object)
 
-            vertices = [Vertex.ByCoordinates(*v.co) for v in mesh.data.vertices]
+            vertices = [
+                Vertex.ByCoordinates(*v.co) for v in blender_object.data.vertices
+            ]
 
-            for polygon in mesh.data.polygons:
+            for polygon in blender_object.data.polygons:
                 if polygon.area < 0.00001:
                     continue
                 stylename = "default"
-                if len(mesh.material_slots) > 0:
-                    stylename = mesh.material_slots[
+                if len(blender_object.material_slots) > 0:
+                    stylename = blender_object.material_slots[
                         polygon.material_index
                     ].material.name
                 face_ptr = Face.ByVertices([vertices[v] for v in polygon.vertices])
                 face_ptr.Set("stylename", stylename)
                 faces_ptr.append(face_ptr)
-            mesh.hide_viewport = True
+            blender_object.hide_viewport = True
 
         # Generate a Topologic CellComplex
         cc = CellComplex.ByFaces(faces_ptr, 0.0001)
@@ -107,7 +109,7 @@ class ObjectHomemaker(bpy.types.Operator):
     def execute(self, context):
         # FIXME this resets widget origins which looks ugly
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-        meshes = []
+        blender_objects = []
         widgets = []
 
         for blender_object in context.selected_objects:
@@ -132,22 +134,24 @@ class ObjectHomemaker(bpy.types.Operator):
                 )
                 widgets.append([label[0], vertex])
             else:
-                meshes.append(blender_object)
+                blender_objects.append(blender_object)
 
-        # Each remaining mesh becomes a separate building
+        # Each remaining blender_object becomes a separate building
         # FIXME should all end-up in the same IfcProject
-        for mesh in meshes:
-            triangulate_nonplanar(mesh)
+        for blender_object in blender_objects:
+            triangulate_nonplanar(blender_object)
 
-            vertices = [Vertex.ByCoordinates(*v.co) for v in mesh.data.vertices]
+            vertices = [
+                Vertex.ByCoordinates(*v.co) for v in blender_object.data.vertices
+            ]
             faces_ptr = []
 
-            for polygon in mesh.data.polygons:
+            for polygon in blender_object.data.polygons:
                 if polygon.area < 0.00001:
                     continue
                 stylename = "default"
-                if len(mesh.material_slots) > 0:
-                    stylename = mesh.material_slots[
+                if len(blender_object.material_slots) > 0:
+                    stylename = blender_object.material_slots[
                         polygon.material_index
                     ].material.name
                 if stylename == "Material":
@@ -155,7 +159,7 @@ class ObjectHomemaker(bpy.types.Operator):
                 face_ptr = Face.ByVertices([vertices[v] for v in polygon.vertices])
                 face_ptr.Set("stylename", stylename)
                 faces_ptr.append(face_ptr)
-            mesh.hide_viewport = True
+            blender_object.hide_viewport = True
 
             # TODO ifc = SomeFunction(faces, widgets, name, user_share_dir)
             # Generate a Topologic CellComplex
@@ -177,7 +181,7 @@ class ObjectHomemaker(bpy.types.Operator):
             traces, hulls, normals, elevations = cc.GetTraces()
 
             # generate an IFC object
-            ifc = molior.ifc.init(mesh.name, elevations)
+            ifc = molior.ifc.init(blender_object.name, elevations)
 
             # TODO enable user defined location for share_dir
             molior_object = Molior(
@@ -218,7 +222,7 @@ def triangulate_nonplanar(blender_object):
     bpy.ops.object.mode_set(mode="EDIT")
 
     md = bmesh.from_edit_mesh(blender_object.data)
-    output = bmesh.ops.connect_verts_nonplanar(md, angle_limit=0.001, faces=md.faces)
+    output = bmesh.ops.connect_verts_nonplanar(md, angle_limit=0.000001, faces=md.faces)
     faces = output["faces"]
     if len(faces) > 0:
         bpy.ops.mesh.select_all(action="DESELECT")
