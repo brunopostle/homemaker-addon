@@ -51,27 +51,7 @@ class ObjectTopologise(bpy.types.Operator):
         # remaining meshes become a single cellcomplex
         faces_ptr = []
         for mesh in meshes:
-
-            # triangulate non-planar faces
-            bpy.ops.object.mode_set(mode='EDIT')
-            md = bmesh.from_edit_mesh(mesh.data)
-            output = bmesh.ops.connect_verts_nonplanar(md,angle_limit = 0.001,faces = md.faces)
-            faces = output["faces"]
-            if len(faces) > 0:
-                bpy.ops.mesh.select_all(action='DESELECT')
-                bpy.ops.object.material_slot_add()
-                try:
-                    e_mat = bpy.data.materials["nonplanar"]
-                except:
-                    e_mat = bpy.data.materials.new(name= "nonplanar")
-                e_mat.use_nodes = True
-                bpy.context.object.active_material = e_mat
-                p_node = e_mat.node_tree.nodes.get('Principled BSDF')
-                p_node.inputs[0].default_value = [1,0,0,1]
-                for face in faces:
-                    face.select_set(True)
-                bpy.ops.object.material_slot_assign()
-            bpy.ops.object.mode_set(mode='OBJECT')
+            triangulate_nonplanar(mesh)
 
             vertices = [Vertex.ByCoordinates(*v.co) for v in mesh.data.vertices]
 
@@ -157,27 +137,7 @@ class ObjectHomemaker(bpy.types.Operator):
         # Each remaining mesh becomes a separate building
         # FIXME should all end-up in the same IfcProject
         for mesh in meshes:
-
-            # triangulate non-planar faces
-            bpy.ops.object.mode_set(mode='EDIT')
-            md = bmesh.from_edit_mesh(mesh.data)
-            output = bmesh.ops.connect_verts_nonplanar(md,angle_limit = 0.001,faces = md.faces)
-            faces = output["faces"]
-            if len(faces) > 0:
-                bpy.ops.mesh.select_all(action='DESELECT')
-                bpy.ops.object.material_slot_add()
-                try:
-                    e_mat = bpy.data.materials["nonplanar"]
-                except:
-                    e_mat = bpy.data.materials.new(name= "nonplanar")
-                e_mat.use_nodes = True
-                bpy.context.object.active_material = e_mat
-                p_node = e_mat.node_tree.nodes.get('Principled BSDF')
-                p_node.inputs[0].default_value = [1,0,0,1]
-                for face in faces:
-                    face.select_set(True)
-                bpy.ops.object.material_slot_assign()
-            bpy.ops.object.mode_set(mode='OBJECT')
+            triangulate_nonplanar(mesh)
 
             vertices = [Vertex.ByCoordinates(*v.co) for v in mesh.data.vertices]
             faces_ptr = []
@@ -245,6 +205,43 @@ class ObjectHomemaker(bpy.types.Operator):
             ifc_importer.execute()
             bpy.data.collections.get("StructuralItems").hide_viewport = True
         return {"FINISHED"}
+
+
+def triangulate_nonplanar(blender_object):
+    object_has_nonplanar_material = False
+    material_slots = blender_object.material_slots
+    for material_index in range(len(material_slots)):
+        if material_slots[material_index].name == "nonplanar":
+            object_has_nonplanar_material = True
+            break
+
+    bpy.ops.object.mode_set(mode="EDIT")
+
+    md = bmesh.from_edit_mesh(blender_object.data)
+    output = bmesh.ops.connect_verts_nonplanar(md, angle_limit=0.001, faces=md.faces)
+    faces = output["faces"]
+    if len(faces) > 0:
+        bpy.ops.mesh.select_all(action="DESELECT")
+
+        if object_has_nonplanar_material:
+            blender_object.active_material_index = material_index
+        else:
+            bpy.ops.object.material_slot_add()
+            try:
+                nonplanar_material = bpy.data.materials["nonplanar"]
+                blender_object.active_material = nonplanar_material
+            except:
+                nonplanar_material = bpy.data.materials.new(name="nonplanar")
+                nonplanar_material.use_nodes = True
+                bpy.context.object.active_material = nonplanar_material
+                p_node = nonplanar_material.node_tree.nodes.get("Principled BSDF")
+                p_node.inputs[0].default_value = [1, 0, 0, 1]
+
+        for face in faces:
+            face.select_set(True)
+        bpy.ops.object.material_slot_assign()
+
+    bpy.ops.object.mode_set(mode="OBJECT")
 
 
 def menu_func(self, context):
