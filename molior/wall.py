@@ -612,48 +612,48 @@ class Wall(TraceClass):
 
         return [A[0], A[1], bottom], [B[0], B[1], top]
 
-    def populate_exterior_openings(self, segment_id, interior_type, access):
+    def populate_exterior_openings(self, id_segment, interior_type, access):
         """Add initial windows and doors to a segment"""
         if interior_type is None:
-            self.openings[segment_id].append(
+            self.openings[id_segment].append(
                 {"name": "undefined outside window", "along": 0.5, "size": 0}
             )
         if interior_type in ("living", "retail"):
-            self.openings[segment_id].append(
+            self.openings[id_segment].append(
                 {"name": "living outside window", "along": 0.5, "size": 0}
             )
         if interior_type == "toilet":
-            self.openings[segment_id].append(
+            self.openings[id_segment].append(
                 {"name": "toilet outside window", "along": 0.5, "size": 0}
             )
         if interior_type == "kitchen":
-            self.openings[segment_id].append(
+            self.openings[id_segment].append(
                 {"name": "kitchen outside window", "along": 0.5, "size": 0}
             )
         if interior_type == "bedroom":
-            self.openings[segment_id].append(
+            self.openings[id_segment].append(
                 {"name": "bedroom outside window", "along": 0.5, "size": 0}
             )
         if interior_type in ("circulation", "stair"):
-            self.openings[segment_id].append(
+            self.openings[id_segment].append(
                 {"name": "circulation outside window", "along": 0.5, "size": 0}
             )
         if interior_type == "retail" and self.level == 0:
-            self.openings[segment_id].append(
+            self.openings[id_segment].append(
                 {"name": "retail entrance", "along": 0.5, "size": 0}
             )
         if interior_type in ("circulation", "stair") and self.level == 0:
-            self.openings[segment_id].append(
+            self.openings[id_segment].append(
                 {"name": "house entrance", "along": 0.5, "size": 0}
             )
         if interior_type != "toilet" and access == 1:
-            self.openings[segment_id].append(
+            self.openings[id_segment].append(
                 {"name": "living outside door", "along": 0.5, "size": 0}
             )
 
-    def populate_interior_openings(self, segment_id, type_a, type_b, access):
+    def populate_interior_openings(self, id_segment, type_a, type_b, access):
         """Add an initial door to an interior segment"""
-        self.openings[segment_id].append(
+        self.openings[id_segment].append(
             {"name": "living inside door", "along": 0.5, "size": 0}
         )
 
