@@ -1,6 +1,7 @@
 import ifcopenshell.api
 import numpy
 
+from topologic import Vertex, FaceUtility
 from topologist.helpers import el
 import molior
 from molior.baseclass import TraceClass
@@ -559,8 +560,8 @@ class Wall(TraceClass):
         # part may be a wall, add some openings
         if "do_populate_exterior_openings" in self.__dict__:
             edges = self.chain.edges()
-            for segment in range(len(self.openings)):
-                edge = self.chain.graph[edges[segment][0]]
+            for id_segment in range(len(self.openings)):
+                edge = self.chain.graph[edges[id_segment][0]]
                 # edge = {
                 #     string_coor_start: [
                 #         string_coor_end,
@@ -579,9 +580,10 @@ class Wall(TraceClass):
                 access = 0
                 if exterior_type == "outside":
                     access = 1
-                self.populate_exterior_openings(segment, interior_type, access)
-                self.fix_heights(segment)
-                self.fix_segment(segment)
+                self.populate_exterior_openings(id_segment, interior_type, access)
+                self.fix_heights(id_segment)
+                self.fix_segment(id_segment)
+                self.fix_gable(id_segment)
         elif "do_populate_interior_openings" in self.__dict__:
             edge = self.chain.graph[self.chain.edges()[0][0]]
             face = edge[1][2]
@@ -1065,3 +1067,51 @@ class Wall(TraceClass):
             openings[id_opening]["along"] = along - (width / 2)
             along += module
         return
+
+    def fix_gable(self, id_segment):
+        """Shorten or delete openings that project above roofline"""
+        openings = self.openings[id_segment]
+        if len(openings) == 0:
+            return
+        segment = self.chain.edges()[id_segment]
+        face = self.chain.graph[segment[0]][1][2]
+
+        edges_ptr = []
+        face.EdgesCrop(edges_ptr)
+        if edges_ptr == []:
+            # top of face is horizontal
+            return
+
+        bad_openings = []
+        for id_opening in range(len(openings)):
+            coors = self.opening_coor(id_segment, id_opening)
+            left_top = Vertex.ByCoordinates(*coors[0][0:2], coors[1][2])
+            right_top = Vertex.ByCoordinates(*coors[1])
+            if not FaceUtility.IsInside(
+                face, left_top, 0.001
+            ) or not FaceUtility.IsInside(face, right_top, 0.001):
+                # try and find a shorter window
+                opening = openings[id_opening]
+                db = self.get_opening(opening["name"])
+                mylist = db["list"]
+                width_original = mylist[opening["size"]]["width"]
+                height_original = mylist[opening["size"]]["height"]
+                # list heights of possible openings
+                heights = []
+                lookup = {}
+                for index in range(len(mylist)):
+                    if not mylist[index]["width"] == width_original:
+                        continue
+                    lookup[mylist[index]["height"]] = index
+                    if mylist[index]["height"] < height_original:
+                        heights.append(mylist[index]["height"])
+                if len(heights) > 0:
+                    heights.sort(reverse=True)
+                    self.openings[id_segment][id_opening]["size"] = lookup[heights[0]]
+                    self.fix_gable(id_segment)
+                    return
+                else:
+                    bad_openings.append(id_opening)
+        bad_openings.reverse()
+        for id_opening in bad_openings:
+            self.openings[id_segment].pop(id_opening)
