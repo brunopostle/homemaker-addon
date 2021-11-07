@@ -222,7 +222,7 @@ def triangulate_nonplanar(blender_object):
     bpy.ops.object.mode_set(mode="EDIT")
 
     md = bmesh.from_edit_mesh(blender_object.data)
-    output = bmesh.ops.connect_verts_nonplanar(md, angle_limit=0.000001, faces=md.faces)
+    output = bmesh.ops.connect_verts_nonplanar(md, angle_limit=0.001, faces=md.faces)
     faces = output["faces"]
     if len(faces) > 0:
         bpy.ops.mesh.select_all(action="DESELECT")

@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 
-all : test lint todo black
+all : lint test todo black
 
 test :
 	python3 -m unittest discover -s tests
