@@ -10,9 +10,10 @@ from topologic import Vertex, Face, CellComplex, Graph
 from molior import Molior
 import molior.ifc
 
-import tempfile
 import logging
 from blenderbim.bim import import_ifc
+import blenderbim.bim.ifc
+import ifcopenshell
 import bpy
 import bmesh
 
@@ -137,7 +138,6 @@ class ObjectHomemaker(bpy.types.Operator):
                 blender_objects.append(blender_object)
 
         # Each remaining blender_object becomes a separate building
-        # FIXME should all end-up in the same IfcProject
         for blender_object in blender_objects:
             triangulate_nonplanar(blender_object)
 
@@ -195,17 +195,38 @@ class ObjectHomemaker(bpy.types.Operator):
             )
             molior_object.execute()
 
-            # FIXME shouldn't have to write and import an IFC file
-            ifc_tmp = tempfile.NamedTemporaryFile(
-                mode="w+b", suffix=".ifc", delete=False
-            )
-            ifc.write(ifc_tmp.name)
             logger = logging.getLogger("ImportIFC")
 
             ifc_import_settings = import_ifc.IfcImportSettings.factory(
-                bpy.context, ifc_tmp.name, logger
+                bpy.context, "", logger
             )
             ifc_importer = import_ifc.IfcImporter(ifc_import_settings)
+
+            if blenderbim.bim.ifc.IfcStore.file == None:
+                blenderbim.bim.ifc.IfcStore.file = ifc
+            else:
+                # delete previous IfcProject collection
+                collection = bpy.data.collections.get("IfcProject/My Project")
+                for obj in collection.objects:
+                    bpy.data.objects.remove(obj, do_unlink=True)
+                bpy.data.collections.remove(collection)
+                for collection in bpy.data.collections:
+                    if not collection.users:
+                        bpy.data.collections.remove(collection)
+
+                self_file = blenderbim.bim.ifc.IfcStore.file
+                source = ifc
+                original_project = self_file.by_type("IfcProject")[0]
+                merged_project = self_file.add(source.by_type("IfcProject")[0])
+                # FIXME doesn't merge material styles
+                for element in source.by_type("IfcRoot"):
+                    self_file.add(element)
+                for inverse in self_file.get_inverse(merged_project):
+                    ifcopenshell.util.element.replace_attribute(
+                        inverse, merged_project, original_project
+                    )
+                self_file.remove(merged_project)
+
             ifc_importer.execute()
             bpy.data.collections.get("StructuralItems").hide_viewport = True
         return {"FINISHED"}
