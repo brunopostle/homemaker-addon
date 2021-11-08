@@ -94,7 +94,7 @@ class ObjectTopologise(bpy.types.Operator):
         # FIXME reapply materials
         new_mesh.update()
         new_object = bpy.data.objects.new("cellcomplex", new_mesh)
-        bpy.data.collections[0].objects.link(new_object)
+        bpy.data.collections.items()[0][1].objects.link(new_object)
 
         return {"FINISHED"}
 
