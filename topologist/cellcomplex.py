@@ -159,13 +159,8 @@ def ApplyDictionary(self, source_faces_ptr):
     faces_ptr = []
     self.Faces(faces_ptr)
     for face in faces_ptr:
-        # currently only copying material names to/from vertical faces
-        if not face.IsVertical():
-            continue
         vertex = FaceUtility.InternalVertex(face, 0.001)
         for source_face in source_faces_ptr:
-            if not source_face.IsVertical():
-                continue
             # FIXME calling IsInside() many times slows subsequent code!!
             if FaceUtility.IsInside(source_face, vertex, 0.001):
                 dictionary = source_face.GetDictionary()
