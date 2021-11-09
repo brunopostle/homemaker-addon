@@ -202,18 +202,29 @@ class ObjectHomemaker(bpy.types.Operator):
             )
             ifc_importer = import_ifc.IfcImporter(ifc_import_settings)
 
+            have_project = False
+            for collection_name in bpy.data.collections.keys():
+                project = re.match(
+                    "^IfcProject/",
+                    collection_name,
+                )
+                if project:
+                    have_project = True
+                    # delete previous IfcProject collection
+                    collection = bpy.data.collections.get(collection_name)
+                    for obj in collection.objects:
+                        bpy.data.objects.remove(obj, do_unlink=True)
+                    bpy.data.collections.remove(collection)
+                    for collection in bpy.data.collections:
+                        if not collection.users:
+                            bpy.data.collections.remove(collection)
+
+            if not have_project:
+                blenderbim.bim.ifc.IfcStore.purge()
+                blenderbim.bim.ifc.IfcStore.file = None
             if blenderbim.bim.ifc.IfcStore.file == None:
                 blenderbim.bim.ifc.IfcStore.file = ifc
             else:
-                # delete previous IfcProject collection
-                collection = bpy.data.collections.get("IfcProject/My Project")
-                for obj in collection.objects:
-                    bpy.data.objects.remove(obj, do_unlink=True)
-                bpy.data.collections.remove(collection)
-                for collection in bpy.data.collections:
-                    if not collection.users:
-                        bpy.data.collections.remove(collection)
-
                 self_file = blenderbim.bim.ifc.IfcStore.file
                 source = ifc
                 original_project = self_file.by_type("IfcProject")[0]
