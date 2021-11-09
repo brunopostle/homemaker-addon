@@ -2,6 +2,7 @@
 brackets:
   class: Repeat
   ifc: IfcRoof
+  predefined_type: USERDEFINED
   asset: bracket
   condition: top-backward-up
   outer: 0.25
@@ -14,6 +15,7 @@ brackets:
 low-brackets:
   class: Repeat
   ifc: IfcRoof
+  predefined_type: USERDEFINED
   asset: bracket
   condition: na
   outer: -0.05
@@ -26,6 +28,7 @@ low-brackets:
 monkey:
   class: Repeat
   ifc: IfcRoof
+  predefined_type: USERDEFINED
   asset: monkey
   condition: na
   outer: 0.05
