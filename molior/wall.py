@@ -541,7 +541,7 @@ class Wall(TraceClass):
                     boundary.InternalOrExternalBoundary = (
                         parent_boundary.InternalOrExternalBoundary
                     )
-                    boundary.RelatedBuildingElement = myopening
+                    boundary.RelatedBuildingElement = entity
                     boundary.ConnectionGeometry = (
                         self.file.createIfcConnectionSurfaceGeometry(
                             curve_bounded_plane
