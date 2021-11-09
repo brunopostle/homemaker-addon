@@ -39,19 +39,19 @@ dist:
 	# LINUX
 	cp -a homemaker_tmp homemaker
 	cp working/Topologic_*_buster/* homemaker/libs/site/packages/
-	cd dist && zip -r blender-homemaker-$(VERSION)-linux-x86_64.zip ./homemaker
+	zip -r blender-homemaker-$(VERSION)-linux-x86_64.zip ./homemaker
 	rm -rf homemaker
 
 	# WINDOWS
 	cp -a homemaker_tmp homemaker
 	cp working/Topologic_*_win/* homemaker/libs/site/packages/
-	cd dist && zip -r blender-homemaker-$(VERSION)-py39-win.zip ./homemaker
+	zip -r blender-homemaker-$(VERSION)-py39-win.zip ./homemaker
 	rm -rf homemaker
 
 	# MAC
 	cp -a homemaker_tmp homemaker
 	cp working/Topologic_*_darwin/* homemaker/libs/site/packages/
-	cd dist && zip -r blender-homemaker-$(VERSION)-py39-darwin.zip ./homemaker
+	zip -r blender-homemaker-$(VERSION)-py39-darwin.zip ./homemaker
 	rm -rf homemaker
 
 clean:
