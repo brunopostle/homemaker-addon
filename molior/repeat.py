@@ -23,6 +23,7 @@ class Repeat(TraceClass):
         self.height = 0.0
         self.ceiling = 0.0
         self.ifc = "IfcBuildingElementProxy"
+        self.predefined_type = "USERDEFINED"
         self.inset = 0.0
         self.xshift = 0.0
         self.yshift = 0.0
@@ -91,6 +92,7 @@ class Repeat(TraceClass):
                 self.file,
                 ifc_class=self.ifc,
                 name=self.identifier,
+                predefined_type=self.predefined_type,
             )
             # assign the aggregate to a storey
             assign_storey_byindex(self.file, aggregate, self.level)
@@ -131,6 +133,7 @@ class Repeat(TraceClass):
                                     "normal_set": self.normal_set,
                                     "style": self.style,
                                     "level": self.level,
+                                    "predefined_type": self.predefined_type,
                                     "style_assets": self.style_assets,
                                     "style_materials": self.style_materials,
                                 }
@@ -169,6 +172,7 @@ class Repeat(TraceClass):
                         self.file,
                         ifc_class=self.ifc,
                         name=self.identifier,
+                        predefined_type=self.predefined_type,
                     )
                     self.add_psets(entity)
                     # place the entity in space
