@@ -434,6 +434,18 @@ class Molior:
                     if len(items) == 2 and items[0] == "CellIndex":
                         if items[1] in space_lookup:
                             boundary.RelatingSpace = space_lookup[items[1]]
+                            # there ought to be a better way..
+                            storey_elevation = boundary.RelatingSpace.Decomposes[
+                                0
+                            ].RelatingObject.Elevation
+                            coor = (
+                                boundary.ConnectionGeometry.SurfaceOnRelatingElement.BasisSurface.Position.Location.Coordinates
+                            )
+                            boundary.ConnectionGeometry.SurfaceOnRelatingElement.BasisSurface.Position.Location.Coordinates = (
+                                coor[0],
+                                coor[1],
+                                coor[2] - storey_elevation,
+                            )
 
             # attach Slab elements to relevant Space
             for element in self.file.by_type("IfcSlab"):
