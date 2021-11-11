@@ -67,7 +67,8 @@ class Repeat(TraceClass):
         self.outer += self.xshift
 
         for id_segment in range(segments):
-            # FIXME large inset can result in a negative length
+            if self.length_segment(id_segment) < 2 * self.inset:
+                continue
             inset = scale_2d(self.direction_segment(id_segment), self.inset)
             # outside face start and end coordinates
             v_out_a = add_2d(self.corner_out(id_segment), inset)

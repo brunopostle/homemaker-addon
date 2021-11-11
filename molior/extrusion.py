@@ -2,7 +2,7 @@ import ifcopenshell.api
 
 import molior
 from molior.baseclass import TraceClass
-from molior.geometry import matrix_align, add_2d
+from molior.geometry import matrix_align, add_2d, distance_2d
 from molior.ifc import (
     assign_storey_byindex,
     assign_extrusion_fromDXF,
@@ -146,9 +146,12 @@ class Extrusion(TraceClass):
             directrix.append(directrix[0])
         else:
             # FIXME need to terminate with a mitre when continuation is in another style
-            # FIXME clip negative extension to segment length
             directrix[0] = add_2d(directrix[0], self.extension_start())
             directrix[-1] = add_2d(directrix[-1], self.extension_end())
+
+        if self.segments == 1 and distance_2d(directrix[0], directrix[1]) < 0.001:
+            # better not to create a representation for zero length extrusions
+            return
 
         dxf_path = style.get_file(self.style, self.profile)
 

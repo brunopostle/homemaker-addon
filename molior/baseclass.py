@@ -211,8 +211,14 @@ class TraceClass(BaseClass):
 
     def extension_start(self):
         """extend the start of an open path"""
-        return scale_2d(self.direction_segment(0), 0 - self.extension)
+        extension = self.extension
+        if self.length_segment(0) + extension < 0:
+            extension = -self.length_segment(0)
+        return scale_2d(self.direction_segment(0), -extension)
 
     def extension_end(self):
         """extend the end of an open path"""
-        return scale_2d(self.direction_segment(-2), self.extension)
+        extension = self.extension
+        if self.length_segment(0) + extension < 0:
+            extension = -self.length_segment(0)
+        return scale_2d(self.direction_segment(-2), extension)
