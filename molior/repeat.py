@@ -98,6 +98,14 @@ class Repeat(TraceClass):
             # assign the aggregate to a storey
             assign_storey_byindex(self.file, aggregate, self.level)
 
+            if self.parent_aggregate != None:
+                run(
+                    "aggregate.assign_object",
+                    self.file,
+                    product=aggregate,
+                    relating_object=self.parent_aggregate,
+                )
+
             for index in range(items):
                 location = add_2d(
                     v_out_a,
@@ -132,6 +140,7 @@ class Repeat(TraceClass):
                                     "yshift": self.yshift,
                                     "normals": self.normals,
                                     "normal_set": self.normal_set,
+                                    "parent_aggregate": aggregate,
                                     "style": self.style,
                                     "level": self.level,
                                     "predefined_type": self.predefined_type,

@@ -29,6 +29,7 @@ class BaseClass:
         self.level = 0
         self.name = "base-class"
         self.outer = 0.25
+        self.parent_aggregate = None
         self.plot = "my plot"
         self.psets = {}
         self.style = "default"

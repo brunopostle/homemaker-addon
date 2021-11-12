@@ -149,6 +149,14 @@ class Extrusion(TraceClass):
             directrix[0] = add_2d(directrix[0], self.extension_start())
             directrix[-1] = add_2d(directrix[-1], self.extension_end())
 
+        if self.parent_aggregate != None:
+            run(
+                "aggregate.assign_object",
+                self.file,
+                product=element,
+                relating_object=self.parent_aggregate,
+            )
+
         if self.segments == 1 and distance_2d(directrix[0], directrix[1]) < 0.001:
             # better not to create a representation for zero length extrusions
             return

@@ -248,8 +248,6 @@ class Wall(TraceClass):
                 ]
             )
 
-            # TODO add Qto_WallBaseQuantities
-
             back_cell = self.chain.graph[segment[0]][1][3]
             front_cell = self.chain.graph[segment[0]][1][4]
             self.add_topology_pset(mywall, face, back_cell, front_cell)
@@ -595,6 +593,7 @@ class Wall(TraceClass):
                 )
                 self.fix_heights(0)
                 self.fix_segment(0)
+                # TODO door location and account for gable headroom
 
     def opening_coor(self, id_segment, id_opening):
         """rectangle coordinates of an opening on the axis"""
