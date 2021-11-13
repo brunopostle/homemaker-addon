@@ -17,7 +17,7 @@ folder tree, all others will be ignored.
 
 """
 
-import os, yaml, copy
+import os, yaml, copy, json
 
 
 class Style:
@@ -54,11 +54,17 @@ class Style:
                     self.data[stylename] = {}
                 if not stylename in self.files:
                     self.files[stylename] = {}
-                # TODO support json, then deprecate yaml
+                # TODO convert files to json, then remove yaml support
                 if ext == ".yml":
                     fh = open(os.path.join(root, name), "rb")
                     data = yaml.safe_load(fh.read())
                     fh.close()
+
+                    self.data[stylename][prefix] = data
+                    self.data[stylename]["ancestors"] = ancestors
+                if ext == ".json":
+                    with open(os.path.join(root, name)) as fh:
+                        data = json.load(fh)
 
                     self.data[stylename][prefix] = data
                     self.data[stylename]["ancestors"] = ancestors
@@ -67,6 +73,7 @@ class Style:
 
     def get(self, stylename):
         """retrieves a flattened style definition with ancestors filling in the gaps"""
+        # FIXME this results in duplicated assets when an ancestor style is also in use
         if not stylename in self.data:
             return self.get("default")
         mydata = copy.deepcopy(self.data[stylename])
