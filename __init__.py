@@ -161,47 +161,10 @@ class ObjectHomemaker(bpy.types.Operator):
                 faces_ptr.append(face_ptr)
             blender_object.hide_viewport = True
 
-            # TODO ifc = SomeFunction(faces, widgets, name, user_share_dir)
-            # Generate a Topologic CellComplex
-            cc = CellComplex.ByFaces(faces_ptr, 0.0001)
-            # Copy styles from Faces to the CellComplex
-            cc.ApplyDictionary(faces_ptr)
-            # Assign Cell usages from widgets
-            cc.AllocateCells(widgets)
-            # Generate a circulation Graph
-            circulation = Graph.Adjacency(cc)
-            circulation.Circulation(cc)
-            circulation.Separation(circulation.ShortestPathTable(), cc)
+            # generate an ifcopenshell model
+            ifc = homemaker(faces_ptr, widgets, blender_object.name, "")
 
-            # print(circulation.Dot(cc))
-
-            # Traces are 2D paths that define walls, extrusions and rooms
-            # Hulls are 3D shells that define pitched roofs and soffits
-            # Collect unique elevations and assign storey numbers
-            traces, hulls, normals, elevations = cc.GetTraces()
-
-            # generate an IFC object
-            ifc = molior.ifc.init(blender_object.name, elevations)
-
-            # TODO enable user defined location for share_dir
-            molior_object = Molior(
-                file=ifc,
-                circulation=circulation,
-                elevations=elevations,
-                traces=traces,
-                hulls=hulls,
-                normals=normals,
-                cellcomplex=cc,
-            )
-            molior_object.execute()
-
-            logger = logging.getLogger("ImportIFC")
-
-            ifc_import_settings = import_ifc.IfcImportSettings.factory(
-                bpy.context, "", logger
-            )
-            ifc_importer = import_ifc.IfcImporter(ifc_import_settings)
-
+            # delete any IfcProject/* collections, but leave IfcStore intact
             have_project = False
             for collection_name in bpy.data.collections.keys():
                 project = re.match(
@@ -210,37 +173,85 @@ class ObjectHomemaker(bpy.types.Operator):
                 )
                 if project:
                     have_project = True
-                    # delete previous IfcProject collection
-                    collection = bpy.data.collections.get(collection_name)
-                    for obj in collection.objects:
-                        bpy.data.objects.remove(obj, do_unlink=True)
-                    bpy.data.collections.remove(collection)
-                    for collection in bpy.data.collections:
-                        if not collection.users:
-                            bpy.data.collections.remove(collection)
-
+                    delete_collection(bpy.data.collections.get(collection_name))
             if not have_project:
                 blenderbim.bim.ifc.IfcStore.purge()
                 blenderbim.bim.ifc.IfcStore.file = None
+
+            # merge IfcStore with generated ifcopenshell model
             if blenderbim.bim.ifc.IfcStore.file == None:
                 blenderbim.bim.ifc.IfcStore.file = ifc
             else:
-                self_file = blenderbim.bim.ifc.IfcStore.file
-                source = ifc
-                original_project = self_file.by_type("IfcProject")[0]
-                merged_project = self_file.add(source.by_type("IfcProject")[0])
-                # FIXME doesn't merge material styles
-                for element in source.by_type("IfcRoot"):
-                    self_file.add(element)
-                for inverse in self_file.get_inverse(merged_project):
-                    ifcopenshell.util.element.replace_attribute(
-                        inverse, merged_project, original_project
-                    )
-                self_file.remove(merged_project)
+                merge_ifc(blenderbim.bim.ifc.IfcStore.file, ifc)
 
+            # (re)build blender collections and geometry from IfcStore
+            ifc_import_settings = import_ifc.IfcImportSettings.factory(
+                bpy.context, "", logging.getLogger("ImportIFC")
+            )
+            ifc_importer = import_ifc.IfcImporter(ifc_import_settings)
             ifc_importer.execute()
+
             bpy.data.collections.get("StructuralItems").hide_viewport = True
         return {"FINISHED"}
+
+
+def merge_ifc(file, source):
+    original_project = file.by_type("IfcProject")[0]
+    temp_project = file.add(source.by_type("IfcProject")[0])
+    # FIXME doesn't merge material styles
+    for element in source.by_type("IfcRoot"):
+        file.add(element)
+    for element in file.get_inverse(temp_project):
+        ifcopenshell.util.element.replace_attribute(
+            element, temp_project, original_project
+        )
+    file.remove(temp_project)
+
+
+def homemaker(faces_ptr, widgets, name, user_share_dir):
+    # Generate a Topologic CellComplex
+    cc = CellComplex.ByFaces(faces_ptr, 0.0001)
+    # Copy styles from Faces to the CellComplex
+    cc.ApplyDictionary(faces_ptr)
+    # Assign Cell usages from widgets
+    cc.AllocateCells(widgets)
+    # Generate a circulation Graph
+    circulation = Graph.Adjacency(cc)
+    circulation.Circulation(cc)
+    circulation.Separation(circulation.ShortestPathTable(), cc)
+
+    # print(circulation.Dot(cc))
+
+    # Traces are 2D paths that define walls, extrusions and rooms
+    # Hulls are 3D shells that define pitched roofs and soffits
+    # Collect unique elevations and assign storey numbers
+    traces, hulls, normals, elevations = cc.GetTraces()
+
+    # generate an IFC object
+    ifc = molior.ifc.init(name, elevations)
+
+    # TODO enable user defined location for share_dir
+    molior_object = Molior(
+        file=ifc,
+        circulation=circulation,
+        elevations=elevations,
+        traces=traces,
+        hulls=hulls,
+        normals=normals,
+        cellcomplex=cc,
+    )
+    molior_object.execute()
+
+    return ifc
+
+
+def delete_collection(blender_collection):
+    for obj in blender_collection.objects:
+        bpy.data.objects.remove(obj, do_unlink=True)
+    bpy.data.collections.remove(blender_collection)
+    for collection in bpy.data.collections:
+        if not collection.users:
+            bpy.data.collections.remove(collection)
 
 
 def triangulate_nonplanar(blender_object):
