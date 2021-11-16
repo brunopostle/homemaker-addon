@@ -32,69 +32,21 @@ class ObjectTopologise(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
+        # FIXME this resets widget origins which looks ugly
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-        blender_objects = []
 
-        for blender_object in context.selected_objects:
-            if not blender_object.type == "MESH":
-                continue
-            # Ignore widgets (if any) for allocating room/space usage
-            label = re.match(
-                "(bedroom|circulation|circulation_stair|stair|kitchen|living|outside|retail|sahn|toilet)",
-                blender_object.name,
-                flags=re.IGNORECASE,
-            )
-            if label:
-                continue
-            else:
-                blender_objects.append(blender_object)
+        blender_objects, widgets = process_blender_objects(context.selected_objects)
 
         # remaining blender_objects become a single cellcomplex
         faces_ptr = []
         for blender_object in blender_objects:
             triangulate_nonplanar(blender_object)
-
-            vertices = [
-                Vertex.ByCoordinates(*v.co) for v in blender_object.data.vertices
-            ]
-
-            for polygon in blender_object.data.polygons:
-                if polygon.area < 0.00001:
-                    continue
-                stylename = "default"
-                if len(blender_object.material_slots) > 0:
-                    stylename = blender_object.material_slots[
-                        polygon.material_index
-                    ].material.name
-                face_ptr = Face.ByVertices([vertices[v] for v in polygon.vertices])
-                face_ptr.Set("stylename", stylename)
-                faces_ptr.append(face_ptr)
+            faces_ptr.extend(topologic_faces_from_blender_object(blender_object))
             blender_object.hide_viewport = True
 
         # Generate a Topologic CellComplex
         cc = CellComplex.ByFaces(faces_ptr, 0.0001)
-        faces_ptr = []
-        cc.Faces(faces_ptr)
-        vertices = []
-        faces = []
-        materials = []
-        vertex_id = 0
-        for face_ptr in faces_ptr:
-            vertices_ptr = []
-            face_ptr.VerticesPerimeter(vertices_ptr)
-            face = []
-            for vertex in vertices_ptr:
-                vertices.append([vertex.X(), vertex.Y(), vertex.Z()])
-                face.append(vertex_id)
-                vertex_id += 1
-            faces.append(face)
-            materials.append(face_ptr.Get("stylename"))
-
-        new_mesh = bpy.data.meshes.new("faces")
-        new_mesh.from_pydata(vertices, [], faces)
-        # FIXME reapply materials
-        new_mesh.update()
-        new_object = bpy.data.objects.new("cellcomplex", new_mesh)
+        new_object = bpy.data.objects.new("cellcomplex", mesh_from_cellcomplex(cc))
         bpy.data.collections.items()[0][1].objects.link(new_object)
 
         return {"FINISHED"}
@@ -110,55 +62,13 @@ class ObjectHomemaker(bpy.types.Operator):
     def execute(self, context):
         # FIXME this resets widget origins which looks ugly
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-        blender_objects = []
-        widgets = []
 
-        for blender_object in context.selected_objects:
-            if not blender_object.type == "MESH":
-                continue
-            # Collect widgets (if any) for allocating room/space usage
-            label = re.match(
-                "(bedroom|circulation|circulation_stair|stair|kitchen|living|outside|retail|sahn|toilet)",
-                blender_object.name,
-                flags=re.IGNORECASE,
-            )
-            if label:
-                centre = [0.0, 0.0, 0.0]
-                total = len(blender_object.data.vertices)
-                for v in blender_object.data.vertices:
-                    coor = v.co[:]
-                    centre[0] += coor[0]
-                    centre[1] += coor[1]
-                    centre[2] += coor[2]
-                vertex = Vertex.ByCoordinates(
-                    centre[0] / total, centre[1] / total, centre[2] / total
-                )
-                widgets.append([label[0], vertex])
-            else:
-                blender_objects.append(blender_object)
+        blender_objects, widgets = process_blender_objects(context.selected_objects)
 
         # Each remaining blender_object becomes a separate building
         for blender_object in blender_objects:
             triangulate_nonplanar(blender_object)
-
-            vertices = [
-                Vertex.ByCoordinates(*v.co) for v in blender_object.data.vertices
-            ]
-            faces_ptr = []
-
-            for polygon in blender_object.data.polygons:
-                if polygon.area < 0.00001:
-                    continue
-                stylename = "default"
-                if len(blender_object.material_slots) > 0:
-                    stylename = blender_object.material_slots[
-                        polygon.material_index
-                    ].material.name
-                if stylename == "Material":
-                    stylename = "default"
-                face_ptr = Face.ByVertices([vertices[v] for v in polygon.vertices])
-                face_ptr.Set("stylename", stylename)
-                faces_ptr.append(face_ptr)
+            faces_ptr = topologic_faces_from_blender_object(blender_object)
             blender_object.hide_viewport = True
 
             # generate an ifcopenshell model
@@ -243,6 +153,82 @@ def homemaker(faces_ptr, widgets, name, user_share_dir):
     molior_object.execute()
 
     return ifc
+
+
+def topologic_faces_from_blender_object(blender_object):
+    vertices = [Vertex.ByCoordinates(*v.co) for v in blender_object.data.vertices]
+    faces_ptr = []
+
+    for polygon in blender_object.data.polygons:
+        if polygon.area < 0.00001:
+            continue
+        stylename = "default"
+        if len(blender_object.material_slots) > 0:
+            stylename = blender_object.material_slots[
+                polygon.material_index
+            ].material.name
+        if stylename == "Material":
+            stylename = "default"
+        face_ptr = Face.ByVertices([vertices[v] for v in polygon.vertices])
+        face_ptr.Set("stylename", stylename)
+        faces_ptr.append(face_ptr)
+    return faces_ptr
+
+
+def mesh_from_cellcomplex(cc):
+    faces_ptr = []
+    cc.Faces(faces_ptr)
+    vertices = []
+    faces = []
+    materials = []
+    vertex_id = 0
+    for face_ptr in faces_ptr:
+        vertices_ptr = []
+        face_ptr.VerticesPerimeter(vertices_ptr)
+        face = []
+        for vertex in vertices_ptr:
+            vertices.append([vertex.X(), vertex.Y(), vertex.Z()])
+            face.append(vertex_id)
+            vertex_id += 1
+        faces.append(face)
+        materials.append(face_ptr.Get("stylename"))
+
+    new_mesh = bpy.data.meshes.new("faces")
+    new_mesh.from_pydata(vertices, [], faces)
+    # FIXME reapply materials
+    new_mesh.update()
+    return new_mesh
+
+
+def process_blender_objects(selected_objects):
+    blender_objects = []
+    widgets = []
+
+    for blender_object in selected_objects:
+        if not blender_object.type == "MESH":
+            continue
+        # Collect widgets (if any) for allocating room/space usage
+        label = re.match(
+            "(bedroom|circulation|circulation_stair|stair|kitchen|living|outside|retail|sahn|toilet)",
+            blender_object.name,
+            flags=re.IGNORECASE,
+        )
+        if label:
+            centre = [0.0, 0.0, 0.0]
+            total = len(blender_object.data.vertices)
+            for v in blender_object.data.vertices:
+                coor = v.co[:]
+                centre[0] += coor[0]
+                centre[1] += coor[1]
+                centre[2] += coor[2]
+            vertex = Vertex.ByCoordinates(
+                centre[0] / total, centre[1] / total, centre[2] / total
+            )
+            widgets.append([label[0], vertex])
+        else:
+            blender_objects.append(blender_object)
+
+    return blender_objects, widgets
 
 
 def delete_collection(blender_collection):
