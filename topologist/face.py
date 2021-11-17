@@ -237,6 +237,7 @@ def Normal(self):
 
 def TopLevelConditions(self):
     """Assuming this is a vertical external wall, how do the top edges continue?"""
+    # FIXME treats condition where above is an open wall same as eave
     result = []
     edges_ptr = []
     self.EdgesTop(edges_ptr)
@@ -270,6 +271,7 @@ def TopLevelConditions(self):
 
 def BottomLevelConditions(self):
     """Assuming this is a vertical external wall, how do the bottom edges continue?"""
+    # FIXME treats condition where below is an open wall same as footing
     result = []
     edges_ptr = []
     self.EdgesBottom(edges_ptr)

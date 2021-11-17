@@ -145,7 +145,7 @@ class Extrusion(TraceClass):
         if self.closed:
             directrix.append(directrix[0])
         else:
-            # FIXME need to terminate with a mitre when continuation is in another style
+            # FIXME merge continuing extrusions when profile/material is the same
             directrix[0] = add_2d(directrix[0], self.extension_start())
             directrix[-1] = add_2d(directrix[-1], self.extension_end())
 
@@ -157,7 +157,7 @@ class Extrusion(TraceClass):
                 relating_object=self.parent_aggregate,
             )
 
-        if self.segments == 1 and distance_2d(directrix[0], directrix[1]) < 0.001:
+        if self.segments() == 1 and distance_2d(directrix[0], directrix[1]) < 0.001:
             # better not to create a representation for zero length extrusions
             return
 
