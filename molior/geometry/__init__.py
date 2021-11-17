@@ -123,15 +123,6 @@ def distance_2d(A, B):
     return sqrt((A[0] - B[0]) ** 2 + (A[1] - B[1]) ** 2)
 
 
-def is_between_2d(P, A, B):
-    length = distance_2d(A, B)
-    length_A = distance_2d(A, P)
-    length_B = distance_2d(B, P)
-    if abs(length - length_A - length_B) < 0.000001:
-        return True
-    return False
-
-
 def line_intersection(line_0, line_1):
     if line_0["a"] == line_1["a"]:
         return None

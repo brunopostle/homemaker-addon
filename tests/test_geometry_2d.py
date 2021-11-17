@@ -10,7 +10,6 @@ from molior.geometry import (
     add_2d,
     angle_2d,
     distance_2d,
-    is_between_2d,
     normalise_2d,
     points_2line,
     line_intersection,
@@ -46,10 +45,6 @@ class Tests(unittest.TestCase):
     def test_distance_2d(self):
         self.assertEqual(distance_2d([0, 0], [3, 4]), 5)
         self.assertEqual(distance_2d([1, -1], [-3, 2]), 5)
-
-    def test_is_between_2d(self):
-        self.assertTrue(is_between_2d([1, 1], [0, 0], [2, 2]))
-        self.assertFalse(is_between_2d([1, 1.01], [0, 0], [2, 2]))
 
     def test_normalise_2d(self):
         self.assertEqual(normalise_2d([3, 4]), [0.6, 0.8])
