@@ -13,7 +13,6 @@ import molior.ifc
 import logging
 from blenderbim.bim import import_ifc
 import blenderbim.bim.ifc
-import ifcopenshell
 import bpy
 import bmesh
 
@@ -92,7 +91,7 @@ class ObjectHomemaker(bpy.types.Operator):
             if blenderbim.bim.ifc.IfcStore.file == None:
                 blenderbim.bim.ifc.IfcStore.file = ifc
             else:
-                merge_ifc(blenderbim.bim.ifc.IfcStore.file, ifc)
+                molior.ifc.merge_file(blenderbim.bim.ifc.IfcStore.file, ifc)
 
             # (re)build blender collections and geometry from IfcStore
             ifc_import_settings = import_ifc.IfcImportSettings.factory(
@@ -103,19 +102,6 @@ class ObjectHomemaker(bpy.types.Operator):
 
             bpy.data.collections.get("StructuralItems").hide_viewport = True
         return {"FINISHED"}
-
-
-def merge_ifc(file, source):
-    original_project = file.by_type("IfcProject")[0]
-    temp_project = file.add(source.by_type("IfcProject")[0])
-    # FIXME doesn't merge material styles
-    for element in source.by_type("IfcRoot"):
-        file.add(element)
-    for element in file.get_inverse(temp_project):
-        ifcopenshell.util.element.replace_attribute(
-            element, temp_project, original_project
-        )
-    file.remove(temp_project)
 
 
 def homemaker(faces_ptr, widgets, name, user_share_dir):

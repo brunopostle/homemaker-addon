@@ -509,3 +509,16 @@ def get_material_by_name(self, subcontext, material_name, style_materials):
             context=subcontext,
         )
     return mymaterial
+
+
+def merge_file(self, source):
+    original_project = self.by_type("IfcProject")[0]
+    temp_project = self.add(source.by_type("IfcProject")[0])
+    # FIXME doesn't merge material styles
+    for element in source.by_type("IfcRoot"):
+        self.add(element)
+    for element in self.get_inverse(temp_project):
+        ifcopenshell.util.element.replace_attribute(
+            element, temp_project, original_project
+        )
+    self.remove(temp_project)
