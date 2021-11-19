@@ -16,7 +16,9 @@ run = ifcopenshell.api.run
 class Repeat(TraceClass):
     """A row of evenly spaced identical objects"""
 
-    def __init__(self, args={}):
+    def __init__(self, args=None):
+        if args is None:
+            args = {}
         super().__init__(args)
         self.alternate = 0
         self.closed = 0

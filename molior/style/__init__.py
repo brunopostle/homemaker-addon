@@ -21,11 +21,13 @@ import os, yaml, copy, json
 
 
 class Style:
-    def __init__(self, args={}):
+    def __init__(self, args=None):
         """Read all the data in ${share_dir} and sub-folders, collect names of
         non-YAML files. Default location is a folder called 'share' installed with this
         module, or pass an absolute path in the 'share_dir' parameter to indicate a
         different collection of styles."""
+        if args is None:
+            args = {}
         self.share_dir = "share"
         self.data = {}
         self.files = {}

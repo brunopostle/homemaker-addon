@@ -18,7 +18,9 @@ run = ifcopenshell.api.run
 class Floor(TraceClass):
     """A floor filling a room or space"""
 
-    def __init__(self, args={}):
+    def __init__(self, args=None):
+        if args is None:
+            args = {}
         super().__init__(args)
         self.below = 0.2
         self.ifc = "IfcSlab"
