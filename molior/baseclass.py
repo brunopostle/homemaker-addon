@@ -19,7 +19,9 @@ run = ifcopenshell.api.run
 class BaseClass:
     """A generic building object"""
 
-    def __init__(self, args={}):
+    def __init__(self, args=None):
+        if args is None:
+            args = {}
         self.closed = 1
         self.elevation = 0.0
         self.extension = 0.0

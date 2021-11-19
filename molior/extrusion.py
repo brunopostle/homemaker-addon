@@ -15,7 +15,9 @@ run = ifcopenshell.api.run
 class Extrusion(TraceClass):
     """A profile following a horizontal 2D path"""
 
-    def __init__(self, args={}):
+    def __init__(self, args=None):
+        if args is None:
+            args = {}
         super().__init__(args)
         self.ifc = "IfcBuildingElementProxy"
         self.predefined_type = "USERDEFINED"

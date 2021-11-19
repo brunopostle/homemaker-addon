@@ -17,7 +17,9 @@ run = ifcopenshell.api.run
 class Shell(BaseClass):
     """A pitched roof or soffit"""
 
-    def __init__(self, args={}):
+    def __init__(self, args=None):
+        if args is None:
+            args = {}
         super().__init__(args)
         self.ifc = "IfcRoof"
         self.predefined_type = "USERDEFINED"

@@ -31,7 +31,9 @@ run = ifcopenshell.api.run
 class Wall(TraceClass):
     """A vertical wall, internal or external"""
 
-    def __init__(self, args={}):
+    def __init__(self, args=None):
+        if args is None:
+            args = {}
         super().__init__(args)
         self.bounds = []
         self.ceiling = 0.35
