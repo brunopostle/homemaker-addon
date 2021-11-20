@@ -136,7 +136,11 @@ def GetTraces(self):
         if perimeter.is_simple_cycle():
             elevation = cell.Elevation()
             height = cell.Height()
-            stylename = "default"
+            faces_bottom = []
+            cell.FacesBottom(faces_bottom)
+            stylename = faces_bottom[0].Get("stylename")
+            if not stylename:
+                stylename = "default"
 
             usage = cell.Usage()
             mytraces.add_trace(usage, elevation, height, stylename, perimeter)
