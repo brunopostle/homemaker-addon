@@ -189,36 +189,12 @@ class Repeat(TraceClass):
                     self.add_psets(entity)
                     # place the entity in space
                     elevation = self.elevation + self.yshift
-                    run(
-                        "geometry.edit_object_placement",
-                        self.file,
-                        product=entity,
-                        matrix=matrix_align(
-                            [*location, elevation],
-                            [
-                                *add_2d(location, self.direction_segment(id_segment)),
-                                elevation,
-                            ],
-                        ),
-                    )
                     # assign the entity to the aggregate
                     run(
                         "aggregate.assign_object",
                         self.file,
                         product=entity,
                         relating_object=aggregate,
-                    )
-                    # load geometry from a DXF file and assign to the entity
-                    assign_representation_fromDXF(
-                        self.file, body_context, entity, self.style, dxf_path
-                    )
-                    run(
-                        "material.assign_material",
-                        self.file,
-                        product=entity,
-                        material=get_material_by_name(
-                            self.file, body_context, self.material, self.style_materials
-                        ),
                     )
 
                     # structural stuff
@@ -308,3 +284,30 @@ class Repeat(TraceClass):
                             material_profile=material_profile,
                             profile=profile,
                         )
+
+                    if entity.is_a("IfcVirtualElement"):
+                        continue
+                    run(
+                        "geometry.edit_object_placement",
+                        self.file,
+                        product=entity,
+                        matrix=matrix_align(
+                            [*location, elevation],
+                            [
+                                *add_2d(location, self.direction_segment(id_segment)),
+                                elevation,
+                            ],
+                        ),
+                    )
+                    # load geometry from a DXF file and assign to the entity
+                    assign_representation_fromDXF(
+                        self.file, body_context, entity, self.style, dxf_path
+                    )
+                    run(
+                        "material.assign_material",
+                        self.file,
+                        product=entity,
+                        material=get_material_by_name(
+                            self.file, body_context, self.material, self.style_materials
+                        ),
+                    )
