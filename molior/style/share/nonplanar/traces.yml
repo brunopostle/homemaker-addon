@@ -13,5 +13,4 @@ interior:
   outer: 0.08
   layerset:
     - [0.16, "Error"]
-  extension: 0.0
   cycles: 0

@@ -29,7 +29,6 @@ interior:
     - [0.03, "Plaster"]
     - [0.1, "Masonry"]
     - [0.03, "Plaster"]
-  extension: 0.0
   psets:
       Pset_WallCommon:
           IsExternal: false
@@ -47,6 +46,7 @@ internal ground beam:
   outer: 0.0
   extension: 0.0
   cycles: 0
+  material: Concrete
 eaves:
   class: Extrusion
   ifc: IfcRoof
