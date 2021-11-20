@@ -287,6 +287,8 @@ class Repeat(TraceClass):
 
                     if entity.is_a("IfcVirtualElement"):
                         continue
+                    if not self.do_representation:
+                        continue
                     run(
                         "geometry.edit_object_placement",
                         self.file,

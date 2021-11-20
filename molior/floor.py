@@ -179,6 +179,8 @@ class Floor(TraceClass):
 
         if element.is_a("IfcVirtualElement"):
             return
+        if not self.do_representation:
+            return
         # assign a type and place a representation
         myelement_type = self.get_element_type()
         run(

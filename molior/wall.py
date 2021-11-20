@@ -133,6 +133,8 @@ class Wall(TraceClass):
 
             if mywall.is_a("IfcVirtualElement"):
                 continue
+            if not self.do_representation:
+                continue
 
             # reuse (or create) a Type
             myelement_type = self.get_element_type()

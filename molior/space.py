@@ -70,7 +70,8 @@ class Space(TraceClass):
 
         assign_storey_byindex(self.file, element, self.level)
 
-        # TODO allow skipping representation in style
+        if not self.do_representation:
+            return
         # simple extruded representation
         representation = createExtrudedAreaSolid(
             self.file,

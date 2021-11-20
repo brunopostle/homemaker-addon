@@ -162,6 +162,8 @@ class Extrusion(TraceClass):
         if self.segments() == 1 and distance_2d(directrix[0], directrix[1]) < 0.001:
             # better not to create a representation for zero length extrusions
             return
+        if not self.do_representation:
+            return
 
         dxf_path = style.get_file(self.style, self.profile)
 

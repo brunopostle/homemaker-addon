@@ -105,6 +105,8 @@ class Shell(BaseClass):
 
             if element.is_a("IfcVirtualElement"):
                 continue
+            if not self.do_representation:
+                continue
 
             # generate structural surfaces
             structural_surface = run(
