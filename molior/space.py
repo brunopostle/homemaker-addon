@@ -48,7 +48,6 @@ class Space(TraceClass):
         try:
             is_external = cell.IsOutside()
             crinkliness = int(cell.Crinkliness() * 10) / 10
-            # FIXME crinkliness calculation doesn't account for party walls
         except:
             is_external = False
             crinkliness = 1.0

@@ -87,6 +87,8 @@ def ExternalWallArea(self):
     faces_ptr = []
     self.FacesVerticalExternal(faces_ptr)
     for face in faces_ptr:
+        if face.Get("stylename") == "blank":
+            continue
         result += FaceUtility.Area(face)
     return result
 
