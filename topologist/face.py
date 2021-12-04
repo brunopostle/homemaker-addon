@@ -1,5 +1,6 @@
 """Overloads domain-specific methods onto topologic.Face"""
 
+from functools import lru_cache
 import topologic
 from topologic import Vertex, Edge, Face, FaceUtility, CellUtility
 import topologist.ugraph as ugraph
@@ -24,6 +25,7 @@ def ByVertices(vertices):
 setattr(topologic.Face, "ByVertices", ByVertices)
 
 
+@lru_cache
 def CellsOrdered(self):
     """Front Cell and back Cell, can be None"""
     centroid = FaceUtility.InternalVertex(self, 0.001).Coordinates()
@@ -138,6 +140,7 @@ def AxisOuterTop(self):
             return [ordered.graph[last_edge][1][1], ordered.graph[first_edge][1][0]]
 
 
+@lru_cache
 def IsInternal(self):
     """Face between two indoor cells"""
     cells_ptr = []
@@ -150,6 +153,7 @@ def IsInternal(self):
     return False
 
 
+@lru_cache
 def IsExternal(self):
     """Face between indoor cell and (outdoor cell or world)"""
     cells_ptr = []
@@ -168,6 +172,7 @@ def IsExternal(self):
     return False
 
 
+@lru_cache
 def IsWorld(self):
     """Face on outside of mesh"""
     cells_ptr = []
@@ -177,6 +182,7 @@ def IsWorld(self):
     return False
 
 
+@lru_cache
 def IsOpen(self):
     """Face on outdoor cell on outside of mesh"""
     cells_ptr = []

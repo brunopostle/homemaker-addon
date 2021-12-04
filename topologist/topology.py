@@ -1,5 +1,6 @@
 """Overloads domain-specific methods onto topologic.Topology"""
 
+from functools import lru_cache
 import topologic
 from topologic import StringAttribute
 from topologist.helpers import el
@@ -38,6 +39,7 @@ def FacesExternal(self, faces_ptr):
     return faces_ptr
 
 
+@lru_cache
 def Elevation(self):
     lowest = 9999999.9
     vertices_ptr = []
@@ -48,6 +50,7 @@ def Elevation(self):
     return el(lowest)
 
 
+@lru_cache
 def Height(self):
     highest = -9999999.9
     vertices_ptr = []
@@ -155,6 +158,7 @@ def GraphVertex(self, graph):
                 return vertex
 
 
+@lru_cache
 def VertexId(self, vertex):
     i = 0
     vertices_ptr = []
