@@ -975,15 +975,11 @@ class Tests(unittest.TestCase):
         self.cc.Cells(cells_ptr)
         self.assertTrue(self.circulation.IsConnected())
 
-    def test_light_on_two_sides(self):
-        cells_ptr = []
-        self.cc.Cells(cells_ptr)
         assessor = p159_light_on_two_sides_of_every_room.Assessor(
             self.cc, self.circulation, self.shortest_path_table
         )
         for cell in cells_ptr:
-            pass
-            # print(assessor.execute(cell))
+            assessor.execute(cell)
 
 
 if __name__ == "__main__":
