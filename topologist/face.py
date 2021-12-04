@@ -158,16 +158,13 @@ def IsExternal(self):
     """Face between indoor cell and (outdoor cell or world)"""
     cells_ptr = []
     self.Cells(cells_ptr)
-    cells = []
-    for cell in cells_ptr:
-        cells.append(cell)
-    if len(cells) == 2:
-        if cells[0].IsOutside() and not cells[1].IsOutside():
+    if len(cells_ptr) == 2:
+        if cells_ptr[0].IsOutside() and not cells_ptr[1].IsOutside():
             return True
-        if cells[1].IsOutside() and not cells[0].IsOutside():
+        if cells_ptr[1].IsOutside() and not cells_ptr[0].IsOutside():
             return True
-    elif len(cells) == 1:
-        if not cells[0].IsOutside():
+    elif len(cells_ptr) == 1:
+        if not cells_ptr[0].IsOutside():
             return True
     return False
 
