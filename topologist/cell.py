@@ -153,8 +153,7 @@ def Perimeter(self):
 
         outer_cell = None
         face = refs[2]
-        cells_ptr = []
-        face.Cells(cells_ptr)
+        cells_ptr = face.Cells_Cached()
         for cell in cells_ptr:
             if not cell.IsSame(self):
                 outer_cell = cell

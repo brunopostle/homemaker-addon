@@ -41,8 +41,7 @@ def CellsOrdered(self):
         centroid[2] - (normal[2] / 10),
     )
 
-    cells_ptr = []
-    self.Cells(cells_ptr)
+    cells_ptr = self.Cells_Cached()
     results = [None, None]
     for cell in cells_ptr:
         if CellUtility.Contains(cell, vertex_front, 0.001) == 0:
@@ -143,8 +142,7 @@ def AxisOuterTop(self):
 @lru_cache
 def IsInternal(self):
     """Face between two indoor cells"""
-    cells_ptr = []
-    self.Cells(cells_ptr)
+    cells_ptr = self.Cells_Cached()
     if len(cells_ptr) == 2:
         for cell in cells_ptr:
             if cell.IsOutside():
@@ -156,8 +154,7 @@ def IsInternal(self):
 @lru_cache
 def IsExternal(self):
     """Face between indoor cell and (outdoor cell or world)"""
-    cells_ptr = []
-    self.Cells(cells_ptr)
+    cells_ptr = self.Cells_Cached()
     if len(cells_ptr) == 2:
         if cells_ptr[0].IsOutside() and not cells_ptr[1].IsOutside():
             return True
@@ -172,8 +169,7 @@ def IsExternal(self):
 @lru_cache
 def IsWorld(self):
     """Face on outside of mesh"""
-    cells_ptr = []
-    self.Cells(cells_ptr)
+    cells_ptr = self.Cells_Cached()
     if len(cells_ptr) == 1:
         return True
     return False
@@ -182,8 +178,7 @@ def IsWorld(self):
 @lru_cache
 def IsOpen(self):
     """Face on outdoor cell on outside of mesh"""
-    cells_ptr = []
-    self.Cells(cells_ptr)
+    cells_ptr = self.Cells_Cached()
     if len(cells_ptr) == 1:
         for cell in cells_ptr:
             if cell.IsOutside():

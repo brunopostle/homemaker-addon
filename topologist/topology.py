@@ -6,6 +6,12 @@ from topologic import StringAttribute
 from topologist.helpers import el
 
 
+@lru_cache
+def Cells_Cached(self):
+    cells_ptr = []
+    self.Cells(cells_ptr)
+    return cells_ptr
+
 def FacesVertical(self, faces_ptr):
     elements_ptr = []
     self.Faces(elements_ptr)
@@ -169,6 +175,7 @@ def VertexId(self, vertex):
         i += 1
 
 
+setattr(topologic.Topology, "Cells_Cached", Cells_Cached)
 setattr(topologic.Topology, "FacesVertical", FacesVertical)
 setattr(topologic.Topology, "FacesHorizontal", FacesHorizontal)
 setattr(topologic.Topology, "FacesInclined", FacesInclined)

@@ -43,8 +43,7 @@ def FaceBelow(self):
 def CellsBelow(self):
     """Are there Cells below this edge?"""
     result_cells_ptr = []
-    cells_ptr = []
-    self.Cells(cells_ptr)
+    cells_ptr = self.Cells_Cached()
     for cell in cells_ptr:
         if cell.Centroid().Z() < self.Centroid().Z():
             result_cells_ptr.append(cell)
