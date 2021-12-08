@@ -5,7 +5,7 @@ import unittest, sys, os
 from topologic import Vertex, Face, CellComplex, Graph
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from topologist.helpers import el
+from topologist.helpers import wipe_global_cluster
 from fitness import p159_light_on_two_sides_of_every_room
 
 
@@ -962,8 +962,10 @@ class Tests(unittest.TestCase):
         self.cc = CellComplex.ByFaces(faces_ptr, 0.0001)
         # Copy styles from Faces to the CellComplex
         self.cc.ApplyDictionary(faces_ptr)
+        wipe_global_cluster([self.cc])
         # Assign Cell usages from widgets
         self.cc.AllocateCells(widgets)
+        wipe_global_cluster([self.cc])
         # Generate a circulation Graph
         self.circulation = Graph.Adjacency(self.cc)
         self.circulation.Circulation(self.cc)

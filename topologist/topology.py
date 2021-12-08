@@ -12,6 +12,7 @@ def Cells_Cached(self):
     self.Cells(cells_ptr)
     return cells_ptr
 
+
 def FacesVertical(self, faces_ptr):
     elements_ptr = []
     self.Faces(elements_ptr)
