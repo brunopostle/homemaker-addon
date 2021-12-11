@@ -6,7 +6,7 @@ from topologic import StringAttribute
 from topologist.helpers import el
 
 
-@lru_cache
+@lru_cache(maxsize=256)
 def Cells_Cached(self):
     cells_ptr = []
     self.Cells(cells_ptr)
@@ -46,7 +46,7 @@ def FacesExternal(self, faces_ptr):
     return faces_ptr
 
 
-@lru_cache
+@lru_cache(maxsize=256)
 def Elevation(self):
     lowest = 9999999.9
     vertices_ptr = []
@@ -57,7 +57,7 @@ def Elevation(self):
     return el(lowest)
 
 
-@lru_cache
+@lru_cache(maxsize=256)
 def Height(self):
     highest = -9999999.9
     vertices_ptr = []
@@ -165,7 +165,7 @@ def GraphVertex(self, graph):
                 return vertex
 
 
-@lru_cache
+@lru_cache(maxsize=256)
 def VertexId(self, vertex):
     i = 0
     vertices_ptr = []
