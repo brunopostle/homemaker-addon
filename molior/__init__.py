@@ -62,13 +62,6 @@ class Molior:
         self.circulation = None
         self.cellcomplex = None
         self.share_dir = "share"
-        self.Extrusion = Extrusion
-        self.Floor = Floor
-        self.Shell = Shell
-        self.Space = Space
-        self.Stair = Stair
-        self.Wall = Wall
-        self.Repeat = Repeat
         for arg in args:
             self.__dict__[arg] = args[arg]
         Molior.style = Style({"share_dir": self.share_dir})
@@ -548,7 +541,15 @@ class Molior:
                     "style_materials": myconfig["materials"],
                 }
                 vals.update(config)
-                part = getattr(self, config["class"])(vals)
+                modules = {
+                    "Extrusion": Extrusion,
+                    "Floor": Floor,
+                    "Space": Space,
+                    "Stair": Stair,
+                    "Wall": Wall,
+                    "Repeat": Repeat,
+                }
+                part = modules[config["class"]](vals)
 
                 part.execute()
                 # results are only used by test suite
@@ -571,7 +572,8 @@ class Molior:
                     "style_materials": myconfig["materials"],
                 }
                 vals.update(config)
-                part = getattr(self, config["class"])(vals)
+                modules = {"Shell": Shell}
+                part = modules[config["class"]](vals)
 
                 part.execute()
                 # results are only used by test suite
