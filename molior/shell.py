@@ -1,6 +1,6 @@
 import ifcopenshell.api
 
-from topologist.helpers import string_to_coor
+from topologist.helpers import string_to_coor, el
 from molior.baseclass import BaseClass
 from molior.geometry import map_to_2d
 from molior.ifc import (
@@ -49,8 +49,6 @@ class Shell(BaseClass):
             ifc_class=self.ifc,
             name=self.identifier,
         )
-        # FIXME this puts roofs in the ground floor
-        assign_storey_byindex(self.file, aggregate, 0)
 
         inclines = []
         uniform_pitch = False
@@ -60,6 +58,7 @@ class Shell(BaseClass):
         if abs(max(inclines) - min(inclines)) < 0.01:
             uniform_pitch = True
 
+        elevation = None
         for face in self.hull.faces:
             vertices = [[*string_to_coor(node_str)] for node_str in face[0]]
             normal = face[1]
@@ -67,6 +66,9 @@ class Shell(BaseClass):
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
             # need this for structure
             face_surface = createFaceSurface(self.file, vertices, normal)
+            for vertex in vertices:
+                if elevation == None or vertex[2] < elevation:
+                    elevation = el(vertex[2])
 
             element = run(
                 "root.create_entity",
@@ -208,3 +210,7 @@ class Shell(BaseClass):
                 product=element,
                 matrix=matrix,
             )
+        level = 0
+        if elevation in self.elevations:
+            level = self.elevations[elevation]
+        assign_storey_byindex(self.file, aggregate, level)

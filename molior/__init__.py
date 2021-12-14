@@ -612,6 +612,7 @@ class Molior:
             if "condition" in config and config["condition"] == condition:
                 vals = {
                     "cellcomplex": self.cellcomplex,
+                    "elevations": self.elevations,
                     "file": self.file,
                     "name": name,
                     "style": stylename,
