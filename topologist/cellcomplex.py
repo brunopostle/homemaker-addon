@@ -10,8 +10,6 @@ import topologist.normals
 
 def AllocateCells(self, widgets):
     """Set cell types using widgets, or default to 'Outside'"""
-    if len(widgets) == 0:
-        return
     cells_ptr = []
     self.Cells(cells_ptr)
     for cell in cells_ptr:

@@ -44,6 +44,8 @@ from molior.style import Style
 from molior.geometry import subtract_3d, x_product_3d
 from molior.ifc import (
     assign_space_byindex,
+    assign_storey_byindex,
+    createTessellation_fromMesh,
 )
 from topologist.helpers import string_to_coor_2d
 
@@ -68,6 +70,9 @@ class Molior:
 
     def execute(self):
         """Iterate through 'traces' and 'hulls' and populate an ifc 'file' object"""
+        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
+            if item.ContextIdentifier == "Body":
+                body_context = item
         for condition in self.traces:
             for elevation in self.traces[condition]:
                 level = self.elevations[elevation]
@@ -126,7 +131,49 @@ class Molior:
                 )
                 if pset_topology:
                     curve_list.append([pset_topology["FaceIndex"], member])
-            # TODO create Space and Slab entities for 'void' cells
+
+            # create Space elements for non-habitable 'void' cells
+            cells_ptr = []
+            self.cellcomplex.Cells(cells_ptr)
+            for cell in cells_ptr:
+                if cell.Get("usage") == "void":
+                    topology_index = cell.Get("index")
+                    element = run(
+                        "root.create_entity",
+                        self.file,
+                        ifc_class="IfcSpace",
+                        name="void-space/" + topology_index,
+                    )
+                    pset = run(
+                        "pset.add_pset",
+                        self.file,
+                        product=element,
+                        name="EPset_Topology",
+                    )
+                    run(
+                        "pset.edit_pset",
+                        self.file,
+                        pset=pset,
+                        properties={"CellIndex": topology_index},
+                    )
+                    elevation = cell.Elevation()
+                    level = 0
+                    if elevation in self.elevations:
+                        level = self.elevations[elevation]
+                    assign_storey_byindex(self.file, element, level)
+                    shape = self.file.createIfcShapeRepresentation(
+                        body_context,
+                        body_context.ContextIdentifier,
+                        "Tessellation",
+                        [createTessellation_fromMesh(self.file, *cell.Mesh())],
+                    )
+                    run(
+                        "geometry.assign_representation",
+                        self.file,
+                        product=element,
+                        representation=shape,
+                    )
+
             # TODO create Wall entities for internal non-vertical/horizontal faces
             for space in self.file.by_type("IfcSpace"):
                 pset_topology = ifcopenshell.util.element.get_psets(space).get(
