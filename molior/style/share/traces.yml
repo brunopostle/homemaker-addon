@@ -20,6 +20,12 @@ ground beam:
   outer: 0.0
   extension: 0.25
   material: Concrete
+  structural_material: Concrete
+  structural_profile:
+    - IfcRectangleProfileDef
+    - ProfileType: AREA
+      XDim: 0.4
+      YDim: 0.4
 interior:
   class: Wall
   ifc: IfcWall
