@@ -2,15 +2,22 @@
 
 from functools import lru_cache
 import topologic
-from topologic import StringAttribute
+from topologic import StringAttribute, Face, Cell
 from topologist.helpers import el
 
 
 @lru_cache(maxsize=256)
-def Cells_Cached(self):
+def Cells_Cached(self, host_topology):
     cells_ptr = []
-    self.Cells(cells_ptr)
+    self.UpwardNavigation(host_topology.GetOcctShape(), Cell.Type(), cells_ptr)
     return cells_ptr
+
+
+@lru_cache(maxsize=256)
+def Faces_Cached(self, host_topology):
+    faces_ptr = []
+    self.UpwardNavigation(host_topology.GetOcctShape(), Face.Type(), faces_ptr)
+    return faces_ptr
 
 
 def FacesVertical(self, faces_ptr):
@@ -37,11 +44,12 @@ def FacesInclined(self, faces_ptr):
             faces_ptr.append(face)
 
 
-def FacesExternal(self, faces_ptr):
-    elements_ptr = []
-    self.Faces(elements_ptr)
+def FacesExternal(self, host_topology):
+    """searches host not sub-topologies"""
+    faces_ptr = []
+    elements_ptr = self.Faces_Cached(host_topology)
     for face in elements_ptr:
-        if face.IsExternal():
+        if face.IsExternal(host_topology):
             faces_ptr.append(face)
     return faces_ptr
 
@@ -177,6 +185,7 @@ def VertexId(self, vertex):
 
 
 setattr(topologic.Topology, "Cells_Cached", Cells_Cached)
+setattr(topologic.Topology, "Faces_Cached", Faces_Cached)
 setattr(topologic.Topology, "FacesVertical", FacesVertical)
 setattr(topologic.Topology, "FacesHorizontal", FacesHorizontal)
 setattr(topologic.Topology, "FacesInclined", FacesInclined)

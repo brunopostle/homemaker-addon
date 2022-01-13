@@ -103,7 +103,7 @@ class Wall(TraceClass):
             boundaries = []
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
             curve_bounded_plane = createCurveBoundedPlane(self.file, nodes_2d, matrix)
-            for cell in face.CellsOrdered():
+            for cell in face.CellsOrdered(self.cellcomplex):
                 if cell == None:
                     boundaries.append(None)
                     continue
@@ -112,7 +112,7 @@ class Wall(TraceClass):
                     self.file,
                     ifc_class="IfcRelSpaceBoundary2ndLevel",
                 )
-                if face.IsInternal():
+                if face.IsInternal(self.cellcomplex):
                     boundary.InternalOrExternalBoundary = "INTERNAL"
                 else:
                     boundary.InternalOrExternalBoundary = "EXTERNAL"
@@ -529,7 +529,7 @@ class Wall(TraceClass):
                     self.file, nodes_2d, matrix
                 )
                 cell_id = 0
-                for cell in face.CellsOrdered():
+                for cell in face.CellsOrdered(self.cellcomplex):
                     parent_boundary = boundaries[cell_id]
                     cell_id += 1
                     if cell == None:

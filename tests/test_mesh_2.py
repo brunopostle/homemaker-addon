@@ -76,8 +76,7 @@ class Tests(unittest.TestCase):
         self.cc.Faces(all_faces_ptr)
         self.assertEqual(len(all_faces_ptr), 14)
         for face in all_faces_ptr:
-            cells_ptr = []
-            face.Cells(cells_ptr)
+            cells_ptr = face.Cells_Cached(self.cc)
             self.assertGreater(len(cells_ptr), 0)
             self.assertLess(len(cells_ptr), 3)
 
@@ -108,8 +107,8 @@ class Tests(unittest.TestCase):
             centroid = cell.Centroid()
             volume = CellUtility.Volume(cell)
             planarea = cell.PlanArea()
-            externalwallarea = cell.ExternalWallArea()
-            crinkliness = cell.Crinkliness()
+            externalwallarea = cell.ExternalWallArea(self.cc)
+            crinkliness = cell.Crinkliness(self.cc)
 
             vertical_faces_ptr = []
             cell.FacesVertical(vertical_faces_ptr)
@@ -144,8 +143,8 @@ class Tests(unittest.TestCase):
                     self.assertEqual(len(top_edges_ptr), 1)
                     self.assertEqual(len(bottom_edges_ptr), 1)
 
-                    self.assertFalse(face.FaceAbove())
-                    self.assertTrue(face.FaceBelow())
+                    self.assertFalse(face.FaceAbove(self.cc))
+                    self.assertTrue(face.FaceBelow(self.cc))
 
             below_cells_ptr = []
             cell.CellsBelow(self.cc, below_cells_ptr)
@@ -199,11 +198,10 @@ class Tests(unittest.TestCase):
         # self.assertEqual(data[2].GetType(), 8)  # Face == 8
         # self.assertEqual(data[3].GetType(), 32)  # Cell == 32
         self.assertEqual(data[4], None)  # no outer Cell
-        faces_ptr = []
-        data[0].Faces(faces_ptr)
+        faces_ptr = data[0].Faces_Cached(self.cc)
         self.assertEqual(len(faces_ptr), 3)  # vertex is connected to 3 faces
         faces_ptr = []
-        data[2].AdjacentFaces(faces_ptr)
+        data[2].AdjacentFaces(self.cc, faces_ptr)
         self.assertEqual(len(faces_ptr), 6)  # face is connected to 6 faces
 
         upper = traces_external[10.0][10.0]["default"]

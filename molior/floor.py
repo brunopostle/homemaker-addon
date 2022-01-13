@@ -100,7 +100,7 @@ class Floor(TraceClass):
                 curve_bounded_plane = createCurveBoundedPlane(
                     self.file, nodes_2d, matrix
                 )
-                for cell in face.CellsOrdered():
+                for cell in face.CellsOrdered(self.cellcomplex):
                     if cell == None:
                         continue
                     boundary = run(
@@ -118,7 +118,7 @@ class Floor(TraceClass):
                         boundary.PhysicalOrVirtualBoundary = "VIRTUAL"
                     else:
                         boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
-                    if face.IsInternal():
+                    if face.IsInternal(self.cellcomplex):
                         boundary.InternalOrExternalBoundary = "INTERNAL"
                     else:
                         boundary.InternalOrExternalBoundary = "EXTERNAL"
@@ -145,7 +145,9 @@ class Floor(TraceClass):
                 assignment.RelatingProduct = structural_surface
                 assignment.RelatedObjects = [element]
 
-                self.add_topology_pset(structural_surface, face, *face.CellsOrdered())
+                self.add_topology_pset(
+                    structural_surface, face, *face.CellsOrdered(self.cellcomplex)
+                )
                 run(
                     "structural.assign_structural_analysis_model",
                     self.file,

@@ -56,7 +56,7 @@ class Traces:
     def __init__(self):
         self.traces = {}
 
-    def add_axis(self, label, elevation, height, stylename, edge, face):
+    def add_axis(self, label, elevation, height, stylename, edge, face, cells):
         """edge is two Vertices, add to graph, will split into distinct graphs later"""
         traces = self.traces
         if not label in traces:
@@ -68,7 +68,6 @@ class Traces:
         if not stylename in traces[label][elevation][height]:
             traces[label][elevation][height][stylename] = ugraph.graph()
 
-        cells = face.CellsOrdered()
         start_coor = edge[0].CoorAsString()
         end_coor = edge[1].CoorAsString()
 
@@ -76,9 +75,8 @@ class Traces:
             {start_coor: [end_coor, [edge[0], edge[1], face, cells[1], cells[0]]]}
         )
 
-    def add_axis_simple(self, label, elevation, height, stylename, edge, face):
+    def add_axis_simple(self, label, elevation, height, stylename, edge, face, cells):
         """edge is two vertices, add as a simple single edge graph"""
-        cells = face.CellsOrdered()
         start_coor = edge[0].CoorAsString()
         end_coor = edge[1].CoorAsString()
         graph = ugraph.graph()

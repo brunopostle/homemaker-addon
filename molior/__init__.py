@@ -249,8 +249,7 @@ class Molior:
                 )
 
                 # loop though all the faces connected to this edge
-                faces_ptr = []
-                edge.Faces(faces_ptr)
+                faces_ptr = edge.Faces_Cached(self.cellcomplex)
                 for face in faces_ptr:
                     index = face.Get("index")
                     # connect this surface member to this curve connection

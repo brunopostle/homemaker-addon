@@ -40,15 +40,15 @@ class Tests(unittest.TestCase):
         cells_below = 0
         for edge in edges_ptr:
             if edge.IsHorizontal():
-                if edge.FaceBelow():
+                if edge.FaceBelow(self.cell):
                     faces_below += 1
-                    self.assertEqual(type(edge.FaceBelow()), Face)
-                if edge.FaceAbove():
+                    self.assertEqual(type(edge.FaceBelow(self.cell)), Face)
+                if edge.FaceAbove(self.cell):
                     faces_above += 1
-                    self.assertEqual(type(edge.FaceAbove()), Face)
-                if len(list(edge.CellsBelow())) == 1:
+                    self.assertEqual(type(edge.FaceAbove(self.cell)), Face)
+                if len(list(edge.CellsBelow(self.cell))) == 1:
                     cells_below += 1
-                    self.assertEqual(type(list(edge.CellsBelow())[0]), Cell)
+                    self.assertEqual(type(list(edge.CellsBelow(self.cell))[0]), Cell)
         self.assertEqual(faces_above, 4)
         self.assertEqual(faces_below, 4)
         self.assertEqual(cells_below, 4)

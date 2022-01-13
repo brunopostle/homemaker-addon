@@ -42,8 +42,7 @@ def Circulation(self, cellcomplex):
                 # is too narrow for a door
                 vertices_ptr.append(vertex)
             else:
-                cells_ptr = []
-                face.Cells(cells_ptr)
+                cells_ptr = face.Cells_Cached(cellcomplex)
                 cells = cells_ptr
                 if cells[0].Elevation() != cells[1].Elevation():
                     # floors either side are not at the same level
@@ -62,8 +61,7 @@ def Circulation(self, cellcomplex):
 
         elif face.IsHorizontal():
             # floor
-            cells_ptr = []
-            face.Cells(cells_ptr)
+            cells_ptr = face.Cells_Cached(cellcomplex)
             if (
                 len(cells_ptr) == 2
                 and cells_ptr[0].Usage() == "stair"

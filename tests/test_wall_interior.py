@@ -23,6 +23,8 @@ class Tests(unittest.TestCase):
         coor_0 = vertex_0.CoorAsString()
         coor_1 = vertex_1.CoorAsString()
 
+        dummy_cell = Vertex.ByCoordinates(0.0, 0.0, 0.0)
+
         face = Face.ByVertices([vertex_0, vertex_1, vertex_2, vertex_3])
         # a real wall would have a Face and one or two Cells
         # string: [string, [Vertex, Vertex, Face, Cell, Cell]]
@@ -31,7 +33,9 @@ class Tests(unittest.TestCase):
 
         ifc = molior.ifc.init("Our House", {3.15: 2})
 
-        molior_object = Molior(file=ifc, circulation=Graph, normals=normals.normals)
+        molior_object = Molior(
+            file=ifc, circulation=Graph, normals=normals.normals, cellcomplex=dummy_cell
+        )
         self.wall = molior_object.GetTraceIfc(
             "default",  # style
             "internal",  # condition

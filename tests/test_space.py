@@ -36,7 +36,9 @@ class Tests(unittest.TestCase):
 
         ifc = molior.ifc.init("Our House", {3.15: 2})
 
-        molior_object = Molior(file=ifc, circulation=None, normals=normals.normals)
+        molior_object = Molior(
+            file=ifc, circulation=None, normals=normals.normals, cellcomplex=dummy_cell
+        )
         self.space = molior_object.GetTraceIfc(
             "default",  # style
             "kitchen",  # condition

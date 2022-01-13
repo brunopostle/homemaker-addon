@@ -7,7 +7,6 @@ sys.path.append("/home/bruno/src/homemaker-addon")
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + "/libs/site/packages"))
 
 from topologic import Vertex, Face, CellComplex, Graph
-from topologist.helpers import wipe_global_cluster
 from molior import Molior
 import molior.ifc
 
@@ -106,15 +105,12 @@ class ObjectHomemaker(bpy.types.Operator):
 
 
 def homemaker(faces_ptr, widgets, name, user_share_dir):
-    wipe_global_cluster([])
     # Generate a Topologic CellComplex
     cc = CellComplex.ByFaces(faces_ptr, 0.0001)
     # Copy styles from Faces to the CellComplex
     cc.ApplyDictionary(faces_ptr)
-    wipe_global_cluster([cc])
     # Assign Cell usages from widgets
     cc.AllocateCells(widgets)
-    wipe_global_cluster([cc])
     # Generate a circulation Graph
     circulation = Graph.Adjacency(cc)
     circulation.Circulation(cc)

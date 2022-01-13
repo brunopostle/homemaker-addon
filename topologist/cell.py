@@ -25,11 +25,11 @@ def FacesBottom(self, result_faces_ptr):
             result_faces_ptr.append(face)
 
 
-def FacesVerticalExternal(self, result_faces_ptr):
+def FacesVerticalExternal(self, cellcomplex, result_faces_ptr):
     faces_ptr = []
     self.Faces(faces_ptr)
     for face in faces_ptr:
-        if face.IsVertical() and face.IsExternal():
+        if face.IsVertical() and face.IsExternal(cellcomplex):
             result_faces_ptr.append(face)
 
 
@@ -82,10 +82,10 @@ def PlanArea(self):
     return result
 
 
-def ExternalWallArea(self):
+def ExternalWallArea(self, cellcomplex):
     result = 0.0
     faces_ptr = []
-    self.FacesVerticalExternal(faces_ptr)
+    self.FacesVerticalExternal(cellcomplex, faces_ptr)
     for face in faces_ptr:
         if face.Get("stylename") == "blank":
             continue
@@ -93,13 +93,13 @@ def ExternalWallArea(self):
     return result
 
 
-def Crinkliness(self):
+def Crinkliness(self, cellcomplex):
     if self.PlanArea() == 0.0:
         return 0.0
-    return self.ExternalWallArea() / self.PlanArea()
+    return self.ExternalWallArea(cellcomplex) / self.PlanArea()
 
 
-def Perimeter(self):
+def Perimeter(self, host_topology):
     """2D outline of cell floor, closed, anti-clockwise"""
     elevation = self.Elevation()
     faces_ptr = []
@@ -153,7 +153,7 @@ def Perimeter(self):
 
         outer_cell = None
         face = refs[2]
-        cells_ptr = face.Cells_Cached()
+        cells_ptr = face.Cells_Cached(host_topology)
         for cell in cells_ptr:
             if not cell.IsSame(self):
                 outer_cell = cell

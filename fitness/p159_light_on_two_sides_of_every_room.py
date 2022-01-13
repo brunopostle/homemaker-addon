@@ -61,7 +61,7 @@ class Assessor:
     def external_wall_area(self, cell):
         result = 0.0
         faces_ptr = []
-        cell.FacesVerticalExternal(faces_ptr)
+        cell.FacesVerticalExternal(self.cellcomplex, faces_ptr)
         # external walls only count if they can fit windows
         for face in faces_ptr:
             if face.Get("stylename") in self.settings["windowless_styles"]:

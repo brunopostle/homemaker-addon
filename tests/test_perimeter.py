@@ -67,7 +67,7 @@ class Tests(unittest.TestCase):
         cells_ptr = []
         self.cc.Cells(cells_ptr)
         for cell in cells_ptr:
-            perimeter = cell.Perimeter()
+            perimeter = cell.Perimeter(self.cc)
             if len(perimeter.nodes()) == 3:
                 self.assertEqual(len(perimeter.edges()), 3)
                 for vertex in perimeter.nodes():

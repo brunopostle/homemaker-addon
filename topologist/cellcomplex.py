@@ -15,7 +15,7 @@ def AllocateCells(self, widgets):
     for cell in cells_ptr:
         cell.Set("usage", "living")
         # a usable space has vertical faces on all sides
-        if not cell.Perimeter().is_simple_cycle():
+        if not cell.Perimeter(self).is_simple_cycle():
             cell.Set("usage", "void")
             continue
         for widget in widgets:
@@ -38,9 +38,10 @@ def GetTraces(self):
 
     for face in faces_ptr:
         # labelling "badnormal" faces should be a separate method but here is convenient for now
-        face.BadNormal()
+        face.BadNormal(self)
     for face in faces_ptr:
         stylename = face.Get("stylename")
+        cells_ordered = face.CellsOrdered(self)
         if not stylename:
             stylename = "default"
         if face.IsVertical():
@@ -50,21 +51,35 @@ def GetTraces(self):
             axis = face.AxisOuter()
             # wall face may be triangular and not have a bottom edge
             if axis:
-                if face.IsOpen():
-                    mytraces.add_axis("open", elevation, height, stylename, axis, face)
-
-                elif face.IsExternal():
+                if face.IsOpen(self):
                     mytraces.add_axis(
-                        "external", elevation, height, stylename, axis, face
+                        "open", elevation, height, stylename, axis, face, cells_ordered
                     )
 
-                elif face.IsInternal():
+                elif face.IsExternal(self):
+                    mytraces.add_axis(
+                        "external",
+                        elevation,
+                        height,
+                        stylename,
+                        axis,
+                        face,
+                        cells_ordered,
+                    )
+
+                elif face.IsInternal(self):
                     mytraces.add_axis_simple(
-                        "internal", elevation, height, stylename, axis, face
+                        "internal",
+                        elevation,
+                        height,
+                        stylename,
+                        axis,
+                        face,
+                        cells_ordered,
                     )
 
                     # collect foundation strips
-                    if not face.FaceBelow():
+                    if not face.FaceBelow(self):
                         mytraces.add_axis_simple(
                             "internal-unsupported",
                             elevation,
@@ -72,16 +87,17 @@ def GetTraces(self):
                             stylename,
                             axis,
                             face,
+                            cells_ordered,
                         )
                 elevations[elevation] = 0
             else:
                 # face has no horizontal bottom edge, add to hull for wall panels
-                myhulls.add_face("panel", stylename, face)
+                myhulls.add_face("panel", stylename, face, cells_ordered)
 
             # TODO open wall top and bottom traces
-            if face.IsExternal():
+            if face.IsExternal(self):
                 normal = face.Normal()
-                for condition in face.TopLevelConditions():
+                for condition in face.TopLevelConditions(self):
                     edge = condition[0]
                     vertices = [edge.EndVertex(), edge.StartVertex()]
                     if face.Get("badnormal"):
@@ -94,12 +110,13 @@ def GetTraces(self):
                         stylename,
                         vertices,
                         face,
+                        cells_ordered,
                     )
                     mynormals.add_vector("top", edge.StartVertex(), normal)
                     mynormals.add_vector("top", edge.EndVertex(), normal)
                     elevations[el(elevation + height)] = 0
 
-                for condition in face.BottomLevelConditions():
+                for condition in face.BottomLevelConditions(self):
                     edge = condition[0]
                     vertices = [edge.StartVertex(), edge.EndVertex()]
                     if face.Get("badnormal"):
@@ -112,25 +129,26 @@ def GetTraces(self):
                         stylename,
                         vertices,
                         face,
+                        cells_ordered,
                     )
                     mynormals.add_vector("bottom", edge.StartVertex(), normal)
                     mynormals.add_vector("bottom", edge.EndVertex(), normal)
 
         elif face.IsHorizontal():
             # collect flat roof areas (not outdoor spaces)
-            if face.IsUpward() and face.IsWorld():
-                myhulls.add_face("flat", stylename, face)
+            if face.IsUpward() and face.IsWorld(self):
+                myhulls.add_face("flat", stylename, face, cells_ordered)
         else:
             # collect roof, soffit, and vaulted ceiling faces as hulls
             if face.IsUpward():
-                myhulls.add_face("roof", stylename, face)
+                myhulls.add_face("roof", stylename, face, cells_ordered)
             else:
-                myhulls.add_face("soffit", stylename, face)
+                myhulls.add_face("soffit", stylename, face, cells_ordered)
 
     cells_ptr = []
     self.Cells(cells_ptr)
     for cell in cells_ptr:
-        perimeter = cell.Perimeter()
+        perimeter = cell.Perimeter(self)
         if perimeter.is_simple_cycle():
             elevation = cell.Elevation()
             height = cell.Height()
@@ -163,7 +181,6 @@ def ApplyDictionary(self, source_faces_ptr):
     for face in faces_ptr:
         vertex = FaceUtility.InternalVertex(face, 0.001)
         for source_face in source_faces_ptr:
-            # FIXME calling IsInside() many times slows subsequent code!!
             if FaceUtility.IsInside(source_face, vertex, 0.001):
                 dictionary = source_face.GetDictionary()
                 for key in dictionary.Keys():
