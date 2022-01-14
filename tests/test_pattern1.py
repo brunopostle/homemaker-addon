@@ -5,7 +5,7 @@ import unittest, sys, os
 from topologic import Vertex, Face, CellComplex, Graph
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from fitness import p159_light_on_two_sides_of_every_room
+from topologist.fitness import p159_light_on_two_sides_of_every_room
 
 
 class Tests(unittest.TestCase):
