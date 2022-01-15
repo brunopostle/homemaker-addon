@@ -117,6 +117,7 @@ class Molior:
             surface_lookup = {}
             curve_list = []
             space_lookup = {}
+            cell_lookup = {}
             for member in self.file.by_type("IfcStructuralSurfaceMember"):
                 member.ObjectPlacement = structural_placement
                 pset_topology = ifcopenshell.util.element.get_psets(member).get(
@@ -136,6 +137,7 @@ class Molior:
             cells_ptr = []
             self.cellcomplex.Cells(cells_ptr)
             for cell in cells_ptr:
+                cell_lookup[cell.Get("index")] = cell
                 if cell.Get("usage") == "void":
                     topology_index = cell.Get("index")
                     element = run(
@@ -506,12 +508,6 @@ class Molior:
                     )
 
             # attach Door elements to Space
-            cells_ptr = []
-            self.cellcomplex.Cells(cells_ptr)
-            cells = {}
-            for cell in cells_ptr:
-                cells[cell.Get("index")] = cell
-
             for element in self.file.by_type("IfcDoor"):
                 pset_topology = ifcopenshell.util.element.get_psets(element).get(
                     "EPset_Topology"
@@ -519,22 +515,26 @@ class Molior:
                 if pset_topology:
                     if not "FrontCellIndex" in pset_topology or (
                         "FrontCellIndex" in pset_topology
-                        and cells[pset_topology["FrontCellIndex"]].IsOutside()
+                        and cell_lookup[pset_topology["FrontCellIndex"]].IsOutside()
                     ):
                         assign_space_byindex(
                             self.file, element, pset_topology["BackCellIndex"]
                         )
-                    elif cells[pset_topology["BackCellIndex"]].IsOutside():
+                    elif cell_lookup[pset_topology["BackCellIndex"]].IsOutside():
                         assign_space_byindex(
                             self.file, element, pset_topology["FrontCellIndex"]
                         )
                     else:
-                        if cells[pset_topology["FrontCellIndex"]].Get(
+                        if cell_lookup[pset_topology["FrontCellIndex"]].Get(
                             "separation"
                         ) and float(
-                            cells[pset_topology["FrontCellIndex"]].Get("separation")
+                            cell_lookup[pset_topology["FrontCellIndex"]].Get(
+                                "separation"
+                            )
                         ) > float(
-                            cells[pset_topology["BackCellIndex"]].Get("separation")
+                            cell_lookup[pset_topology["BackCellIndex"]].Get(
+                                "separation"
+                            )
                         ):
                             assign_space_byindex(
                                 self.file, element, pset_topology["FrontCellIndex"]
