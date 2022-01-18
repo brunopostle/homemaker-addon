@@ -63,7 +63,7 @@ class Tests(unittest.TestCase):
     def test_faces_cc(self):
 
         all_faces_ptr = []
-        self.cc.Faces(all_faces_ptr)
+        self.cc.Faces(None, all_faces_ptr)
         self.assertEqual(len(all_faces_ptr), 7)
 
         count = 0
@@ -92,7 +92,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(centroid.Z(), 7.0)  # average of vertex positions
 
         cells_ptr = []
-        self.cc.Cells(cells_ptr)
+        self.cc.Cells(None, cells_ptr)
         self.assertEqual(len(cells_ptr), 1)
 
     def test_traces(self):

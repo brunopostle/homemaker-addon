@@ -73,7 +73,7 @@ class Tests(unittest.TestCase):
     def test_faces_cc(self):
 
         all_faces_ptr = []
-        self.cc.Faces(all_faces_ptr)
+        self.cc.Faces(None, all_faces_ptr)
         self.assertEqual(len(all_faces_ptr), 14)
         for face in all_faces_ptr:
             cells_ptr = face.Cells_Cached(self.cc)
@@ -100,7 +100,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(centroid.Z(), 10.0)
 
         cells_ptr = []
-        self.cc.Cells(cells_ptr)
+        self.cc.Cells(None, cells_ptr)
         self.assertEqual(len(cells_ptr), 3)
 
         for cell in cells_ptr:
@@ -156,7 +156,7 @@ class Tests(unittest.TestCase):
                 self.assertEqual(cell.Usage(), "Kitchen")
 
         cells_ptr = []
-        self.cc.Cells(cells_ptr)
+        self.cc.Cells(None, cells_ptr)
         has_kitchen = False
         has_bedroom = False
         for cell in cells_ptr:
@@ -248,7 +248,7 @@ class Tests(unittest.TestCase):
         )
         topology = graph.Topology()
         edges_ptr = []
-        topology.Edges(edges_ptr)
+        topology.Edges(None, edges_ptr)
         self.assertEqual(len(edges_ptr), 3)
 
 

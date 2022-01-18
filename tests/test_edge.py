@@ -6,6 +6,7 @@ import unittest
 from topologic import Vertex, Edge, Face, Cell, CellUtility
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+import topologist.edge
 
 
 class Tests(unittest.TestCase):
@@ -34,7 +35,7 @@ class Tests(unittest.TestCase):
 
     def test_below(self):
         edges_ptr = []
-        self.cell.Edges(edges_ptr)
+        self.cell.Edges(None, edges_ptr)
         faces_above = 0
         faces_below = 0
         cells_below = 0

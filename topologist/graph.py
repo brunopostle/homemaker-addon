@@ -8,7 +8,7 @@ def Adjacency(cellcomplex):
     """Index all cells and faces, return a circulation graph with the same indexing"""
     """Adjacency graph has nodes for cells, and nodes for faces that connect them"""
     cells_ptr = []
-    cellcomplex.Cells(cells_ptr)
+    cellcomplex.Cells(None, cells_ptr)
     index = 0
     for cell in cells_ptr:
         cell.Set("index", str(index))
@@ -16,7 +16,7 @@ def Adjacency(cellcomplex):
         index += 1
 
     faces_ptr = []
-    cellcomplex.Faces(faces_ptr)
+    cellcomplex.Faces(None, faces_ptr)
     index = 0
     for face in faces_ptr:
         face.Set("index", str(index))
@@ -112,7 +112,7 @@ def ShortestPathTable(self):
                 continue
             wire = self.ShortestPath(vertices_list[i], vertices_list[j], "", "length")
             edges_ptr = []
-            wire.Edges(edges_ptr)
+            wire.Edges(None, edges_ptr)
             length = 0.0
             for edge in edges_ptr:
                 length += edge.Length()
@@ -173,10 +173,10 @@ def GetEntity(self, cellcomplex, vertex):
     index = vertex.Get("index")
     if vertex.Get("class") == "Face":
         topologies_ptr = []
-        cellcomplex.Faces(topologies_ptr)
+        cellcomplex.Faces(None, topologies_ptr)
     elif vertex.Get("class") == "Cell":
         topologies_ptr = []
-        cellcomplex.Cells(topologies_ptr)
+        cellcomplex.Cells(None, topologies_ptr)
     else:
         return None
     for entity in topologies_ptr:

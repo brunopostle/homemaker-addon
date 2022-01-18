@@ -135,7 +135,7 @@ class Molior:
 
             # create Space elements for non-habitable 'void' cells
             cells_ptr = []
-            self.cellcomplex.Cells(cells_ptr)
+            self.cellcomplex.Cells(None, cells_ptr)
             for cell in cells_ptr:
                 cell_lookup[cell.Get("index")] = cell
                 if cell.Get("usage") == "void":
@@ -186,7 +186,7 @@ class Molior:
 
             # iterate all the edges in the topologic model
             edges_ptr = []
-            self.cellcomplex.Edges(edges_ptr)
+            self.cellcomplex.Edges(None, edges_ptr)
             point_list = []
             for edge in edges_ptr:
                 v_start = edge.StartVertex()

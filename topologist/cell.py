@@ -8,7 +8,7 @@ import topologist.ugraph as ugraph
 
 def FacesTop(self, result_faces_ptr):
     faces_ptr = []
-    self.Faces(faces_ptr)
+    self.Faces(None, faces_ptr)
     for face in faces_ptr:
         if (
             face.Elevation() == el(self.Elevation() + self.Height())
@@ -19,7 +19,7 @@ def FacesTop(self, result_faces_ptr):
 
 def FacesBottom(self, result_faces_ptr):
     faces_ptr = []
-    self.Faces(faces_ptr)
+    self.Faces(None, faces_ptr)
     for face in faces_ptr:
         if face.Elevation() == self.Elevation() and face.Height() == 0.0:
             result_faces_ptr.append(face)
@@ -27,7 +27,7 @@ def FacesBottom(self, result_faces_ptr):
 
 def FacesVerticalExternal(self, cellcomplex, result_faces_ptr):
     faces_ptr = []
-    self.Faces(faces_ptr)
+    self.Faces(None, faces_ptr)
     for face in faces_ptr:
         if face.IsVertical() and face.IsExternal(cellcomplex):
             result_faces_ptr.append(face)

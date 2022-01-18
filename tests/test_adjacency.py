@@ -106,7 +106,7 @@ class Tests(unittest.TestCase):
     def test_graphvertex(self):
         graph = Graph.Adjacency(self.cc)
         cells_ptr = []
-        self.cc.Cells(cells_ptr)
+        self.cc.Cells(None, cells_ptr)
         self.assertEqual(len(cells_ptr), 3)
         for cell in cells_ptr:
             # vertex is the node in the Graph that corresponds to this Cell
@@ -123,7 +123,7 @@ class Tests(unittest.TestCase):
     def test_graphvertex2(self):
         graph = Graph.Adjacency(self.cc)
         faces_ptr = []
-        self.cc.Faces(faces_ptr)
+        self.cc.Faces(None, faces_ptr)
         self.assertEqual(len(faces_ptr), 14)
         for face in faces_ptr:
             # vertex is the node in the Graph that corresponds to this Face

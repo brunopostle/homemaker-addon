@@ -7,6 +7,7 @@ import unittest
 from topologic import Vertex, Face, CellComplex, CellUtility, Topology
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+import topologist.face
 
 points = [
     [0.0, 0.0, 0.0],
@@ -56,7 +57,7 @@ class Tests(unittest.TestCase):
 
     def test_upward(self):
         vertices = []
-        cc.Vertices(vertices)
+        cc.Vertices(None, vertices)
         cells = vertices[0].Cells_Cached(cc)
         self.assertEqual(len(cells), 2)
 
@@ -81,7 +82,7 @@ class Tests(unittest.TestCase):
     def test_faces_cc(self):
 
         faces_ptr = []
-        cc.Faces(faces_ptr)
+        cc.Faces(None, faces_ptr)
         self.assertEqual(len(faces_ptr), 9)
         for face in faces_ptr:
             cells_ptr = face.Cells_Cached(cc)
@@ -108,7 +109,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(centroid.Z(), 5.0)
 
         cells_ptr = []
-        cc.Cells(cells_ptr)
+        cc.Cells(None, cells_ptr)
         self.assertEqual(len(cells_ptr), 2)
 
         for cell in cells_ptr:

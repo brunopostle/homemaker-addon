@@ -23,7 +23,7 @@ def IsVertical(self):
 def FaceAbove(self, host_topology):
     """Is there a vertical face attached above?"""
     faces_ptr = []
-    self.UpwardNavigation(host_topology.GetOcctShape(), Face.Type(), faces_ptr)
+    self.Faces(host_topology, faces_ptr)
     for face in faces_ptr:
         if face.IsVertical() and face.Centroid().Z() > self.Centroid().Z():
             return face
@@ -33,7 +33,7 @@ def FaceAbove(self, host_topology):
 def FaceBelow(self, host_topology):
     """Is there a vertical face attached below?"""
     faces_ptr = []
-    self.UpwardNavigation(host_topology.GetOcctShape(), Face.Type(), faces_ptr)
+    self.Faces(host_topology, faces_ptr)
     for face in faces_ptr:
         if face.IsVertical() and face.Centroid().Z() < self.Centroid().Z():
             return face

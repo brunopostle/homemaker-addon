@@ -971,7 +971,7 @@ class Tests(unittest.TestCase):
 
     def test_circulation(self):
         cells_ptr = []
-        self.cc.Cells(cells_ptr)
+        self.cc.Cells(None, cells_ptr)
         self.assertTrue(self.circulation.IsConnected())
 
         assessor = p159_light_on_two_sides_of_every_room.Assessor(

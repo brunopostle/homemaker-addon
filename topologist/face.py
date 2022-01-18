@@ -54,8 +54,8 @@ def CellsOrdered(self, host_topology):
 def VerticesPerimeter(self, vertices_ptr):
     """Vertices, tracing the outer perimeter"""
     wires_ptr = []
-    self.Wires(wires_ptr)
-    wires_ptr[0].Vertices(vertices_ptr)
+    self.Wires(None, wires_ptr)
+    wires_ptr[0].Vertices(None, vertices_ptr)
     return vertices_ptr
 
 

@@ -11,7 +11,7 @@ import topologist.normals
 def AllocateCells(self, widgets):
     """Set cell types using widgets, or default to 'Outside'"""
     cells_ptr = []
-    self.Cells(cells_ptr)
+    self.Cells(None, cells_ptr)
     for cell in cells_ptr:
         cell.Set("usage", "living")
         # a usable space has vertical faces on all sides
@@ -34,7 +34,7 @@ def GetTraces(self):
     mynormals = topologist.normals.Normals()
     elevations = {}
     faces_ptr = []
-    self.Faces(faces_ptr)
+    self.Faces(None, faces_ptr)
 
     for face in faces_ptr:
         # labelling "badnormal" faces should be a separate method but here is convenient for now
@@ -146,7 +146,7 @@ def GetTraces(self):
                 myhulls.add_face("soffit", stylename, face, cells_ordered)
 
     cells_ptr = []
-    self.Cells(cells_ptr)
+    self.Cells(None, cells_ptr)
     for cell in cells_ptr:
         perimeter = cell.Perimeter(self)
         if perimeter.is_simple_cycle():
@@ -177,7 +177,7 @@ def GetTraces(self):
 def ApplyDictionary(self, source_faces_ptr):
     """Copy Dictionary items from a collection of faces"""
     faces_ptr = []
-    self.Faces(faces_ptr)
+    self.Faces(None, faces_ptr)
     for face in faces_ptr:
         vertex = FaceUtility.InternalVertex(face, 0.001)
         for source_face in source_faces_ptr:
