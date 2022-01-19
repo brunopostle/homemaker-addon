@@ -8,6 +8,8 @@ from topologic import Vertex, Edge, Face, Cell, CellUtility
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import topologist.edge
 
+assert topologist.edge
+
 
 class Tests(unittest.TestCase):
     def setUp(self):

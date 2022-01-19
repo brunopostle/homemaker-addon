@@ -9,6 +9,8 @@ from topologic import Vertex, Face, CellComplex
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import topologist.face
 
+assert topologist.face
+
 
 class Tests(unittest.TestCase):
     """14 faces and three cells formed by a cube sliced on the diagonal"""

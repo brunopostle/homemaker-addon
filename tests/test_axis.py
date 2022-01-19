@@ -9,6 +9,8 @@ from topologic import Vertex, Edge, Wire, Face, CellComplex
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import topologist.face
 
+assert topologist.face
+
 
 class Tests(unittest.TestCase):
     """A simple cube"""

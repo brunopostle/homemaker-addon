@@ -9,6 +9,8 @@ from topologic import Vertex, Face, CellComplex, CellUtility, Topology
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import topologist.face
 
+assert topologist.face
+
 points = [
     [0.0, 0.0, 0.0],
     [10.0, 0.0, 0.0],

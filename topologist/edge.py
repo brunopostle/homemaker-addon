@@ -1,7 +1,7 @@
 """Overloads domain-specific methods onto topologic.Edge"""
 
 import topologic
-from topologic import VertexUtility, Face
+from topologic import VertexUtility
 from topologist.helpers import el
 
 

@@ -2,7 +2,7 @@
 
 from functools import lru_cache
 import topologic
-from topologic import StringAttribute, Vertex, Face, Cell
+from topologic import StringAttribute, Vertex
 from topologist.helpers import el
 
 
