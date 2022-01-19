@@ -34,36 +34,37 @@ class Tests(unittest.TestCase):
         trace.add_edge({coor_3: [coor_0, [vertex_3, vertex_0, None, dummy_cell, None]]})
         paths = trace.find_paths()
 
-        ifc = molior.ifc.init("Our House", {3.15: 2})
+        ifc = molior.ifc.init("Our House", {3.15: 2, 6.15: 3})
 
         molior_object = Molior(
-            file=ifc, circulation=None, normals=normals.normals, cellcomplex=dummy_cell
+            file=ifc,
+            circulation=None,
+            normals=normals.normals,
+            cellcomplex=dummy_cell,
+            elevations={3.15: 2, 6.15: 3},
         )
         self.space = molior_object.GetTraceIfc(
-            "default",  # style
-            "kitchen",  # condition
-            2,  # level
-            3.15,  # elevation
-            0.05,  # height
-            paths[0],  # chain
+            stylename="default",
+            condition="kitchen",
+            elevation=3.15,
+            height=0.05,
+            chain=paths[0],
         )
 
         self.space2 = molior_object.GetTraceIfc(
-            "default",  # style
-            "kitchen",  # condition
-            2,  # level
-            6.15,  # elevation
-            0.05,  # height
-            paths[0],  # chain
+            stylename="default",
+            condition="kitchen",
+            elevation=6.15,
+            height=0.05,
+            chain=paths[0],
         )
 
         self.stair = molior_object.GetTraceIfc(
-            "default",  # style
-            "stair",  # condition
-            2,  # level
-            3.15,  # elevation
-            0.05,  # height
-            paths[0],  # chain
+            stylename="default",
+            condition="stair",
+            elevation=3.15,
+            height=0.05,
+            chain=paths[0],
         )
         ifc.write("_test.ifc")
 

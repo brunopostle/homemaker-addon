@@ -67,14 +67,14 @@ class Tests(unittest.TestCase):
             circulation=None,
             normals=normals.normals,
             cellcomplex=dummy_cell,
+            elevations={3.15: 2},
         )
         self.wall = molior_object.GetTraceIfc(
-            "default",  # style
-            "external",  # condition
-            2,  # level
-            3.15,  # elevation
-            2.85,  # height
-            paths[0],  # chain
+            stylename="default",
+            condition="external",
+            elevation=3.15,
+            height=2.85,
+            chain=paths[0],
         )[0]
 
     def test_sanity(self):

@@ -34,15 +34,18 @@ class Tests(unittest.TestCase):
         ifc = molior.ifc.init("Our House", {3.15: 2})
 
         molior_object = Molior(
-            file=ifc, circulation=Graph, normals=normals.normals, cellcomplex=dummy_cell
+            file=ifc,
+            circulation=Graph,
+            normals=normals.normals,
+            cellcomplex=dummy_cell,
+            elevations={3.15: 2},
         )
         self.wall = molior_object.GetTraceIfc(
-            "default",  # style
-            "internal",  # condition
-            2,  # level
-            3.15,  # elevation
-            2.85,  # height
-            paths[0],  # chain
+            stylename="default",
+            condition="internal",
+            elevation=3.15,
+            height=2.85,
+            chain=paths[0],
         )[0]
 
         self.wall.populate_interior_openings(0, "living", "living", 0)

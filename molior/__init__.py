@@ -48,6 +48,8 @@ from molior.ifc import (
     createTessellation_fromMesh,
 )
 from topologist.helpers import string_to_coor_2d
+import topologist.ushell as ushell
+import topologist.ugraph as ugraph
 
 run = ifcopenshell.api.run
 
@@ -75,19 +77,17 @@ class Molior:
                 body_context = item
         for condition in self.traces:
             for elevation in self.traces[condition]:
-                level = self.elevations[elevation]
                 for height in self.traces[condition][elevation]:
                     for stylename in self.traces[condition][elevation][height]:
                         for chain in self.traces[condition][elevation][height][
                             stylename
                         ]:
                             self.GetTraceIfc(
-                                stylename,
-                                condition,
-                                level,
-                                elevation,
-                                height,
-                                chain,
+                                stylename=stylename,
+                                condition=condition,
+                                elevation=elevation,
+                                height=height,
+                                chain=chain,
                             )
         for condition in self.hulls:
             for stylename in self.hulls[condition]:
@@ -546,16 +546,16 @@ class Molior:
 
     def GetTraceIfc(
         self,
-        stylename,
-        condition,
-        level,
-        elevation,
-        height,
-        chain,
+        stylename="default",
+        condition="external",
+        elevation=0.0,
+        height=2.7,
+        chain=ugraph.graph(),
     ):
         """Retrieves IFC data and adds to model"""
         results = []
         myconfig = Molior.style.get(stylename)
+        level = self.elevations[elevation]
         for name in myconfig["traces"]:
             config = myconfig["traces"][name]
             if "condition" in config and config["condition"] == condition:
@@ -602,7 +602,7 @@ class Molior:
                 results.append(part)
         return results
 
-    def GetHullIfc(self, stylename, condition, hull):
+    def GetHullIfc(self, stylename="default", condition="panel", hull=ushell.shell()):
         """Retrieves IFC data and adds to model"""
         results = []
         myconfig = Molior.style.get(stylename)
