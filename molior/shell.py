@@ -82,7 +82,9 @@ class Shell(BaseClass):
                 product=element,
                 relating_object=aggregate,
             )
-            self.add_topology_pset(element, *face[2])
+            self.add_topology_pset(
+                element, face[2]["face"], face[2]["back_cell"], face[2]["front_cell"]
+            )
 
             # generate space boundary for back cell
             boundary = run(
@@ -100,7 +102,7 @@ class Shell(BaseClass):
             boundary.InternalOrExternalBoundary = "EXTERNAL"
             boundary.RelatedBuildingElement = element
 
-            cell_index = face[2][1].Get("index")
+            cell_index = face[2]["back_cell"].Get("index")
             if cell_index != None:
                 # can't assign psets to an IfcRelationship, use Description instead
                 boundary.Description = "CellIndex " + str(cell_index)
@@ -118,7 +120,12 @@ class Shell(BaseClass):
                 name=self.identifier,
                 predefined_type="SHELL",
             )
-            self.add_topology_pset(structural_surface, *face[2])
+            self.add_topology_pset(
+                structural_surface,
+                face[2]["face"],
+                face[2]["back_cell"],
+                face[2]["front_cell"],
+            )
             structural_surface.Thickness = self.thickness
             run(
                 "structural.assign_structural_analysis_model",

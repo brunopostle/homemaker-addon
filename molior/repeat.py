@@ -219,9 +219,9 @@ class Repeat(TraceClass):
                         assignment.RelatingProduct = structural_member
                         assignment.RelatedObjects = [entity]
                         segment = self.chain.edges()[id_segment]
-                        face = self.chain.graph[segment[0]][1][2]
-                        back_cell = self.chain.graph[segment[0]][1][3]
-                        front_cell = self.chain.graph[segment[0]][1][4]
+                        face = self.chain.graph[segment[0]][1]["face"]
+                        back_cell = self.chain.graph[segment[0]][1]["back_cell"]
+                        front_cell = self.chain.graph[segment[0]][1]["front_cell"]
                         self.add_topology_pset(
                             structural_member, face, back_cell, front_cell
                         )

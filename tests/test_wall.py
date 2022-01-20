@@ -34,13 +34,15 @@ class Tests(unittest.TestCase):
             {
                 coor_1: [
                     coor_2,
-                    [
-                        vertex_1,
-                        vertex_2,
-                        Face.ByVertices([vertex_1, vertex_2, vertex_5, vertex_4]),
-                        None,
-                        None,
-                    ],
+                    {
+                        "start_vertex": vertex_1,
+                        "end_vertex": vertex_2,
+                        "face": Face.ByVertices(
+                            [vertex_1, vertex_2, vertex_5, vertex_4]
+                        ),
+                        "back_cell": None,
+                        "front_cell": None,
+                    },
                 ]
             }
         )
@@ -48,13 +50,15 @@ class Tests(unittest.TestCase):
             {
                 coor_0: [
                     coor_1,
-                    [
-                        vertex_0,
-                        vertex_1,
-                        Face.ByVertices([vertex_0, vertex_1, vertex_4, vertex_3]),
-                        None,
-                        None,
-                    ],
+                    {
+                        "start_vertex": vertex_0,
+                        "end_vertex": vertex_1,
+                        "face": Face.ByVertices(
+                            [vertex_0, vertex_1, vertex_4, vertex_3]
+                        ),
+                        "back_cell": None,
+                        "front_cell": None,
+                    },
                 ]
             }
         )

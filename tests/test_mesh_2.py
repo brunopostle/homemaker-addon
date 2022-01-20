@@ -197,11 +197,11 @@ class Tests(unittest.TestCase):
         # self.assertEqual(data[1].GetType(), 1)  # Vertex == 1
         # self.assertEqual(data[2].GetType(), 8)  # Face == 8
         # self.assertEqual(data[3].GetType(), 32)  # Cell == 32
-        self.assertEqual(data[4], None)  # no outer Cell
-        faces_ptr = data[0].Faces_Cached(self.cc)
+        self.assertEqual(data["front_cell"], None)  # no outer Cell
+        faces_ptr = data["start_vertex"].Faces_Cached(self.cc)
         self.assertEqual(len(faces_ptr), 3)  # vertex is connected to 3 faces
         faces_ptr = []
-        data[2].AdjacentFaces(self.cc, faces_ptr)
+        data["face"].AdjacentFaces(self.cc, faces_ptr)
         self.assertEqual(len(faces_ptr), 6)  # face is connected to 6 faces
 
         upper = traces_external[10.0][10.0]["default"]
@@ -219,9 +219,9 @@ class Tests(unittest.TestCase):
             self.assertEqual(len(graph.edges()), 1)
             for edge in graph.edges():
                 data = graph.get_edge_data(edge)
-                start = data[0]
-                end = data[1]
-                face = data[2]
+                start = data["start_vertex"]
+                end = data["end_vertex"]
+                face = data["face"]
                 self.assertEqual(start.X(), 10.0)
                 self.assertEqual(start.Y(), 10.0)
                 self.assertEqual(start.Z(), 0.0)

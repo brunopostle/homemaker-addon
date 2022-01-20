@@ -158,7 +158,18 @@ def Perimeter(self, host_topology):
             if not cell.IsSame(self):
                 outer_cell = cell
         graph.add_edge(
-            {start_coor: [end_coor, [refs[0], refs[1], refs[2], self, outer_cell]]}
+            {
+                start_coor: [
+                    end_coor,
+                    {
+                        "start_vertex": refs[0],
+                        "end_vertex": refs[1],
+                        "face": refs[2],
+                        "back_cell": self,
+                        "front_cell": outer_cell,
+                    },
+                ]
+            }
         )
     # returning the first cycle will do weird things with doughnut shaped rooms
     return graph.find_paths()[0]

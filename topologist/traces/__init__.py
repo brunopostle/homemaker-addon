@@ -72,7 +72,18 @@ class Traces:
         end_coor = edge[1].CoorAsString()
 
         traces[label][elevation][height][stylename].add_edge(
-            {start_coor: [end_coor, [edge[0], edge[1], face, cells[1], cells[0]]]}
+            {
+                start_coor: [
+                    end_coor,
+                    {
+                        "start_vertex": edge[0],
+                        "end_vertex": edge[1],
+                        "face": face,
+                        "back_cell": cells[1],
+                        "front_cell": cells[0],
+                    },
+                ]
+            }
         )
 
     def add_axis_simple(self, label, elevation, height, stylename, edge, face, cells):
@@ -81,7 +92,18 @@ class Traces:
         end_coor = edge[1].CoorAsString()
         graph = ugraph.graph()
         graph.add_edge(
-            {start_coor: [end_coor, [edge[0], edge[1], face, cells[1], cells[0]]]}
+            {
+                start_coor: [
+                    end_coor,
+                    {
+                        "start_vertex": edge[0],
+                        "end_vertex": edge[1],
+                        "face": face,
+                        "back_cell": cells[1],
+                        "front_cell": cells[0],
+                    },
+                ]
+            }
         )
         self.add_trace(label, elevation, height, stylename, graph)
 

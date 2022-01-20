@@ -105,16 +105,30 @@ def AxisOuter(self):
             start_coor = edge.StartVertex().CoorAsString()
             end_coor = edge.EndVertex().CoorAsString()
             unordered.add_edge(
-                {start_coor: [end_coor, [edge.StartVertex(), edge.EndVertex(), self]]}
+                {
+                    start_coor: [
+                        end_coor,
+                        {
+                            "start_vertex": edge.StartVertex(),
+                            "end_vertex": edge.EndVertex(),
+                        },
+                    ]
+                }
             )
         ordered = unordered.find_chains()[0]
         ordered_edges = ordered.edges()
         first_edge = ordered_edges[0][0]
         last_edge = ordered_edges[-1][0]
         if self.Get("badnormal"):
-            return [ordered.graph[first_edge][1][1], ordered.graph[last_edge][1][0]]
+            return [
+                ordered.graph[first_edge][1]["end_vertex"],
+                ordered.graph[last_edge][1]["start_vertex"],
+            ]
         else:
-            return [ordered.graph[first_edge][1][0], ordered.graph[last_edge][1][1]]
+            return [
+                ordered.graph[first_edge][1]["start_vertex"],
+                ordered.graph[last_edge][1]["end_vertex"],
+            ]
 
 
 def AxisOuterTop(self):
@@ -127,16 +141,30 @@ def AxisOuterTop(self):
             start_coor = edge.StartVertex().CoorAsString()
             end_coor = edge.EndVertex().CoorAsString()
             unordered.add_edge(
-                {start_coor: [end_coor, [edge.StartVertex(), edge.EndVertex(), self]]}
+                {
+                    start_coor: [
+                        end_coor,
+                        {
+                            "start_vertex": edge.StartVertex(),
+                            "end_vertex": edge.EndVertex(),
+                        },
+                    ]
+                }
             )
         ordered = unordered.find_chains()[0]
         ordered_edges = ordered.edges()
         first_edge = ordered_edges[0][0]
         last_edge = ordered_edges[-1][0]
         if self.Get("badnormal"):
-            return [ordered.graph[last_edge][1][0], ordered.graph[first_edge][1][1]]
+            return [
+                ordered.graph[last_edge][1]["start_vertex"],
+                ordered.graph[first_edge][1]["end_vertex"],
+            ]
         else:
-            return [ordered.graph[last_edge][1][1], ordered.graph[first_edge][1][0]]
+            return [
+                ordered.graph[last_edge][1]["end_vertex"],
+                ordered.graph[first_edge][1]["start_vertex"],
+            ]
 
 
 @lru_cache(maxsize=256)

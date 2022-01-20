@@ -44,7 +44,7 @@ class Floor(TraceClass):
                 body_context = item
 
         # every node in the graph references the cell, pick one
-        cell = self.chain.graph[next(iter(self.chain.graph))][1][3]
+        cell = self.chain.graph[next(iter(self.chain.graph))][1]["back_cell"]
 
         # with stairs we want a Virtual Element instead of a Slab
         if (

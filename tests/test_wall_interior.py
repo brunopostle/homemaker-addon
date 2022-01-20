@@ -27,8 +27,20 @@ class Tests(unittest.TestCase):
 
         face = Face.ByVertices([vertex_0, vertex_1, vertex_2, vertex_3])
         # a real wall would have a Face and one or two Cells
-        # string: [string, [Vertex, Vertex, Face, Cell, Cell]]
-        trace.add_edge({coor_0: [coor_1, [vertex_0, vertex_1, face, None, None]]})
+        trace.add_edge(
+            {
+                coor_0: [
+                    coor_1,
+                    {
+                        "start_vertex": vertex_0,
+                        "end_vertex": vertex_1,
+                        "face": face,
+                        "back_cell": None,
+                        "front_cell": None,
+                    },
+                ]
+            }
+        )
         paths = trace.find_paths()
 
         ifc = molior.ifc.init("Our House", {3.15: 2})

@@ -93,11 +93,11 @@ class Wall(TraceClass):
             )
 
             segment = self.chain.edges()[id_segment]
-            face = self.chain.graph[segment[0]][1][2]
+            face = self.chain.graph[segment[0]][1]["face"]
             vertices_ptr = []
-            self.chain.graph[segment[0]][1][2].VerticesPerimeter(vertices_ptr)
+            self.chain.graph[segment[0]][1]["face"].VerticesPerimeter(vertices_ptr)
             vertices = [vertex.Coordinates() for vertex in vertices_ptr]
-            normal = self.chain.graph[segment[0]][1][2].Normal()
+            normal = self.chain.graph[segment[0]][1]["face"].Normal()
 
             # generate space boundaries
             boundaries = []
@@ -252,8 +252,8 @@ class Wall(TraceClass):
                 ]
             )
 
-            back_cell = self.chain.graph[segment[0]][1][3]
-            front_cell = self.chain.graph[segment[0]][1][4]
+            back_cell = self.chain.graph[segment[0]][1]["back_cell"]
+            front_cell = self.chain.graph[segment[0]][1]["front_cell"]
             self.add_topology_pset(mywall, face, back_cell, front_cell)
 
             # structure
@@ -564,19 +564,13 @@ class Wall(TraceClass):
             edges = self.chain.edges()
             for id_segment in range(len(self.openings)):
                 edge = self.chain.graph[edges[id_segment][0]]
-                # edge = {
-                #     string_coor_start: [
-                #         string_coor_end,
-                #         [Vertex_start, Vertex_end, Face, Cell_left, Cell_right],
-                #     ]
-                # }
-                face = edge[1][2]
+                face = edge[1]["face"]
                 try:
-                    interior_type = edge[1][3].Usage()
+                    interior_type = edge[1]["back_cell"].Usage()
                 except:
                     interior_type = None
                 try:
-                    exterior_type = edge[1][4].Usage()
+                    exterior_type = edge[1]["front_cell"].Usage()
                 except:
                     exterior_type = None
                 access = 0
@@ -588,12 +582,16 @@ class Wall(TraceClass):
                 self.fix_gable(id_segment)
         elif "do_populate_interior_openings" in self.__dict__:
             edge = self.chain.graph[self.chain.edges()[0][0]]
-            face = edge[1][2]
+            face = edge[1]["face"]
             vertex = face.GraphVertex(self.circulation)
             # FIXME determine door orientation
-            if vertex is not None and edge[1][3] is not None and edge[1][4] is not None:
+            if (
+                vertex is not None
+                and edge[1]["back_cell"] is not None
+                and edge[1]["front_cell"] is not None
+            ):
                 self.populate_interior_openings(
-                    0, edge[1][3].Usage(), edge[1][4].Usage(), 0
+                    0, edge[1]["back_cell"].Usage(), edge[1]["front_cell"].Usage(), 0
                 )
                 self.fix_heights(0)
                 self.fix_segment(0)
@@ -1077,7 +1075,7 @@ class Wall(TraceClass):
         if len(openings) == 0:
             return
         segment = self.chain.edges()[id_segment]
-        face = self.chain.graph[segment[0]][1][2]
+        face = self.chain.graph[segment[0]][1]["face"]
 
         edges_ptr = []
         face.EdgesCrop(edges_ptr)

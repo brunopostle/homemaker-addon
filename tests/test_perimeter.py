@@ -74,11 +74,15 @@ class Tests(unittest.TestCase):
             if len(perimeter.nodes()) == 3:
                 self.assertEqual(len(perimeter.edges()), 3)
                 for vertex in perimeter.nodes():
-                    self.assertEqual(perimeter.graph[vertex][1][0].Z(), 0.0)
+                    self.assertEqual(
+                        perimeter.graph[vertex][1]["start_vertex"].Z(), 0.0
+                    )
             if len(perimeter.nodes()) == 4:
                 self.assertEqual(len(perimeter.edges()), 4)
                 for vertex in perimeter.nodes():
-                    self.assertEqual(perimeter.graph[vertex][1][0].Z(), 10.0)
+                    self.assertEqual(
+                        perimeter.graph[vertex][1]["start_vertex"].Z(), 10.0
+                    )
 
 
 if __name__ == "__main__":

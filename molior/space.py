@@ -36,7 +36,7 @@ class Space(TraceClass):
             if item.ContextIdentifier == "Body":
                 body_context = item
         # the cell is the first cell attached to any edge in the chain
-        cell = self.chain.graph[next(iter(self.chain.graph))][1][3]
+        cell = self.chain.graph[next(iter(self.chain.graph))][1]["back_cell"]
 
         element = run(
             "root.create_entity",
