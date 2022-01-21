@@ -56,8 +56,8 @@ class Traces:
     def __init__(self):
         self.traces = {}
 
-    def add_axis(self, label, elevation, height, stylename, edge, face, cells):
-        """edge is two Vertices, add to graph, will split into distinct graphs later"""
+    def add_axis(self, label, elevation, height, stylename, vertices, face, cells):
+        """add an edge defined by two vertices to graph, will split into distinct graphs later"""
         traces = self.traces
         if not label in traces:
             traces[label] = {}
@@ -68,16 +68,13 @@ class Traces:
         if not stylename in traces[label][elevation][height]:
             traces[label][elevation][height][stylename] = ugraph.graph()
 
-        start_coor = edge[0].CoorAsString()
-        end_coor = edge[1].CoorAsString()
-
         traces[label][elevation][height][stylename].add_edge(
             {
-                start_coor: [
-                    end_coor,
+                vertices[0].CoorAsString(): [
+                    vertices[1].CoorAsString(),
                     {
-                        "start_vertex": edge[0],
-                        "end_vertex": edge[1],
+                        "start_vertex": vertices[0],
+                        "end_vertex": vertices[1],
                         "face": face,
                         "back_cell": cells[1],
                         "front_cell": cells[0],
@@ -86,18 +83,18 @@ class Traces:
             }
         )
 
-    def add_axis_simple(self, label, elevation, height, stylename, edge, face, cells):
-        """edge is two vertices, add as a simple single edge graph"""
-        start_coor = edge[0].CoorAsString()
-        end_coor = edge[1].CoorAsString()
+    def add_axis_simple(
+        self, label, elevation, height, stylename, vertices, face, cells
+    ):
+        """append a graph consisting of a single edge defined by two vertices"""
         graph = ugraph.graph()
         graph.add_edge(
             {
-                start_coor: [
-                    end_coor,
+                vertices[0].CoorAsString(): [
+                    vertices[1].CoorAsString(),
                     {
-                        "start_vertex": edge[0],
-                        "end_vertex": edge[1],
+                        "start_vertex": vertices[0],
+                        "end_vertex": vertices[1],
                         "face": face,
                         "back_cell": cells[1],
                         "front_cell": cells[0],
