@@ -45,7 +45,7 @@ from molior.geometry import subtract_3d, x_product_3d
 from molior.ifc import (
     assign_space_byindex,
     assign_storey_byindex,
-    createTessellation_fromMesh,
+    create_tessellation_from_mesh,
 )
 from topologist.helpers import string_to_coor_2d
 import topologist.ushell as ushell
@@ -82,7 +82,7 @@ class Molior:
                         for chain in self.traces[condition][elevation][height][
                             stylename
                         ]:
-                            self.GetTraceIfc(
+                            self.get_trace_ifc(
                                 stylename=stylename,
                                 condition=condition,
                                 elevation=elevation,
@@ -92,7 +92,7 @@ class Molior:
         for condition in self.hulls:
             for stylename in self.hulls[condition]:
                 for hull in self.hulls[condition][stylename]:
-                    self.GetHullIfc(
+                    self.get_hull_ifc(
                         stylename,
                         condition,
                         hull,
@@ -167,7 +167,7 @@ class Molior:
                         body_context,
                         body_context.ContextIdentifier,
                         "Tessellation",
-                        [createTessellation_fromMesh(self.file, *cell.Mesh())],
+                        [create_tessellation_from_mesh(self.file, *cell.Mesh())],
                     )
                     run(
                         "geometry.assign_representation",
@@ -544,7 +544,7 @@ class Molior:
                                 self.file, element, pset_topology["BackCellIndex"]
                             )
 
-    def GetTraceIfc(
+    def get_trace_ifc(
         self,
         stylename="default",
         condition="external",
@@ -602,7 +602,7 @@ class Molior:
                 results.append(part)
         return results
 
-    def GetHullIfc(self, stylename="default", condition="panel", hull=ushell.shell()):
+    def get_hull_ifc(self, stylename="default", condition="panel", hull=ushell.shell()):
         """Retrieves IFC data and adds to model"""
         results = []
         myconfig = Molior.style.get(stylename)

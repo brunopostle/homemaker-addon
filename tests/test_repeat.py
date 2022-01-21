@@ -90,7 +90,7 @@ class Tests(unittest.TestCase):
         molior_object = Molior(
             file=ifc, circulation=None, normals=normals.normals, elevations={3.15: 2}
         )
-        self.repeat = molior_object.GetTraceIfc(
+        self.repeat = molior_object.get_trace_ifc(
             stylename="fancy",
             condition="top-backward-up",
             elevation=3.15,
@@ -147,7 +147,7 @@ class Tests(unittest.TestCase):
         molior_object = Molior(
             file=ifc, circulation=None, normals=normals.normals, elevations={3.15: 2}
         )
-        self.repeat2 = molior_object.GetTraceIfc(
+        self.repeat2 = molior_object.get_trace_ifc(
             stylename="fancy",
             condition="top-backward-up",
             elevation=3.15,

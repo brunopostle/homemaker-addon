@@ -95,7 +95,7 @@ class Tests(unittest.TestCase):
             cellcomplex=dummy_cell,
             elevations={3.15: 2, 6.15: 3},
         )
-        self.space = molior_object.GetTraceIfc(
+        self.space = molior_object.get_trace_ifc(
             stylename="default",
             condition="kitchen",
             elevation=3.15,
@@ -103,7 +103,7 @@ class Tests(unittest.TestCase):
             chain=paths[0],
         )
 
-        self.space2 = molior_object.GetTraceIfc(
+        self.space2 = molior_object.get_trace_ifc(
             stylename="default",
             condition="kitchen",
             elevation=6.15,
@@ -111,7 +111,7 @@ class Tests(unittest.TestCase):
             chain=paths[0],
         )
 
-        self.stair = molior_object.GetTraceIfc(
+        self.stair = molior_object.get_trace_ifc(
             stylename="default",
             condition="stair",
             elevation=3.15,

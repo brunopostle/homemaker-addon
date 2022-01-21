@@ -16,13 +16,13 @@ from molior.geometry import (
     map_to_2d,
 )
 from molior.ifc import (
-    createExtrudedAreaSolid,
-    clipSolid,
-    createFaceSurface,
+    create_extruded_area_solid,
+    clip_solid,
+    create_face_surface,
     assign_representation_fromDXF,
     assign_storey_byindex,
     get_material_by_name,
-    createCurveBoundedPlane,
+    create_curve_bounded_plane,
 )
 
 run = ifcopenshell.api.run
@@ -102,7 +102,9 @@ class Wall(TraceClass):
             # generate space boundaries
             boundaries = []
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
-            curve_bounded_plane = createCurveBoundedPlane(self.file, nodes_2d, matrix)
+            curve_bounded_plane = create_curve_bounded_plane(
+                self.file, nodes_2d, matrix
+            )
             for cell in face.CellsOrdered(self.cellcomplex):
                 if cell == None:
                     boundaries.append(None)
@@ -168,7 +170,7 @@ class Wall(TraceClass):
             v_in_b = self.corner_in(id_segment + 1)
 
             # wall is a plan shape extruded vertically
-            solid = createExtrudedAreaSolid(
+            solid = create_extruded_area_solid(
                 self.file,
                 [
                     transform(matrix_reverse, vertex)
@@ -257,7 +259,7 @@ class Wall(TraceClass):
             self.add_topology_pset(mywall, face, back_cell, front_cell)
 
             # structure
-            face_surface = createFaceSurface(self.file, vertices, normal)
+            face_surface = create_face_surface(self.file, vertices, normal)
             # generate structural surfaces
             structural_surface = run(
                 "root.create_entity",
@@ -310,7 +312,7 @@ class Wall(TraceClass):
             for edge in edges_ptr:
                 start_coor = transform(matrix_reverse, edge.StartVertex().Coordinates())
                 end_coor = transform(matrix_reverse, edge.EndVertex().Coordinates())
-                solid = clipSolid(
+                solid = clip_solid(
                     self.file,
                     solid,
                     subtract_3d(
@@ -328,7 +330,7 @@ class Wall(TraceClass):
                     )
                     < 0.001
                 ):
-                    solid = clipSolid(
+                    solid = clip_solid(
                         self.file,
                         solid,
                         subtract_3d(
@@ -349,7 +351,7 @@ class Wall(TraceClass):
                     )
                     < 0.001
                 ):
-                    solid = clipSolid(
+                    solid = clip_solid(
                         self.file,
                         solid,
                         subtract_3d(
@@ -480,7 +482,7 @@ class Wall(TraceClass):
                         body_context.ContextIdentifier,
                         "SweptSolid",
                         [
-                            createExtrudedAreaSolid(
+                            create_extruded_area_solid(
                                 self.file,
                                 [
                                     [0.0, outer],
@@ -525,7 +527,7 @@ class Wall(TraceClass):
                     [*left_2d, soffit],
                 ]
                 nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
-                curve_bounded_plane = createCurveBoundedPlane(
+                curve_bounded_plane = create_curve_bounded_plane(
                     self.file, nodes_2d, matrix
                 )
                 cell_id = 0

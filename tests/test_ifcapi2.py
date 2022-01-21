@@ -8,7 +8,7 @@ import ifcopenshell.api
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior.ifc
 from molior.ifc import (
-    createExtrudedAreaSolid,
+    create_extruded_area_solid,
     assign_representation_fromDXF,
     assign_storey_byindex,
 )
@@ -65,7 +65,7 @@ class Tests(unittest.TestCase):
                 "Body",
                 "SweptSolid",
                 [
-                    createExtrudedAreaSolid(
+                    create_extruded_area_solid(
                         ifc,
                         [[0.0, -0.25], [12.0, -0.25], [12.0, 0.08], [0.0, 0.08]],
                         4.0,
@@ -103,7 +103,7 @@ class Tests(unittest.TestCase):
                 "Body",
                 "SweptSolid",
                 [
-                    createExtrudedAreaSolid(
+                    create_extruded_area_solid(
                         ifc, [[0.5, -1.0], [5.5, -1.0], [5.5, 1.0], [0.5, 1.0]], 2.545
                     )
                 ],
@@ -173,7 +173,7 @@ class Tests(unittest.TestCase):
                 "Body",
                 "SweptSolid",
                 [
-                    createExtrudedAreaSolid(
+                    create_extruded_area_solid(
                         ifc, [[0.5, -1.0], [5.5, -1.0], [5.5, 1.0], [0.5, 1.0]], 2.545
                     )
                 ],

@@ -4,8 +4,8 @@ import numpy
 from molior.baseclass import TraceClass
 from molior.geometry import matrix_align
 from molior.ifc import (
-    createExtrudedAreaSolid,
-    createTessellation_fromMesh,
+    create_extruded_area_solid,
+    create_tessellation_from_mesh,
     assign_storey_byindex,
 )
 
@@ -72,7 +72,7 @@ class Space(TraceClass):
         if not self.do_representation:
             return
         # simple extruded representation
-        representation = createExtrudedAreaSolid(
+        representation = create_extruded_area_solid(
             self.file,
             [self.corner_in(index) for index in range(len(self.path))],
             self.height - self.ceiling,
@@ -87,7 +87,7 @@ class Space(TraceClass):
             vertices = [
                 [v[0], v[1], v[2] - self.elevation - self.floor] for v in vertices
             ]
-            tessellation = createTessellation_fromMesh(self.file, vertices, faces)
+            tessellation = create_tessellation_from_mesh(self.file, vertices, faces)
             representation = self.file.createIfcBooleanResult(
                 "INTERSECTION", representation, tessellation
             )

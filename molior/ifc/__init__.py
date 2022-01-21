@@ -67,11 +67,11 @@ def init(building_name, elevations):
     # create and relate site and building
     site = run("root.create_entity", file, ifc_class="IfcSite", name="My Site")
     run("aggregate.assign_object", file, product=site, relating_object=project)
-    createBuilding(file, site, building_name, elevations)
+    create_building(file, site, building_name, elevations)
     return file
 
 
-def createBuilding(self, site, building_name, elevations):
+def create_building(self, site, building_name, elevations):
     """Add a building to an IfcSite"""
     building = run(
         "root.create_entity", self, ifc_class="IfcBuilding", name=building_name
@@ -100,7 +100,7 @@ def createBuilding(self, site, building_name, elevations):
     return building
 
 
-def createExtrudedAreaSolid(self, profile, height, direction=[0.0, 0.0, 1.0]):
+def create_extruded_area_solid(self, profile, height, direction=[0.0, 0.0, 1.0]):
     """A simple vertically extruded profile"""
     if not profile[-1] == profile[0]:
         # a closed polyline has first and last points coincident
@@ -122,7 +122,7 @@ def createExtrudedAreaSolid(self, profile, height, direction=[0.0, 0.0, 1.0]):
     )
 
 
-def clipSolid(self, solid, start, end):
+def clip_solid(self, solid, start, end):
     """Clip a wall using a half-space solid"""
     vector = subtract_3d(end, start)
     perp_plan = normalise_3d([0 - vector[1], vector[0], 0.0])
@@ -158,7 +158,7 @@ def clipSolid(self, solid, start, end):
     )
 
 
-def createCurveBoundedPlane(self, polygon, matrix):
+def create_curve_bounded_plane(self, polygon, matrix):
     """Create a bounded shape in the Z=0 plane"""
     return self.createIfcCurveBoundedPlane(
         self.createIfcPlane(
@@ -175,7 +175,7 @@ def createCurveBoundedPlane(self, polygon, matrix):
     )
 
 
-def createFaceSurface(self, polygon, normal):
+def create_face_surface(self, polygon, normal):
     """Create a single-face shape"""
     surface = self.createIfcPlane(
         self.createIfcAxis2Placement3D(
@@ -296,7 +296,7 @@ def assign_extrusion_fromDXF(
     )
 
 
-def createTessellations_fromDXF(self, path_dxf):
+def create_tessellations_from_dxf(self, path_dxf):
     """Create Tessellations given a DXF filepath"""
     doc = ezdxf.readfile(path_dxf)
     model = doc.modelspace()
@@ -308,7 +308,7 @@ def createTessellations_fromDXF(self, path_dxf):
             vertices, faces = entity.indexed_faces()
 
             tessellations.append(
-                createTessellation_fromMesh(
+                create_tessellation_from_mesh(
                     self,
                     [vertex.dxf.location for vertex in vertices],
                     [face.indices for face in faces],
@@ -317,7 +317,7 @@ def createTessellations_fromDXF(self, path_dxf):
     return tessellations
 
 
-def createTessellation_fromMesh(self, vertices, faces):
+def create_tessellation_from_mesh(self, vertices, faces):
     """Create a Tessellation from vertex coordinates and faces"""
     pointlist = self.createIfcCartesianPointList3D(vertices)
     indexedfaces = [
@@ -402,7 +402,7 @@ def get_type_by_dxf(self, subcontext, ifc_type, stylename, path_dxf):
         subcontext,
         subcontext.ContextIdentifier,
         "Tessellation",
-        createTessellations_fromDXF(self, path_dxf),
+        create_tessellations_from_dxf(self, path_dxf),
     )
     type_product = run(
         "root.create_entity",

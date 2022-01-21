@@ -5,9 +5,9 @@ from topologic import Cell, CellComplex
 from molior.baseclass import TraceClass
 from molior.geometry import matrix_align, map_to_2d
 from molior.ifc import (
-    createExtrudedAreaSolid,
-    createCurveBoundedPlane,
-    createFaceSurface,
+    create_extruded_area_solid,
+    create_curve_bounded_plane,
+    create_face_surface,
     assign_storey_byindex,
     get_material_by_name,
 )
@@ -94,10 +94,10 @@ class Floor(TraceClass):
                 # need this for boundaries
                 nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
                 # need this for structure
-                face_surface = createFaceSurface(self.file, vertices, normal)
+                face_surface = create_face_surface(self.file, vertices, normal)
 
                 # generate space boundaries
-                curve_bounded_plane = createCurveBoundedPlane(
+                curve_bounded_plane = create_curve_bounded_plane(
                     self.file, nodes_2d, matrix
                 )
                 for cell in face.CellsOrdered(self.cellcomplex):
@@ -203,7 +203,7 @@ class Floor(TraceClass):
             body_context.ContextIdentifier,
             "SweptSolid",
             [
-                createExtrudedAreaSolid(
+                create_extruded_area_solid(
                     self.file,
                     [self.corner_in(index) for index in range(len(self.path))],
                     self.thickness,

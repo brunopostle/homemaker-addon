@@ -4,9 +4,9 @@ from topologist.helpers import string_to_coor, el
 from molior.baseclass import BaseClass
 from molior.geometry import map_to_2d
 from molior.ifc import (
-    createExtrudedAreaSolid,
-    createCurveBoundedPlane,
-    createFaceSurface,
+    create_extruded_area_solid,
+    create_curve_bounded_plane,
+    create_face_surface,
     assign_storey_byindex,
     get_material_by_name,
 )
@@ -65,7 +65,7 @@ class Shell(BaseClass):
             # need this for boundaries
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
             # need this for structure
-            face_surface = createFaceSurface(self.file, vertices, normal)
+            face_surface = create_face_surface(self.file, vertices, normal)
             for vertex in vertices:
                 if elevation == None or vertex[2] < elevation:
                     elevation = el(vertex[2])
@@ -93,7 +93,7 @@ class Shell(BaseClass):
                 ifc_class="IfcRelSpaceBoundary2ndLevel",
             )
             boundary.ConnectionGeometry = self.file.createIfcConnectionSurfaceGeometry(
-                createCurveBoundedPlane(self.file, nodes_2d, matrix)
+                create_curve_bounded_plane(self.file, nodes_2d, matrix)
             )
             if element.is_a("IfcVirtualElement"):
                 boundary.PhysicalOrVirtualBoundary = "VIRTUAL"
@@ -197,7 +197,7 @@ class Shell(BaseClass):
                 "Body",
                 "SweptSolid",
                 [
-                    createExtrudedAreaSolid(
+                    create_extruded_area_solid(
                         self.file,
                         nodes_2d,
                         extrude_height,

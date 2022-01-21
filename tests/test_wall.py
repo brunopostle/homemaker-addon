@@ -73,7 +73,7 @@ class Tests(unittest.TestCase):
             cellcomplex=dummy_cell,
             elevations={3.15: 2},
         )
-        self.wall = molior_object.GetTraceIfc(
+        self.wall = molior_object.get_trace_ifc(
             stylename="default",
             condition="external",
             elevation=3.15,

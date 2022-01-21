@@ -8,8 +8,8 @@ import ifcopenshell.api
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior.ifc
 from molior.ifc import (
-    createExtrudedAreaSolid,
-    createTessellations_fromDXF,
+    create_extruded_area_solid,
+    create_tessellations_from_dxf,
     assign_storey_byindex,
 )
 from molior.geometry import matrix_transform, matrix_align
@@ -50,7 +50,11 @@ class Tests(unittest.TestCase):
             body_context,
             "Body",
             "SweptSolid",
-            [createExtrudedAreaSolid(ifc, [[0.0, 0.0], [5.0, 0.0], [5.0, 4.0]], 3.0)],
+            [
+                create_extruded_area_solid(
+                    ifc, [[0.0, 0.0], [5.0, 0.0], [5.0, 4.0]], 3.0
+                )
+            ],
         )
         slab = run("root.create_entity", ifc, ifc_class="IfcSlab", name="My Slab")
         run("geometry.assign_representation", ifc, product=slab, representation=shape)
@@ -67,7 +71,7 @@ class Tests(unittest.TestCase):
             body_context,
             "Body",
             "Tessellation",
-            createTessellations_fromDXF(ifc, "molior/style/share/shopfront.dxf"),
+            create_tessellations_from_dxf(ifc, "molior/style/share/shopfront.dxf"),
         )
 
         # create a mapped item that can be reused
@@ -202,7 +206,7 @@ class Tests(unittest.TestCase):
                 "Body",
                 "SweptSolid",
                 [
-                    createExtrudedAreaSolid(
+                    create_extruded_area_solid(
                         ifc, [[0.0, -0.25], [6.0, -0.25], [6.0, 0.08], [0.0, 0.08]], 4.0
                     )
                 ],
@@ -239,7 +243,7 @@ class Tests(unittest.TestCase):
                 "Body",
                 "SweptSolid",
                 [
-                    createExtrudedAreaSolid(
+                    create_extruded_area_solid(
                         ifc, [[0.5, -1.0], [5.5, -1.0], [5.5, 1.0], [0.5, 1.0]], 2.545
                     )
                 ],

@@ -7,7 +7,7 @@ import unittest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import ifcopenshell
 import molior.ifc
-from molior.ifc import createExtrudedAreaSolid
+from molior.ifc import create_extruded_area_solid
 
 run = ifcopenshell.api.run
 
@@ -48,7 +48,7 @@ class Tests(unittest.TestCase):
             "Body",
             "SweptSolid",
             [
-                createExtrudedAreaSolid(
+                create_extruded_area_solid(
                     self.file, [[0.0, 0.0], [5.0, 0.0], [5.0, 4.0]], 3.0
                 )
             ],
