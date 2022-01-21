@@ -7,9 +7,9 @@ import unittest
 from topologic import Vertex, Face, Cell, CellComplex, Graph
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from topologist.helpers import el
+import topologist.face
 
-el(42)
+assert topologist.face
 
 
 class Tests(unittest.TestCase):

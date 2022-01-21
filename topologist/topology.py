@@ -38,7 +38,7 @@ def FacesHorizontal(self, faces_ptr):
 
 def FacesInclined(self, faces_ptr):
     if self.__class__ == Vertex:
-        # FIXME Topologic segfaults if self is a Vertex
+        # Faces() is for searching sub-topologies and a Vertex has none
         return
     elements_ptr = []
     self.Faces(None, elements_ptr)

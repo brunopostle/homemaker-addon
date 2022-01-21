@@ -7,7 +7,9 @@ import unittest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from topologic import Vertex, StringAttribute
-from topologist.helpers import el
+import topologist.vertex
+
+assert topologist.vertex
 
 
 class Tests(unittest.TestCase):
@@ -31,7 +33,6 @@ class Tests(unittest.TestCase):
         retrieved_dictionary.Add(self.other_key, other_value)
         # add a copy of this amended dictionary to self.my_vertex
         self.my_vertex.SetDictionary(retrieved_dictionary)
-        el(1)
 
     def test_dictionary(self):
         """read"""
