@@ -42,7 +42,11 @@ from molior.repeat import Repeat
 
 from molior.style import Style
 from molior.geometry import subtract_3d, x_product_3d
+import molior.ifc
 from molior.ifc import (
+    create_site,
+    create_building,
+    create_storeys,
     assign_space_byindex,
     assign_storey_byindex,
     create_tessellation_from_mesh,
@@ -69,6 +73,16 @@ class Molior:
         for arg in args:
             self.__dict__[arg] = args[arg]
         Molior.style = Style({"share_dir": self.share_dir})
+
+    def add_building(self, building_name, elevations):
+        """Create and relate Site, Building and Storey Spatial Element products"""
+        if self.file == None:
+            self.file = molior.ifc.init("My Project")
+        self.project = self.file.by_type("IfcProject")[0]
+        self.site = create_site(self.file, self.project, "Site " + building_name)
+        self.building = create_building(self.file, self.site, building_name)
+        self.elevations = elevations
+        create_storeys(self.file, self.building, elevations)
 
     def execute(self):
         """Iterate through 'traces' and 'hulls' and populate an ifc 'file' object"""

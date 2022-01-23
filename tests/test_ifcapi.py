@@ -8,6 +8,9 @@ import ifcopenshell.api
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior.ifc
 from molior.ifc import (
+    create_site,
+    create_building,
+    create_storeys,
     create_extruded_area_solid,
     create_tessellations_from_dxf,
     assign_storey_byindex,
@@ -19,12 +22,17 @@ run = ifcopenshell.api.run
 
 class Tests(unittest.TestCase):
     def setUp(self):
-        ifc = molior.ifc.init("Building Name", {0.0: 0})
+        ifc = molior.ifc.init("My Project")
         for item in ifc.by_type("IfcGeometricRepresentationSubContext"):
             if item.ContextIdentifier == "Body":
                 body_context = item
             if item.ContextIdentifier == "Axis":
                 axis_context = item
+
+        project = ifc.by_type("IfcProject")[0]
+        site = create_site(ifc, project, "My Site")
+        building = create_building(ifc, site, "My Building")
+        create_storeys(ifc, building, {0.0: 0})
 
         # a centreline axis
         poly = ifc.createIfcShapeRepresentation(

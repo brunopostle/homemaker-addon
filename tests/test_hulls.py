@@ -118,16 +118,16 @@ class Tests(unittest.TestCase):
 
     def test_ifc(self):
         traces, hulls, normals, elevations = self.cc.GetTraces()
-        ifc = molior.ifc.init("My House", elevations)
+        ifc = molior.ifc.init("My Project")
         molior_object = Molior(
             file=ifc,
             circulation=None,
-            elevations=elevations,
             traces=traces,
             hulls=hulls,
             normals=normals,
             cellcomplex=self.cc,
         )
+        molior_object.add_building("My House", elevations)
         molior_object.execute()
         ifc.write("_test.ifc")
 

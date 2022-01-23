@@ -7,7 +7,12 @@ import ifcopenshell.api
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior.ifc
-from molior.ifc import assign_storey_byindex
+from molior.ifc import (
+    create_site,
+    create_building,
+    create_storeys,
+    assign_storey_byindex,
+)
 from molior.geometry import matrix_align
 
 run = ifcopenshell.api.run
@@ -15,10 +20,15 @@ run = ifcopenshell.api.run
 
 class Tests(unittest.TestCase):
     def setUp(self):
-        ifc = molior.ifc.init("Our House", {0.0: 2})
+        ifc = molior.ifc.init("Our Project")
         for item in ifc.by_type("IfcGeometricRepresentationSubContext"):
             if item.ContextIdentifier == "Body":
                 body_context = item
+
+        project = ifc.by_type("IfcProject")[0]
+        site = create_site(ifc, project, "My Site")
+        building = create_building(ifc, site, "My Building")
+        create_storeys(ifc, building, {0.0: 2})
 
         # geometry for an unclipped wall
         shape = ifc.createIfcExtrudedAreaSolid(

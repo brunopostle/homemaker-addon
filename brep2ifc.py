@@ -15,7 +15,6 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 from topologic import Graph, Topology, Vertex, CellComplex, TopologyUtility
 from molior import Molior
-import molior.ifc
 
 print("Start", datetime.datetime.now())
 brep_file = open(sys.argv[1], "r")
@@ -47,19 +46,15 @@ print("Circulation Graph generated", datetime.datetime.now())
 traces, hulls, normals, elevations = cc.GetTraces()
 print("Traces calculated", datetime.datetime.now())
 
-# generate an IFC object
-ifc = molior.ifc.init("brep2ifc building", elevations)
-
 molior_object = Molior(
-    file=ifc,
     circulation=circulation,
-    elevations=elevations,
     traces=traces,
     hulls=hulls,
     normals=normals,
     cellcomplex=cc,
 )
+molior_object.add_building("brep2ifc building", elevations)
 molior_object.execute()
 print("IFC model created", datetime.datetime.now())
 
-ifc.write(sys.argv[2])
+molior_object.file.write(sys.argv[2])

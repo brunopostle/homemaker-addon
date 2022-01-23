@@ -43,15 +43,15 @@ class Tests(unittest.TestCase):
         )
         paths = trace.find_paths()
 
-        ifc = molior.ifc.init("Our House", {3.15: 2})
+        ifc = molior.ifc.init("Our Project")
 
         molior_object = Molior(
             file=ifc,
             circulation=Graph,
             normals=normals.normals,
             cellcomplex=dummy_cell,
-            elevations={3.15: 2},
         )
+        molior_object.add_building("My House", {3.15: 2})
         self.wall = molior_object.get_trace_ifc(
             stylename="default",
             condition="internal",

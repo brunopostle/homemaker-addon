@@ -14,7 +14,7 @@ run = ifcopenshell.api.run
 
 class Tests(unittest.TestCase):
     def setUp(self):
-        self.file = molior.ifc.init("Our House", {3.15: 2})
+        self.file = molior.ifc.init("Our Project")
         for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
             if item.ContextIdentifier == "Body":
                 self.body_context = item

@@ -28,8 +28,6 @@ class Tests(unittest.TestCase):
 
         dummy_cell = Vertex.ByCoordinates(0.0, 0.0, 0.0)
 
-        # a real wall would have a Face and one or two Cells
-        # string: [string, [Vertex, Vertex, Face, Cell, Cell]]
         trace.add_edge(
             {
                 coor_1: [
@@ -64,15 +62,15 @@ class Tests(unittest.TestCase):
         )
         paths = trace.find_paths()
 
-        self.ifc = molior.ifc.init("Our House", {3.15: 2})
+        self.ifc = molior.ifc.init("My Project")
 
         molior_object = Molior(
             file=self.ifc,
             circulation=None,
             normals=normals.normals,
             cellcomplex=dummy_cell,
-            elevations={3.15: 2},
         )
+        molior_object.add_building("My House", {3.15: 2})
         self.wall = molior_object.get_trace_ifc(
             stylename="default",
             condition="external",

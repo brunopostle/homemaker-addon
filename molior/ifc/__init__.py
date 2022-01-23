@@ -19,18 +19,18 @@ from molior.geometry import (
 run = ifcopenshell.api.run
 
 
-def init(building_name, elevations):
+def init(project_name):
     """Creates and sets up an ifc 'file' object"""
     file = run("project.create_file")
 
     run("owner.add_person", file)
     run("owner.add_organisation", file)
 
-    project = run(
+    run(
         "root.create_entity",
         file,
         ifc_class="IfcProject",
-        name="My Project",
+        name=project_name,
     )
 
     run("unit.assign_unit", file, length={"is_metric": True, "raw": "METERS"})
@@ -64,19 +64,27 @@ def init(building_name, elevations):
     # create a structural model
     run("structural.add_structural_analysis_model", file)
 
-    # create and relate site and building
-    site = run("root.create_entity", file, ifc_class="IfcSite", name="My Site")
-    run("aggregate.assign_object", file, product=site, relating_object=project)
-    create_building(file, site, building_name, elevations)
     return file
 
 
-def create_building(self, site, building_name, elevations):
-    """Add a building to an IfcSite"""
+def create_site(self, project, site_name):
+    """Add a Site to a Project"""
+    site = run("root.create_entity", self, ifc_class="IfcSite", name=site_name)
+    run("aggregate.assign_object", self, product=site, relating_object=project)
+    return site
+
+
+def create_building(self, site, building_name):
+    """Add a Building to a Site"""
     building = run(
         "root.create_entity", self, ifc_class="IfcBuilding", name=building_name
     )
     run("aggregate.assign_object", self, product=building, relating_object=site)
+    return building
+
+
+def create_storeys(self, building, elevations):
+    """Add Storey Spatial Elements to a Building, given a dictionary of elevations/name"""
     if elevations == {}:
         elevations[0.0] = 0
     for elevation in sorted(elevations):
@@ -97,7 +105,6 @@ def create_building(self, site, building_name, elevations):
             product=mystorey,
             matrix=matrix_align([0.0, 0.0, elevation], [1.0, 0.0, 0.0]),
         )
-    return building
 
 
 def create_extruded_area_solid(self, profile, height, direction=[0.0, 0.0, 1.0]):

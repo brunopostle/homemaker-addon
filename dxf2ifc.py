@@ -15,7 +15,6 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 from topologic import Graph, Vertex, Face, FaceUtility, CellComplex
 from molior import Molior
-import molior.ifc
 import ezdxf
 from pyinstrument import Profiler
 
@@ -51,22 +50,18 @@ circulation.Circulation(cc)
 # Traces are 2D paths that define walls, extrusions and rooms
 traces, hulls, normals, elevations = cc.GetTraces()
 
-# generate an IFC object
-ifc = molior.ifc.init("dxf2ifc building", elevations)
-
 molior_object = Molior(
-    file=ifc,
     circulation=circulation,
-    elevations=elevations,
     traces=traces,
     hulls=hulls,
     normals=normals,
     cellcomplex=cc,
 )
+molior_object.add_building("dxf2ifc building", elevations)
 molior_object.execute()
 
 profiler.stop()
 
-ifc.write(sys.argv[2])
+molior_object.file.write(sys.argv[2])
 
 print(profiler.output_text(unicode=True, color=True))

@@ -123,22 +123,18 @@ def homemaker(faces_ptr, widgets, name, user_share_dir):
     # Collect unique elevations and assign storey numbers
     traces, hulls, normals, elevations = cc.GetTraces()
 
-    # generate an IFC object
-    ifc = molior.ifc.init(name, elevations)
-
     # TODO enable user defined location for share_dir
     molior_object = Molior(
-        file=ifc,
         circulation=circulation,
-        elevations=elevations,
         traces=traces,
         hulls=hulls,
         normals=normals,
         cellcomplex=cc,
     )
+    molior_object.add_building(name, elevations)
     molior_object.execute()
 
-    return ifc
+    return molior_object.file
 
 
 def topologic_faces_from_blender_object(blender_object):
