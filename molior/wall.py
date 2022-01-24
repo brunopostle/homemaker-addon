@@ -566,11 +566,10 @@ class Wall(TraceClass):
             edges = self.chain.edges()
             for id_segment in range(len(self.openings)):
                 edge = self.chain.graph[edges[id_segment][0]]
-                face = edge[1]["face"]
                 try:
                     interior_type = edge[1]["back_cell"].Usage()
                 except:
-                    interior_type = None
+                    interior_type = "living"
                 try:
                     exterior_type = edge[1]["front_cell"].Usage()
                 except:

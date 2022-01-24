@@ -88,25 +88,25 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.wall.__dict__["class"], "Wall")
 
     def test_query(self):
-        self.assertEqual(self.wall.length_openings(0), 2.0)
-        self.assertEqual(self.wall.length_openings(1), 4.1)
+        self.assertAlmostEqual(self.wall.length_openings(0), 3.22)
+        self.assertAlmostEqual(self.wall.length_openings(1), 3.22)
         self.assertAlmostEqual(self.wall.border(0)[0], 0.08)
         self.assertAlmostEqual(self.wall.border(0)[1], 0.08)
         self.assertAlmostEqual(self.wall.border(1)[0], 0.08)
         self.assertAlmostEqual(self.wall.border(1)[1], 0.08)
 
     def test_align_openings(self):
-        self.assertEqual(self.wall.openings[0][0]["along"], 1.0)
+        self.assertAlmostEqual(self.wall.openings[0][0]["along"], 0.545)
         self.wall.align_openings(0)
-        self.assertEqual(self.wall.openings[0][0]["along"], 1.0)
-        self.assertEqual(self.wall.openings[1][0]["along"], 0.25)
+        self.assertAlmostEqual(self.wall.openings[0][0]["along"], 0.545)
+        self.assertAlmostEqual(self.wall.openings[1][0]["along"], 0.795)
         self.wall.align_openings(1)
-        self.assertEqual(self.wall.openings[1][0]["along"], 0.25)
+        self.assertAlmostEqual(self.wall.openings[1][0]["along"], 0.795)
 
     def test_fix_overlaps(self):
-        self.assertEqual(len(self.wall.openings[0]), 1)
+        self.assertEqual(len(self.wall.openings[0]), 2)
         self.wall.fix_overlaps(0)
-        self.assertEqual(self.wall.openings[0][0]["along"], 1.0)
+        self.assertAlmostEqual(self.wall.openings[0][0]["along"], 0.545)
 
         self.wall.openings[0].append(
             {"name": "toilet outside door", "along": 2.5, "size": 0}
@@ -114,35 +114,35 @@ class Tests(unittest.TestCase):
         self.wall.openings[0].append(
             {"name": "toilet outside door", "along": 0.5, "size": 0}
         )
-        self.assertEqual(self.wall.openings[0][1]["along"], 2.5)
-        self.assertEqual(self.wall.openings[0][2]["along"], 0.5)
+        self.assertEqual(self.wall.openings[0][1]["along"], 2.545)
+        self.assertEqual(self.wall.openings[0][2]["along"], 2.5)
 
         self.wall.fix_overlaps(0)
-        self.assertEqual(self.wall.openings[0][0]["along"], 1.0)
-        self.assertEqual(self.wall.openings[0][1]["along"], 3.1)
-        self.assertAlmostEqual(self.wall.openings[0][2]["along"], 4.2)
+        self.assertAlmostEqual(self.wall.openings[0][0]["along"], 0.545)
+        self.assertEqual(self.wall.openings[0][1]["along"], 2.545)
+        self.assertAlmostEqual(self.wall.openings[0][2]["along"], 4.255)
 
         self.wall.fix_overrun(0)
-        self.assertAlmostEqual(self.wall.openings[0][0]["along"], -0.28)
-        self.assertAlmostEqual(self.wall.openings[0][1]["along"], 1.82)
-        self.assertAlmostEqual(self.wall.openings[0][2]["along"], 2.92)
+        self.assertAlmostEqual(self.wall.openings[0][0]["along"], -1.89)
+        self.assertAlmostEqual(self.wall.openings[0][1]["along"], 0.11)
+        self.assertAlmostEqual(self.wall.openings[0][2]["along"], 1.82)
 
         self.wall.fix_underrun(0)
-        self.assertAlmostEqual(self.wall.openings[0][0]["along"], -0.28)
+        self.assertAlmostEqual(self.wall.openings[0][0]["along"], -1.6)
 
         self.wall.align_openings(0)
-        self.assertEqual(self.wall.openings[0][1]["along"], 1.5)
+        self.assertEqual(self.wall.openings[0][1]["along"], 1.045)
 
     def test_fix_segment(self):
         self.wall.fix_segment(0)
-        self.assertEqual(self.wall.openings[0][0]["along"], 1.0)
+        self.assertAlmostEqual(self.wall.openings[0][0]["along"], 0.545)
 
         self.wall.fix_segment(1)
-        self.assertEqual(self.wall.openings[1][0]["along"], 0.25)
-        self.assertEqual(self.wall.openings[1][1]["along"], 2.75)
+        self.assertAlmostEqual(self.wall.openings[1][0]["along"], 0.795)
+        self.assertEqual(self.wall.openings[1][1]["along"], 3.295)
 
     def test_fix_heights(self):
-        self.assertEqual(self.wall.openings[0][0]["size"], 3)
+        self.assertEqual(self.wall.openings[0][0]["size"], 6)
         self.wall.fix_heights(0)
         self.assertEqual(self.wall.openings[0][0]["size"], 3)
 
