@@ -185,14 +185,15 @@ class TraceClass(BaseClass):
         if not self.closed and index in (len(self.path) - 1, 0):
             coor = self.corner_coor(index)
             string = str(coor[0]) + "__" + str(coor[1]) + "__" + str(self.elevation)
-            normal_map = self.normals[self.normal_set]
-            if self.condition == "external" and string in normal_map:
-                # we have a stashed normal for this corner
-                line_mitre = points_2line(coor, add_2d(coor, normal_map[string]))
-                if index == len(self.path) - 1:
-                    return line_intersection(line_a, line_mitre)
-                if index == 0:
-                    return line_intersection(line_b, line_mitre)
+            if self.normal_set in self.normals:
+                normal_map = self.normals[self.normal_set]
+                if self.condition == "external" and string in normal_map:
+                    # we have a stashed normal for this corner
+                    line_mitre = points_2line(coor, add_2d(coor, normal_map[string]))
+                    if index == len(self.path) - 1:
+                        return line_intersection(line_a, line_mitre)
+                    if index == 0:
+                        return line_intersection(line_b, line_mitre)
 
             if index == len(self.path) - 1:
                 return add_2d(self.corner_coor(index), offset_a)

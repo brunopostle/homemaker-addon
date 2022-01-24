@@ -51,7 +51,6 @@ from molior.ifc import (
     assign_storey_byindex,
     create_tessellation_from_mesh,
 )
-from topologist.helpers import string_to_coor_2d
 import topologist.ushell as ushell
 import topologist.ugraph as ugraph
 
@@ -569,7 +568,9 @@ class Molior:
         """Retrieves IFC data and adds to model"""
         results = []
         myconfig = Molior.style.get(stylename)
-        level = self.elevations[elevation]
+        level = 0
+        if elevation in self.elevations:
+            level = self.elevations[elevation]
         for name in myconfig["traces"]:
             config = myconfig["traces"][name]
             if "condition" in config and config["condition"] == condition:
@@ -577,8 +578,13 @@ class Molior:
                 if chain.is_simple_cycle():
                     closed = 1
                 path = []
-                for node in chain.nodes():
-                    path.append(string_to_coor_2d(node))
+                for node in chain.graph:
+                    path.append(chain.graph[node][1]["start_vertex"].Coordinates()[0:2])
+                if not closed:
+                    last_node = list(chain.graph)[-1]
+                    path.append(
+                        chain.graph[last_node][1]["end_vertex"].Coordinates()[0:2]
+                    )
                 normal_set = "bottom"
                 if re.search("^top-", condition):
                     normal_set = "top"

@@ -41,13 +41,14 @@ def CellsOrdered(self, host_topology):
         centroid[2] - (normal[2] / 10),
     )
 
-    cells_ptr = self.Cells_Cached(host_topology)
     results = [None, None]
-    for cell in cells_ptr:
-        if CellUtility.Contains(cell, vertex_front, 0.001) == 0:
-            results[0] = cell
-        elif CellUtility.Contains(cell, vertex_back, 0.001) == 0:
-            results[1] = cell
+    if host_topology:
+        cells_ptr = self.Cells_Cached(host_topology)
+        for cell in cells_ptr:
+            if CellUtility.Contains(cell, vertex_front, 0.001) == 0:
+                results[0] = cell
+            elif CellUtility.Contains(cell, vertex_back, 0.001) == 0:
+                results[1] = cell
     return results
 
 
