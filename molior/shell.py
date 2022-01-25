@@ -102,10 +102,11 @@ class Shell(BaseClass):
             boundary.InternalOrExternalBoundary = "EXTERNAL"
             boundary.RelatedBuildingElement = element
 
-            cell_index = face[2]["back_cell"].Get("index")
-            if cell_index != None:
-                # can't assign psets to an IfcRelationship, use Description instead
-                boundary.Description = "CellIndex " + str(cell_index)
+            if face[2]["back_cell"]:
+                cell_index = face[2]["back_cell"].Get("index")
+                if cell_index != None:
+                    # can't assign psets to an IfcRelationship, use Description instead
+                    boundary.Description = "CellIndex " + str(cell_index)
 
             if element.is_a("IfcVirtualElement"):
                 continue

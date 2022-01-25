@@ -73,13 +73,13 @@ class Molior:
             self.__dict__[arg] = args[arg]
         Molior.style = Style({"share_dir": self.share_dir})
 
-    def add_building(self, building_name, elevations):
-        """Create and relate Site, Building and Storey Spatial Element products"""
+    def add_building(self, name="Homemaker Building", elevations={}):
+        """Create and relate Site, Building and Storey Spatial Element products, set as current building"""
         if self.file == None:
-            self.file = molior.ifc.init("My Project")
+            self.file = molior.ifc.init()
         self.project = self.file.by_type("IfcProject")[0]
-        self.site = create_site(self.file, self.project, "Site " + building_name)
-        self.building = create_building(self.file, self.site, building_name)
+        site = create_site(self.file, self.project, "Site " + name)
+        self.building = create_building(self.file, site, name)
         self.elevations = elevations
         create_storeys(self.file, self.building, elevations)
 
@@ -95,7 +95,7 @@ class Molior:
                         for chain in self.traces[condition][elevation][height][
                             stylename
                         ]:
-                            self.get_trace_ifc(
+                            self.build_trace(
                                 stylename=stylename,
                                 condition=condition,
                                 elevation=elevation,
@@ -105,10 +105,10 @@ class Molior:
         for condition in self.hulls:
             for stylename in self.hulls[condition]:
                 for hull in self.hulls[condition][stylename]:
-                    self.get_hull_ifc(
-                        stylename,
-                        condition,
-                        hull,
+                    self.build_hull(
+                        stylename=stylename,
+                        condition=condition,
+                        hull=hull,
                     )
 
         # use the topologic model to connect stuff
@@ -557,7 +557,7 @@ class Molior:
                                 self.file, element, pset_topology["BackCellIndex"]
                             )
 
-    def get_trace_ifc(
+    def build_trace(
         self,
         stylename="default",
         condition="external",
@@ -622,7 +622,7 @@ class Molior:
                 results.append(part)
         return results
 
-    def get_hull_ifc(self, stylename="default", condition="panel", hull=ushell.shell()):
+    def build_hull(self, stylename="default", condition="panel", hull=ushell.shell()):
         """Retrieves IFC data and adds to model"""
         results = []
         myconfig = Molior.style.get(stylename)

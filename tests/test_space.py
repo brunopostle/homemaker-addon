@@ -86,7 +86,7 @@ class Tests(unittest.TestCase):
         )
         paths = trace.find_paths()
 
-        ifc = molior.ifc.init("Our Project")
+        ifc = molior.ifc.init(name="Our Project")
 
         molior_object = Molior(
             file=ifc,
@@ -94,8 +94,8 @@ class Tests(unittest.TestCase):
             normals=normals.normals,
             cellcomplex=dummy_cell,
         )
-        molior_object.add_building("Our House", {3.15: 2, 6.15: 3})
-        self.space = molior_object.get_trace_ifc(
+        molior_object.add_building(name="Our House", elevations={3.15: 2, 6.15: 3})
+        self.space = molior_object.build_trace(
             stylename="default",
             condition="kitchen",
             elevation=3.15,
@@ -103,7 +103,7 @@ class Tests(unittest.TestCase):
             chain=paths[0],
         )
 
-        self.space2 = molior_object.get_trace_ifc(
+        self.space2 = molior_object.build_trace(
             stylename="default",
             condition="kitchen",
             elevation=6.15,
@@ -111,7 +111,7 @@ class Tests(unittest.TestCase):
             chain=paths[0],
         )
 
-        self.stair = molior_object.get_trace_ifc(
+        self.stair = molior_object.build_trace(
             stylename="default",
             condition="stair",
             elevation=3.15,

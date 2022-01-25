@@ -85,11 +85,11 @@ class Tests(unittest.TestCase):
         )
         paths = trace.find_paths()
 
-        ifc = molior.ifc.init("Our Project")
+        ifc = molior.ifc.init(name="Our Project")
 
         molior_object = Molior(file=ifc, circulation=None, normals=normals.normals)
-        molior_object.add_building("My House", {3.15: 2})
-        self.extrusion = molior_object.get_trace_ifc(
+        molior_object.add_building(name="My House", elevations={3.15: 2})
+        self.extrusion = molior_object.build_trace(
             stylename="default",
             condition="top-backward-up",
             elevation=3.15,
@@ -146,7 +146,7 @@ class Tests(unittest.TestCase):
         molior_object = Molior(
             file=ifc, circulation=None, normals=normals.normals, elevations={3.15: 2}
         )
-        self.extrusion2 = molior_object.get_trace_ifc(
+        self.extrusion2 = molior_object.build_trace(
             stylename="default",
             condition="top-backward-level",
             elevation=3.15,

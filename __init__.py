@@ -131,7 +131,7 @@ def homemaker(faces_ptr, widgets, name, user_share_dir):
         normals=normals,
         cellcomplex=cc,
     )
-    molior_object.add_building(name, elevations)
+    molior_object.add_building(name=name, elevations=elevations)
     molior_object.execute()
 
     return molior_object.file

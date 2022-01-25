@@ -19,7 +19,7 @@ from molior.geometry import (
 run = ifcopenshell.api.run
 
 
-def init(project_name):
+def init(name="Homemaker Project"):
     """Creates and sets up an ifc 'file' object"""
     file = run("project.create_file")
 
@@ -30,7 +30,7 @@ def init(project_name):
         "root.create_entity",
         file,
         ifc_class="IfcProject",
-        name=project_name,
+        name=name,
     )
 
     run("unit.assign_unit", file, length={"is_metric": True, "raw": "METERS"})
