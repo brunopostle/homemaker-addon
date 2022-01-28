@@ -85,9 +85,6 @@ class Molior:
 
     def execute(self):
         """Iterate through 'traces' and 'hulls' and populate an ifc 'file' object"""
-        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
-            if item.ContextIdentifier == "Body":
-                body_context = item
         for condition in self.traces:
             for elevation in self.traces[condition]:
                 for height in self.traces[condition][elevation]:
@@ -129,8 +126,6 @@ class Molior:
             # lookup tables to connect members to face indices
             surface_lookup = {}
             curve_list = []
-            space_lookup = {}
-            cell_lookup = {}
             for member in self.file.by_type("IfcStructuralSurfaceMember"):
                 member.ObjectPlacement = structural_placement
                 pset_topology = ifcopenshell.util.element.get_psets(member).get(
@@ -146,56 +141,7 @@ class Molior:
                 if pset_topology:
                     curve_list.append([pset_topology["FaceIndex"], member])
 
-            # create Space elements for non-habitable 'void' cells
-            cells_ptr = []
-            self.cellcomplex.Cells(None, cells_ptr)
-            for cell in cells_ptr:
-                cell_lookup[cell.Get("index")] = cell
-                if cell.Get("usage") == "void":
-                    topology_index = cell.Get("index")
-                    element = run(
-                        "root.create_entity",
-                        self.file,
-                        ifc_class="IfcSpace",
-                        name="void-space/" + topology_index,
-                    )
-                    pset = run(
-                        "pset.add_pset",
-                        self.file,
-                        product=element,
-                        name="EPset_Topology",
-                    )
-                    run(
-                        "pset.edit_pset",
-                        self.file,
-                        pset=pset,
-                        properties={"CellIndex": topology_index},
-                    )
-                    elevation = cell.Elevation()
-                    level = 0
-                    if elevation in self.elevations:
-                        level = self.elevations[elevation]
-                    assign_storey_byindex(self.file, element, level)
-                    shape = self.file.createIfcShapeRepresentation(
-                        body_context,
-                        body_context.ContextIdentifier,
-                        "Tessellation",
-                        [create_tessellation_from_mesh(self.file, *cell.Mesh())],
-                    )
-                    run(
-                        "geometry.assign_representation",
-                        self.file,
-                        product=element,
-                        representation=shape,
-                    )
-
             # TODO create Wall entities for internal non-vertical/horizontal faces
-            for space in self.file.by_type("IfcSpace"):
-                pset_topology = ifcopenshell.util.element.get_psets(space).get(
-                    "EPset_Topology"
-                )
-                if pset_topology:
-                    space_lookup[pset_topology["CellIndex"]] = space
 
             # iterate all the edges in the topologic model
             edges_ptr = []
@@ -482,80 +428,143 @@ class Molior:
                         )
                     run("root.remove_product", self.file, product=curve_connection)
 
-            # attach spaces to space boundaries
-            for boundary in self.file.by_type("IfcRelSpaceBoundary2ndLevel"):
-                if boundary.Description:
-                    items = boundary.Description.split()
-                    if len(items) == 2 and items[0] == "CellIndex":
-                        if items[1] in space_lookup:
-                            boundary.RelatingSpace = space_lookup[items[1]]
-                            # there ought to be a better way..
-                            storey_elevation = boundary.RelatingSpace.Decomposes[
-                                0
-                            ].RelatingObject.Elevation
-                            coor = (
-                                boundary.ConnectionGeometry.SurfaceOnRelatingElement.BasisSurface.Position.Location.Coordinates
-                            )
-                            boundary.ConnectionGeometry.SurfaceOnRelatingElement.BasisSurface.Position.Location.Coordinates = (
-                                coor[0],
-                                coor[1],
-                                coor[2] - storey_elevation,
-                            )
+        self.connect_spaces()
 
-            # attach Slab elements to relevant Space
-            for element in self.file.by_type("IfcSlab"):
-                pset_topology = ifcopenshell.util.element.get_psets(element).get(
-                    "EPset_Topology"
-                )
-                if pset_topology:
-                    assign_space_byindex(self.file, element, pset_topology["CellIndex"])
+    def connect_spaces(self):
+        """Given objects and boundaries are tagged with Topologic indexes, assign them to correct spaces"""
+        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
+            if item.ContextIdentifier == "Body":
+                body_context = item
 
-            # attach Window elements to relevant Space
-            for element in self.file.by_type("IfcWindow"):
-                pset_topology = ifcopenshell.util.element.get_psets(element).get(
-                    "EPset_Topology"
+        space_lookup = {}
+        for space in self.file.by_type("IfcSpace"):
+            pset_topology = ifcopenshell.util.element.get_psets(space).get(
+                "EPset_Topology"
+            )
+            if pset_topology:
+                space_lookup[pset_topology["CellIndex"]] = space
+
+        # create Space elements for Cells that don't already have one
+        cells_ptr = []
+        self.cellcomplex.Cells(None, cells_ptr)
+        for cell in cells_ptr:
+            topology_index = cell.Get("index")
+            if not topology_index == None and topology_index in space_lookup:
+                continue
+            else:
+                element = run(
+                    "root.create_entity",
+                    self.file,
+                    ifc_class="IfcSpace",
+                    name="void-space/" + str(topology_index),
                 )
-                if pset_topology:
+                if not topology_index == None:
+                    space_lookup[topology_index] = element
+                    pset = run(
+                        "pset.add_pset",
+                        self.file,
+                        product=element,
+                        name="EPset_Topology",
+                    )
+                    run(
+                        "pset.edit_pset",
+                        self.file,
+                        pset=pset,
+                        properties={"CellIndex": topology_index},
+                    )
+                elevation = cell.Elevation()
+                level = 0
+                if elevation in self.elevations:
+                    level = self.elevations[elevation]
+                assign_storey_byindex(self.file, element, level)
+                shape = self.file.createIfcShapeRepresentation(
+                    body_context,
+                    body_context.ContextIdentifier,
+                    "Tessellation",
+                    [create_tessellation_from_mesh(self.file, *cell.Mesh())],
+                )
+                run(
+                    "geometry.assign_representation",
+                    self.file,
+                    product=element,
+                    representation=shape,
+                )
+
+        # attach spaces to space boundaries
+        for boundary in self.file.by_type("IfcRelSpaceBoundary2ndLevel"):
+            if boundary.Description:
+                items = boundary.Description.split()
+                if len(items) == 2 and items[0] == "CellIndex":
+                    if items[1] in space_lookup:
+                        # FIXME Boundary of void Space gets misplaced
+                        boundary.RelatingSpace = space_lookup[items[1]]
+                        # there ought to be a better way..
+                        storey_elevation = boundary.RelatingSpace.Decomposes[
+                            0
+                        ].RelatingObject.Elevation
+                        coor = (
+                            boundary.ConnectionGeometry.SurfaceOnRelatingElement.BasisSurface.Position.Location.Coordinates
+                        )
+                        boundary.ConnectionGeometry.SurfaceOnRelatingElement.BasisSurface.Position.Location.Coordinates = (
+                            coor[0],
+                            coor[1],
+                            coor[2] - storey_elevation,
+                        )
+
+        # attach Slab elements to relevant Space
+        for element in self.file.by_type("IfcSlab"):
+            pset_topology = ifcopenshell.util.element.get_psets(element).get(
+                "EPset_Topology"
+            )
+            if pset_topology:
+                assign_space_byindex(self.file, element, pset_topology["CellIndex"])
+
+        # attach Window elements to relevant Space
+        for element in self.file.by_type("IfcWindow"):
+            pset_topology = ifcopenshell.util.element.get_psets(element).get(
+                "EPset_Topology"
+            )
+            if pset_topology:
+                assign_space_byindex(self.file, element, pset_topology["BackCellIndex"])
+
+        cell_lookup = {}
+        cells_ptr = []
+        self.cellcomplex.Cells(None, cells_ptr)
+        for cell in cells_ptr:
+            cell_lookup[cell.Get("index")] = cell
+
+        # attach Door elements to Space
+        for element in self.file.by_type("IfcDoor"):
+            pset_topology = ifcopenshell.util.element.get_psets(element).get(
+                "EPset_Topology"
+            )
+            if pset_topology:
+                if not "FrontCellIndex" in pset_topology or (
+                    "FrontCellIndex" in pset_topology
+                    and cell_lookup[pset_topology["FrontCellIndex"]].IsOutside()
+                ):
                     assign_space_byindex(
                         self.file, element, pset_topology["BackCellIndex"]
                     )
-
-            # attach Door elements to Space
-            for element in self.file.by_type("IfcDoor"):
-                pset_topology = ifcopenshell.util.element.get_psets(element).get(
-                    "EPset_Topology"
-                )
-                if pset_topology:
-                    if not "FrontCellIndex" in pset_topology or (
-                        "FrontCellIndex" in pset_topology
-                        and cell_lookup[pset_topology["FrontCellIndex"]].IsOutside()
+                elif cell_lookup[pset_topology["BackCellIndex"]].IsOutside():
+                    assign_space_byindex(
+                        self.file, element, pset_topology["FrontCellIndex"]
+                    )
+                else:
+                    if cell_lookup[pset_topology["FrontCellIndex"]].Get(
+                        "separation"
+                    ) and float(
+                        cell_lookup[pset_topology["FrontCellIndex"]].Get("separation")
+                    ) > float(
+                        cell_lookup[pset_topology["BackCellIndex"]].Get("separation")
                     ):
-                        assign_space_byindex(
-                            self.file, element, pset_topology["BackCellIndex"]
-                        )
-                    elif cell_lookup[pset_topology["BackCellIndex"]].IsOutside():
                         assign_space_byindex(
                             self.file, element, pset_topology["FrontCellIndex"]
                         )
                     else:
-                        if cell_lookup[pset_topology["FrontCellIndex"]].Get(
-                            "separation"
-                        ) and float(
-                            cell_lookup[pset_topology["FrontCellIndex"]].Get(
-                                "separation"
-                            )
-                        ) > float(
-                            cell_lookup[pset_topology["BackCellIndex"]].Get(
-                                "separation"
-                            )
-                        ):
-                            assign_space_byindex(
-                                self.file, element, pset_topology["FrontCellIndex"]
-                            )
-                        else:
-                            assign_space_byindex(
-                                self.file, element, pset_topology["BackCellIndex"]
-                            )
+                        assign_space_byindex(
+                            self.file, element, pset_topology["BackCellIndex"]
+                        )
 
     def build_trace(
         self,
