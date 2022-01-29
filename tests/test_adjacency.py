@@ -66,6 +66,8 @@ class Tests(unittest.TestCase):
         for face in faces:
             faces_ptr.append(face)
         self.cc = CellComplex.ByFaces(faces_ptr, 0.0001)
+        # Give every Cell and Face an index number
+        self.cc.IndexTopology()
 
     def test_vertices(self):
         graph = Graph.Adjacency(self.cc)

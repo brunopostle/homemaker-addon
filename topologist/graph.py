@@ -7,22 +7,6 @@ from topologic import Graph, VertexUtility
 def Adjacency(cellcomplex):
     """Index all cells and faces, return a circulation graph with the same indexing"""
     """Adjacency graph has nodes for cells, and nodes for faces that connect them"""
-    cells_ptr = []
-    cellcomplex.Cells(None, cells_ptr)
-    index = 0
-    for cell in cells_ptr:
-        cell.Set("index", str(index))
-        cell.Set("class", "Cell")
-        index += 1
-
-    faces_ptr = []
-    cellcomplex.Faces(None, faces_ptr)
-    index = 0
-    for face in faces_ptr:
-        face.Set("index", str(index))
-        face.Set("class", "Face")
-        index += 1
-
     # a graph where each cell and face between them has a vertex
     graph = Graph.ByTopology(
         cellcomplex, False, True, False, False, False, False, 0.0001

@@ -959,6 +959,8 @@ class Tests(unittest.TestCase):
 
         # Generate a Topologic CellComplex
         self.cc = CellComplex.ByFaces(faces_ptr, 0.0001)
+        # Give every Cell and Face an index number
+        self.cc.IndexTopology()
         # Copy styles from Faces to the CellComplex
         self.cc.ApplyDictionary(faces_ptr)
         # Assign Cell usages from widgets

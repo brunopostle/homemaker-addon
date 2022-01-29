@@ -107,6 +107,8 @@ class ObjectHomemaker(bpy.types.Operator):
 def homemaker(faces_ptr, widgets, name, user_share_dir):
     # Generate a Topologic CellComplex
     cc = CellComplex.ByFaces(faces_ptr, 0.0001)
+    # Give every Cell and Face an index number
+    cc.IndexTopology()
     # Copy styles from Faces to the CellComplex
     cc.ApplyDictionary(faces_ptr)
     # Assign Cell usages from widgets

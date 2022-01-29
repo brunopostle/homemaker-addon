@@ -39,6 +39,8 @@ cc = CellComplex.ByFaces(faces_ptr, 0.0001)
 
 profiler.start()
 
+# Give every Cell and Face an index number
+cc.IndexTopology()
 # Copy styles from Faces to the CellComplex
 # cc.ApplyDictionary(faces_ptr)
 # Assign Cell usages from widgets

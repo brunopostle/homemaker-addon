@@ -8,6 +8,24 @@ import topologist.hulls
 import topologist.normals
 
 
+def IndexTopology(self):
+    cells_ptr = []
+    self.Cells(None, cells_ptr)
+    index = 0
+    for cell in cells_ptr:
+        cell.Set("index", str(index))
+        cell.Set("class", "Cell")
+        index += 1
+
+    faces_ptr = []
+    self.Faces(None, faces_ptr)
+    index = 0
+    for face in faces_ptr:
+        face.Set("index", str(index))
+        face.Set("class", "Face")
+        index += 1
+
+
 def AllocateCells(self, widgets):
     """Set cell types using widgets, or default to 'Outside'"""
     cells_ptr = []
@@ -188,6 +206,7 @@ def ApplyDictionary(self, source_faces_ptr):
                 break
 
 
+setattr(topologic.CellComplex, "IndexTopology", IndexTopology)
 setattr(topologic.CellComplex, "AllocateCells", AllocateCells)
 setattr(topologic.CellComplex, "GetTraces", GetTraces)
 setattr(topologic.CellComplex, "ApplyDictionary", ApplyDictionary)

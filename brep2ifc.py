@@ -33,6 +33,8 @@ print(str(len(faces_ptr)), "faces", datetime.datetime.now())
 cc = CellComplex.ByFaces(faces_ptr, 0.0001)
 print("CellComplex created", datetime.datetime.now())
 
+# Give every Cell and Face an index number
+cc.IndexTopology()
 # Copy styles from Faces to the CellComplex
 # cc.ApplyDictionary(faces_ptr)
 # Assign Cell usages from widgets
