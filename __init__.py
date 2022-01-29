@@ -71,7 +71,13 @@ class ObjectHomemaker(bpy.types.Operator):
             blender_object.hide_viewport = True
 
             # generate an ifcopenshell model
-            ifc = homemaker(faces_ptr, widgets, blender_object.name, "")
+            # TODO styles are loaded from share_dir, allow blender user to set custom share_dir path
+            ifc = homemaker(
+                faces_ptr=faces_ptr,
+                widgets=widgets,
+                name=blender_object.name,
+                share_dir="share",
+            )
 
             # delete any IfcProject/* collections, but leave IfcStore intact
             have_project = False
@@ -104,7 +110,7 @@ class ObjectHomemaker(bpy.types.Operator):
         return {"FINISHED"}
 
 
-def homemaker(faces_ptr, widgets, name, user_share_dir):
+def homemaker(faces_ptr=[], widgets=[], name="My Building", share_dir="share"):
     # Generate a Topologic CellComplex
     cc = CellComplex.ByFaces(faces_ptr, 0.0001)
     # Give every Cell and Face an index number
@@ -125,13 +131,13 @@ def homemaker(faces_ptr, widgets, name, user_share_dir):
     # Collect unique elevations and assign storey numbers
     traces, hulls, normals, elevations = cc.GetTraces()
 
-    # TODO enable user defined location for share_dir
     molior_object = Molior(
         circulation=circulation,
         traces=traces,
         hulls=hulls,
         normals=normals,
         cellcomplex=cc,
+        share_dir=share_dir,
     )
     molior_object.add_building(name=name, elevations=elevations)
     molior_object.execute()
