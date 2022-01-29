@@ -62,7 +62,7 @@ class Tests(unittest.TestCase):
         # a simple non-branching graph
         trace = ugraph.graph()
 
-        # retrieve the cells for this face
+        # retrieve the cells for this face if you have a CellComplex
         # back_cell, front_cell = *face.CellsOrdered(cellcomplex)
 
         trace.add_edge(
@@ -104,6 +104,10 @@ class Tests(unittest.TestCase):
             height=face.Height(),
             chain=path,
         )
+
+        # fixup structural and spatial model if you have a CellComplex
+        # self.connect_structure()
+        # self.connect_spaces()
 
     def test_write(self):
         self.ifc.write("_test.ifc")
