@@ -4,7 +4,7 @@ import os
 import sys
 import unittest
 
-from topologic import Vertex, Face, Cell, CellComplex, Graph
+from topologic import Vertex, Face, Cell, CellComplex
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import topologist.face
@@ -70,7 +70,7 @@ class Tests(unittest.TestCase):
         self.cc.IndexTopology()
 
     def test_vertices(self):
-        graph = Graph.Adjacency(self.cc)
+        graph = self.cc.Adjacency()
 
         vertices_ptr = []
         graph.Vertices(vertices_ptr)
@@ -84,7 +84,7 @@ class Tests(unittest.TestCase):
                 self.assertTrue(False)
 
     def test_faces(self):
-        graph = Graph.Adjacency(self.cc)
+        graph = self.cc.Adjacency()
         faces = graph.Faces(self.cc)
         # only three of the fourteen faces are represented in the graph
         self.assertEqual(len(faces), 3)
@@ -99,14 +99,14 @@ class Tests(unittest.TestCase):
             self.assertTrue(face.IsSame(entity))
 
     def test_cells(self):
-        graph = Graph.Adjacency(self.cc)
+        graph = self.cc.Adjacency()
         cells = graph.Cells(self.cc)
         self.assertEqual(len(cells), 3)
         for cell in cells:
             self.assertEqual(type(cell), Cell)
 
     def test_graphvertex(self):
-        graph = Graph.Adjacency(self.cc)
+        graph = self.cc.Adjacency()
         cells_ptr = []
         self.cc.Cells(None, cells_ptr)
         self.assertEqual(len(cells_ptr), 3)
@@ -123,7 +123,7 @@ class Tests(unittest.TestCase):
             self.assertTrue(cell.IsSame(entity))
 
     def test_graphvertex2(self):
-        graph = Graph.Adjacency(self.cc)
+        graph = self.cc.Adjacency()
         faces_ptr = []
         self.cc.Faces(None, faces_ptr)
         self.assertEqual(len(faces_ptr), 14)
@@ -143,11 +143,11 @@ class Tests(unittest.TestCase):
             self.assertTrue(face.IsSame(entity))
 
     def test_isconnected(self):
-        graph = Graph.Adjacency(self.cc)
+        graph = self.cc.Adjacency()
         self.assertTrue(graph.IsConnected())
 
     def test_circulation(self):
-        graph = Graph.Adjacency(self.cc)
+        graph = self.cc.Adjacency()
 
         # 3 faces and 3 cells = 6 vertices
         vertices_ptr = []
@@ -174,14 +174,14 @@ class Tests(unittest.TestCase):
         self.assertTrue(type(dot) == str)
 
     def test_shortest_path(self):
-        graph = Graph.Adjacency(self.cc)
+        graph = self.cc.Adjacency()
         table = graph.ShortestPathTable()
         self.assertEqual(table["0"]["2"], table["2"]["0"])
         self.assertEqual(table["1"]["2"], table["2"]["1"])
         self.assertEqual(table["1"]["0"], table["0"]["1"])
 
     def test_separation(self):
-        graph = Graph.Adjacency(self.cc)
+        graph = self.cc.Adjacency()
         table = graph.ShortestPathTable()
         graph.Separation(table, self.cc)
         vertices_ptr = []

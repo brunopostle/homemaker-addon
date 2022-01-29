@@ -1,7 +1,7 @@
 """Overloads domain-specific methods onto topologic.CellComplex"""
 
 import topologic
-from topologic import FaceUtility, CellUtility
+from topologic import Graph, FaceUtility, CellUtility
 from topologist.helpers import el
 import topologist.traces
 import topologist.hulls
@@ -9,6 +9,7 @@ import topologist.normals
 
 
 def IndexTopology(self):
+    """Index all cells and faces"""
     cells_ptr = []
     self.Cells(None, cells_ptr)
     index = 0
@@ -40,6 +41,12 @@ def AllocateCells(self, widgets):
             if CellUtility.Contains(cell, widget[1], 0.001) == 0:
                 cell.Set("usage", widget[0].lower())
                 break
+
+
+def Adjacency(self):
+    """Adjacency graph has nodes for cells, and nodes for faces that connect them"""
+    # a graph where each cell and face between them has a vertex
+    return Graph.ByTopology(self, False, True, False, False, False, False, 0.0001)
 
 
 # TODO non-horizontal details (gables, arches, ridges and valleys)
@@ -208,5 +215,6 @@ def ApplyDictionary(self, source_faces_ptr):
 
 setattr(topologic.CellComplex, "IndexTopology", IndexTopology)
 setattr(topologic.CellComplex, "AllocateCells", AllocateCells)
+setattr(topologic.CellComplex, "Adjacency", Adjacency)
 setattr(topologic.CellComplex, "GetTraces", GetTraces)
 setattr(topologic.CellComplex, "ApplyDictionary", ApplyDictionary)

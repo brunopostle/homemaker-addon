@@ -13,7 +13,7 @@ import sys, os, datetime
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
-from topologic import Graph, Topology, Vertex, CellComplex, TopologyUtility
+from topologic import Topology, Vertex, CellComplex, TopologyUtility
 from molior import Molior
 
 print("Start", datetime.datetime.now())
@@ -40,7 +40,7 @@ cc.IndexTopology()
 # Assign Cell usages from widgets
 cc.AllocateCells([])
 # Generate a cirulation Graph
-circulation = Graph.Adjacency(cc)
+circulation = cc.Adjacency()
 circulation.Circulation(cc)
 print("Circulation Graph generated", datetime.datetime.now())
 

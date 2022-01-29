@@ -2,7 +2,7 @@
 
 import unittest, sys, os
 
-from topologic import Vertex, Face, CellComplex, Graph
+from topologic import Vertex, Face, CellComplex
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from topologist.fitness import p159_light_on_two_sides_of_every_room
@@ -966,7 +966,7 @@ class Tests(unittest.TestCase):
         # Assign Cell usages from widgets
         self.cc.AllocateCells(widgets)
         # Generate a circulation Graph
-        self.circulation = Graph.Adjacency(self.cc)
+        self.circulation = self.cc.Adjacency()
         self.circulation.Circulation(self.cc)
         self.shortest_path_table = self.circulation.ShortestPathTable()
         self.circulation.Separation(self.shortest_path_table, self.cc)

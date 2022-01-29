@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append("/home/bruno/src/homemaker-addon")
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + "/libs/site/packages"))
 
-from topologic import Vertex, Face, CellComplex, Graph
+from topologic import Vertex, Face, CellComplex
 from molior import Molior
 import molior.ifc
 
@@ -114,7 +114,7 @@ def homemaker(faces_ptr, widgets, name, user_share_dir):
     # Assign Cell usages from widgets
     cc.AllocateCells(widgets)
     # Generate a circulation Graph
-    circulation = Graph.Adjacency(cc)
+    circulation = cc.Adjacency()
     circulation.Circulation(cc)
     circulation.Separation(circulation.ShortestPathTable(), cc)
 

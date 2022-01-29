@@ -1,17 +1,7 @@
 """Overloads domain-specific methods onto topologic.Graph"""
 
 import topologic
-from topologic import Graph, VertexUtility
-
-
-def Adjacency(cellcomplex):
-    """Index all cells and faces, return a circulation graph with the same indexing"""
-    """Adjacency graph has nodes for cells, and nodes for faces that connect them"""
-    # a graph where each cell and face between them has a vertex
-    graph = Graph.ByTopology(
-        cellcomplex, False, True, False, False, False, False, 0.0001
-    )
-    return graph
+from topologic import VertexUtility
 
 
 def Circulation(self, cellcomplex):
@@ -191,7 +181,6 @@ def Dot(self, cellcomplex):
     return string
 
 
-setattr(topologic.Graph, "Adjacency", Adjacency)
 setattr(topologic.Graph, "Circulation", Circulation)
 setattr(topologic.Graph, "IsConnected", IsConnected)
 setattr(topologic.Graph, "ShortestPathTable", ShortestPathTable)

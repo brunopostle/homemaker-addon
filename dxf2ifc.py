@@ -13,7 +13,7 @@ import sys, os
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
-from topologic import Graph, Vertex, Face, FaceUtility, CellComplex
+from topologic import Vertex, Face, FaceUtility, CellComplex
 from molior import Molior
 import ezdxf
 from pyinstrument import Profiler
@@ -46,7 +46,7 @@ cc.IndexTopology()
 # Assign Cell usages from widgets
 cc.AllocateCells([])
 # Generate a cirulation Graph
-circulation = Graph.Adjacency(cc)
+circulation = cc.Adjacency()
 circulation.Circulation(cc)
 
 # Traces are 2D paths that define walls, extrusions and rooms
