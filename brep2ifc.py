@@ -45,7 +45,8 @@ circulation.Circulation(cc)
 print("Circulation Graph generated", datetime.datetime.now())
 
 # Traces are 2D paths that define walls, extrusions and rooms
-traces, hulls, normals, elevations = cc.GetTraces()
+traces, normals, elevations = cc.GetTraces()
+hulls = cc.GetHulls()
 print("Traces calculated", datetime.datetime.now())
 
 molior_object = Molior(

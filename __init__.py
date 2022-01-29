@@ -129,7 +129,8 @@ def homemaker(faces_ptr=[], widgets=[], name="My Building", share_dir="share"):
     # Traces are 2D paths that define walls, extrusions and rooms
     # Hulls are 3D shells that define pitched roofs and soffits
     # Collect unique elevations and assign storey numbers
-    traces, hulls, normals, elevations = cc.GetTraces()
+    traces, normals, elevations = cc.GetTraces()
+    hulls = cc.GetHulls()
 
     molior_object = Molior(
         circulation=circulation,

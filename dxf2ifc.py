@@ -50,7 +50,8 @@ circulation = cc.Adjacency()
 circulation.Circulation(cc)
 
 # Traces are 2D paths that define walls, extrusions and rooms
-traces, hulls, normals, elevations = cc.GetTraces()
+traces, normals, elevations = cc.GetTraces()
+hulls = cc.GetHulls()
 
 molior_object = Molior(
     circulation=circulation,

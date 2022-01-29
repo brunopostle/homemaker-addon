@@ -18,6 +18,9 @@ wall-panel:
   ifc: IfcWall
   predefined_type: USERDEFINED
   condition: panel
+  layerset:
+    - [0.3, "Masonry"]
+    - [0.03, "Plaster"]
   inner: 0.08
   outer: 0.25
 flat-roof:
@@ -27,3 +30,12 @@ flat-roof:
   condition: flat
   inner: 0.08
   outer: 0.12
+inclined-vault:
+  class: Shell
+  ifc: IfcCovering
+  predefined_type: CEILING
+  condition: vault
+  layerset:
+    - [0.04, "Plaster"]
+  inner: 0.02
+  outer: 0.02

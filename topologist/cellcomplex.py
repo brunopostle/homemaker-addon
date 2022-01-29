@@ -61,7 +61,6 @@ def Adjacency(self):
 def GetTraces(self):
     """Traces are 2D ugraph paths that define walls, extrusions and rooms"""
     mytraces = topologist.traces.Traces()
-    myhulls = topologist.hulls.Hulls()
     mynormals = topologist.normals.Normals()
     elevations = {}
 
@@ -118,9 +117,6 @@ def GetTraces(self):
                             cells_ordered,
                         )
                 elevations[elevation] = 0
-            else:
-                # face has no horizontal bottom edge, add to hull for wall panels
-                myhulls.add_face("panel", stylename, face, cells_ordered)
 
             # TODO open wall top and bottom traces
             if face.IsExternal(self):
@@ -162,17 +158,6 @@ def GetTraces(self):
                     mynormals.add_vector("bottom", edge.StartVertex(), normal)
                     mynormals.add_vector("bottom", edge.EndVertex(), normal)
 
-        elif face.IsHorizontal():
-            # collect flat roof areas (not outdoor spaces)
-            if face.IsUpward() and face.IsWorld(self):
-                myhulls.add_face("flat", stylename, face, cells_ordered)
-        else:
-            # collect roof, soffit, and vaulted ceiling faces as hulls
-            if face.IsUpward():
-                myhulls.add_face("roof", stylename, face, cells_ordered)
-            else:
-                myhulls.add_face("soffit", stylename, face, cells_ordered)
-
     cells_ptr = []
     self.Cells(None, cells_ptr)
     for cell in cells_ptr:
@@ -191,7 +176,6 @@ def GetTraces(self):
             elevations[elevation] = 0
 
     mytraces.process()
-    myhulls.process()
     mynormals.process()
     level = 0
     keys = list(elevations.keys())
@@ -199,7 +183,40 @@ def GetTraces(self):
     for elevation in keys:
         elevations[elevation] = level
         level += 1
-    return (mytraces.traces, myhulls.hulls, mynormals.normals, elevations)
+    return (mytraces.traces, mynormals.normals, elevations)
+
+
+def GetHulls(self):
+    """Hulls are 3D ushell surfaces that define roofs, soffits etc.."""
+    myhulls = topologist.hulls.Hulls()
+
+    faces_ptr = []
+    self.Faces(None, faces_ptr)
+    for face in faces_ptr:
+        stylename = face.Get("stylename")
+        if not stylename:
+            stylename = "default"
+
+        if face.IsVertical():
+            if not face.AxisOuter():
+                # vertical face has no horizontal bottom edge, add to hull for wall panels
+                myhulls.add_face("panel", stylename, face, face.CellsOrdered(self))
+        elif face.IsHorizontal():
+            # collect flat roof areas (not outdoor spaces)
+            if face.IsUpward() and face.IsWorld(self):
+                myhulls.add_face("flat", stylename, face, face.CellsOrdered(self))
+        else:
+            # collect roof, soffit, and vaulted ceiling faces as hulls
+            if face.IsExternal(self):
+                if face.IsUpward():
+                    myhulls.add_face("roof", stylename, face, face.CellsOrdered(self))
+                else:
+                    myhulls.add_face("soffit", stylename, face, face.CellsOrdered(self))
+            else:
+                myhulls.add_face("vault", stylename, face, face.CellsOrdered(self))
+
+    myhulls.process()
+    return myhulls.hulls
 
 
 def ApplyDictionary(self, source_faces_ptr):
@@ -220,4 +237,5 @@ setattr(topologic.CellComplex, "IndexTopology", IndexTopology)
 setattr(topologic.CellComplex, "AllocateCells", AllocateCells)
 setattr(topologic.CellComplex, "Adjacency", Adjacency)
 setattr(topologic.CellComplex, "GetTraces", GetTraces)
+setattr(topologic.CellComplex, "GetHulls", GetHulls)
 setattr(topologic.CellComplex, "ApplyDictionary", ApplyDictionary)

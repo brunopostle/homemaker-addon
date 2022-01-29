@@ -3,6 +3,9 @@ exterior:
   class: Wall
   ifc: IfcWall
   condition: external
+  layerset:
+    - [0.3, "Masonry"]
+    - [0.03, "Plaster"]
   outer: 0.25
   psets:
       Pset_WallCommon:
