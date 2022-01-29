@@ -56,7 +56,16 @@ class Traces:
     def __init__(self):
         self.traces = {}
 
-    def add_axis(self, label, elevation, height, stylename, vertices, face, cells):
+    def add_axis(
+        self,
+        label,
+        elevation,
+        height,
+        stylename,
+        vertices=[None, None],
+        face=None,
+        cells=[None, None],
+    ):
         """add an edge defined by two vertices to graph, will split into distinct graphs later"""
         traces = self.traces
         if not label in traces:
@@ -84,7 +93,14 @@ class Traces:
         )
 
     def add_axis_simple(
-        self, label, elevation, height, stylename, vertices, face, cells
+        self,
+        label,
+        elevation,
+        height,
+        stylename,
+        vertices=[None, None],
+        face=None,
+        cells=[None, None],
     ):
         """append a graph consisting of a single edge defined by two vertices"""
         graph = ugraph.graph()
@@ -102,9 +118,9 @@ class Traces:
                 ]
             }
         )
-        self.add_trace(label, elevation, height, stylename, graph)
+        self.add_trace(label, elevation, height, stylename, graph=graph)
 
-    def add_trace(self, label, elevation, height, stylename, graph):
+    def add_trace(self, label, elevation, height, stylename, graph=ugraph.graph()):
         """graph is already assembled, append"""
         traces = self.traces
         if not label in traces:

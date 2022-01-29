@@ -65,17 +65,15 @@ class Tests(unittest.TestCase):
 
         vertices = []
         face.VerticesPerimeter(vertices)
-        hull.add_face(
+        hull.add_facet(
             [vertex.Coordinates() for vertex in vertices],
-            face.Normal(),
             {"face": face, "back_cell": None, "front_cell": None},
         )
 
         vertices2 = []
         face2.VerticesPerimeter(vertices2)
-        hull.add_face(
+        hull.add_facet(
             [vertex.Coordinates() for vertex in vertices2],
-            face2.Normal(),
             {"face": face2, "back_cell": None, "front_cell": None},
         )
 

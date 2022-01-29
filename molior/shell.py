@@ -53,7 +53,7 @@ class Shell(BaseClass):
         inclines = []
         uniform_pitch = False
         for face in self.hull.faces:
-            normal = face[1]
+            normal = face[1]["face"].Normal()
             inclines.append(normal[2])
         if abs(max(inclines) - min(inclines)) < 0.01:
             uniform_pitch = True
@@ -61,7 +61,7 @@ class Shell(BaseClass):
         elevation = None
         for face in self.hull.faces:
             vertices = [[*string_to_coor(node_str)] for node_str in face[0]]
-            normal = face[1]
+            normal = face[1]["face"].Normal()
             # need this for boundaries
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
             # need this for structure
@@ -83,7 +83,7 @@ class Shell(BaseClass):
                 relating_object=aggregate,
             )
             self.add_topology_pset(
-                element, face[2]["face"], face[2]["back_cell"], face[2]["front_cell"]
+                element, face[1]["face"], face[1]["back_cell"], face[1]["front_cell"]
             )
 
             # generate space boundary for back cell
@@ -102,8 +102,8 @@ class Shell(BaseClass):
             boundary.InternalOrExternalBoundary = "EXTERNAL"
             boundary.RelatedBuildingElement = element
 
-            if face[2]["back_cell"]:
-                cell_index = face[2]["back_cell"].Get("index")
+            if face[1]["back_cell"]:
+                cell_index = face[1]["back_cell"].Get("index")
                 if cell_index != None:
                     # can't assign psets to an IfcRelationship, use Description instead
                     boundary.Description = "CellIndex " + str(cell_index)
@@ -123,9 +123,9 @@ class Shell(BaseClass):
             )
             self.add_topology_pset(
                 structural_surface,
-                face[2]["face"],
-                face[2]["back_cell"],
-                face[2]["front_cell"],
+                face[1]["face"],
+                face[1]["back_cell"],
+                face[1]["front_cell"],
             )
             structural_surface.Thickness = self.thickness
             run(

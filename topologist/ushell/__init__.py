@@ -12,13 +12,13 @@ class shell:
         self.nodes = {}
         self.faces = []
 
-    def add_face(self, node_coors, normal, data):
+    def add_facet(self, node_coors, data):
         """add a face to this shell"""
         nodes_str = [
             str(node[0]) + "__" + str(node[1]) + "__" + str(node[2])
             for node in node_coors
         ]
-        my_face = [nodes_str, normal, data, None]
+        my_face = [nodes_str, data, None]
         self.faces.append(my_face)
         for index in range(len(node_coors)):
             if not nodes_str[index] in self.nodes:
@@ -39,28 +39,28 @@ class shell:
 
     def segment(self):
         """allocate index numbers to faces by contiguous region"""
-        if self.faces[0][3] == None:
+        if self.faces[0][2] == None:
             # put first face in group 0
-            self.faces[0][3] = 0
+            self.faces[0][2] = 0
         indices_in_use = {}
         dirty = True
         while dirty == True:
             dirty = False
             for face in self.faces:
-                if face[3] == None:
+                if face[2] == None:
                     for node_str in face[0]:
                         node = self.nodes[node_str]
                         for face_ref in node:
-                            if not face_ref[3] == None:
-                                face[3] = face_ref[3]
+                            if not face_ref[2] == None:
+                                face[2] = face_ref[2]
                                 dirty = True
                                 continue
                 else:
-                    indices_in_use[face[3]] = True
+                    indices_in_use[face[2]] = True
         index = len(list(indices_in_use))
         for face in self.faces:
-            if face[3] == None:
-                face[3] = index
+            if face[2] == None:
+                face[2] = index
                 self.segment()
 
     def decompose(self):
@@ -68,10 +68,10 @@ class shell:
         self.segment()
         results = {}
         for face in self.faces:
-            group = face[3]
+            group = face[2]
             if not group in results:
                 results[group] = shell()
-            results[group].add_face(
-                [string_to_coor(node_str) for node_str in face[0]], face[1], face[2]
+            results[group].add_facet(
+                [string_to_coor(node_str) for node_str in face[0]], face[1]
             )
         return list(results.values())
