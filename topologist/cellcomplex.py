@@ -42,6 +42,12 @@ def AllocateCells(self, widgets):
                 cell.Set("usage", widget[0].lower())
                 break
 
+    # tag faces between indoor and outdoor spaces that face inwards
+    faces_ptr = []
+    self.Faces(None, faces_ptr)
+    for face in faces_ptr:
+        face.BadNormal(self)
+
 
 def Adjacency(self):
     """Adjacency graph has nodes for cells, and nodes for faces that connect them"""
@@ -58,12 +64,9 @@ def GetTraces(self):
     myhulls = topologist.hulls.Hulls()
     mynormals = topologist.normals.Normals()
     elevations = {}
+
     faces_ptr = []
     self.Faces(None, faces_ptr)
-
-    for face in faces_ptr:
-        # labelling "badnormal" faces should be a separate method but here is convenient for now
-        face.BadNormal(self)
     for face in faces_ptr:
         stylename = face.Get("stylename")
         cells_ordered = face.CellsOrdered(self)
