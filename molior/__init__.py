@@ -236,18 +236,13 @@ class Molior:
                         curve_edge = curve_member.Representation.Representations[
                             0
                         ].Items[0]
-                        # horizontal curve member coincides with this horizontal connection
+                        start_coors = curve_edge.EdgeStart.VertexGeometry.Coordinates
+                        end_coors = curve_edge.EdgeEnd.VertexGeometry.Coordinates
+
+                        # member is horizontal and coincides with this horizontal connection
                         if (
-                            abs(
-                                curve_edge.EdgeStart.VertexGeometry.Coordinates[2]
-                                - connection_elevation
-                            )
-                            < 0.001
-                            and abs(
-                                curve_edge.EdgeEnd.VertexGeometry.Coordinates[2]
-                                - connection_elevation
-                            )
-                            < 0.001
+                            abs(start_coors[2] - connection_elevation) < 0.001
+                            and abs(end_coors[2] - connection_elevation) < 0.001
                         ):
                             run(
                                 "structural.add_structural_member_connection",
@@ -300,83 +295,33 @@ class Molior:
                                     },
                                 )
 
-                        # start point of non-horizontal curve member coincides with this horizontal connection
+                        # member is non-horizontal, but one end coincides with this horizontal connection
                         elif (
-                            abs(
-                                curve_edge.EdgeStart.VertexGeometry.Coordinates[2]
-                                - connection_elevation
-                            )
-                            < 0.001
-                            and abs(
-                                curve_edge.EdgeEnd.VertexGeometry.Coordinates[2]
-                                - connection_elevation
-                            )
-                            > 0.001
+                            abs(start_coors[2] - connection_elevation) < 0.001
+                            or abs(end_coors[2] - connection_elevation) < 0.001
                         ):
-                            connection_base = run(
-                                "root.create_entity",
-                                self.file,
-                                ifc_class="IfcStructuralPointConnection",
-                                name="Column base connection",
-                            )
-                            connection_base.ObjectPlacement = structural_placement
-                            run(
-                                "geometry.assign_representation",
-                                self.file,
-                                product=connection_base,
-                                representation=self.file.createIfcTopologyRepresentation(
-                                    reference_context,
-                                    reference_context.ContextIdentifier,
-                                    "Vertex",
-                                    [
-                                        self.file.createIfcVertexPoint(
-                                            self.file.createIfcCartesianPoint(
-                                                curve_edge.EdgeStart.VertexGeometry.Coordinates
-                                            )
-                                        ),
-                                    ],
-                                ),
-                            )
-                            run(
-                                "structural.assign_structural_analysis_model",
-                                self.file,
-                                product=connection_base,
-                                structural_analysis_model=self.file.by_type(
-                                    "IfcStructuralAnalysisModel"
-                                )[0],
-                            )
-                            run(
-                                "structural.add_structural_member_connection",
-                                self.file,
-                                relating_structural_member=curve_member,
-                                related_structural_connection=connection_base,
-                            )
-                            point_list.append([connection_base, curve_connection])
 
-                        # end point of non-horizontal curve member coincides with this horizontal connection
-                        elif (
-                            abs(
-                                curve_edge.EdgeStart.VertexGeometry.Coordinates[2]
-                                - connection_elevation
-                            )
-                            > 0.001
-                            and abs(
-                                curve_edge.EdgeEnd.VertexGeometry.Coordinates[2]
-                                - connection_elevation
-                            )
-                            < 0.001
-                        ):
-                            connection_head = run(
+                            # start point of non-horizontal curve member coincides with this horizontal connection
+                            if abs(start_coors[2] - connection_elevation) < 0.001:
+                                point_connection_name = "Column base connection"
+                                point_coordinates = start_coors
+
+                            # end point of non-horizontal curve member coincides with this horizontal connection
+                            elif abs(start_coors[2] - connection_elevation) > 0.001:
+                                point_connection_name = "Column head connection"
+                                point_coordinates = end_coors
+
+                            point_connection = run(
                                 "root.create_entity",
                                 self.file,
                                 ifc_class="IfcStructuralPointConnection",
-                                name="Column head connection",
+                                name=point_connection_name,
                             )
-                            connection_head.ObjectPlacement = structural_placement
+                            point_connection.ObjectPlacement = structural_placement
                             run(
                                 "geometry.assign_representation",
                                 self.file,
-                                product=connection_head,
+                                product=point_connection,
                                 representation=self.file.createIfcTopologyRepresentation(
                                     reference_context,
                                     reference_context.ContextIdentifier,
@@ -384,7 +329,7 @@ class Molior:
                                     [
                                         self.file.createIfcVertexPoint(
                                             self.file.createIfcCartesianPoint(
-                                                curve_edge.EdgeEnd.VertexGeometry.Coordinates
+                                                point_coordinates
                                             )
                                         ),
                                     ],
@@ -393,7 +338,7 @@ class Molior:
                             run(
                                 "structural.assign_structural_analysis_model",
                                 self.file,
-                                product=connection_head,
+                                product=point_connection,
                                 structural_analysis_model=self.file.by_type(
                                     "IfcStructuralAnalysisModel"
                                 )[0],
@@ -402,9 +347,9 @@ class Molior:
                                 "structural.add_structural_member_connection",
                                 self.file,
                                 relating_structural_member=curve_member,
-                                related_structural_connection=connection_head,
+                                related_structural_connection=point_connection,
                             )
-                            point_list.append([connection_head, curve_connection])
+                            point_list.append([point_connection, curve_connection])
 
         # TODO merge coincident Point Connections
         # attach column point connections to beams/footings/slabs/walls
