@@ -68,7 +68,7 @@ def GetTraces(self):
     self.Faces(None, faces_ptr)
     for face in faces_ptr:
         stylename = face.Get("stylename")
-        cells_ordered = face.CellsOrdered(self)
+        front_cell, back_cell = face.CellsOrdered(self)
         if not stylename:
             stylename = "default"
         if face.IsVertical():
@@ -84,9 +84,11 @@ def GetTraces(self):
                         elevation,
                         height,
                         stylename,
-                        vertices=axis,
+                        start_vertex=axis[0],
+                        end_vertex=axis[1],
                         face=face,
-                        cells=cells_ordered,
+                        front_cell=front_cell,
+                        back_cell=back_cell,
                     )
 
                 elif face.IsExternal(self):
@@ -95,9 +97,11 @@ def GetTraces(self):
                         elevation,
                         height,
                         stylename,
-                        vertices=axis,
+                        start_vertex=axis[0],
+                        end_vertex=axis[1],
                         face=face,
-                        cells=cells_ordered,
+                        front_cell=front_cell,
+                        back_cell=back_cell,
                     )
 
                 elif face.IsInternal(self):
@@ -106,9 +110,11 @@ def GetTraces(self):
                         elevation,
                         height,
                         stylename,
-                        vertices=axis,
+                        start_vertex=axis[0],
+                        end_vertex=axis[1],
                         face=face,
-                        cells=cells_ordered,
+                        front_cell=front_cell,
+                        back_cell=back_cell,
                     )
 
                     # collect foundation strips
@@ -118,9 +124,11 @@ def GetTraces(self):
                             elevation,
                             0.0,
                             stylename,
-                            vertices=axis,
+                            start_vertex=axis[0],
+                            end_vertex=axis[1],
                             face=face,
-                            cells=cells_ordered,
+                            front_cell=front_cell,
+                            back_cell=back_cell,
                         )
                 elevations[elevation] = 0
 
@@ -129,18 +137,20 @@ def GetTraces(self):
                 normal = face.Normal()
                 for condition in face.TopLevelConditions(self):
                     edge = condition[0]
-                    vertices = [edge.EndVertex(), edge.StartVertex()]
+                    axis = [edge.EndVertex(), edge.StartVertex()]
                     if face.Get("badnormal"):
-                        vertices.reverse()
+                        axis.reverse()
                     label = condition[1]
                     mytraces.add_axis(
                         label,
                         el(elevation + height),
                         0.0,
                         stylename,
-                        vertices=vertices,
+                        start_vertex=axis[0],
+                        end_vertex=axis[1],
                         face=face,
-                        cells=cells_ordered,
+                        front_cell=front_cell,
+                        back_cell=back_cell,
                     )
                     mynormals.add_vector("top", edge.StartVertex(), normal)
                     mynormals.add_vector("top", edge.EndVertex(), normal)
@@ -148,18 +158,20 @@ def GetTraces(self):
 
                 for condition in face.BottomLevelConditions(self):
                     edge = condition[0]
-                    vertices = [edge.StartVertex(), edge.EndVertex()]
+                    axis = [edge.StartVertex(), edge.EndVertex()]
                     if face.Get("badnormal"):
-                        vertices.reverse()
+                        axis.reverse()
                     label = condition[1]
                     mytraces.add_axis(
                         label,
                         elevation,
                         0.0,
                         stylename,
-                        vertices=vertices,
+                        start_vertex=axis[0],
+                        end_vertex=axis[1],
                         face=face,
-                        cells=cells_ordered,
+                        front_cell=front_cell,
+                        back_cell=back_cell,
                     )
                     mynormals.add_vector("bottom", edge.StartVertex(), normal)
                     mynormals.add_vector("bottom", edge.EndVertex(), normal)
@@ -202,33 +214,54 @@ def GetHulls(self):
         stylename = face.Get("stylename")
         if not stylename:
             stylename = "default"
+        front_cell, back_cell = face.CellsOrdered(self)
 
         if face.IsVertical():
             if not face.AxisOuter():
                 # vertical face has no horizontal bottom edge, add to hull for wall panels
                 myhulls.add_face(
-                    "panel", stylename, face=face, cells=face.CellsOrdered(self)
+                    "panel",
+                    stylename,
+                    face=face,
+                    front_cell=front_cell,
+                    back_cell=back_cell,
                 )
         elif face.IsHorizontal():
             # collect flat roof areas (not outdoor spaces)
             if face.IsUpward() and face.IsWorld(self):
                 myhulls.add_face(
-                    "flat", stylename, face=face, cells=face.CellsOrdered(self)
+                    "flat",
+                    stylename,
+                    face=face,
+                    front_cell=front_cell,
+                    back_cell=back_cell,
                 )
         else:
             # collect roof, soffit, and vaulted ceiling faces as hulls
             if face.IsExternal(self):
                 if face.IsUpward():
                     myhulls.add_face(
-                        "roof", stylename, face=face, cells=face.CellsOrdered(self)
+                        "roof",
+                        stylename,
+                        face=face,
+                        front_cell=front_cell,
+                        back_cell=back_cell,
                     )
                 else:
                     myhulls.add_face(
-                        "soffit", stylename, face=face, cells=face.CellsOrdered(self)
+                        "soffit",
+                        stylename,
+                        face=face,
+                        front_cell=front_cell,
+                        back_cell=back_cell,
                     )
             else:
                 myhulls.add_face(
-                    "vault", stylename, face=face, cells=face.CellsOrdered(self)
+                    "vault",
+                    stylename,
+                    face=face,
+                    front_cell=front_cell,
+                    back_cell=back_cell,
                 )
 
     myhulls.process()

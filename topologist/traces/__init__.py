@@ -62,9 +62,11 @@ class Traces:
         elevation,
         height,
         stylename,
-        vertices=[None, None],
+        start_vertex=None,
+        end_vertex=None,
         face=None,
-        cells=[None, None],
+        front_cell=None,
+        back_cell=None,
     ):
         """add an edge defined by two vertices to graph, will split into distinct graphs later"""
         traces = self.traces
@@ -79,14 +81,14 @@ class Traces:
 
         traces[label][elevation][height][stylename].add_edge(
             {
-                vertices[0].CoorAsString(): [
-                    vertices[1].CoorAsString(),
+                start_vertex.CoorAsString(): [
+                    end_vertex.CoorAsString(),
                     {
-                        "start_vertex": vertices[0],
-                        "end_vertex": vertices[1],
+                        "start_vertex": start_vertex,
+                        "end_vertex": end_vertex,
                         "face": face,
-                        "back_cell": cells[1],
-                        "front_cell": cells[0],
+                        "back_cell": back_cell,
+                        "front_cell": front_cell,
                     },
                 ]
             }
@@ -98,22 +100,24 @@ class Traces:
         elevation,
         height,
         stylename,
-        vertices=[None, None],
+        start_vertex=None,
+        end_vertex=None,
         face=None,
-        cells=[None, None],
+        front_cell=None,
+        back_cell=None,
     ):
         """append a graph consisting of a single edge defined by two vertices"""
         graph = ugraph.graph()
         graph.add_edge(
             {
-                vertices[0].CoorAsString(): [
-                    vertices[1].CoorAsString(),
+                start_vertex.CoorAsString(): [
+                    end_vertex.CoorAsString(),
                     {
-                        "start_vertex": vertices[0],
-                        "end_vertex": vertices[1],
+                        "start_vertex": start_vertex,
+                        "end_vertex": end_vertex,
                         "face": face,
-                        "back_cell": cells[1],
-                        "front_cell": cells[0],
+                        "back_cell": back_cell,
+                        "front_cell": front_cell,
                     },
                 ]
             }

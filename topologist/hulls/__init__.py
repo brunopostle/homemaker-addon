@@ -11,7 +11,7 @@ class Hulls:
     def __init__(self):
         self.hulls = {}
 
-    def add_face(self, label, stylename, face=None, cells=[None, None]):
+    def add_face(self, label, stylename, face=None, front_cell=None, back_cell=None):
         """Add a Topologic Face object, will split to contiguous shells later"""
         hulls = self.hulls
         if not label in hulls:
@@ -24,7 +24,7 @@ class Hulls:
 
         hulls[label][stylename].add_facet(
             [vertex.Coordinates() for vertex in vertices_ptr],
-            {"face": face, "back_cell": cells[1], "front_cell": cells[0]},
+            {"face": face, "back_cell": back_cell, "front_cell": front_cell},
         )
 
     def process(self):
