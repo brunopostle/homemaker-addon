@@ -54,7 +54,7 @@ class Tests(unittest.TestCase):
             matrix=matrix_align([11.0, 0.0, 3.0], [11.0, 2.0, 0.0]),
         )
         # assign the window to a storey
-        assign_storey_byindex(ifc, myproduct, 0)
+        assign_storey_byindex(ifc, myproduct, building, 0)
 
         # load geometry from a DXF file and assign to the window
         assign_representation_fromDXF(
@@ -89,7 +89,7 @@ class Tests(unittest.TestCase):
             matrix=matrix_align([11.0, -0.5, 3.0], [11.0, 2.0, 0.0]),
         )
         # assign the wall to a storey
-        assign_storey_byindex(ifc, mywall, 0)
+        assign_storey_byindex(ifc, mywall, building, 0)
 
         # create an opening
         myopening = run(
@@ -151,7 +151,7 @@ class Tests(unittest.TestCase):
             matrix=matrix_align([11.0, 6.0, 3.0], [11.0, 9.0, 0.0]),
         )
         # assign the window to a storey
-        assign_storey_byindex(ifc, myproduct, 0)
+        assign_storey_byindex(ifc, myproduct, building, 0)
 
         # shopfront.dxf is already imported and mapped
         assign_representation_fromDXF(

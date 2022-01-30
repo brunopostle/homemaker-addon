@@ -67,7 +67,7 @@ class Space(TraceClass):
         # FIXME should create IfcSpaceType for this
         self.add_psets(element)
 
-        assign_storey_byindex(self.file, element, self.level)
+        assign_storey_byindex(self.file, element, self.building, self.level)
 
         if not self.do_representation:
             return

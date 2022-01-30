@@ -31,8 +31,8 @@ class Tests(unittest.TestCase):
 
         project = ifc.by_type("IfcProject")[0]
         site = create_site(ifc, project, "My Site")
-        building = create_building(ifc, site, "My Building")
-        create_storeys(ifc, building, {0.0: 0})
+        self.building = create_building(ifc, site, "My Building")
+        create_storeys(ifc, self.building, {0.0: 0})
 
         # a centreline axis
         poly = ifc.createIfcShapeRepresentation(
@@ -51,7 +51,7 @@ class Tests(unittest.TestCase):
 
         wall = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
         run("geometry.assign_representation", ifc, product=wall, representation=poly)
-        assign_storey_byindex(ifc, wall, 0)
+        assign_storey_byindex(ifc, wall, self.building, 0)
 
         # a vertically extruded solid
         shape = ifc.createIfcShapeRepresentation(
@@ -72,7 +72,7 @@ class Tests(unittest.TestCase):
             product=slab,
             matrix=matrix_align([3.0, 0.0, 3.0], [4.0, 1.0, 3.0]),
         )
-        assign_storey_byindex(ifc, slab, 0)
+        assign_storey_byindex(ifc, slab, self.building, 0)
 
         # load a DXF polyface mesh as a Tessellation
         brep = ifc.createIfcShapeRepresentation(
@@ -122,7 +122,7 @@ class Tests(unittest.TestCase):
             product=window,
             matrix=matrix_transform(0.0, [15.0, 0.0, 0.0]),
         )
-        assign_storey_byindex(ifc, window, 0)
+        assign_storey_byindex(ifc, window, self.building, 0)
 
         # create another window using the mapped item
         window2 = run(
@@ -150,7 +150,7 @@ class Tests(unittest.TestCase):
             product=window2,
             matrix=matrix_align([11.0, 0.0, 0.0], [11.0, 2.0, 0.0]),
         )
-        assign_storey_byindex(ifc, window2, 0)
+        assign_storey_byindex(ifc, window2, self.building, 0)
 
         # make the ifc model available to other test methods
         self.ifc = ifc
@@ -186,7 +186,7 @@ class Tests(unittest.TestCase):
             matrix=matrix_align([11.0, 0.0, 3.0], [11.0, 2.0, 0.0]),
         )
         # assign the window to a storey
-        assign_storey_byindex(ifc, myproduct, 0)
+        assign_storey_byindex(ifc, myproduct, self.building, 0)
 
         # The TypeProduct knows what MappedRepresentations to use
         typeproduct = lookup["shopfront.dxf"]
@@ -229,7 +229,7 @@ class Tests(unittest.TestCase):
             matrix=matrix_align([11.0, -0.5, 3.0], [11.0, 2.0, 0.0]),
         )
         # assign the wall to a storey
-        assign_storey_byindex(ifc, mywall, 0)
+        assign_storey_byindex(ifc, mywall, self.building, 0)
 
         # create an opening
         myopening = run(

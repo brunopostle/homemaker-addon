@@ -49,6 +49,7 @@ from molior.ifc import (
     create_storeys,
     assign_space_byindex,
     assign_storey_byindex,
+    get_building,
     create_tessellation_from_mesh,
 )
 import topologist.ushell as ushell
@@ -62,6 +63,7 @@ class Molior:
 
     def __init__(self, **args):
         self.file = None
+        self.building = None
         self.traces = {}
         self.hulls = {}
         self.normals = {}
@@ -475,7 +477,7 @@ class Molior:
                 level = 0
                 if elevation in self.elevations:
                     level = self.elevations[elevation]
-                assign_storey_byindex(self.file, element, level)
+                assign_storey_byindex(self.file, element, self.building, level)
                 shape = self.file.createIfcShapeRepresentation(
                     body_context,
                     body_context.ContextIdentifier,
@@ -510,21 +512,30 @@ class Molior:
                             coor[2] - storey_elevation,
                         )
 
-        # attach Slab elements to relevant Space
+        # molior.floor attaches Slab elements directly to Storey, re-attach to relevant Space
         for element in self.file.by_type("IfcSlab"):
-            pset_topology = ifcopenshell.util.element.get_psets(element).get(
-                "EPset_Topology"
-            )
-            if pset_topology:
-                assign_space_byindex(self.file, element, pset_topology["CellIndex"])
+            if get_building(element) == self.building:
+                pset_topology = ifcopenshell.util.element.get_psets(element).get(
+                    "EPset_Topology"
+                )
+                if pset_topology:
+                    assign_space_byindex(
+                        self.file, element, self.building, pset_topology["CellIndex"]
+                    )
 
         # attach Window elements to relevant Space
         for element in self.file.by_type("IfcWindow"):
-            pset_topology = ifcopenshell.util.element.get_psets(element).get(
-                "EPset_Topology"
-            )
-            if pset_topology:
-                assign_space_byindex(self.file, element, pset_topology["BackCellIndex"])
+            if get_building(element) == self.building:
+                pset_topology = ifcopenshell.util.element.get_psets(element).get(
+                    "EPset_Topology"
+                )
+                if pset_topology:
+                    assign_space_byindex(
+                        self.file,
+                        element,
+                        self.building,
+                        pset_topology["BackCellIndex"],
+                    )
 
         cell_lookup = {}
         cells_ptr = []
@@ -534,36 +545,53 @@ class Molior:
 
         # attach Door elements to Space
         for element in self.file.by_type("IfcDoor"):
-            pset_topology = ifcopenshell.util.element.get_psets(element).get(
-                "EPset_Topology"
-            )
-            if pset_topology:
-                if not "FrontCellIndex" in pset_topology or (
-                    "FrontCellIndex" in pset_topology
-                    and cell_lookup[pset_topology["FrontCellIndex"]].IsOutside()
-                ):
-                    assign_space_byindex(
-                        self.file, element, pset_topology["BackCellIndex"]
-                    )
-                elif cell_lookup[pset_topology["BackCellIndex"]].IsOutside():
-                    assign_space_byindex(
-                        self.file, element, pset_topology["FrontCellIndex"]
-                    )
-                else:
-                    if cell_lookup[pset_topology["FrontCellIndex"]].Get(
-                        "separation"
-                    ) and float(
-                        cell_lookup[pset_topology["FrontCellIndex"]].Get("separation")
-                    ) > float(
-                        cell_lookup[pset_topology["BackCellIndex"]].Get("separation")
+            if get_building(element) == self.building:
+                pset_topology = ifcopenshell.util.element.get_psets(element).get(
+                    "EPset_Topology"
+                )
+                if pset_topology:
+                    if not "FrontCellIndex" in pset_topology or (
+                        "FrontCellIndex" in pset_topology
+                        and cell_lookup[pset_topology["FrontCellIndex"]].IsOutside()
                     ):
                         assign_space_byindex(
-                            self.file, element, pset_topology["FrontCellIndex"]
+                            self.file,
+                            element,
+                            self.building,
+                            pset_topology["BackCellIndex"],
+                        )
+                    elif cell_lookup[pset_topology["BackCellIndex"]].IsOutside():
+                        assign_space_byindex(
+                            self.file,
+                            element,
+                            self.building,
+                            pset_topology["FrontCellIndex"],
                         )
                     else:
-                        assign_space_byindex(
-                            self.file, element, pset_topology["BackCellIndex"]
-                        )
+                        if cell_lookup[pset_topology["FrontCellIndex"]].Get(
+                            "separation"
+                        ) and float(
+                            cell_lookup[pset_topology["FrontCellIndex"]].Get(
+                                "separation"
+                            )
+                        ) > float(
+                            cell_lookup[pset_topology["BackCellIndex"]].Get(
+                                "separation"
+                            )
+                        ):
+                            assign_space_byindex(
+                                self.file,
+                                element,
+                                self.building,
+                                pset_topology["FrontCellIndex"],
+                            )
+                        else:
+                            assign_space_byindex(
+                                self.file,
+                                element,
+                                self.building,
+                                pset_topology["BackCellIndex"],
+                            )
 
     def build_trace(
         self,
@@ -603,6 +631,7 @@ class Molior:
                     "chain": chain,
                     "circulation": self.circulation,
                     "file": self.file,
+                    "building": self.building,
                     "name": name,
                     "elevation": elevation,
                     "height": height,
@@ -641,6 +670,7 @@ class Molior:
                     "cellcomplex": self.cellcomplex,
                     "elevations": self.elevations,
                     "file": self.file,
+                    "building": self.building,
                     "name": name,
                     "style": stylename,
                     "hull": hull,

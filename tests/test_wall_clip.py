@@ -122,7 +122,7 @@ class Tests(unittest.TestCase):
             product=mywall,
             representation=clipped_representation,
         )
-        assign_storey_byindex(ifc, mywall, 2)
+        assign_storey_byindex(ifc, mywall, building, 2)
         run(
             "geometry.edit_object_placement",
             ifc,

@@ -334,11 +334,12 @@ def create_tessellation_from_mesh(self, vertices, faces):
     return self.createIfcPolygonalFaceSet(pointlist, None, indexedfaces, None)
 
 
-def assign_storey_byindex(self, entity, index):
+def assign_storey_byindex(self, entity, building, index):
     """Assign object to a storey by index"""
     storeys = {}
     for storey in self.by_type("IfcBuildingStorey"):
-        storeys[storey.Name] = storey
+        if get_building(storey) == building:
+            storeys[storey.Name] = storey
     if entity.is_a("IfcSpatialElement"):
         run(
             "aggregate.assign_object",
@@ -355,13 +356,16 @@ def assign_storey_byindex(self, entity, index):
         )
 
 
-def assign_space_byindex(self, entity, index):
+def assign_space_byindex(self, entity, building, index):
     """Assign object to a Space by index"""
     spaces = {}
     for space in self.by_type("IfcSpace"):
-        pset_topology = ifcopenshell.util.element.get_psets(space).get("EPset_Topology")
-        if pset_topology:
-            spaces[pset_topology["CellIndex"]] = space
+        if get_building(space) == building:
+            pset_topology = ifcopenshell.util.element.get_psets(space).get(
+                "EPset_Topology"
+            )
+            if pset_topology:
+                spaces[pset_topology["CellIndex"]] = space
     if not str(index) in spaces:
         return
     if entity.is_a("IfcSpatialElement"):
@@ -457,6 +461,25 @@ def get_library_by_name(self, library_name):
         relating_context=self.by_type("IfcProject")[0],
     )
     return library
+
+
+def get_building(entity):
+    """Retrieve whatever Building contains this entity, or None"""
+    if entity.is_a("IfcElement"):
+        parents = entity.ContainedInStructure
+        if not parents:
+            return None
+        parent = parents[0]
+    elif entity.is_a("IfcSpatialElement"):
+        decomposes = entity.Decomposes
+        if not decomposes:
+            return None
+        parent = decomposes[0].RelatingObject
+    else:
+        return None
+    if parent.is_a("IfcBuilding"):
+        return parent
+    get_building(parent)
 
 
 def get_material_by_name(self, subcontext, material_name, style_materials):

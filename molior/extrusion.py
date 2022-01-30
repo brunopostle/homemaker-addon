@@ -145,7 +145,7 @@ class Extrusion(TraceClass):
             ),
         )
 
-        assign_storey_byindex(self.file, element, self.level)
+        assign_storey_byindex(self.file, element, self.building, self.level)
         directrix = self.path
         if self.closed:
             directrix.append(directrix[0])

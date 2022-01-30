@@ -8,7 +8,6 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__) + "/libs/site/packages
 
 from topologic import Vertex, Face, CellComplex
 from molior import Molior
-import molior.ifc
 
 import logging
 from blenderbim.bim import import_ifc
@@ -70,15 +69,6 @@ class ObjectHomemaker(bpy.types.Operator):
             faces_ptr = topologic_faces_from_blender_object(blender_object)
             blender_object.hide_viewport = True
 
-            # generate an ifcopenshell model
-            # TODO styles are loaded from share_dir, allow blender user to set custom share_dir path
-            ifc = homemaker(
-                faces_ptr=faces_ptr,
-                widgets=widgets,
-                name=blender_object.name,
-                share_dir="share",
-            )
-
             # delete any IfcProject/* collections, but leave IfcStore intact
             have_project = False
             for collection_name in bpy.data.collections.keys():
@@ -93,11 +83,18 @@ class ObjectHomemaker(bpy.types.Operator):
                 blenderbim.bim.ifc.IfcStore.purge()
                 blenderbim.bim.ifc.IfcStore.file = None
 
-            # merge IfcStore with generated ifcopenshell model
-            if blenderbim.bim.ifc.IfcStore.file == None:
-                blenderbim.bim.ifc.IfcStore.file = ifc
-            else:
-                molior.ifc.merge_file(blenderbim.bim.ifc.IfcStore.file, ifc)
+            # generate an ifcopenshell model
+            # TODO styles are loaded from share_dir, allow blender user to set custom share_dir path
+            file = homemaker(
+                file=blenderbim.bim.ifc.IfcStore.file,
+                faces_ptr=faces_ptr,
+                widgets=widgets,
+                name=blender_object.name,
+                share_dir="share",
+            )
+
+            # no idea why we have to reassign this
+            blenderbim.bim.ifc.IfcStore.file = file
 
             # (re)build blender collections and geometry from IfcStore
             ifc_import_settings = import_ifc.IfcImportSettings.factory(
@@ -110,7 +107,9 @@ class ObjectHomemaker(bpy.types.Operator):
         return {"FINISHED"}
 
 
-def homemaker(faces_ptr=[], widgets=[], name="My Building", share_dir="share"):
+def homemaker(
+    file=None, faces_ptr=[], widgets=[], name="My Building", share_dir="share"
+):
     # Generate a Topologic CellComplex
     cc = CellComplex.ByFaces(faces_ptr, 0.0001)
     # Give every Cell and Face an index number
@@ -133,6 +132,7 @@ def homemaker(faces_ptr=[], widgets=[], name="My Building", share_dir="share"):
     hulls = cc.GetHulls()
 
     molior_object = Molior(
+        file=file,
         circulation=circulation,
         traces=traces,
         hulls=hulls,

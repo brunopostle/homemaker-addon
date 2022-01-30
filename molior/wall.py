@@ -74,7 +74,7 @@ class Wall(TraceClass):
             ifc_class=self.ifc,
             name=self.identifier,
         )
-        assign_storey_byindex(self.file, aggregate, self.level)
+        assign_storey_byindex(self.file, aggregate, self.building, self.level)
 
         previous_wall = None
         segments = self.segments()
@@ -445,7 +445,7 @@ class Wall(TraceClass):
                     ),
                 )
                 # assign the entity to a storey
-                assign_storey_byindex(self.file, entity, self.level)
+                assign_storey_byindex(self.file, entity, self.building, self.level)
                 # assign a material
                 run(
                     "material.assign_material",

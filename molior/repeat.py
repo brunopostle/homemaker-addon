@@ -102,7 +102,7 @@ class Repeat(TraceClass):
                 predefined_type=self.predefined_type,
             )
             # assign the aggregate to a storey
-            assign_storey_byindex(self.file, aggregate, self.level)
+            assign_storey_byindex(self.file, aggregate, self.building, self.level)
 
             if self.parent_aggregate != None:
                 run(
@@ -148,6 +148,7 @@ class Repeat(TraceClass):
                                     "normal_set": self.normal_set,
                                     "parent_aggregate": aggregate,
                                     "style": self.style,
+                                    "building": self.building,
                                     "level": self.level,
                                     "predefined_type": self.predefined_type,
                                     "style_assets": self.style_assets,

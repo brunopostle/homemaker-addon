@@ -221,4 +221,4 @@ class Shell(BaseClass):
         level = 0
         if elevation in self.elevations:
             level = self.elevations[elevation]
-        assign_storey_byindex(self.file, aggregate, level)
+        assign_storey_byindex(self.file, aggregate, self.building, level)

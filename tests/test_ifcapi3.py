@@ -58,7 +58,7 @@ class Tests(unittest.TestCase):
         )
 
         run("geometry.edit_object_placement", ifc, product=element, matrix=numpy.eye(4))
-        assign_storey_byindex(ifc, element, 0)
+        assign_storey_byindex(ifc, element, building, 0)
 
         # do it again, hopefully dxf isn't reloaded
 
@@ -86,7 +86,7 @@ class Tests(unittest.TestCase):
             product=element,
             matrix=matrix_align([0.0, 0.0, 1.0], [1.0, 0.0, 1.0]),
         )
-        assign_storey_byindex(ifc, element, 0)
+        assign_storey_byindex(ifc, element, building, 0)
 
         ifc.write("_test.ifc")
 

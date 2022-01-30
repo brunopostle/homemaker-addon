@@ -66,7 +66,7 @@ class Floor(TraceClass):
             name=self.name + "/" + str(cell.Get("index")),
         )
         # Slab will be re-assigned to Space later
-        assign_storey_byindex(self.file, element, self.level)
+        assign_storey_byindex(self.file, element, self.building, self.level)
 
         if type(cell) == Cell:
             bottom_faces_ptr = []
