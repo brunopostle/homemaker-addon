@@ -14,6 +14,7 @@ class graph:
         for key in edge:
             self.graph[key] = edge[key]
 
+    # FIXME doesn't appear to be in use
     def get_edge_data(self, edge):
         if self.graph[edge[0]] and self.graph[edge[0]][0] == edge[1]:
             return self.graph[edge[0]][1]

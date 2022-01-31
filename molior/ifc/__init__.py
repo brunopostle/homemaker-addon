@@ -541,6 +541,7 @@ def get_material_by_name(self, subcontext, material_name, style_materials):
     return mymaterial
 
 
+# FIXME doesn't appear to be in use
 def merge_file(self, source):
     original_project = self.by_type("IfcProject")[0]
     temp_project = self.add(source.by_type("IfcProject")[0])

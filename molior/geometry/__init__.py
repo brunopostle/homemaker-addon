@@ -2,6 +2,7 @@ from math import sqrt, pi, atan, cos, sin
 import numpy
 
 
+# FIXME doesn't seem to be in use
 def matrix_transform(theta, coor):
     """A transform matrix from a rotation in the XY plane and an XYZ shift"""
     return numpy.array(
