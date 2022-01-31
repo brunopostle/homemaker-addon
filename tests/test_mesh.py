@@ -7,6 +7,9 @@ import unittest
 from topologic import Vertex, Face, CellComplex, CellUtility, Topology
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+import topologist.face
+
+assert topologist.face
 
 points = [
     [0.0, 0.0, 0.0],
@@ -56,9 +59,8 @@ class Tests(unittest.TestCase):
 
     def test_upward(self):
         vertices = []
-        cc.Vertices(vertices)
-        cells = []
-        vertices[0].Cells(cells)
+        cc.Vertices(None, vertices)
+        cells = vertices[0].Cells_Cached(cc)
         self.assertEqual(len(cells), 2)
 
     def test_vertices(self):
@@ -82,11 +84,10 @@ class Tests(unittest.TestCase):
     def test_faces_cc(self):
 
         faces_ptr = []
-        cc.Faces(faces_ptr)
+        cc.Faces(None, faces_ptr)
         self.assertEqual(len(faces_ptr), 9)
         for face in faces_ptr:
-            cells_ptr = []
-            face.Cells(cells_ptr)
+            cells_ptr = face.Cells_Cached(cc)
             self.assertGreater(len(cells_ptr), 0)
             self.assertLess(len(cells_ptr), 3)
 
@@ -110,7 +111,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(centroid.Z(), 5.0)
 
         cells_ptr = []
-        cc.Cells(cells_ptr)
+        cc.Cells(None, cells_ptr)
         self.assertEqual(len(cells_ptr), 2)
 
         for cell in cells_ptr:
@@ -132,15 +133,13 @@ class Tests(unittest.TestCase):
             face_internal = False
             face_world = False
             for face in vertical_faces_ptr:
-                adjacent_cells_ptr = []
-                face.Cells(adjacent_cells_ptr)
+                adjacent_cells_ptr = face.Cells_Cached(cc)
                 if len(adjacent_cells_ptr) == 2:
                     cell_adjacent = True
                 elif len(adjacent_cells_ptr) == 1:
                     nowt_adjacent = True
 
-                horiz_faces_ptr = []
-                face.HorizontalFacesSideways(horiz_faces_ptr)
+                horiz_faces_ptr = face.HorizontalFacesSideways(cc)
                 if len(horiz_faces_ptr) == 1:
                     horiz_1 = True
                 elif len(horiz_faces_ptr) == 2:
@@ -148,9 +147,9 @@ class Tests(unittest.TestCase):
                 for horiz_face in horiz_faces_ptr:
                     self.assertTrue(horiz_face.IsHorizontal())
 
-                if face.IsInternal():
+                if face.IsInternal(cc):
                     face_internal = True
-                elif face.IsWorld():
+                elif face.IsWorld(cc):
                     face_world = True
             self.assertTrue(cell_adjacent)
             self.assertTrue(nowt_adjacent)

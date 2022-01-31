@@ -2,20 +2,27 @@
 
 from functools import lru_cache
 import topologic
-from topologic import StringAttribute
+from topologic import StringAttribute, Vertex
 from topologist.helpers import el
 
 
 @lru_cache(maxsize=256)
-def Cells_Cached(self):
+def Cells_Cached(self, host_topology):
     cells_ptr = []
-    self.Cells(cells_ptr)
+    self.Cells(host_topology, cells_ptr)
     return cells_ptr
+
+
+@lru_cache(maxsize=256)
+def Faces_Cached(self, host_topology):
+    faces_ptr = []
+    self.Faces(host_topology, faces_ptr)
+    return faces_ptr
 
 
 def FacesVertical(self, faces_ptr):
     elements_ptr = []
-    self.Faces(elements_ptr)
+    self.Faces(None, elements_ptr)
     for face in elements_ptr:
         if face.IsVertical():
             faces_ptr.append(face)
@@ -23,25 +30,29 @@ def FacesVertical(self, faces_ptr):
 
 def FacesHorizontal(self, faces_ptr):
     elements_ptr = []
-    self.Faces(elements_ptr)
+    self.Faces(None, elements_ptr)
     for face in elements_ptr:
         if face.IsHorizontal():
             faces_ptr.append(face)
 
 
 def FacesInclined(self, faces_ptr):
+    if self.__class__ == Vertex:
+        # Faces() is for searching sub-topologies and a Vertex has none
+        return
     elements_ptr = []
-    self.Faces(elements_ptr)
+    self.Faces(None, elements_ptr)
     for face in elements_ptr:
         if not face.IsHorizontal() and not face.IsVertical():
             faces_ptr.append(face)
 
 
-def FacesExternal(self, faces_ptr):
-    elements_ptr = []
-    self.Faces(elements_ptr)
+def FacesExternal(self, host_topology):
+    """searches host not sub-topologies"""
+    faces_ptr = []
+    elements_ptr = self.Faces_Cached(host_topology)
     for face in elements_ptr:
-        if face.IsExternal():
+        if face.IsExternal(host_topology):
             faces_ptr.append(face)
     return faces_ptr
 
@@ -50,7 +61,7 @@ def FacesExternal(self, faces_ptr):
 def Elevation(self):
     lowest = 9999999.9
     vertices_ptr = []
-    self.Vertices(vertices_ptr)
+    self.Vertices(None, vertices_ptr)
     for vertex in vertices_ptr:
         if vertex.Z() < lowest:
             lowest = vertex.Z()
@@ -61,7 +72,7 @@ def Elevation(self):
 def Height(self):
     highest = -9999999.9
     vertices_ptr = []
-    self.Vertices(vertices_ptr)
+    self.Vertices(None, vertices_ptr)
     for vertex in vertices_ptr:
         if vertex.Z() > highest:
             highest = vertex.Z()
@@ -71,15 +82,15 @@ def Height(self):
 def Mesh(self):
     """A list of node coordinates and a list of faces"""
     vertices_ptr = []
-    self.Vertices(vertices_ptr)
+    self.Vertices(None, vertices_ptr)
     vertices = [vertex.Coordinates() for vertex in vertices_ptr]
 
     faces_ptr = []
-    self.Faces(faces_ptr)
+    self.Faces(None, faces_ptr)
     faces = []
     for face in faces_ptr:
         wire_vertices_ptr = []
-        face.ExternalBoundary().Vertices(wire_vertices_ptr)
+        face.ExternalBoundary().Vertices(None, wire_vertices_ptr)
         faces.append([self.VertexId(vertex) for vertex in wire_vertices_ptr])
     return vertices, faces
 
@@ -87,7 +98,7 @@ def Mesh(self):
 def EdgesTop(self, result_edges_ptr):
     """A list of horizontal edges at the highest level of this face"""
     edges_ptr = []
-    self.Edges(edges_ptr)
+    self.Edges(None, edges_ptr)
     level = el(self.Elevation() + self.Height())
     for edge in edges_ptr:
         vertex_start = edge.StartVertex()
@@ -99,7 +110,7 @@ def EdgesTop(self, result_edges_ptr):
 def EdgesBottom(self, result_edges_ptr):
     """A list of horizontal edges at the lowest level of this face"""
     edges_ptr = []
-    self.Edges(edges_ptr)
+    self.Edges(None, edges_ptr)
     level = self.Elevation()
     for edge in edges_ptr:
         vertex_start = edge.StartVertex()
@@ -111,7 +122,7 @@ def EdgesBottom(self, result_edges_ptr):
 def EdgesCrop(self, result_edges_ptr):
     """Which edges are not vertical or top/bottom?"""
     edges_ptr = []
-    self.Edges(edges_ptr)
+    self.Edges(None, edges_ptr)
     bottom = self.Elevation()
     top = el(self.Elevation() + self.Height())
     for edge in edges_ptr:
@@ -169,7 +180,7 @@ def GraphVertex(self, graph):
 def VertexId(self, vertex):
     i = 0
     vertices_ptr = []
-    self.Vertices(vertices_ptr)
+    self.Vertices(None, vertices_ptr)
     for v in vertices_ptr:
         if v.IsSame(vertex):
             return i
@@ -177,6 +188,7 @@ def VertexId(self, vertex):
 
 
 setattr(topologic.Topology, "Cells_Cached", Cells_Cached)
+setattr(topologic.Topology, "Faces_Cached", Faces_Cached)
 setattr(topologic.Topology, "FacesVertical", FacesVertical)
 setattr(topologic.Topology, "FacesHorizontal", FacesHorizontal)
 setattr(topologic.Topology, "FacesInclined", FacesInclined)

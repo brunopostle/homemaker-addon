@@ -15,31 +15,27 @@ class Tests(unittest.TestCase):
         self.assertEqual(len(self.shell.nodes_all()), 0)
         self.assertEqual(len(self.shell.faces_all()), 0)
 
-        self.shell.add_face(
+        self.shell.add_facet(
             [[1.0, 0.0, 0.0], [4.0, 0.0, 0.0], [4.0, 4.0, 0.0]],
-            [0.0, 0.0, 1.0],
-            "my data",
+            {"normal": [0.0, 0.0, 1.0], "data": "my data"},
         )
         self.assertEqual(len(self.shell.nodes_all()), 3)
         self.assertEqual(len(self.shell.faces_all()), 1)
 
-        self.shell.add_face(
+        self.shell.add_facet(
             [[1.0, 0.0, 0.0], [4.0, 4.0, 0.0], [0.0, 4.0, 0.0]],
-            [0.0, 0.0, 1.0],
-            "other data",
+            {"normal": [0.0, 0.0, 1.0], "data": "other data"},
         )
         self.assertEqual(len(self.shell.nodes_all()), 4)
         self.assertEqual(len(self.shell.faces_all()), 2)
 
-        self.shell.add_face(
+        self.shell.add_facet(
             [[11.0, 0.0, 0.0], [14.0, 0.0, 0.0], [14.0, 4.0, 0.0]],
-            [0.0, 0.0, 1.0],
-            "some data",
+            {"normal": [0.0, 0.0, 1.0], "data": "some data"},
         )
-        self.shell.add_face(
+        self.shell.add_facet(
             [[11.0, 0.0, 0.0], [14.0, 4.0, 0.0], [10.0, 4.0, 0.0]],
-            [0.0, 0.0, 1.0],
-            "different data",
+            {"normal": [0.0, 0.0, 1.0], "data": "different data"},
         )
         self.assertEqual(len(self.shell.nodes_all()), 8)
         self.assertEqual(len(self.shell.faces_all()), 4)

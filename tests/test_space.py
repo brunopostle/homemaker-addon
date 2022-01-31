@@ -28,40 +28,95 @@ class Tests(unittest.TestCase):
         dummy_cell = Vertex.ByCoordinates(0.0, 0.0, 0.0)
 
         # string: [string, [Vertex, Vertex, Face, Cell, Cell]]
-        trace.add_edge({coor_1: [coor_2, [vertex_1, vertex_2, None, dummy_cell, None]]})
-        trace.add_edge({coor_0: [coor_1, [vertex_0, vertex_1, None, dummy_cell, None]]})
-        trace.add_edge({coor_2: [coor_3, [vertex_2, vertex_3, None, dummy_cell, None]]})
-        trace.add_edge({coor_3: [coor_0, [vertex_3, vertex_0, None, dummy_cell, None]]})
+        trace.add_edge(
+            {
+                coor_1: [
+                    coor_2,
+                    {
+                        "start_vertex": vertex_1,
+                        "end_vertex": vertex_2,
+                        "face": None,
+                        "back_cell": dummy_cell,
+                        "front_cell": None,
+                    },
+                ]
+            }
+        )
+        trace.add_edge(
+            {
+                coor_0: [
+                    coor_1,
+                    {
+                        "start_vertex": vertex_0,
+                        "end_vertex": vertex_1,
+                        "face": None,
+                        "back_cell": dummy_cell,
+                        "front_cell": None,
+                    },
+                ]
+            }
+        )
+        trace.add_edge(
+            {
+                coor_2: [
+                    coor_3,
+                    {
+                        "start_vertex": vertex_2,
+                        "end_vertex": vertex_3,
+                        "face": None,
+                        "back_cell": dummy_cell,
+                        "front_cell": None,
+                    },
+                ]
+            }
+        )
+        trace.add_edge(
+            {
+                coor_3: [
+                    coor_0,
+                    {
+                        "start_vertex": vertex_3,
+                        "end_vertex": vertex_0,
+                        "face": None,
+                        "back_cell": dummy_cell,
+                        "front_cell": None,
+                    },
+                ]
+            }
+        )
         paths = trace.find_paths()
 
-        ifc = molior.ifc.init("Our House", {3.15: 2})
+        ifc = molior.ifc.init(name="Our Project")
 
-        molior_object = Molior(file=ifc, circulation=None, normals=normals.normals)
-        self.space = molior_object.GetTraceIfc(
-            "default",  # style
-            "kitchen",  # condition
-            2,  # level
-            3.15,  # elevation
-            0.05,  # height
-            paths[0],  # chain
+        molior_object = Molior(
+            file=ifc,
+            circulation=None,
+            normals=normals.normals,
+            cellcomplex=dummy_cell,
+        )
+        molior_object.add_building(name="Our House", elevations={3.15: 2, 6.15: 3})
+        self.space = molior_object.build_trace(
+            stylename="default",
+            condition="kitchen",
+            elevation=3.15,
+            height=0.05,
+            chain=paths[0],
         )
 
-        self.space2 = molior_object.GetTraceIfc(
-            "default",  # style
-            "kitchen",  # condition
-            2,  # level
-            6.15,  # elevation
-            0.05,  # height
-            paths[0],  # chain
+        self.space2 = molior_object.build_trace(
+            stylename="default",
+            condition="kitchen",
+            elevation=6.15,
+            height=0.05,
+            chain=paths[0],
         )
 
-        self.stair = molior_object.GetTraceIfc(
-            "default",  # style
-            "stair",  # condition
-            2,  # level
-            3.15,  # elevation
-            0.05,  # height
-            paths[0],  # chain
+        self.stair = molior_object.build_trace(
+            stylename="default",
+            condition="stair",
+            elevation=3.15,
+            height=0.05,
+            chain=paths[0],
         )
         ifc.write("_test.ifc")
 

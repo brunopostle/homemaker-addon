@@ -8,8 +8,11 @@ import ifcopenshell.api
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior.ifc
 from molior.ifc import (
-    createExtrudedAreaSolid,
-    createTessellations_fromDXF,
+    create_site,
+    create_building,
+    create_storeys,
+    create_extruded_area_solid,
+    create_tessellations_from_dxf,
     assign_storey_byindex,
 )
 from molior.geometry import matrix_transform, matrix_align
@@ -19,12 +22,17 @@ run = ifcopenshell.api.run
 
 class Tests(unittest.TestCase):
     def setUp(self):
-        ifc = molior.ifc.init("Building Name", {0.0: 0})
+        ifc = molior.ifc.init(name="My Project")
         for item in ifc.by_type("IfcGeometricRepresentationSubContext"):
             if item.ContextIdentifier == "Body":
                 body_context = item
             if item.ContextIdentifier == "Axis":
                 axis_context = item
+
+        project = ifc.by_type("IfcProject")[0]
+        site = create_site(ifc, project, "My Site")
+        self.building = create_building(ifc, site, "My Building")
+        create_storeys(ifc, self.building, {0.0: 0})
 
         # a centreline axis
         poly = ifc.createIfcShapeRepresentation(
@@ -43,14 +51,18 @@ class Tests(unittest.TestCase):
 
         wall = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
         run("geometry.assign_representation", ifc, product=wall, representation=poly)
-        assign_storey_byindex(ifc, wall, 0)
+        assign_storey_byindex(ifc, wall, self.building, 0)
 
         # a vertically extruded solid
         shape = ifc.createIfcShapeRepresentation(
             body_context,
             "Body",
             "SweptSolid",
-            [createExtrudedAreaSolid(ifc, [[0.0, 0.0], [5.0, 0.0], [5.0, 4.0]], 3.0)],
+            [
+                create_extruded_area_solid(
+                    ifc, [[0.0, 0.0], [5.0, 0.0], [5.0, 4.0]], 3.0
+                )
+            ],
         )
         slab = run("root.create_entity", ifc, ifc_class="IfcSlab", name="My Slab")
         run("geometry.assign_representation", ifc, product=slab, representation=shape)
@@ -60,14 +72,14 @@ class Tests(unittest.TestCase):
             product=slab,
             matrix=matrix_align([3.0, 0.0, 3.0], [4.0, 1.0, 3.0]),
         )
-        assign_storey_byindex(ifc, slab, 0)
+        assign_storey_byindex(ifc, slab, self.building, 0)
 
         # load a DXF polyface mesh as a Tessellation
         brep = ifc.createIfcShapeRepresentation(
             body_context,
             "Body",
             "Tessellation",
-            createTessellations_fromDXF(ifc, "molior/style/share/shopfront.dxf"),
+            create_tessellations_from_dxf(ifc, "molior/style/share/shopfront.dxf"),
         )
 
         # create a mapped item that can be reused
@@ -110,7 +122,7 @@ class Tests(unittest.TestCase):
             product=window,
             matrix=matrix_transform(0.0, [15.0, 0.0, 0.0]),
         )
-        assign_storey_byindex(ifc, window, 0)
+        assign_storey_byindex(ifc, window, self.building, 0)
 
         # create another window using the mapped item
         window2 = run(
@@ -138,7 +150,7 @@ class Tests(unittest.TestCase):
             product=window2,
             matrix=matrix_align([11.0, 0.0, 0.0], [11.0, 2.0, 0.0]),
         )
-        assign_storey_byindex(ifc, window2, 0)
+        assign_storey_byindex(ifc, window2, self.building, 0)
 
         # make the ifc model available to other test methods
         self.ifc = ifc
@@ -174,7 +186,7 @@ class Tests(unittest.TestCase):
             matrix=matrix_align([11.0, 0.0, 3.0], [11.0, 2.0, 0.0]),
         )
         # assign the window to a storey
-        assign_storey_byindex(ifc, myproduct, 0)
+        assign_storey_byindex(ifc, myproduct, self.building, 0)
 
         # The TypeProduct knows what MappedRepresentations to use
         typeproduct = lookup["shopfront.dxf"]
@@ -202,7 +214,7 @@ class Tests(unittest.TestCase):
                 "Body",
                 "SweptSolid",
                 [
-                    createExtrudedAreaSolid(
+                    create_extruded_area_solid(
                         ifc, [[0.0, -0.25], [6.0, -0.25], [6.0, 0.08], [0.0, 0.08]], 4.0
                     )
                 ],
@@ -217,7 +229,7 @@ class Tests(unittest.TestCase):
             matrix=matrix_align([11.0, -0.5, 3.0], [11.0, 2.0, 0.0]),
         )
         # assign the wall to a storey
-        assign_storey_byindex(ifc, mywall, 0)
+        assign_storey_byindex(ifc, mywall, self.building, 0)
 
         # create an opening
         myopening = run(
@@ -239,7 +251,7 @@ class Tests(unittest.TestCase):
                 "Body",
                 "SweptSolid",
                 [
-                    createExtrudedAreaSolid(
+                    create_extruded_area_solid(
                         ifc, [[0.5, -1.0], [5.5, -1.0], [5.5, 1.0], [0.5, 1.0]], 2.545
                     )
                 ],

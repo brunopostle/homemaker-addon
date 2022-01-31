@@ -3,7 +3,7 @@ Here they are used to tell walls and extrusions how to mitre properly.
 
 """
 
-from molior.geometry import normalise_3d, add_3d
+import numpy
 from topologist.helpers import el
 
 
@@ -21,7 +21,7 @@ class Normals:
         )
 
         if vertex_str in self.normals[label]:
-            self.normals[label][vertex_str] = add_3d(
+            self.normals[label][vertex_str] = numpy.add(
                 self.normals[label][vertex_str], vector
             )
         else:
@@ -31,6 +31,6 @@ class Normals:
         """add_vector() increments the magnitude, normalise to 1.0"""
         for label in self.normals:
             for vertex_str in self.normals[label]:
-                self.normals[label][vertex_str] = normalise_3d(
+                self.normals[label][vertex_str] /= numpy.linalg.norm(
                     self.normals[label][vertex_str]
                 )

@@ -26,7 +26,7 @@ setattr(topologic.Face, "ByVertices", ByVertices)
 
 
 @lru_cache(maxsize=256)
-def CellsOrdered(self):
+def CellsOrdered(self, host_topology):
     """Front Cell and back Cell, can be None"""
     centroid = FaceUtility.InternalVertex(self, 0.001).Coordinates()
     normal = self.Normal()
@@ -41,29 +41,30 @@ def CellsOrdered(self):
         centroid[2] - (normal[2] / 10),
     )
 
-    cells_ptr = self.Cells_Cached()
     results = [None, None]
-    for cell in cells_ptr:
-        if CellUtility.Contains(cell, vertex_front, 0.001) == 0:
-            results[0] = cell
-        elif CellUtility.Contains(cell, vertex_back, 0.001) == 0:
-            results[1] = cell
+    if host_topology:
+        cells_ptr = self.Cells_Cached(host_topology)
+        for cell in cells_ptr:
+            if CellUtility.Contains(cell, vertex_front, 0.001) == 0:
+                results[0] = cell
+            elif CellUtility.Contains(cell, vertex_back, 0.001) == 0:
+                results[1] = cell
     return results
 
 
 def VerticesPerimeter(self, vertices_ptr):
     """Vertices, tracing the outer perimeter"""
     wires_ptr = []
-    self.Wires(wires_ptr)
-    wires_ptr[0].Vertices(vertices_ptr)
+    self.Wires(None, wires_ptr)
+    wires_ptr[0].Vertices(None, vertices_ptr)
     return vertices_ptr
 
 
-def BadNormal(self):
+def BadNormal(self, cellcomplex):
     """Faces on outside of cellcomplex are orientated correctly, but 'outside'
     faces inside the cellcomplex have random orientation"""
-    if not self.IsWorld():
-        cells = self.CellsOrdered()
+    if not self.IsWorld(cellcomplex):
+        cells = self.CellsOrdered(cellcomplex)
         if cells[0] == None or cells[1] == None:
             self.Set("badnormal", True)
             return True
@@ -105,16 +106,30 @@ def AxisOuter(self):
             start_coor = edge.StartVertex().CoorAsString()
             end_coor = edge.EndVertex().CoorAsString()
             unordered.add_edge(
-                {start_coor: [end_coor, [edge.StartVertex(), edge.EndVertex(), self]]}
+                {
+                    start_coor: [
+                        end_coor,
+                        {
+                            "start_vertex": edge.StartVertex(),
+                            "end_vertex": edge.EndVertex(),
+                        },
+                    ]
+                }
             )
         ordered = unordered.find_chains()[0]
         ordered_edges = ordered.edges()
         first_edge = ordered_edges[0][0]
         last_edge = ordered_edges[-1][0]
         if self.Get("badnormal"):
-            return [ordered.graph[first_edge][1][1], ordered.graph[last_edge][1][0]]
+            return [
+                ordered.graph[first_edge][1]["end_vertex"],
+                ordered.graph[last_edge][1]["start_vertex"],
+            ]
         else:
-            return [ordered.graph[first_edge][1][0], ordered.graph[last_edge][1][1]]
+            return [
+                ordered.graph[first_edge][1]["start_vertex"],
+                ordered.graph[last_edge][1]["end_vertex"],
+            ]
 
 
 def AxisOuterTop(self):
@@ -127,22 +142,36 @@ def AxisOuterTop(self):
             start_coor = edge.StartVertex().CoorAsString()
             end_coor = edge.EndVertex().CoorAsString()
             unordered.add_edge(
-                {start_coor: [end_coor, [edge.StartVertex(), edge.EndVertex(), self]]}
+                {
+                    start_coor: [
+                        end_coor,
+                        {
+                            "start_vertex": edge.StartVertex(),
+                            "end_vertex": edge.EndVertex(),
+                        },
+                    ]
+                }
             )
         ordered = unordered.find_chains()[0]
         ordered_edges = ordered.edges()
         first_edge = ordered_edges[0][0]
         last_edge = ordered_edges[-1][0]
         if self.Get("badnormal"):
-            return [ordered.graph[last_edge][1][0], ordered.graph[first_edge][1][1]]
+            return [
+                ordered.graph[last_edge][1]["start_vertex"],
+                ordered.graph[first_edge][1]["end_vertex"],
+            ]
         else:
-            return [ordered.graph[last_edge][1][1], ordered.graph[first_edge][1][0]]
+            return [
+                ordered.graph[last_edge][1]["end_vertex"],
+                ordered.graph[first_edge][1]["start_vertex"],
+            ]
 
 
 @lru_cache(maxsize=256)
-def IsInternal(self):
+def IsInternal(self, host_topology):
     """Face between two indoor cells"""
-    cells_ptr = self.Cells_Cached()
+    cells_ptr = self.Cells_Cached(host_topology)
     if len(cells_ptr) == 2:
         for cell in cells_ptr:
             if cell.IsOutside():
@@ -152,9 +181,9 @@ def IsInternal(self):
 
 
 @lru_cache(maxsize=256)
-def IsExternal(self):
+def IsExternal(self, host_topology):
     """Face between indoor cell and (outdoor cell or world)"""
-    cells_ptr = self.Cells_Cached()
+    cells_ptr = self.Cells_Cached(host_topology)
     if len(cells_ptr) == 2:
         if cells_ptr[0].IsOutside() and not cells_ptr[1].IsOutside():
             return True
@@ -167,18 +196,18 @@ def IsExternal(self):
 
 
 @lru_cache(maxsize=256)
-def IsWorld(self):
+def IsWorld(self, host_topology):
     """Face on outside of mesh"""
-    cells_ptr = self.Cells_Cached()
+    cells_ptr = self.Cells_Cached(host_topology)
     if len(cells_ptr) == 1:
         return True
     return False
 
 
 @lru_cache(maxsize=256)
-def IsOpen(self):
+def IsOpen(self, host_topology):
     """Face on outdoor cell on outside of mesh"""
-    cells_ptr = self.Cells_Cached()
+    cells_ptr = self.Cells_Cached(host_topology)
     if len(cells_ptr) == 1:
         for cell in cells_ptr:
             if cell.IsOutside():
@@ -186,39 +215,37 @@ def IsOpen(self):
     return False
 
 
-def FaceAbove(self):
+def FaceAbove(self, host_topology):
     """Does vertical face have a vertical face attached to a horizontal top?"""
     edges_ptr = []
     self.EdgesTop(edges_ptr)
     for edge in edges_ptr:
-        faces_ptr = []
-        edge.Faces(faces_ptr)
+        faces_ptr = edge.Faces_Cached(host_topology)
         for face in faces_ptr:
             if face.IsVertical() and not face.IsSame(self):
                 return face
     return None
 
 
-def FaceBelow(self):
+def FaceBelow(self, host_topology):
     """Does vertical face have a vertical face attached to a horizontal bottom?"""
     edges_ptr = []
     self.EdgesBottom(edges_ptr)
     for edge in edges_ptr:
-        faces_ptr = []
-        edge.Faces(faces_ptr)
+        faces_ptr = edge.Faces_Cached(host_topology)
         for face in faces_ptr:
             if face.IsVertical() and not face.IsSame(self):
                 return face
     return None
 
 
-def HorizontalFacesSideways(self, result_faces_ptr):
+def HorizontalFacesSideways(self, host_topology):
     """Which horizontal faces are attached to the bottom of this vertical face?"""
     edges_ptr = []
     self.EdgesBottom(edges_ptr)
+    result_faces_ptr = []
     for edge in edges_ptr:
-        faces_ptr = []
-        edge.Faces(faces_ptr)
+        faces_ptr = edge.Faces_Cached(host_topology)
         for face in faces_ptr:
             if face.IsHorizontal() and not face.IsSame(self):
                 result_faces_ptr.append(face)
@@ -233,15 +260,14 @@ def Normal(self):
         return [normal_stl[0], normal_stl[1], normal_stl[2]]
 
 
-def TopLevelConditions(self):
+def TopLevelConditions(self, host_topology):
     """Assuming this is a vertical external wall, how do the top edges continue?"""
     # FIXME treats condition where above is an open wall same as eave
     result = []
     edges_ptr = []
     self.EdgesTop(edges_ptr)
     for edge in edges_ptr:
-        faces_ptr = []
-        edge.FacesExternal(faces_ptr)
+        faces_ptr = edge.FacesExternal(host_topology)
         for (
             face
         ) in faces_ptr:  # there should only be one external face (not including self)
@@ -267,15 +293,14 @@ def TopLevelConditions(self):
     return result
 
 
-def BottomLevelConditions(self):
+def BottomLevelConditions(self, host_topology):
     """Assuming this is a vertical external wall, how do the bottom edges continue?"""
     # FIXME treats condition where below is an open wall same as footing
     result = []
     edges_ptr = []
     self.EdgesBottom(edges_ptr)
     for edge in edges_ptr:
-        faces_ptr = []
-        edge.FacesExternal(faces_ptr)
+        faces_ptr = edge.FacesExternal(host_topology)
         for (
             face
         ) in faces_ptr:  # there should only be one external face (not including self)

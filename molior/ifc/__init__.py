@@ -19,18 +19,18 @@ from molior.geometry import (
 run = ifcopenshell.api.run
 
 
-def init(building_name, elevations):
+def init(name="Homemaker Project"):
     """Creates and sets up an ifc 'file' object"""
     file = run("project.create_file")
 
     run("owner.add_person", file)
     run("owner.add_organisation", file)
 
-    project = run(
+    run(
         "root.create_entity",
         file,
         ifc_class="IfcProject",
-        name="My Project",
+        name=name,
     )
 
     run("unit.assign_unit", file, length={"is_metric": True, "raw": "METERS"})
@@ -64,19 +64,27 @@ def init(building_name, elevations):
     # create a structural model
     run("structural.add_structural_analysis_model", file)
 
-    # create and relate site and building
-    site = run("root.create_entity", file, ifc_class="IfcSite", name="My Site")
-    run("aggregate.assign_object", file, product=site, relating_object=project)
-    createBuilding(file, site, building_name, elevations)
     return file
 
 
-def createBuilding(self, site, building_name, elevations):
-    """Add a building to an IfcSite"""
+def create_site(self, project, site_name):
+    """Add a Site to a Project"""
+    site = run("root.create_entity", self, ifc_class="IfcSite", name=site_name)
+    run("aggregate.assign_object", self, product=site, relating_object=project)
+    return site
+
+
+def create_building(self, site, building_name):
+    """Add a Building to a Site"""
     building = run(
         "root.create_entity", self, ifc_class="IfcBuilding", name=building_name
     )
     run("aggregate.assign_object", self, product=building, relating_object=site)
+    return building
+
+
+def create_storeys(self, building, elevations):
+    """Add Storey Spatial Elements to a Building, given a dictionary of elevations/name"""
     if elevations == {}:
         elevations[0.0] = 0
     for elevation in sorted(elevations):
@@ -97,10 +105,9 @@ def createBuilding(self, site, building_name, elevations):
             product=mystorey,
             matrix=matrix_align([0.0, 0.0, elevation], [1.0, 0.0, 0.0]),
         )
-    return building
 
 
-def createExtrudedAreaSolid(self, profile, height, direction=[0.0, 0.0, 1.0]):
+def create_extruded_area_solid(self, profile, height, direction=[0.0, 0.0, 1.0]):
     """A simple vertically extruded profile"""
     if not profile[-1] == profile[0]:
         # a closed polyline has first and last points coincident
@@ -122,7 +129,7 @@ def createExtrudedAreaSolid(self, profile, height, direction=[0.0, 0.0, 1.0]):
     )
 
 
-def clipSolid(self, solid, start, end):
+def clip_solid(self, solid, start, end):
     """Clip a wall using a half-space solid"""
     vector = subtract_3d(end, start)
     perp_plan = normalise_3d([0 - vector[1], vector[0], 0.0])
@@ -158,7 +165,7 @@ def clipSolid(self, solid, start, end):
     )
 
 
-def createCurveBoundedPlane(self, polygon, matrix):
+def create_curve_bounded_plane(self, polygon, matrix):
     """Create a bounded shape in the Z=0 plane"""
     return self.createIfcCurveBoundedPlane(
         self.createIfcPlane(
@@ -175,7 +182,7 @@ def createCurveBoundedPlane(self, polygon, matrix):
     )
 
 
-def createFaceSurface(self, polygon, normal):
+def create_face_surface(self, polygon, normal):
     """Create a single-face shape"""
     surface = self.createIfcPlane(
         self.createIfcAxis2Placement3D(
@@ -296,7 +303,7 @@ def assign_extrusion_fromDXF(
     )
 
 
-def createTessellations_fromDXF(self, path_dxf):
+def create_tessellations_from_dxf(self, path_dxf):
     """Create Tessellations given a DXF filepath"""
     doc = ezdxf.readfile(path_dxf)
     model = doc.modelspace()
@@ -308,7 +315,7 @@ def createTessellations_fromDXF(self, path_dxf):
             vertices, faces = entity.indexed_faces()
 
             tessellations.append(
-                createTessellation_fromMesh(
+                create_tessellation_from_mesh(
                     self,
                     [vertex.dxf.location for vertex in vertices],
                     [face.indices for face in faces],
@@ -317,7 +324,7 @@ def createTessellations_fromDXF(self, path_dxf):
     return tessellations
 
 
-def createTessellation_fromMesh(self, vertices, faces):
+def create_tessellation_from_mesh(self, vertices, faces):
     """Create a Tessellation from vertex coordinates and faces"""
     pointlist = self.createIfcCartesianPointList3D(vertices)
     indexedfaces = [
@@ -327,11 +334,12 @@ def createTessellation_fromMesh(self, vertices, faces):
     return self.createIfcPolygonalFaceSet(pointlist, None, indexedfaces, None)
 
 
-def assign_storey_byindex(self, entity, index):
+def assign_storey_byindex(self, entity, building, index):
     """Assign object to a storey by index"""
     storeys = {}
     for storey in self.by_type("IfcBuildingStorey"):
-        storeys[storey.Name] = storey
+        if get_building(storey) == building:
+            storeys[storey.Name] = storey
     if entity.is_a("IfcSpatialElement"):
         run(
             "aggregate.assign_object",
@@ -348,13 +356,16 @@ def assign_storey_byindex(self, entity, index):
         )
 
 
-def assign_space_byindex(self, entity, index):
+def assign_space_byindex(self, entity, building, index):
     """Assign object to a Space by index"""
     spaces = {}
     for space in self.by_type("IfcSpace"):
-        pset_topology = ifcopenshell.util.element.get_psets(space).get("EPset_Topology")
-        if pset_topology:
-            spaces[pset_topology["CellIndex"]] = space
+        if get_building(space) == building:
+            pset_topology = ifcopenshell.util.element.get_psets(space).get(
+                "EPset_Topology"
+            )
+            if pset_topology:
+                spaces[pset_topology["CellIndex"]] = space
     if not str(index) in spaces:
         return
     if entity.is_a("IfcSpatialElement"):
@@ -402,7 +413,7 @@ def get_type_by_dxf(self, subcontext, ifc_type, stylename, path_dxf):
         subcontext,
         subcontext.ContextIdentifier,
         "Tessellation",
-        createTessellations_fromDXF(self, path_dxf),
+        create_tessellations_from_dxf(self, path_dxf),
     )
     type_product = run(
         "root.create_entity",
@@ -450,6 +461,25 @@ def get_library_by_name(self, library_name):
         relating_context=self.by_type("IfcProject")[0],
     )
     return library
+
+
+def get_building(entity):
+    """Retrieve whatever Building contains this entity, or None"""
+    if entity.is_a("IfcElement"):
+        parents = entity.ContainedInStructure
+        if not parents:
+            return None
+        parent = parents[0]
+    elif entity.is_a("IfcSpatialElement"):
+        decomposes = entity.Decomposes
+        if not decomposes:
+            return None
+        parent = decomposes[0].RelatingObject
+    else:
+        return None
+    if parent.is_a("IfcBuilding"):
+        return parent
+    get_building(parent)
 
 
 def get_material_by_name(self, subcontext, material_name, style_materials):

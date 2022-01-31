@@ -7,6 +7,9 @@ import unittest
 from topologic import Vertex, Face, CellComplex
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+import topologist.face
+
+assert topologist.face
 
 
 class Tests(unittest.TestCase):
@@ -65,17 +68,21 @@ class Tests(unittest.TestCase):
 
     def test_perimeter(self):
         cells_ptr = []
-        self.cc.Cells(cells_ptr)
+        self.cc.Cells(None, cells_ptr)
         for cell in cells_ptr:
-            perimeter = cell.Perimeter()
+            perimeter = cell.Perimeter(self.cc)
             if len(perimeter.nodes()) == 3:
                 self.assertEqual(len(perimeter.edges()), 3)
                 for vertex in perimeter.nodes():
-                    self.assertEqual(perimeter.graph[vertex][1][0].Z(), 0.0)
+                    self.assertEqual(
+                        perimeter.graph[vertex][1]["start_vertex"].Z(), 0.0
+                    )
             if len(perimeter.nodes()) == 4:
                 self.assertEqual(len(perimeter.edges()), 4)
                 for vertex in perimeter.nodes():
-                    self.assertEqual(perimeter.graph[vertex][1][0].Z(), 10.0)
+                    self.assertEqual(
+                        perimeter.graph[vertex][1]["start_vertex"].Z(), 10.0
+                    )
 
 
 if __name__ == "__main__":

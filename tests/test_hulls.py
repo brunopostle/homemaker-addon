@@ -63,7 +63,7 @@ class Tests(unittest.TestCase):
     def test_faces_cc(self):
 
         all_faces_ptr = []
-        self.cc.Faces(all_faces_ptr)
+        self.cc.Faces(None, all_faces_ptr)
         self.assertEqual(len(all_faces_ptr), 7)
 
         count = 0
@@ -92,11 +92,12 @@ class Tests(unittest.TestCase):
         self.assertEqual(centroid.Z(), 7.0)  # average of vertex positions
 
         cells_ptr = []
-        self.cc.Cells(cells_ptr)
+        self.cc.Cells(None, cells_ptr)
         self.assertEqual(len(cells_ptr), 1)
 
     def test_traces(self):
-        traces, hulls, normals, elevations = self.cc.GetTraces()
+        traces, normals, elevations = self.cc.GetTraces()
+        hulls = self.cc.GetHulls()
 
         traces_external = traces["external"]
         self.assertEqual(len(traces_external), 1)
@@ -117,17 +118,18 @@ class Tests(unittest.TestCase):
         self.assertEqual(len(normals["bottom"].keys()), 4)
 
     def test_ifc(self):
-        traces, hulls, normals, elevations = self.cc.GetTraces()
-        ifc = molior.ifc.init("My House", elevations)
+        traces, normals, elevations = self.cc.GetTraces()
+        hulls = self.cc.GetHulls()
+        ifc = molior.ifc.init(name="My Project")
         molior_object = Molior(
             file=ifc,
             circulation=None,
-            elevations=elevations,
             traces=traces,
             hulls=hulls,
             normals=normals,
             cellcomplex=self.cc,
         )
+        molior_object.add_building(name="My House", elevations=elevations)
         molior_object.execute()
         ifc.write("_test.ifc")
 

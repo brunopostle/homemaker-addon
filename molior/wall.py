@@ -16,13 +16,13 @@ from molior.geometry import (
     map_to_2d,
 )
 from molior.ifc import (
-    createExtrudedAreaSolid,
-    clipSolid,
-    createFaceSurface,
+    create_extruded_area_solid,
+    clip_solid,
+    create_face_surface,
     assign_representation_fromDXF,
     assign_storey_byindex,
     get_material_by_name,
-    createCurveBoundedPlane,
+    create_curve_bounded_plane,
 )
 
 run = ifcopenshell.api.run
@@ -74,7 +74,7 @@ class Wall(TraceClass):
             ifc_class=self.ifc,
             name=self.identifier,
         )
-        assign_storey_byindex(self.file, aggregate, self.level)
+        assign_storey_byindex(self.file, aggregate, self.building, self.level)
 
         previous_wall = None
         segments = self.segments()
@@ -93,17 +93,19 @@ class Wall(TraceClass):
             )
 
             segment = self.chain.edges()[id_segment]
-            face = self.chain.graph[segment[0]][1][2]
+            face = self.chain.graph[segment[0]][1]["face"]
             vertices_ptr = []
-            self.chain.graph[segment[0]][1][2].VerticesPerimeter(vertices_ptr)
+            self.chain.graph[segment[0]][1]["face"].VerticesPerimeter(vertices_ptr)
             vertices = [vertex.Coordinates() for vertex in vertices_ptr]
-            normal = self.chain.graph[segment[0]][1][2].Normal()
+            normal = self.chain.graph[segment[0]][1]["face"].Normal()
 
             # generate space boundaries
             boundaries = []
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
-            curve_bounded_plane = createCurveBoundedPlane(self.file, nodes_2d, matrix)
-            for cell in face.CellsOrdered():
+            curve_bounded_plane = create_curve_bounded_plane(
+                self.file, nodes_2d, matrix
+            )
+            for cell in face.CellsOrdered(self.cellcomplex):
                 if cell == None:
                     boundaries.append(None)
                     continue
@@ -112,7 +114,7 @@ class Wall(TraceClass):
                     self.file,
                     ifc_class="IfcRelSpaceBoundary2ndLevel",
                 )
-                if face.IsInternal():
+                if face.IsInternal(self.cellcomplex):
                     boundary.InternalOrExternalBoundary = "INTERNAL"
                 else:
                     boundary.InternalOrExternalBoundary = "EXTERNAL"
@@ -168,7 +170,7 @@ class Wall(TraceClass):
             v_in_b = self.corner_in(id_segment + 1)
 
             # wall is a plan shape extruded vertically
-            solid = createExtrudedAreaSolid(
+            solid = create_extruded_area_solid(
                 self.file,
                 [
                     transform(matrix_reverse, vertex)
@@ -252,12 +254,12 @@ class Wall(TraceClass):
                 ]
             )
 
-            back_cell = self.chain.graph[segment[0]][1][3]
-            front_cell = self.chain.graph[segment[0]][1][4]
+            back_cell = self.chain.graph[segment[0]][1]["back_cell"]
+            front_cell = self.chain.graph[segment[0]][1]["front_cell"]
             self.add_topology_pset(mywall, face, back_cell, front_cell)
 
             # structure
-            face_surface = createFaceSurface(self.file, vertices, normal)
+            face_surface = create_face_surface(self.file, vertices, normal)
             # generate structural surfaces
             structural_surface = run(
                 "root.create_entity",
@@ -310,7 +312,7 @@ class Wall(TraceClass):
             for edge in edges_ptr:
                 start_coor = transform(matrix_reverse, edge.StartVertex().Coordinates())
                 end_coor = transform(matrix_reverse, edge.EndVertex().Coordinates())
-                solid = clipSolid(
+                solid = clip_solid(
                     self.file,
                     solid,
                     subtract_3d(
@@ -328,7 +330,7 @@ class Wall(TraceClass):
                     )
                     < 0.001
                 ):
-                    solid = clipSolid(
+                    solid = clip_solid(
                         self.file,
                         solid,
                         subtract_3d(
@@ -349,7 +351,7 @@ class Wall(TraceClass):
                     )
                     < 0.001
                 ):
-                    solid = clipSolid(
+                    solid = clip_solid(
                         self.file,
                         solid,
                         subtract_3d(
@@ -443,7 +445,7 @@ class Wall(TraceClass):
                     ),
                 )
                 # assign the entity to a storey
-                assign_storey_byindex(self.file, entity, self.level)
+                assign_storey_byindex(self.file, entity, self.building, self.level)
                 # assign a material
                 run(
                     "material.assign_material",
@@ -480,7 +482,7 @@ class Wall(TraceClass):
                         body_context.ContextIdentifier,
                         "SweptSolid",
                         [
-                            createExtrudedAreaSolid(
+                            create_extruded_area_solid(
                                 self.file,
                                 [
                                     [0.0, outer],
@@ -525,11 +527,11 @@ class Wall(TraceClass):
                     [*left_2d, soffit],
                 ]
                 nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
-                curve_bounded_plane = createCurveBoundedPlane(
+                curve_bounded_plane = create_curve_bounded_plane(
                     self.file, nodes_2d, matrix
                 )
                 cell_id = 0
-                for cell in face.CellsOrdered():
+                for cell in face.CellsOrdered(self.cellcomplex):
                     parent_boundary = boundaries[cell_id]
                     cell_id += 1
                     if cell == None:
@@ -564,19 +566,12 @@ class Wall(TraceClass):
             edges = self.chain.edges()
             for id_segment in range(len(self.openings)):
                 edge = self.chain.graph[edges[id_segment][0]]
-                # edge = {
-                #     string_coor_start: [
-                #         string_coor_end,
-                #         [Vertex_start, Vertex_end, Face, Cell_left, Cell_right],
-                #     ]
-                # }
-                face = edge[1][2]
                 try:
-                    interior_type = edge[1][3].Usage()
+                    interior_type = edge[1]["back_cell"].Usage()
                 except:
-                    interior_type = None
+                    interior_type = "living"
                 try:
-                    exterior_type = edge[1][4].Usage()
+                    exterior_type = edge[1]["front_cell"].Usage()
                 except:
                     exterior_type = None
                 access = 0
@@ -588,12 +583,16 @@ class Wall(TraceClass):
                 self.fix_gable(id_segment)
         elif "do_populate_interior_openings" in self.__dict__:
             edge = self.chain.graph[self.chain.edges()[0][0]]
-            face = edge[1][2]
+            face = edge[1]["face"]
             vertex = face.GraphVertex(self.circulation)
             # FIXME determine door orientation
-            if vertex is not None and edge[1][3] is not None and edge[1][4] is not None:
+            if (
+                vertex is not None
+                and edge[1]["back_cell"] is not None
+                and edge[1]["front_cell"] is not None
+            ):
                 self.populate_interior_openings(
-                    0, edge[1][3].Usage(), edge[1][4].Usage(), 0
+                    0, edge[1]["back_cell"].Usage(), edge[1]["front_cell"].Usage(), 0
                 )
                 self.fix_heights(0)
                 self.fix_segment(0)
@@ -1077,7 +1076,7 @@ class Wall(TraceClass):
         if len(openings) == 0:
             return
         segment = self.chain.edges()[id_segment]
-        face = self.chain.graph[segment[0]][1][2]
+        face = self.chain.graph[segment[0]][1]["face"]
 
         edges_ptr = []
         face.EdgesCrop(edges_ptr)

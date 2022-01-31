@@ -23,22 +23,41 @@ class Tests(unittest.TestCase):
         coor_0 = vertex_0.CoorAsString()
         coor_1 = vertex_1.CoorAsString()
 
+        dummy_cell = Vertex.ByCoordinates(0.0, 0.0, 0.0)
+
         face = Face.ByVertices([vertex_0, vertex_1, vertex_2, vertex_3])
         # a real wall would have a Face and one or two Cells
-        # string: [string, [Vertex, Vertex, Face, Cell, Cell]]
-        trace.add_edge({coor_0: [coor_1, [vertex_0, vertex_1, face, None, None]]})
+        trace.add_edge(
+            {
+                coor_0: [
+                    coor_1,
+                    {
+                        "start_vertex": vertex_0,
+                        "end_vertex": vertex_1,
+                        "face": face,
+                        "back_cell": None,
+                        "front_cell": None,
+                    },
+                ]
+            }
+        )
         paths = trace.find_paths()
 
-        ifc = molior.ifc.init("Our House", {3.15: 2})
+        ifc = molior.ifc.init(name="Our Project")
 
-        molior_object = Molior(file=ifc, circulation=Graph, normals=normals.normals)
-        self.wall = molior_object.GetTraceIfc(
-            "default",  # style
-            "internal",  # condition
-            2,  # level
-            3.15,  # elevation
-            2.85,  # height
-            paths[0],  # chain
+        molior_object = Molior(
+            file=ifc,
+            circulation=Graph,
+            normals=normals.normals,
+            cellcomplex=dummy_cell,
+        )
+        molior_object.add_building(name="My House", elevations={3.15: 2})
+        self.wall = molior_object.build_trace(
+            stylename="default",
+            condition="internal",
+            elevation=3.15,
+            height=2.85,
+            chain=paths[0],
         )[0]
 
         self.wall.populate_interior_openings(0, "living", "living", 0)

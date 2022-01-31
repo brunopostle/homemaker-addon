@@ -56,8 +56,19 @@ class Traces:
     def __init__(self):
         self.traces = {}
 
-    def add_axis(self, label, elevation, height, stylename, edge, face):
-        """edge is two Vertices, add to graph, will split into distinct graphs later"""
+    def add_axis(
+        self,
+        label,
+        elevation,
+        height,
+        stylename,
+        start_vertex=None,
+        end_vertex=None,
+        face=None,
+        front_cell=None,
+        back_cell=None,
+    ):
+        """add an edge defined by two vertices to graph, will split into distinct graphs later"""
         traces = self.traces
         if not label in traces:
             traces[label] = {}
@@ -68,26 +79,52 @@ class Traces:
         if not stylename in traces[label][elevation][height]:
             traces[label][elevation][height][stylename] = ugraph.graph()
 
-        cells = face.CellsOrdered()
-        start_coor = edge[0].CoorAsString()
-        end_coor = edge[1].CoorAsString()
-
         traces[label][elevation][height][stylename].add_edge(
-            {start_coor: [end_coor, [edge[0], edge[1], face, cells[1], cells[0]]]}
+            {
+                start_vertex.CoorAsString(): [
+                    end_vertex.CoorAsString(),
+                    {
+                        "start_vertex": start_vertex,
+                        "end_vertex": end_vertex,
+                        "face": face,
+                        "back_cell": back_cell,
+                        "front_cell": front_cell,
+                    },
+                ]
+            }
         )
 
-    def add_axis_simple(self, label, elevation, height, stylename, edge, face):
-        """edge is two vertices, add as a simple single edge graph"""
-        cells = face.CellsOrdered()
-        start_coor = edge[0].CoorAsString()
-        end_coor = edge[1].CoorAsString()
+    def add_axis_simple(
+        self,
+        label,
+        elevation,
+        height,
+        stylename,
+        start_vertex=None,
+        end_vertex=None,
+        face=None,
+        front_cell=None,
+        back_cell=None,
+    ):
+        """append a graph consisting of a single edge defined by two vertices"""
         graph = ugraph.graph()
         graph.add_edge(
-            {start_coor: [end_coor, [edge[0], edge[1], face, cells[1], cells[0]]]}
+            {
+                start_vertex.CoorAsString(): [
+                    end_vertex.CoorAsString(),
+                    {
+                        "start_vertex": start_vertex,
+                        "end_vertex": end_vertex,
+                        "face": face,
+                        "back_cell": back_cell,
+                        "front_cell": front_cell,
+                    },
+                ]
+            }
         )
-        self.add_trace(label, elevation, height, stylename, graph)
+        self.add_trace(label, elevation, height, stylename, graph=graph)
 
-    def add_trace(self, label, elevation, height, stylename, graph):
+    def add_trace(self, label, elevation, height, stylename, graph=ugraph.graph()):
         """graph is already assembled, append"""
         traces = self.traces
         if not label in traces:

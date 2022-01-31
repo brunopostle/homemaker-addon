@@ -2,11 +2,10 @@
 
 import unittest, sys, os
 
-from topologic import Vertex, Face, CellComplex, Graph
+from topologic import Vertex, Face, CellComplex
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from topologist.helpers import wipe_global_cluster
-from fitness import p159_light_on_two_sides_of_every_room
+from topologist.fitness import p159_light_on_two_sides_of_every_room
 
 
 class Tests(unittest.TestCase):
@@ -960,21 +959,21 @@ class Tests(unittest.TestCase):
 
         # Generate a Topologic CellComplex
         self.cc = CellComplex.ByFaces(faces_ptr, 0.0001)
+        # Give every Cell and Face an index number
+        self.cc.IndexTopology()
         # Copy styles from Faces to the CellComplex
         self.cc.ApplyDictionary(faces_ptr)
-        wipe_global_cluster([self.cc])
         # Assign Cell usages from widgets
         self.cc.AllocateCells(widgets)
-        wipe_global_cluster([self.cc])
         # Generate a circulation Graph
-        self.circulation = Graph.Adjacency(self.cc)
+        self.circulation = self.cc.Adjacency()
         self.circulation.Circulation(self.cc)
         self.shortest_path_table = self.circulation.ShortestPathTable()
         self.circulation.Separation(self.shortest_path_table, self.cc)
 
     def test_circulation(self):
         cells_ptr = []
-        self.cc.Cells(cells_ptr)
+        self.cc.Cells(None, cells_ptr)
         self.assertTrue(self.circulation.IsConnected())
 
         assessor = p159_light_on_two_sides_of_every_room.Assessor(

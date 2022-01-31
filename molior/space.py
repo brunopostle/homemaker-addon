@@ -4,8 +4,8 @@ import numpy
 from molior.baseclass import TraceClass
 from molior.geometry import matrix_align
 from molior.ifc import (
-    createExtrudedAreaSolid,
-    createTessellation_fromMesh,
+    create_extruded_area_solid,
+    create_tessellation_from_mesh,
     assign_storey_byindex,
 )
 
@@ -36,7 +36,7 @@ class Space(TraceClass):
             if item.ContextIdentifier == "Body":
                 body_context = item
         # the cell is the first cell attached to any edge in the chain
-        cell = self.chain.graph[next(iter(self.chain.graph))][1][3]
+        cell = self.chain.graph[next(iter(self.chain.graph))][1]["back_cell"]
 
         element = run(
             "root.create_entity",
@@ -47,7 +47,7 @@ class Space(TraceClass):
 
         try:
             is_external = cell.IsOutside()
-            crinkliness = int(cell.Crinkliness() * 10) / 10
+            crinkliness = int(cell.Crinkliness(self.cellcomplex) * 10) / 10
         except:
             is_external = False
             crinkliness = 1.0
@@ -67,12 +67,12 @@ class Space(TraceClass):
         # FIXME should create IfcSpaceType for this
         self.add_psets(element)
 
-        assign_storey_byindex(self.file, element, self.level)
+        assign_storey_byindex(self.file, element, self.building, self.level)
 
         if not self.do_representation:
             return
         # simple extruded representation
-        representation = createExtrudedAreaSolid(
+        representation = create_extruded_area_solid(
             self.file,
             [self.corner_in(index) for index in range(len(self.path))],
             self.height - self.ceiling,
@@ -87,7 +87,7 @@ class Space(TraceClass):
             vertices = [
                 [v[0], v[1], v[2] - self.elevation - self.floor] for v in vertices
             ]
-            tessellation = createTessellation_fromMesh(self.file, vertices, faces)
+            tessellation = create_tessellation_from_mesh(self.file, vertices, faces)
             representation = self.file.createIfcBooleanResult(
                 "INTERSECTION", representation, tessellation
             )

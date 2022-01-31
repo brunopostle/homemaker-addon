@@ -4,9 +4,9 @@ from topologist.helpers import string_to_coor, el
 from molior.baseclass import BaseClass
 from molior.geometry import map_to_2d
 from molior.ifc import (
-    createExtrudedAreaSolid,
-    createCurveBoundedPlane,
-    createFaceSurface,
+    create_extruded_area_solid,
+    create_curve_bounded_plane,
+    create_face_surface,
     assign_storey_byindex,
     get_material_by_name,
 )
@@ -53,7 +53,7 @@ class Shell(BaseClass):
         inclines = []
         uniform_pitch = False
         for face in self.hull.faces:
-            normal = face[1]
+            normal = face[1]["face"].Normal()
             inclines.append(normal[2])
         if abs(max(inclines) - min(inclines)) < 0.01:
             uniform_pitch = True
@@ -61,11 +61,11 @@ class Shell(BaseClass):
         elevation = None
         for face in self.hull.faces:
             vertices = [[*string_to_coor(node_str)] for node_str in face[0]]
-            normal = face[1]
+            normal = face[1]["face"].Normal()
             # need this for boundaries
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
             # need this for structure
-            face_surface = createFaceSurface(self.file, vertices, normal)
+            face_surface = create_face_surface(self.file, vertices, normal)
             for vertex in vertices:
                 if elevation == None or vertex[2] < elevation:
                     elevation = el(vertex[2])
@@ -82,7 +82,9 @@ class Shell(BaseClass):
                 product=element,
                 relating_object=aggregate,
             )
-            self.add_topology_pset(element, *face[2])
+            self.add_topology_pset(
+                element, face[1]["face"], face[1]["back_cell"], face[1]["front_cell"]
+            )
 
             # generate space boundary for back cell
             boundary = run(
@@ -91,7 +93,7 @@ class Shell(BaseClass):
                 ifc_class="IfcRelSpaceBoundary2ndLevel",
             )
             boundary.ConnectionGeometry = self.file.createIfcConnectionSurfaceGeometry(
-                createCurveBoundedPlane(self.file, nodes_2d, matrix)
+                create_curve_bounded_plane(self.file, nodes_2d, matrix)
             )
             if element.is_a("IfcVirtualElement"):
                 boundary.PhysicalOrVirtualBoundary = "VIRTUAL"
@@ -100,10 +102,11 @@ class Shell(BaseClass):
             boundary.InternalOrExternalBoundary = "EXTERNAL"
             boundary.RelatedBuildingElement = element
 
-            cell_index = face[2][1].Get("index")
-            if cell_index != None:
-                # can't assign psets to an IfcRelationship, use Description instead
-                boundary.Description = "CellIndex " + str(cell_index)
+            if face[1]["back_cell"]:
+                cell_index = face[1]["back_cell"].Get("index")
+                if cell_index != None:
+                    # can't assign psets to an IfcRelationship, use Description instead
+                    boundary.Description = "CellIndex " + str(cell_index)
 
             if element.is_a("IfcVirtualElement"):
                 continue
@@ -118,7 +121,12 @@ class Shell(BaseClass):
                 name=self.identifier,
                 predefined_type="SHELL",
             )
-            self.add_topology_pset(structural_surface, *face[2])
+            self.add_topology_pset(
+                structural_surface,
+                face[1]["face"],
+                face[1]["back_cell"],
+                face[1]["front_cell"],
+            )
             structural_surface.Thickness = self.thickness
             run(
                 "structural.assign_structural_analysis_model",
@@ -190,7 +198,7 @@ class Shell(BaseClass):
                 "Body",
                 "SweptSolid",
                 [
-                    createExtrudedAreaSolid(
+                    create_extruded_area_solid(
                         self.file,
                         nodes_2d,
                         extrude_height,
@@ -213,4 +221,4 @@ class Shell(BaseClass):
         level = 0
         if elevation in self.elevations:
             level = self.elevations[elevation]
-        assign_storey_byindex(self.file, aggregate, level)
+        assign_storey_byindex(self.file, aggregate, self.building, level)

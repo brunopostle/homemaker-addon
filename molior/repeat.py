@@ -102,7 +102,7 @@ class Repeat(TraceClass):
                 predefined_type=self.predefined_type,
             )
             # assign the aggregate to a storey
-            assign_storey_byindex(self.file, aggregate, self.level)
+            assign_storey_byindex(self.file, aggregate, self.building, self.level)
 
             if self.parent_aggregate != None:
                 run(
@@ -148,6 +148,7 @@ class Repeat(TraceClass):
                                     "normal_set": self.normal_set,
                                     "parent_aggregate": aggregate,
                                     "style": self.style,
+                                    "building": self.building,
                                     "level": self.level,
                                     "predefined_type": self.predefined_type,
                                     "style_assets": self.style_assets,
@@ -219,9 +220,9 @@ class Repeat(TraceClass):
                         assignment.RelatingProduct = structural_member
                         assignment.RelatedObjects = [entity]
                         segment = self.chain.edges()[id_segment]
-                        face = self.chain.graph[segment[0]][1][2]
-                        back_cell = self.chain.graph[segment[0]][1][3]
-                        front_cell = self.chain.graph[segment[0]][1][4]
+                        face = self.chain.graph[segment[0]][1]["face"]
+                        back_cell = self.chain.graph[segment[0]][1]["back_cell"]
+                        front_cell = self.chain.graph[segment[0]][1]["front_cell"]
                         self.add_topology_pset(
                             structural_member, face, back_cell, front_cell
                         )

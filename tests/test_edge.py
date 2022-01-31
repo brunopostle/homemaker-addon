@@ -6,6 +6,9 @@ import unittest
 from topologic import Vertex, Edge, Face, Cell, CellUtility
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+import topologist.edge
+
+assert topologist.edge
 
 
 class Tests(unittest.TestCase):
@@ -34,21 +37,21 @@ class Tests(unittest.TestCase):
 
     def test_below(self):
         edges_ptr = []
-        self.cell.Edges(edges_ptr)
+        self.cell.Edges(None, edges_ptr)
         faces_above = 0
         faces_below = 0
         cells_below = 0
         for edge in edges_ptr:
             if edge.IsHorizontal():
-                if edge.FaceBelow():
+                if edge.FaceBelow(self.cell):
                     faces_below += 1
-                    self.assertEqual(type(edge.FaceBelow()), Face)
-                if edge.FaceAbove():
+                    self.assertEqual(type(edge.FaceBelow(self.cell)), Face)
+                if edge.FaceAbove(self.cell):
                     faces_above += 1
-                    self.assertEqual(type(edge.FaceAbove()), Face)
-                if len(list(edge.CellsBelow())) == 1:
+                    self.assertEqual(type(edge.FaceAbove(self.cell)), Face)
+                if len(list(edge.CellsBelow(self.cell))) == 1:
                     cells_below += 1
-                    self.assertEqual(type(list(edge.CellsBelow())[0]), Cell)
+                    self.assertEqual(type(list(edge.CellsBelow(self.cell))[0]), Cell)
         self.assertEqual(faces_above, 4)
         self.assertEqual(faces_below, 4)
         self.assertEqual(cells_below, 4)

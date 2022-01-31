@@ -5,9 +5,9 @@ from topologic import Cell, CellComplex
 from molior.baseclass import TraceClass
 from molior.geometry import matrix_align, map_to_2d
 from molior.ifc import (
-    createExtrudedAreaSolid,
-    createCurveBoundedPlane,
-    createFaceSurface,
+    create_extruded_area_solid,
+    create_curve_bounded_plane,
+    create_face_surface,
     assign_storey_byindex,
     get_material_by_name,
 )
@@ -44,7 +44,7 @@ class Floor(TraceClass):
                 body_context = item
 
         # every node in the graph references the cell, pick one
-        cell = self.chain.graph[next(iter(self.chain.graph))][1][3]
+        cell = self.chain.graph[next(iter(self.chain.graph))][1]["back_cell"]
 
         # with stairs we want a Virtual Element instead of a Slab
         if (
@@ -66,7 +66,7 @@ class Floor(TraceClass):
             name=self.name + "/" + str(cell.Get("index")),
         )
         # Slab will be re-assigned to Space later
-        assign_storey_byindex(self.file, element, self.level)
+        assign_storey_byindex(self.file, element, self.building, self.level)
 
         if type(cell) == Cell:
             bottom_faces_ptr = []
@@ -94,13 +94,13 @@ class Floor(TraceClass):
                 # need this for boundaries
                 nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
                 # need this for structure
-                face_surface = createFaceSurface(self.file, vertices, normal)
+                face_surface = create_face_surface(self.file, vertices, normal)
 
                 # generate space boundaries
-                curve_bounded_plane = createCurveBoundedPlane(
+                curve_bounded_plane = create_curve_bounded_plane(
                     self.file, nodes_2d, matrix
                 )
-                for cell in face.CellsOrdered():
+                for cell in face.CellsOrdered(self.cellcomplex):
                     if cell == None:
                         continue
                     boundary = run(
@@ -118,7 +118,7 @@ class Floor(TraceClass):
                         boundary.PhysicalOrVirtualBoundary = "VIRTUAL"
                     else:
                         boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
-                    if face.IsInternal():
+                    if face.IsInternal(self.cellcomplex):
                         boundary.InternalOrExternalBoundary = "INTERNAL"
                     else:
                         boundary.InternalOrExternalBoundary = "EXTERNAL"
@@ -145,7 +145,9 @@ class Floor(TraceClass):
                 assignment.RelatingProduct = structural_surface
                 assignment.RelatedObjects = [element]
 
-                self.add_topology_pset(structural_surface, face, *face.CellsOrdered())
+                self.add_topology_pset(
+                    structural_surface, face, *face.CellsOrdered(self.cellcomplex)
+                )
                 run(
                     "structural.assign_structural_analysis_model",
                     self.file,
@@ -201,7 +203,7 @@ class Floor(TraceClass):
             body_context.ContextIdentifier,
             "SweptSolid",
             [
-                createExtrudedAreaSolid(
+                create_extruded_area_solid(
                     self.file,
                     [self.corner_in(index) for index in range(len(self.path))],
                     self.thickness,

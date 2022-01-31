@@ -20,30 +20,30 @@ def IsVertical(self):
     return False
 
 
-def FaceAbove(self):
+def FaceAbove(self, host_topology):
     """Is there a vertical face attached above?"""
     faces_ptr = []
-    self.Faces(faces_ptr)
+    self.Faces(host_topology, faces_ptr)
     for face in faces_ptr:
         if face.IsVertical() and face.Centroid().Z() > self.Centroid().Z():
             return face
     return None
 
 
-def FaceBelow(self):
+def FaceBelow(self, host_topology):
     """Is there a vertical face attached below?"""
     faces_ptr = []
-    self.Faces(faces_ptr)
+    self.Faces(host_topology, faces_ptr)
     for face in faces_ptr:
         if face.IsVertical() and face.Centroid().Z() < self.Centroid().Z():
             return face
     return None
 
 
-def CellsBelow(self):
+def CellsBelow(self, host_topology):
     """Are there Cells below this edge?"""
     result_cells_ptr = []
-    cells_ptr = self.Cells_Cached()
+    cells_ptr = self.Cells_Cached(host_topology)
     for cell in cells_ptr:
         if cell.Centroid().Z() < self.Centroid().Z():
             result_cells_ptr.append(cell)

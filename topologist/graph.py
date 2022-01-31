@@ -1,33 +1,7 @@
 """Overloads domain-specific methods onto topologic.Graph"""
 
 import topologic
-from topologic import Graph, VertexUtility
-
-
-def Adjacency(cellcomplex):
-    """Index all cells and faces, return a circulation graph with the same indexing"""
-    """Adjacency graph has nodes for cells, and nodes for faces that connect them"""
-    cells_ptr = []
-    cellcomplex.Cells(cells_ptr)
-    index = 0
-    for cell in cells_ptr:
-        cell.Set("index", str(index))
-        cell.Set("class", "Cell")
-        index += 1
-
-    faces_ptr = []
-    cellcomplex.Faces(faces_ptr)
-    index = 0
-    for face in faces_ptr:
-        face.Set("index", str(index))
-        face.Set("class", "Face")
-        index += 1
-
-    # a graph where each cell and face between them has a vertex
-    graph = Graph.ByTopology(
-        cellcomplex, False, True, False, False, False, False, 0.0001
-    )
-    return graph
+from topologic import VertexUtility
 
 
 def Circulation(self, cellcomplex):
@@ -42,8 +16,7 @@ def Circulation(self, cellcomplex):
                 # is too narrow for a door
                 vertices_ptr.append(vertex)
             else:
-                cells_ptr = []
-                face.Cells(cells_ptr)
+                cells_ptr = face.Cells_Cached(cellcomplex)
                 cells = cells_ptr
                 if cells[0].Elevation() != cells[1].Elevation():
                     # floors either side are not at the same level
@@ -62,8 +35,7 @@ def Circulation(self, cellcomplex):
 
         elif face.IsHorizontal():
             # floor
-            cells_ptr = []
-            face.Cells(cells_ptr)
+            cells_ptr = face.Cells_Cached(cellcomplex)
             if (
                 len(cells_ptr) == 2
                 and cells_ptr[0].Usage() == "stair"
@@ -114,7 +86,7 @@ def ShortestPathTable(self):
                 continue
             wire = self.ShortestPath(vertices_list[i], vertices_list[j], "", "length")
             edges_ptr = []
-            wire.Edges(edges_ptr)
+            wire.Edges(None, edges_ptr)
             length = 0.0
             for edge in edges_ptr:
                 length += edge.Length()
@@ -175,10 +147,10 @@ def GetEntity(self, cellcomplex, vertex):
     index = vertex.Get("index")
     if vertex.Get("class") == "Face":
         topologies_ptr = []
-        cellcomplex.Faces(topologies_ptr)
+        cellcomplex.Faces(None, topologies_ptr)
     elif vertex.Get("class") == "Cell":
         topologies_ptr = []
-        cellcomplex.Cells(topologies_ptr)
+        cellcomplex.Cells(None, topologies_ptr)
     else:
         return None
     for entity in topologies_ptr:
@@ -209,7 +181,6 @@ def Dot(self, cellcomplex):
     return string
 
 
-setattr(topologic.Graph, "Adjacency", Adjacency)
 setattr(topologic.Graph, "Circulation", Circulation)
 setattr(topologic.Graph, "IsConnected", IsConnected)
 setattr(topologic.Graph, "ShortestPathTable", ShortestPathTable)

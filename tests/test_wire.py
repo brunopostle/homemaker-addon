@@ -55,10 +55,10 @@ class Tests(unittest.TestCase):
         cluster = Cluster.ByTopologies(edges_ptr)
         merged = cluster.SelfMerge()
         wires_ptr = []
-        merged.Wires(wires_ptr)
+        merged.Wires(None, wires_ptr)
         for wire in wires_ptr:
             vertices_ptr = []
-            wire.Vertices(vertices_ptr)
+            wire.Vertices(None, vertices_ptr)
             if len(vertices_ptr) == 4:
                 self.assertTrue(wire.IsClosed())
             if len(vertices_ptr) == 3:
@@ -74,7 +74,7 @@ class Tests(unittest.TestCase):
         self.assertFalse(wire.IsClosed())
 
         vertices_ptr = []
-        wire.Vertices(vertices_ptr)
+        wire.Vertices(None, vertices_ptr)
         self.assertEqual(vertices_ptr[0].X(), 0.0)
         self.assertEqual(vertices_ptr[0].Y(), 0.0)
         self.assertEqual(vertices_ptr[1].X(), 10.0)
@@ -94,7 +94,7 @@ class Tests(unittest.TestCase):
         self.assertFalse(wire.IsClosed())
 
         vertices_ptr = []
-        wire.Vertices(vertices_ptr)
+        wire.Vertices(None, vertices_ptr)
         self.assertEqual(vertices_ptr[0].X(), 0.0)
         self.assertEqual(vertices_ptr[0].Y(), 10.0)
         self.assertEqual(vertices_ptr[1].X(), 10.0)
@@ -115,7 +115,7 @@ class Tests(unittest.TestCase):
         self.assertTrue(wire.IsClosed())
 
         vertices_ptr = []
-        wire.Vertices(vertices_ptr)
+        wire.Vertices(None, vertices_ptr)
         self.assertEqual(vertices_ptr[0].X(), 10.0)
         self.assertEqual(vertices_ptr[0].Y(), 0.0)
         self.assertEqual(vertices_ptr[1].X(), 0.0)

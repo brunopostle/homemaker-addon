@@ -17,7 +17,7 @@ anti-clockwise direction, these follow the outlines of rooms, walls,
 eaves, string-courses etc.
 
 Traces are defined using a simple directed-graph implementation,
-'molior.ugraph', this only supports linear chains and doesn't support
+'topologist.ugraph', this only supports linear chains and doesn't support
 branching.  The traces contain references back to relevant Vertices,
 Faces and Cells in the original Topologic CellComplex.
 
@@ -40,4 +40,4 @@ import topologist.cell
 import topologist.cellcomplex
 import topologist.graph
 
-topologist.graph.noop = None
+assert topologist.graph

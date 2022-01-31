@@ -73,11 +73,10 @@ class Tests(unittest.TestCase):
     def test_faces_cc(self):
 
         all_faces_ptr = []
-        self.cc.Faces(all_faces_ptr)
+        self.cc.Faces(None, all_faces_ptr)
         self.assertEqual(len(all_faces_ptr), 14)
         for face in all_faces_ptr:
-            cells_ptr = []
-            face.Cells(cells_ptr)
+            cells_ptr = face.Cells_Cached(self.cc)
             self.assertGreater(len(cells_ptr), 0)
             self.assertLess(len(cells_ptr), 3)
 
@@ -101,15 +100,15 @@ class Tests(unittest.TestCase):
         self.assertEqual(centroid.Z(), 10.0)
 
         cells_ptr = []
-        self.cc.Cells(cells_ptr)
+        self.cc.Cells(None, cells_ptr)
         self.assertEqual(len(cells_ptr), 3)
 
         for cell in cells_ptr:
             centroid = cell.Centroid()
             volume = CellUtility.Volume(cell)
             planarea = cell.PlanArea()
-            externalwallarea = cell.ExternalWallArea()
-            crinkliness = cell.Crinkliness()
+            externalwallarea = cell.ExternalWallArea(self.cc)
+            crinkliness = cell.Crinkliness(self.cc)
 
             vertical_faces_ptr = []
             cell.FacesVertical(vertical_faces_ptr)
@@ -144,8 +143,8 @@ class Tests(unittest.TestCase):
                     self.assertEqual(len(top_edges_ptr), 1)
                     self.assertEqual(len(bottom_edges_ptr), 1)
 
-                    self.assertFalse(face.FaceAbove())
-                    self.assertTrue(face.FaceBelow())
+                    self.assertFalse(face.FaceAbove(self.cc))
+                    self.assertTrue(face.FaceBelow(self.cc))
 
             below_cells_ptr = []
             cell.CellsBelow(self.cc, below_cells_ptr)
@@ -157,7 +156,7 @@ class Tests(unittest.TestCase):
                 self.assertEqual(cell.Usage(), "Kitchen")
 
         cells_ptr = []
-        self.cc.Cells(cells_ptr)
+        self.cc.Cells(None, cells_ptr)
         has_kitchen = False
         has_bedroom = False
         for cell in cells_ptr:
@@ -178,7 +177,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(len(horizontal_faces_ptr), 5)
 
     def test_graph(self):
-        traces, hulls, normals, elevations = self.cc.GetTraces()
+        traces, normals, elevations = self.cc.GetTraces()
         traces_external = traces["external"]
         self.assertEqual(len(traces_external), 2)
         self.assertEqual(len(traces_external[0.0]), 1)
@@ -198,12 +197,11 @@ class Tests(unittest.TestCase):
         # self.assertEqual(data[1].GetType(), 1)  # Vertex == 1
         # self.assertEqual(data[2].GetType(), 8)  # Face == 8
         # self.assertEqual(data[3].GetType(), 32)  # Cell == 32
-        self.assertEqual(data[4], None)  # no outer Cell
-        faces_ptr = []
-        data[0].Faces(faces_ptr)
+        self.assertEqual(data["front_cell"], None)  # no outer Cell
+        faces_ptr = data["start_vertex"].Faces_Cached(self.cc)
         self.assertEqual(len(faces_ptr), 3)  # vertex is connected to 3 faces
         faces_ptr = []
-        data[2].AdjacentFaces(faces_ptr)
+        data["face"].AdjacentFaces(self.cc, faces_ptr)
         self.assertEqual(len(faces_ptr), 6)  # face is connected to 6 faces
 
         upper = traces_external[10.0][10.0]["default"]
@@ -221,9 +219,9 @@ class Tests(unittest.TestCase):
             self.assertEqual(len(graph.edges()), 1)
             for edge in graph.edges():
                 data = graph.get_edge_data(edge)
-                start = data[0]
-                end = data[1]
-                face = data[2]
+                start = data["start_vertex"]
+                end = data["end_vertex"]
+                face = data["face"]
                 self.assertEqual(start.X(), 10.0)
                 self.assertEqual(start.Y(), 10.0)
                 self.assertEqual(start.Z(), 0.0)
@@ -238,7 +236,7 @@ class Tests(unittest.TestCase):
                 self.assertEqual(face.Type(), 8)
 
     def test_elevations(self):
-        traces, hulls, normals, elevations = self.cc.GetTraces()
+        traces, normals, elevations = self.cc.GetTraces()
         self.assertEqual(len(elevations), 3)
         self.assertEqual(elevations[0.0], 0)
         self.assertEqual(elevations[10.0], 1)
@@ -250,7 +248,7 @@ class Tests(unittest.TestCase):
         )
         topology = graph.Topology()
         edges_ptr = []
-        topology.Edges(edges_ptr)
+        topology.Edges(None, edges_ptr)
         self.assertEqual(len(edges_ptr), 3)
 
 

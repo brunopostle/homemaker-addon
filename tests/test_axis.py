@@ -7,6 +7,9 @@ import unittest
 from topologic import Vertex, Edge, Wire, Face, CellComplex
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+import topologist.face
+
+assert topologist.face
 
 
 class Tests(unittest.TestCase):
@@ -84,8 +87,8 @@ class Tests(unittest.TestCase):
         axis_vertices_ptr = []
         axis_top_vertices_ptr = []
 
-        wire_axis.Vertices(axis_vertices_ptr)
-        wire_axis_top.Vertices(axis_top_vertices_ptr)
+        wire_axis.Vertices(None, axis_vertices_ptr)
+        wire_axis_top.Vertices(None, axis_top_vertices_ptr)
 
         self.assertEqual(len(axis_vertices_ptr), 4)
         self.assertEqual(len(axis_top_vertices_ptr), 4)
