@@ -310,17 +310,15 @@ def create_tessellations_from_dxf(self, path_dxf):
     tessellations = []
     for entity in model:
         if entity.get_mode() == "AcDbPolyFaceMesh":
-            if len(list(entity.faces())) == 0:
-                continue
-            vertices, faces = entity.indexed_faces()
-
-            tessellations.append(
-                create_tessellation_from_mesh(
-                    self,
-                    [vertex.dxf.location for vertex in vertices],
-                    [face.indices for face in faces],
+            if entity.faces():
+                vertices, faces = entity.indexed_faces()
+                tessellations.append(
+                    create_tessellation_from_mesh(
+                        self,
+                        [vertex.dxf.location for vertex in vertices],
+                        [face.indices for face in faces],
+                    )
                 )
-            )
     return tessellations
 
 
@@ -539,17 +537,3 @@ def get_material_by_name(self, subcontext, material_name, style_materials):
             context=subcontext,
         )
     return mymaterial
-
-
-# FIXME doesn't appear to be in use
-def merge_file(self, source):
-    original_project = self.by_type("IfcProject")[0]
-    temp_project = self.add(source.by_type("IfcProject")[0])
-    # FIXME doesn't merge material styles
-    for element in source.by_type("IfcRoot"):
-        self.add(element)
-    for element in self.get_inverse(temp_project):
-        ifcopenshell.util.element.replace_attribute(
-            element, temp_project, original_project
-        )
-    self.remove(temp_project)

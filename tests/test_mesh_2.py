@@ -13,7 +13,7 @@ from topologic import (
 )
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from topologist.helpers import string_to_coor, string_to_coor_2d
+from topologist.helpers import string_to_coor
 
 
 class Tests(unittest.TestCase):
@@ -211,7 +211,7 @@ class Tests(unittest.TestCase):
         nodes = upper[0].nodes()
         for node in nodes:
             self.assertEqual(string_to_coor(node)[2], 10.0)
-            self.assertEqual(len(string_to_coor_2d(node)), 2)
+            self.assertEqual(len(string_to_coor(node)[0:2]), 2)
 
         traces_internal = traces["internal"][0.0][10.0]["default"]
         for graph in traces_internal:

@@ -6,6 +6,7 @@ from topologic import Vertex, Face, CellComplex
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from topologist.fitness import p159_light_on_two_sides_of_every_room
+from molior import Molior
 
 
 class Tests(unittest.TestCase):
@@ -982,6 +983,19 @@ class Tests(unittest.TestCase):
         for cell in cells_ptr:
             assessor.execute(cell)
 
+    def test_molior(self):
+        traces, normals, elevations = self.cc.GetTraces()
+        hulls = self.cc.GetHulls()
+
+        molior_object = Molior(
+            circulation=self.circulation,
+            traces=traces,
+            hulls=hulls,
+            normals=normals,
+            cellcomplex=self.cc,
+        )
+        molior_object.add_building(name="My test building", elevations=elevations)
+        molior_object.execute()
 
 if __name__ == "__main__":
     unittest.main()
