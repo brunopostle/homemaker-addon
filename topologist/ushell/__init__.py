@@ -25,10 +25,12 @@ class shell:
                 self.nodes[nodes_str[index]] = []
             self.nodes[nodes_str[index]].append(my_face)
 
+    # FIXME doesn't appear to be in use
     def nodes_all(self):
         """get a list of node coordinates for export"""
         return [string_to_coor(node) for node in list(self.nodes)]
 
+    # FIXME doesn't appear to be in use
     def faces_all(self):
         """get a list of faces as node ids for export"""
         faces = []

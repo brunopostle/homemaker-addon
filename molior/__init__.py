@@ -546,7 +546,7 @@ class Molior:
         height=2.7,
         chain=ugraph.graph(),
     ):
-        """Retrieves IFC data and adds to model"""
+        """Generates IFC data for a single trace and adds to the current building"""
         results = []
         myconfig = Molior.style.get(stylename)
         level = 0
@@ -605,7 +605,7 @@ class Molior:
         return results
 
     def build_hull(self, stylename="default", condition="panel", hull=ushell.shell()):
-        """Retrieves IFC data and adds to model"""
+        """Generates IFC data for a single hull and adds to the current building"""
         results = []
         myconfig = Molior.style.get(stylename)
         for name in myconfig["hulls"]:

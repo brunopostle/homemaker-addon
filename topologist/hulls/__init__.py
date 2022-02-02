@@ -1,6 +1,14 @@
-"""Hulls are 3D shells that define non-wall building elements,
+"""Hulls are 3D shells that define non-wall planar building elements,
 differentiated by style properties.  Typically these define roofs,
 soffits etc.
+
+There are hulls for these conditions:
+
+* panel (a vertical wall that doesn't have a horizontal bottom edge)
+* flat (a flat roof)
+* roof (an inclined roof)
+* soffit (an inclined soffit)
+* vault (an inclined divider between internal spaces)
 
 """
 

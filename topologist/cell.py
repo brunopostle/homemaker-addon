@@ -7,6 +7,7 @@ import topologist.ugraph as ugraph
 
 
 def FacesTop(self, result_faces_ptr):
+    """Horizontal Faces at the top of this Cell"""
     faces_ptr = []
     self.Faces(None, faces_ptr)
     for face in faces_ptr:
@@ -18,6 +19,7 @@ def FacesTop(self, result_faces_ptr):
 
 
 def FacesBottom(self, result_faces_ptr):
+    """Horizontal Faces at the bottom of this Cell"""
     faces_ptr = []
     self.Faces(None, faces_ptr)
     for face in faces_ptr:
@@ -26,6 +28,7 @@ def FacesBottom(self, result_faces_ptr):
 
 
 def FacesVerticalExternal(self, cellcomplex, result_faces_ptr):
+    """Faces between an indoor Cell and outdoor Cell (or world)"""
     faces_ptr = []
     self.Faces(None, faces_ptr)
     for face in faces_ptr:
@@ -34,7 +37,7 @@ def FacesVerticalExternal(self, cellcomplex, result_faces_ptr):
 
 
 def CellsAbove(self, topology, result_cells_ptr):
-    """Cells (excluding self) connected to top faces of this cell"""
+    """Cells (excluding self) connected to horizontal Faces at the top of this Cell"""
     top_faces_ptr = []
     self.FacesTop(top_faces_ptr)
     for face in top_faces_ptr:
@@ -46,7 +49,7 @@ def CellsAbove(self, topology, result_cells_ptr):
 
 
 def CellsBelow(self, topology, result_cells_ptr):
-    """Cells (excluding self) connected to bottom faces of this cell"""
+    """Cells (excluding self) connected to horizontal Faces at the bottom of this cell"""
     bottom_faces_ptr = []
     self.FacesBottom(bottom_faces_ptr)
     for face in bottom_faces_ptr:
@@ -58,7 +61,7 @@ def CellsBelow(self, topology, result_cells_ptr):
 
 
 def Usage(self):
-    """Type() is taken by Topologic"""
+    """What kind of room or space is this (Type() is taken by Topologic)"""
     usage = self.Get("usage")
     if usage:
         return usage
@@ -74,6 +77,7 @@ def IsOutside(self):
 
 
 def PlanArea(self):
+    """Surface area of horizontal Faces at the bottom of this Cell"""
     result = 0.0
     faces_ptr = []
     self.FacesBottom(faces_ptr)
@@ -83,10 +87,12 @@ def PlanArea(self):
 
 
 def ExternalWallArea(self, cellcomplex):
+    """Surface area of vertical Faces between an indoor Cell and an outdoor Cell (or world)"""
     result = 0.0
     faces_ptr = []
     self.FacesVerticalExternal(cellcomplex, faces_ptr)
     for face in faces_ptr:
+        # FIXME 'blank' stylename shouldn't be magic like this
         if face.Get("stylename") == "blank":
             continue
         result += FaceUtility.Area(face)
@@ -94,13 +100,14 @@ def ExternalWallArea(self, cellcomplex):
 
 
 def Crinkliness(self, cellcomplex):
+    """ExternalWallArea() / PlanArea()"""
     if self.PlanArea() == 0.0:
         return 0.0
     return self.ExternalWallArea(cellcomplex) / self.PlanArea()
 
 
 def Perimeter(self, host_topology):
-    """2D outline of cell floor, closed, anti-clockwise"""
+    """2D outline of Cell vertical walls, closed, anti-clockwise"""
     elevation = self.Elevation()
     faces_ptr = []
     self.FacesVertical(faces_ptr)
@@ -171,7 +178,7 @@ def Perimeter(self, host_topology):
                 ]
             }
         )
-    # returning the first cycle will do weird things with doughnut shaped rooms
+    # FIXME should return list of cycles, with outer perimeter first (to support doughnut shaped rooms)
     return graph.find_paths()[0]
 
 

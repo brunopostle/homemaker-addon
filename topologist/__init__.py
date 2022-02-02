@@ -1,8 +1,8 @@
-"""Extensions to topologicPy for ordinary buildings
+"""Extensions to topologic for ordinary buildings
 
-The Topologic library and its topologicPy python interface models
+The Topologic library and its topologic python interface models
 generic non-manifold mesh 3D geometry.  This 'topologist' module
-overloads additional functionality onto the topologicPy module that is
+overloads additional functionality onto the topologic module that is
 specific to ordinary buildings.  In particular: horizontal and vertical
 faces are considered to be floors and walls; rooms are spaces with
 vertical walls on all sides; non-horizontal faces form roofs and/or
@@ -10,16 +10,20 @@ soffits; and cells are tagged as indoor 'rooms', voids, or outdoor
 spaces.
 
 With this model of what-a-building-is, it is possible to decompose the
-Topologic CellComplex geometry into 'traces' that define building
-components.  Traces are 2D closed or open chains, differentiated by
-elevation, height and style properties, typically running in an
-anti-clockwise direction, these follow the outlines of rooms, walls,
-eaves, string-courses etc.
+Topologic CellComplex geometry into 'traces' and 'hulls' that define
+building components.  Traces are 2D closed or open chains,
+differentiated by elevation, height and style properties, typically
+running in an anti-clockwise direction, these follow the outlines of
+rooms, walls, eaves, string-courses etc.  Hulls are 3D open or closed
+shells, differentiated by style.
 
 Traces are defined using a simple directed-graph implementation,
 'topologist.ugraph', this only supports linear chains and doesn't support
 branching.  The traces contain references back to relevant Vertices,
 Faces and Cells in the original Topologic CellComplex.
+
+Hulls are defined using a simple faceted surface implementation,
+'topologist.ushell'.
 
 Topological relationships between rooms are useful for analysis of the
 resulting building, this module contains methods for creating Topologic

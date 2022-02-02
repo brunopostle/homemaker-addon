@@ -22,6 +22,8 @@ def Circulation(self, cellcomplex):
                     # floors either side are not at the same level
                     vertices_ptr.append(vertex)
                 else:
+                    # TODO should use 'separation' attribute to prune excess doors
+                    # FIXME this puts doors into 'void' spaces
                     usage_a = cells[0].Usage()
                     usage_b = cells[1].Usage()
                     if (usage_a == "bedroom" or usage_a == "toilet") and not (
@@ -55,67 +57,66 @@ def IsConnected(self):
     connected = True
     vertices_ptr = []
     self.Vertices(vertices_ptr)
-    if len(vertices_ptr) == 0:
-        return connected
-    vertex_a = vertices_ptr[0]
-    for vertex_b in vertices_ptr:
-        if vertex_b.Get("class") == "Face":
-            continue
-        if vertex_a.IsSame(vertex_b):
-            continue
-        distance = self.TopologicalDistance(vertex_a, vertex_b)
-        if distance > 255:
-            connected = False
+    if vertices_ptr:
+        vertex_a = vertices_ptr[0]
+        for vertex_b in vertices_ptr:
+            if vertex_b.Get("class") == "Face":
+                continue
+            if vertex_a.IsSame(vertex_b):
+                continue
+            distance = self.TopologicalDistance(vertex_a, vertex_b)
+            if distance > 255:
+                connected = False
     return connected
 
 
 def ShortestPathTable(self):
     """Calculates shortest path distance between all pairs of cells and returns a lookup table"""
     result = {}
-    if not self.IsConnected():
-        return result
-    vertices_ptr = []
-    self.Vertices(vertices_ptr)
-    vertices_list = []
-    for vertex in vertices_ptr:
-        if vertex.Get("class") == "Cell":
-            vertices_list.append(vertex)
-    for i in range(len(vertices_list)):
-        for j in range(len(vertices_list)):
-            if j <= i:
-                continue
-            wire = self.ShortestPath(vertices_list[i], vertices_list[j], "", "length")
-            edges_ptr = []
-            wire.Edges(None, edges_ptr)
-            length = 0.0
-            for edge in edges_ptr:
-                length += edge.Length()
-            i_index = vertices_list[i].Get("index")
-            j_index = vertices_list[j].Get("index")
-            if not i_index in result:
-                result[i_index] = {}
-            if not j_index in result:
-                result[j_index] = {}
-            result[i_index][j_index] = length
-            result[j_index][i_index] = length
+    if self.IsConnected():
+        vertices_ptr = []
+        self.Vertices(vertices_ptr)
+        vertices_list = []
+        for vertex in vertices_ptr:
+            if vertex.Get("class") == "Cell":
+                vertices_list.append(vertex)
+        for i in range(len(vertices_list)):
+            for j in range(len(vertices_list)):
+                if j <= i:
+                    continue
+                wire = self.ShortestPath(
+                    vertices_list[i], vertices_list[j], "", "length"
+                )
+                edges_ptr = []
+                wire.Edges(None, edges_ptr)
+                length = 0.0
+                for edge in edges_ptr:
+                    length += edge.Length()
+                i_index = vertices_list[i].Get("index")
+                j_index = vertices_list[j].Get("index")
+                if not i_index in result:
+                    result[i_index] = {}
+                if not j_index in result:
+                    result[j_index] = {}
+                result[i_index][j_index] = length
+                result[j_index][i_index] = length
     return result
 
 
 def Separation(self, table, cellcomplex):
     """Tags 'cell' vertices with average travel distance to all other cells"""
-    if table == {}:
-        return
-    vertices_ptr = []
-    self.Vertices(vertices_ptr)
-    for vertex in vertices_ptr:
-        if vertex.Get("class") == "Cell":
-            index = vertex.Get("index")
-            total_length = 0.0
-            for length in table[index].values():
-                total_length += length
-            separation = str(total_length / len(table[index]))
-            vertex.Set("separation", separation)
-            self.GetEntity(cellcomplex, vertex).Set("separation", separation)
+    if table:
+        vertices_ptr = []
+        self.Vertices(vertices_ptr)
+        for vertex in vertices_ptr:
+            if vertex.Get("class") == "Cell":
+                index = vertex.Get("index")
+                total_length = 0.0
+                for length in table[index].values():
+                    total_length += length
+                separation = str(total_length / len(table[index]))
+                vertex.Set("separation", separation)
+                self.GetEntity(cellcomplex, vertex).Set("separation", separation)
 
 
 def Faces(self, cellcomplex):
