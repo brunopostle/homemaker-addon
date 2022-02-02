@@ -8,6 +8,7 @@ from topologist.helpers import el
 
 @lru_cache(maxsize=256)
 def Cells_Cached(self, host_topology):
+    """List of Cells directly attached to this Topology"""
     cells_ptr = []
     self.Cells(host_topology, cells_ptr)
     return cells_ptr
@@ -15,12 +16,14 @@ def Cells_Cached(self, host_topology):
 
 @lru_cache(maxsize=256)
 def Faces_Cached(self, host_topology):
+    """List of Faces directly attached to this Topology"""
     faces_ptr = []
     self.Faces(host_topology, faces_ptr)
     return faces_ptr
 
 
 def FacesVertical(self, faces_ptr):
+    """List of vertical Faces within this Topology"""
     elements_ptr = []
     self.Faces(None, elements_ptr)
     for face in elements_ptr:
@@ -29,6 +32,7 @@ def FacesVertical(self, faces_ptr):
 
 
 def FacesHorizontal(self, faces_ptr):
+    """List of horizontal Faces within this Topology"""
     elements_ptr = []
     self.Faces(None, elements_ptr)
     for face in elements_ptr:
@@ -37,6 +41,7 @@ def FacesHorizontal(self, faces_ptr):
 
 
 def FacesInclined(self, faces_ptr):
+    """List of inclined Faces within this Topology"""
     if self.__class__ == Vertex:
         # Faces() is for searching sub-topologies and a Vertex has none
         return
@@ -48,7 +53,7 @@ def FacesInclined(self, faces_ptr):
 
 
 def FacesExternal(self, host_topology):
-    """searches host not sub-topologies"""
+    """List of external Faces directly attached to this Topology"""
     faces_ptr = []
     elements_ptr = self.Faces_Cached(host_topology)
     for face in elements_ptr:
@@ -59,6 +64,7 @@ def FacesExternal(self, host_topology):
 
 @lru_cache(maxsize=256)
 def Elevation(self):
+    """Lowest point in this Topology"""
     lowest = 9999999.9
     vertices_ptr = []
     self.Vertices(None, vertices_ptr)
@@ -70,6 +76,7 @@ def Elevation(self):
 
 @lru_cache(maxsize=256)
 def Height(self):
+    """Vertical distance between the lowest and highest points in this Topology"""
     highest = -9999999.9
     vertices_ptr = []
     self.Vertices(None, vertices_ptr)
@@ -80,7 +87,8 @@ def Height(self):
 
 
 def Mesh(self):
-    """A list of node coordinates and a list of faces"""
+    """A list of Vertex coordinates and a list of indexed Faces"""
+    # FIXME should also return Face dictionaries using DumpDictionary()
     vertices_ptr = []
     self.Vertices(None, vertices_ptr)
     vertices = [vertex.Coordinates() for vertex in vertices_ptr]
@@ -156,6 +164,7 @@ def Get(self, key):
 
 
 def DumpDictionary(self):
+    """Dump string attributes as a python dictionary"""
     dictionary = self.GetDictionary()
     keys = dictionary.Keys()
     result = {}
@@ -166,6 +175,7 @@ def DumpDictionary(self):
 
 
 def GraphVertex(self, graph):
+    """What Vertex in a given Graph corresponds with this Topology"""
     index = self.Get("index")
     myclass = type(self).__name__
     if not index == None:

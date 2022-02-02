@@ -61,8 +61,9 @@ def VerticesPerimeter(self, vertices_ptr):
 
 
 def BadNormal(self, cellcomplex):
-    """Faces on outside of cellcomplex are orientated correctly, but 'outside'
-    faces inside the cellcomplex have random orientation"""
+    """Faces on outside of CellComplex are orientated correctly, but 'outside'
+    Faces inside the CellComplex have random orientation. Tag them with 'badnormal'
+    if Face doesn't face 'out'"""
     if not self.IsWorld(cellcomplex):
         cells = self.CellsOrdered(cellcomplex)
         if cells[0] == None or cells[1] == None:
@@ -75,7 +76,6 @@ def BadNormal(self, cellcomplex):
 
 
 def IsVertical(self):
-
     normal_stl = FaceUtility.NormalAtParameters(self, 0.5, 0.5)
     if abs(normal_stl[2]) < 0.0001:
         return True
@@ -182,7 +182,7 @@ def IsInternal(self, host_topology):
 
 @lru_cache(maxsize=256)
 def IsExternal(self, host_topology):
-    """Face between indoor cell and (outdoor cell or world)"""
+    """Face between indoor cell and outdoor cell (or world)"""
     cells_ptr = self.Cells_Cached(host_topology)
     if len(cells_ptr) == 2:
         if cells_ptr[0].IsOutside() and not cells_ptr[1].IsOutside():
@@ -216,7 +216,7 @@ def IsOpen(self, host_topology):
 
 
 def FaceAbove(self, host_topology):
-    """Does vertical face have a vertical face attached to a horizontal top?"""
+    """Does this Face have a vertical Face attached to a horizontal top Edge?"""
     edges_ptr = []
     self.EdgesTop(edges_ptr)
     for edge in edges_ptr:
@@ -228,7 +228,7 @@ def FaceAbove(self, host_topology):
 
 
 def FaceBelow(self, host_topology):
-    """Does vertical face have a vertical face attached to a horizontal bottom?"""
+    """Does this Face have a vertical Face attached to a horizontal bottom Edge?"""
     edges_ptr = []
     self.EdgesBottom(edges_ptr)
     for edge in edges_ptr:
@@ -240,7 +240,7 @@ def FaceBelow(self, host_topology):
 
 
 def HorizontalFacesSideways(self, host_topology):
-    """Which horizontal faces are attached to the bottom of this vertical face?"""
+    """Which horizontal faces are attached to the bottom Edges of this Face?"""
     edges_ptr = []
     self.EdgesBottom(edges_ptr)
     result_faces_ptr = []
@@ -253,6 +253,7 @@ def HorizontalFacesSideways(self, host_topology):
 
 
 def Normal(self):
+    """Normal for this Face, but flipped if tagged with 'badnormal'"""
     normal_stl = FaceUtility.NormalAtParameters(self, 0.5, 0.5)
     if self.Get("badnormal"):
         return [-normal_stl[0], -normal_stl[1], -normal_stl[2]]

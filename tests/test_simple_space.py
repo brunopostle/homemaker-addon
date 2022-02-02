@@ -10,7 +10,7 @@ from molior import Molior
 import molior.ifc
 
 
-"""Example showing how to generate Wall objects from Topologic Faces.
+"""Example showing how to generate Space and Floor objects from Topologic Cells.
 """
 
 

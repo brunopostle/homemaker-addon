@@ -585,7 +585,7 @@ class Wall(TraceClass):
             edge = self.chain.graph[self.chain.edges()[0][0]]
             face = edge[1]["face"]
             vertex = face.GraphVertex(self.circulation)
-            # FIXME determine door orientation
+            # FIXME determine door orientation using 'separation' attribute, see Molior.connect_spaces()
             if (
                 vertex is not None
                 and edge[1]["back_cell"] is not None

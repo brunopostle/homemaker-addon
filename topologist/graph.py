@@ -22,6 +22,8 @@ def Circulation(self, cellcomplex):
                     # floors either side are not at the same level
                     vertices_ptr.append(vertex)
                 else:
+                    # TODO should use 'separation' attribute to prune excess doors
+                    # FIXME this puts doors into 'void' spaces
                     usage_a = cells[0].Usage()
                     usage_b = cells[1].Usage()
                     if (usage_a == "bedroom" or usage_a == "toilet") and not (

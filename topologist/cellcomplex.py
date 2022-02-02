@@ -10,6 +10,7 @@ import topologist.normals
 
 def IndexTopology(self):
     """Index all cells and faces"""
+    # TODO should retain existing index numbers
     cells_ptr = []
     self.Cells(None, cells_ptr)
     index = 0
@@ -28,7 +29,7 @@ def IndexTopology(self):
 
 
 def AllocateCells(self, widgets):
-    """Set cell types using widgets, or default to 'Outside'"""
+    """Set Cell types using widgets, or default to 'living' ('void' when no Perimeter)"""
     cells_ptr = []
     self.Cells(None, cells_ptr)
     for cell in cells_ptr:
