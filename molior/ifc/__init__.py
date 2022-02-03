@@ -467,7 +467,7 @@ def get_building(entity):
         parents = entity.ContainedInStructure
         if not parents:
             return None
-        parent = parents[0]
+        parent = parents[0].RelatingStructure
     elif entity.is_a("IfcSpatialElement"):
         decomposes = entity.Decomposes
         if not decomposes:
@@ -477,7 +477,7 @@ def get_building(entity):
         return None
     if parent.is_a("IfcBuilding"):
         return parent
-    get_building(parent)
+    return get_building(parent)
 
 
 def get_material_by_name(self, subcontext, material_name, style_materials):
