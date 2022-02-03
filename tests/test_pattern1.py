@@ -997,5 +997,6 @@ class Tests(unittest.TestCase):
         molior_object.add_building(name="My test building", elevations=elevations)
         molior_object.execute()
 
+
 if __name__ == "__main__":
     unittest.main()
