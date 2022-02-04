@@ -84,9 +84,7 @@ class Extrusion(TraceClass):
                     "structural.assign_structural_analysis_model",
                     self.file,
                     product=structural_member,
-                    structural_analysis_model=self.file.by_type(
-                        "IfcStructuralAnalysisModel"
-                    )[0],
+                    structural_analysis_model=self.structural_analysis_model,
                 )
                 run(
                     "geometry.assign_representation",

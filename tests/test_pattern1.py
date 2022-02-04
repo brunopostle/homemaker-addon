@@ -996,6 +996,7 @@ class Tests(unittest.TestCase):
         )
         molior_object.add_building(name="My test building", elevations=elevations)
         molior_object.execute()
+        molior_object.file.write("_test.ifc")
 
 
 if __name__ == "__main__":

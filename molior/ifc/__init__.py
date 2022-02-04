@@ -61,9 +61,6 @@ def init(name="Homemaker Project"):
         target_view="GRAPH_VIEW",
     )
 
-    # create a structural model
-    run("structural.add_structural_analysis_model", file)
-
     return file
 
 
@@ -81,6 +78,17 @@ def create_building(self, site, building_name):
     )
     run("aggregate.assign_object", self, product=building, relating_object=site)
     return building
+
+
+def create_structural_analysis_model(self, building, model_name):
+    """Add a structural model to a building"""
+    model = run("structural.add_structural_analysis_model", self)
+    rel = run(
+        "root.create_entity", self, ifc_class="IfcRelServicesBuildings", name=model_name
+    )
+    rel.RelatingSystem = model
+    rel.RelatedBuildings = [building]
+    return model
 
 
 def create_storeys(self, building, elevations):
@@ -468,11 +476,16 @@ def get_building(entity):
         if not parents:
             return None
         parent = parents[0].RelatingStructure
-    elif entity.is_a("IfcSpatialElement"):
+    elif entity.is_a("IfcSpatialElement") or entity.is_a("IfcStructuralItem"):
         decomposes = entity.Decomposes
         if not decomposes:
             return None
         parent = decomposes[0].RelatingObject
+    elif entity.is_a("IfcSystem"):
+        services = entity.ServicesBuildings
+        if not services:
+            return None
+        parent = services[0].RelatedBuildings[0]
     else:
         return None
     if parent.is_a("IfcBuilding"):

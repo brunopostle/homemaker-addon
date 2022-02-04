@@ -46,6 +46,7 @@ import molior.ifc
 from molior.ifc import (
     create_site,
     create_building,
+    create_structural_analysis_model,
     create_storeys,
     assign_space_byindex,
     assign_storey_byindex,
@@ -64,6 +65,7 @@ class Molior:
     def __init__(self, **args):
         self.file = None
         self.building = None
+        self.structural_analysis_model = None
         self.traces = {}
         self.hulls = {}
         self.normals = {}
@@ -82,6 +84,9 @@ class Molior:
         self.project = self.file.by_type("IfcProject")[0]
         site = create_site(self.file, self.project, "Site " + name)
         self.building = create_building(self.file, site, name)
+        self.structural_analysis_model = create_structural_analysis_model(
+            self.file, self.building, name
+        )
         self.elevations = elevations
         create_storeys(self.file, self.building, elevations)
 
@@ -172,9 +177,7 @@ class Molior:
                 "structural.assign_structural_analysis_model",
                 self.file,
                 product=curve_connection,
-                structural_analysis_model=self.file.by_type(
-                    "IfcStructuralAnalysisModel"
-                )[0],
+                structural_analysis_model=self.structural_analysis_model,
             )
             if abs(start[2] - end[2]) < 0.0001:
                 curve_connection.Axis = self.file.createIfcDirection([0.0, 0.0, 1.0])
@@ -339,9 +342,7 @@ class Molior:
                                 "structural.assign_structural_analysis_model",
                                 self.file,
                                 product=point_connection,
-                                structural_analysis_model=self.file.by_type(
-                                    "IfcStructuralAnalysisModel"
-                                )[0],
+                                structural_analysis_model=self.structural_analysis_model,
                             )
                             run(
                                 "structural.add_structural_member_connection",
@@ -577,6 +578,7 @@ class Molior:
                     "circulation": self.circulation,
                     "file": self.file,
                     "building": self.building,
+                    "structural_analysis_model": self.structural_analysis_model,
                     "name": name,
                     "elevation": elevation,
                     "height": height,
@@ -616,6 +618,7 @@ class Molior:
                     "elevations": self.elevations,
                     "file": self.file,
                     "building": self.building,
+                    "structural_analysis_model": self.structural_analysis_model,
                     "name": name,
                     "style": stylename,
                     "hull": hull,

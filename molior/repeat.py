@@ -149,6 +149,7 @@ class Repeat(TraceClass):
                                     "parent_aggregate": aggregate,
                                     "style": self.style,
                                     "building": self.building,
+                                    "structural_analysis_model": self.structural_analysis_model,
                                     "level": self.level,
                                     "predefined_type": self.predefined_type,
                                     "style_assets": self.style_assets,
@@ -234,9 +235,7 @@ class Repeat(TraceClass):
                             "structural.assign_structural_analysis_model",
                             self.file,
                             product=structural_member,
-                            structural_analysis_model=self.file.by_type(
-                                "IfcStructuralAnalysisModel"
-                            )[0],
+                            structural_analysis_model=self.structural_analysis_model,
                         )
                         run(
                             "geometry.assign_representation",
