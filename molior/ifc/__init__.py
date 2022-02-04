@@ -443,6 +443,8 @@ def get_type_by_dxf(self, subcontext, ifc_type, stylename, path_dxf):
         type_product.PredefinedType = "COLUMN"
     elif type_product.is_a("IfcRailingType"):
         type_product.PredefinedType = "BALUSTRADE"
+    else:
+        type_product.PredefinedType = "USERDEFINED"
     run(
         "geometry.assign_representation",
         self,
