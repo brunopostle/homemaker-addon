@@ -88,7 +88,6 @@ def Height(self):
 
 def Mesh(self):
     """A list of Vertex coordinates and a list of indexed Faces"""
-    # FIXME should also return Face dictionaries using DumpDictionary()
     vertices_ptr = []
     self.Vertices(None, vertices_ptr)
     vertices = [vertex.Coordinates() for vertex in vertices_ptr]

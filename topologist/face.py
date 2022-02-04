@@ -54,6 +54,7 @@ def CellsOrdered(self, host_topology):
 
 def VerticesPerimeter(self, vertices_ptr):
     """Vertices, tracing the outer perimeter"""
+    # FIXME does return self.ExternalBoundary().Vertices(None, vertices_ptr) do the same thing?
     wires_ptr = []
     self.Wires(None, wires_ptr)
     wires_ptr[0].Vertices(None, vertices_ptr)
