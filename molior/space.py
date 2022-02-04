@@ -4,6 +4,8 @@ import numpy
 from molior.baseclass import TraceClass
 from molior.geometry import matrix_align
 from molior.ifc import (
+    add_pset,
+    add_cell_topology_epsets,
     create_extruded_area_solid,
     create_tessellation_from_mesh,
     assign_storey_byindex,
@@ -55,14 +57,13 @@ class Space(TraceClass):
         if separation != None:
             separation = float(separation)
 
-        self.add_pset(
+        add_pset(
+            self.file,
             element,
             "EPset_Pattern",
             {"Crinkliness": crinkliness, "Separation": separation},
         )
-        topology_index = cell.Get("index")
-        if not topology_index == None:
-            self.add_pset(element, "EPset_Topology", {"CellIndex": str(topology_index)})
+        add_cell_topology_epsets(self.file, element, cell)
 
         # FIXME should create IfcSpaceType for this
         self.add_psets(element)

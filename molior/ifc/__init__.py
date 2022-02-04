@@ -394,6 +394,55 @@ def assign_space_byindex(self, entity, building, index):
         )
 
 
+def add_pset(self, product, name, properties):
+    """Helper method to add an Ifc Pset"""
+    pset = run("pset.add_pset", self, product=product, name=name)
+    run(
+        "pset.edit_pset",
+        self,
+        pset=pset,
+        properties=properties,
+    )
+
+
+def add_face_topology_epsets(self, entity, face, back_cell, front_cell):
+    if face:
+        face_index = face.Get("index")
+        if not face_index == None:
+            add_pset(self, entity, "EPset_Topology", {"FaceIndex": str(face_index)})
+        face_stylename = face.Get("stylename")
+        if not face_stylename == None:
+            add_pset(self, entity, "EPset_Topology", {"StyleName": str(face_stylename)})
+    if front_cell:
+        front_cell_index = front_cell.Get("index")
+        if not front_cell_index == None:
+            add_pset(
+                self,
+                entity,
+                "EPset_Topology",
+                {"FrontCellIndex": str(front_cell_index)},
+            )
+    if back_cell:
+        back_cell_index = back_cell.Get("index")
+        if not back_cell_index == None:
+            add_pset(
+                self,
+                entity,
+                "EPset_Topology",
+                {"BackCellIndex": str(back_cell_index)},
+            )
+
+
+def add_cell_topology_epsets(self, entity, cell):
+    if cell:
+        cell_index = cell.Get("index")
+        if cell_index != None:
+            add_pset(self, entity, "EPset_Topology", {"CellIndex": cell_index})
+        cell_usage = cell.Get("usage")
+        if cell_usage != None:
+            add_pset(self, entity, "EPset_Topology", {"Usage": cell_usage})
+
+
 def assign_representation_fromDXF(self, subcontext, element, stylename, path_dxf):
     """Assign geometry from DXF unless a TypeProduct with this name already exists"""
     product_type = get_type_by_dxf(

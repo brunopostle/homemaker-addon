@@ -4,6 +4,7 @@ import molior
 from molior.baseclass import TraceClass
 from molior.geometry import matrix_align, add_2d, distance_2d
 from molior.ifc import (
+    add_face_topology_epsets,
     assign_storey_byindex,
     assign_extrusion_fromDXF,
     get_material_by_name,
@@ -78,7 +79,9 @@ class Extrusion(TraceClass):
                 face = self.chain.graph[segment[0]][1]["face"]
                 back_cell = self.chain.graph[segment[0]][1]["back_cell"]
                 front_cell = self.chain.graph[segment[0]][1]["front_cell"]
-                self.add_topology_pset(structural_member, face, back_cell, front_cell)
+                add_face_topology_epsets(
+                    self.file, structural_member, face, back_cell, front_cell
+                )
                 structural_member.Axis = self.file.createIfcDirection([0.0, 0.0, 1.0])
                 run(
                     "structural.assign_structural_analysis_model",

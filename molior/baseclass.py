@@ -11,7 +11,7 @@ from molior.geometry import (
     subtract_2d,
     line_intersection,
 )
-from molior.ifc import get_material_by_name
+from molior.ifc import get_material_by_name, add_pset
 
 run = ifcopenshell.api.run
 
@@ -91,42 +91,10 @@ class BaseClass:
 
         return myelement_type
 
-    def add_pset(self, product, name, properties):
-        """Helper method to add an Ifc Pset"""
-        pset = run("pset.add_pset", self.file, product=product, name=name)
-        run(
-            "pset.edit_pset",
-            self.file,
-            pset=pset,
-            properties=properties,
-        )
-
     def add_psets(self, product):
         """self.psets is a dictionary of Psets, add them to an Ifc product"""
         for name, properties in self.psets.items():
-            self.add_pset(product, name, properties)
-
-    def add_topology_pset(self, entity, face, back_cell, front_cell):
-        if face:
-            face_index = face.Get("index")
-            if not face_index == None:
-                self.add_pset(entity, "EPset_Topology", {"FaceIndex": str(face_index)})
-        if front_cell:
-            front_cell_index = front_cell.Get("index")
-            if not front_cell_index == None:
-                self.add_pset(
-                    entity,
-                    "EPset_Topology",
-                    {"FrontCellIndex": str(front_cell_index)},
-                )
-        if back_cell:
-            back_cell_index = back_cell.Get("index")
-            if not back_cell_index == None:
-                self.add_pset(
-                    entity,
-                    "EPset_Topology",
-                    {"BackCellIndex": str(back_cell_index)},
-                )
+            add_pset(self.file, product, name, properties)
 
 
 class TraceClass(BaseClass):

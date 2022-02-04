@@ -4,6 +4,7 @@ from topologist.helpers import string_to_coor, el
 from molior.baseclass import BaseClass
 from molior.geometry import map_to_2d
 from molior.ifc import (
+    add_face_topology_epsets,
     create_extruded_area_solid,
     create_curve_bounded_plane,
     create_face_surface,
@@ -82,8 +83,12 @@ class Shell(BaseClass):
                 product=element,
                 relating_object=aggregate,
             )
-            self.add_topology_pset(
-                element, face[1]["face"], face[1]["back_cell"], face[1]["front_cell"]
+            add_face_topology_epsets(
+                self.file,
+                element,
+                face[1]["face"],
+                face[1]["back_cell"],
+                face[1]["front_cell"],
             )
 
             # generate space boundary for back cell
@@ -121,7 +126,8 @@ class Shell(BaseClass):
                 name=self.identifier,
                 predefined_type="SHELL",
             )
-            self.add_topology_pset(
+            add_face_topology_epsets(
+                self.file,
                 structural_surface,
                 face[1]["face"],
                 face[1]["back_cell"],

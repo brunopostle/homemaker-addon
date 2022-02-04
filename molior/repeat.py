@@ -4,6 +4,7 @@ import molior
 from molior.baseclass import TraceClass
 from molior.geometry import add_2d, subtract_2d, scale_2d, distance_2d, matrix_align
 from molior.ifc import (
+    add_face_topology_epsets,
     assign_representation_fromDXF,
     assign_storey_byindex,
     get_material_by_name,
@@ -224,8 +225,8 @@ class Repeat(TraceClass):
                         face = self.chain.graph[segment[0]][1]["face"]
                         back_cell = self.chain.graph[segment[0]][1]["back_cell"]
                         front_cell = self.chain.graph[segment[0]][1]["front_cell"]
-                        self.add_topology_pset(
-                            structural_member, face, back_cell, front_cell
+                        add_face_topology_epsets(
+                            self.file, structural_member, face, back_cell, front_cell
                         )
                         structural_member.PredefinedType = "RIGID_JOINED_MEMBER"
                         structural_member.Axis = self.file.createIfcDirection(

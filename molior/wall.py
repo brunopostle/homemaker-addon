@@ -16,6 +16,7 @@ from molior.geometry import (
     map_to_2d,
 )
 from molior.ifc import (
+    add_face_topology_epsets,
     create_extruded_area_solid,
     clip_solid,
     create_face_surface,
@@ -256,7 +257,7 @@ class Wall(TraceClass):
 
             back_cell = self.chain.graph[segment[0]][1]["back_cell"]
             front_cell = self.chain.graph[segment[0]][1]["front_cell"]
-            self.add_topology_pset(mywall, face, back_cell, front_cell)
+            add_face_topology_epsets(self.file, mywall, face, back_cell, front_cell)
 
             # structure
             face_surface = create_face_surface(self.file, vertices, normal)
@@ -273,7 +274,9 @@ class Wall(TraceClass):
             )
             assignment.RelatingProduct = structural_surface
             assignment.RelatedObjects = [mywall]
-            self.add_topology_pset(structural_surface, face, back_cell, front_cell)
+            add_face_topology_epsets(
+                self.file, structural_surface, face, back_cell, front_cell
+            )
             structural_surface.Thickness = self.thickness
             run(
                 "structural.assign_structural_analysis_model",
@@ -421,7 +424,7 @@ class Wall(TraceClass):
                     ifc_class=ifc_class,
                     name=segment[id_opening]["name"],
                 )
-                self.add_topology_pset(entity, face, back_cell, front_cell)
+                add_face_topology_epsets(self.file, entity, face, back_cell, front_cell)
                 # window/door width and height attributes can't be set in Type
                 run(
                     "attribute.edit_attributes",

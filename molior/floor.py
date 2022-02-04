@@ -5,6 +5,9 @@ from topologic import Cell, CellComplex
 from molior.baseclass import TraceClass
 from molior.geometry import matrix_align, map_to_2d
 from molior.ifc import (
+    add_pset,
+    add_face_topology_epsets,
+    add_cell_topology_epsets,
     create_extruded_area_solid,
     create_curve_bounded_plane,
     create_face_surface,
@@ -74,10 +77,9 @@ class Floor(TraceClass):
 
             # topology stuff
             if cell.Get("index") != None:
-                self.add_pset(
-                    element, "EPset_Topology", {"CellIndex": cell.Get("index")}
-                )
-                self.add_pset(
+                add_cell_topology_epsets(self.file, element, cell)
+                add_pset(
+                    self.file,
                     element,
                     "EPset_Topology",
                     {
@@ -145,8 +147,11 @@ class Floor(TraceClass):
                 assignment.RelatingProduct = structural_surface
                 assignment.RelatedObjects = [element]
 
-                self.add_topology_pset(
-                    structural_surface, face, *face.CellsOrdered(self.cellcomplex)
+                add_face_topology_epsets(
+                    self.file,
+                    structural_surface,
+                    face,
+                    *face.CellsOrdered(self.cellcomplex)
                 )
                 run(
                     "structural.assign_structural_analysis_model",
