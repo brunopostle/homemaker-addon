@@ -83,8 +83,12 @@ def create_building(self, site, building_name):
 def create_structural_analysis_model(self, building, model_name):
     """Add a structural model to a building"""
     model = run("structural.add_structural_analysis_model", self)
+    model.Name = "Structure/" + model_name
     rel = run(
-        "root.create_entity", self, ifc_class="IfcRelServicesBuildings", name=model_name
+        "root.create_entity",
+        self,
+        ifc_class="IfcRelServicesBuildings",
+        name=model.Name,
     )
     rel.RelatingSystem = model
     rel.RelatedBuildings = [building]
