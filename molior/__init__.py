@@ -51,7 +51,6 @@ from molior.ifc import (
     create_storeys,
     add_face_topology_epsets,
     add_cell_topology_epsets,
-    create_face_surface,
     assign_space_byindex,
     assign_storey_byindex,
     get_building,
@@ -565,12 +564,6 @@ class Molior:
                 product=element,
                 relating_structure=self.building,
             )
-
-            vertices = []
-            face.ExternalBoundary().Vertices(None, vertices)
-            face_surface = create_face_surface(
-                self.file, [vertex.Coordinates() for vertex in vertices], face.Normal()
-            )
             run(
                 "geometry.assign_representation",
                 self.file,
@@ -578,11 +571,10 @@ class Molior:
                 representation=self.file.createIfcShapeRepresentation(
                     reference_context,
                     reference_context.ContextIdentifier,
-                    "Face",
-                    [face_surface],
+                    "Tessellation",
+                    [create_tessellation_from_mesh(self.file, *face.Mesh())],
                 ),
             )
-
             add_face_topology_epsets(
                 self.file,
                 element,
@@ -608,9 +600,7 @@ class Molior:
                 relating_structure=self.building,
             )
             vertex = CellUtility.InternalVertex(cell, 0.001)
-            vertex_point = self.file.createIfcVertexPoint(
-                self.file.createIfcCartesianPoint(vertex.Coordinates())
-            )
+            point = self.file.createIfcCartesianPoint(vertex.Coordinates())
             run(
                 "geometry.assign_representation",
                 self.file,
@@ -618,8 +608,8 @@ class Molior:
                 representation=self.file.createIfcShapeRepresentation(
                     reference_context,
                     reference_context.ContextIdentifier,
-                    "Vertex",
-                    [vertex_point],
+                    "PointCloud",  # should be Point
+                    [point],
                 ),
             )
 

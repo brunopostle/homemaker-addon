@@ -71,14 +71,10 @@ class ObjectHomemaker(bpy.types.Operator):
 
             # delete any IfcProject/* collections, but leave IfcStore intact
             have_project = False
-            for collection_name in bpy.data.collections.keys():
-                project = re.match(
-                    "^IfcProject/",
-                    collection_name,
-                )
-                if project:
+            for collection in bpy.data.collections:
+                if re.match("^IfcProject/", collection.name):
                     have_project = True
-                    delete_collection(bpy.data.collections.get(collection_name))
+                    delete_collection(collection)
             if not have_project:
                 blenderbim.bim.ifc.IfcStore.purge()
                 blenderbim.bim.ifc.IfcStore.file = None
@@ -104,6 +100,13 @@ class ObjectHomemaker(bpy.types.Operator):
             ifc_importer.execute()
 
             bpy.data.collections.get("StructuralItems").hide_viewport = True
+
+            # hide IfcVirtualElement objects in IfcBuilding collections
+            for collection in bpy.data.collections:
+                if re.match("^IfcBuilding/", collection.name):
+                    for bl_object in collection.objects:
+                        if re.match("^IfcVirtualElement/", bl_object.name):
+                            bl_object.hide_viewport = True
         return {"FINISHED"}
 
 
