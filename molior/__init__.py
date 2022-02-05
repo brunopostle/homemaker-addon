@@ -32,6 +32,7 @@ IfcOpenShell.
 
 import re
 import ifcopenshell.util
+from topologic import CellUtility
 from molior.extrusion import Extrusion
 from molior.floor import Floor
 from molior.shell import Shell
@@ -48,6 +49,9 @@ from molior.ifc import (
     create_building,
     create_structural_analysis_model,
     create_storeys,
+    add_face_topology_epsets,
+    add_cell_topology_epsets,
+    create_face_surface,
     assign_space_byindex,
     assign_storey_byindex,
     get_building,
@@ -118,9 +122,9 @@ class Molior:
         # use the topologic model to connect stuff
         if self.cellcomplex:
             # TODO create Wall entities for internal non-vertical/horizontal faces
-            # TODO stash CellComplex as Virtual Element entities for later retrieval
             self.connect_structure()
             self.connect_spaces()
+            self.stash_topology()
 
     def connect_structure(self):
         """Given Structural Member entities are tagged with Topologic indexes, connect them"""
@@ -407,18 +411,7 @@ class Molior:
                 )
                 if not topology_index == None:
                     space_lookup[topology_index] = element
-                    pset = run(
-                        "pset.add_pset",
-                        self.file,
-                        product=element,
-                        name="EPset_Topology",
-                    )
-                    run(
-                        "pset.edit_pset",
-                        self.file,
-                        pset=pset,
-                        properties={"CellIndex": topology_index},
-                    )
+                    add_cell_topology_epsets(self.file, element, cell)
                 elevation = cell.Elevation()
                 level = 0
                 if elevation in self.elevations:
@@ -538,6 +531,99 @@ class Molior:
                                 self.building,
                                 pset_topology["BackCellIndex"],
                             )
+
+    def stash_topology(self):
+        """Represent a Topologic model as IFC geometry"""
+        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
+            if item.ContextIdentifier == "Reference":
+                reference_context = item
+        system = run("system.add_system", self.file)
+        system.Name = "Topology/" + self.building.Name
+        rel = run(
+            "root.create_entity",
+            self.file,
+            ifc_class="IfcRelServicesBuildings",
+            name=system.Name,
+        )
+        rel.RelatingSystem = system
+        rel.RelatedBuildings = [self.building]
+
+        # Create a Virtual Element with a Shape Representation for each Face
+        faces = []
+        self.cellcomplex.Faces(None, faces)
+        for face in faces:
+            element = run(
+                "root.create_entity",
+                self.file,
+                ifc_class="IfcVirtualElement",
+                name="face/" + str(face.Get("index")),
+            )
+            run("system.assign_system", self.file, product=element, system=system)
+            run(
+                "spatial.assign_container",
+                self.file,
+                product=element,
+                relating_structure=self.building,
+            )
+
+            vertices = []
+            face.ExternalBoundary().Vertices(None, vertices)
+            face_surface = create_face_surface(
+                self.file, [vertex.Coordinates() for vertex in vertices], face.Normal()
+            )
+            run(
+                "geometry.assign_representation",
+                self.file,
+                product=element,
+                representation=self.file.createIfcShapeRepresentation(
+                    reference_context,
+                    reference_context.ContextIdentifier,
+                    "Face",
+                    [face_surface],
+                ),
+            )
+
+            add_face_topology_epsets(
+                self.file,
+                element,
+                face,
+                *reversed(face.CellsOrdered(self.cellcomplex)),
+            )
+
+        # Create a Virtual Element with a Point Representation for each Cell
+        cells = []
+        self.cellcomplex.Cells(None, cells)
+        for cell in cells:
+            element = run(
+                "root.create_entity",
+                self.file,
+                ifc_class="IfcVirtualElement",
+                name="cell/" + str(cell.Get("index")),
+            )
+            run("system.assign_system", self.file, product=element, system=system)
+            run(
+                "spatial.assign_container",
+                self.file,
+                product=element,
+                relating_structure=self.building,
+            )
+            vertex = CellUtility.InternalVertex(cell, 0.001)
+            vertex_point = self.file.createIfcVertexPoint(
+                self.file.createIfcCartesianPoint(vertex.Coordinates())
+            )
+            run(
+                "geometry.assign_representation",
+                self.file,
+                product=element,
+                representation=self.file.createIfcShapeRepresentation(
+                    reference_context,
+                    reference_context.ContextIdentifier,
+                    "Vertex",
+                    [vertex_point],
+                ),
+            )
+
+            add_cell_topology_epsets(self.file, element, cell)
 
     def build_trace(
         self,
