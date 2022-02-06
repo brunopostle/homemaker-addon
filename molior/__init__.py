@@ -419,12 +419,17 @@ class Molior:
                 level = 0
                 if elevation in self.elevations:
                     level = self.elevations[elevation]
-                assign_storey_byindex(self.file, element, self.building, level)
+                storey = assign_storey_byindex(self.file, element, self.building, level)
+                vertices, faces = cell.Mesh()
+                # not sure why this is necessary
+                vertices_shifted = [
+                    [v[0], v[1], v[2] - storey.Elevation] for v in vertices
+                ]
                 shape = self.file.createIfcShapeRepresentation(
                     body_context,
                     body_context.ContextIdentifier,
                     "Tessellation",
-                    [create_tessellation_from_mesh(self.file, *cell.Mesh())],
+                    [create_tessellation_from_mesh(self.file, vertices_shifted, faces)],
                 )
                 style = run("style.add_style", self.file, name="Void Space")
                 run(
@@ -464,7 +469,7 @@ class Molior:
                     "geometry.edit_object_placement",
                     self.file,
                     product=element,
-                    matrix=matrix_align([0.0, 0.0, elevation], [1.0, 0.0, 0.0]),
+                    matrix=matrix_align([0.0, 0.0, storey.Elevation], [1.0, 0.0, 0.0]),
                 )
 
         # attach spaces to space boundaries
