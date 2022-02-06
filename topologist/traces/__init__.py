@@ -43,7 +43,7 @@ external walls:
 And traces that follow the bottom of internal walls with nothing
 below, or nothing but cells below:
 
-* internal-unsupported (always one segment long)
+* internal-footing (always one segment long)
 * internal-beam (always one segment long)
 
 """

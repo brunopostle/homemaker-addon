@@ -51,7 +51,7 @@ internal ground beam:
   ifc: IfcFooting
   predefined_type: STRIP_FOOTING
   profile: beam_ground.dxf
-  condition: internal-unsupported
+  condition: internal-footing
   outer: 0.0
   extension: 0.0
   cycles: 0

@@ -122,7 +122,7 @@ def GetTraces(self):
                     if not face.FacesBelow(self):
                         if not face.CellsBelow(self):
                             mytraces.add_axis_simple(
-                                "internal-unsupported",
+                                "internal-footing",
                                 elevation,
                                 0.0,
                                 stylename,
