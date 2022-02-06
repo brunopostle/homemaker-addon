@@ -144,7 +144,7 @@ class Tests(unittest.TestCase):
                     self.assertEqual(len(bottom_edges_ptr), 1)
 
                     self.assertFalse(face.FaceAbove(self.cc))
-                    self.assertTrue(face.FaceBelow(self.cc))
+                    self.assertTrue(face.FacesBelow(self.cc))
 
             below_cells_ptr = []
             cell.CellsBelow(self.cc, below_cells_ptr)

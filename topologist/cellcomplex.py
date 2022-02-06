@@ -119,18 +119,31 @@ def GetTraces(self):
                     )
 
                     # collect foundation strips
-                    if not face.FaceBelow(self):
-                        mytraces.add_axis_simple(
-                            "internal-unsupported",
-                            elevation,
-                            0.0,
-                            stylename,
-                            start_vertex=axis[0],
-                            end_vertex=axis[1],
-                            face=face,
-                            front_cell=front_cell,
-                            back_cell=back_cell,
-                        )
+                    if not face.FacesBelow(self):
+                        if not face.CellsBelow(self):
+                            mytraces.add_axis_simple(
+                                "internal-unsupported",
+                                elevation,
+                                0.0,
+                                stylename,
+                                start_vertex=axis[0],
+                                end_vertex=axis[1],
+                                face=face,
+                                front_cell=front_cell,
+                                back_cell=back_cell,
+                            )
+                        else:
+                            mytraces.add_axis_simple(
+                                "internal-beam",
+                                elevation,
+                                0.0,
+                                stylename,
+                                start_vertex=axis[0],
+                                end_vertex=axis[1],
+                                face=face,
+                                front_cell=front_cell,
+                                back_cell=back_cell,
+                            )
                 elevations[elevation] = 0
 
             # TODO open wall top and bottom traces

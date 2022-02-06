@@ -216,6 +216,7 @@ def IsOpen(self, host_topology):
     return False
 
 
+# FIXME doesn't appear to be in use
 def FaceAbove(self, host_topology):
     """Does this Face have a vertical Face attached to a horizontal top Edge?"""
     edges_ptr = []
@@ -228,16 +229,28 @@ def FaceAbove(self, host_topology):
     return None
 
 
-def FaceBelow(self, host_topology):
-    """Does this Face have a vertical Face attached to a horizontal bottom Edge?"""
+def FacesBelow(self, host_topology):
+    """Does this Face have Faces attached below a horizontal bottom Edge?"""
     edges_ptr = []
     self.EdgesBottom(edges_ptr)
+    result = []
     for edge in edges_ptr:
-        faces_ptr = edge.Faces_Cached(host_topology)
-        for face in faces_ptr:
-            if face.IsVertical() and not face.IsSame(self):
-                return face
-    return None
+        faces_below = edge.FacesBelow(host_topology)
+        if faces_below:
+            result.extend(faces_below)
+    return result
+
+
+def CellsBelow(self, host_topology):
+    """Does this Face have Cells attached below a horizontal bottom Edge?"""
+    edges_ptr = []
+    self.EdgesBottom(edges_ptr)
+    result = []
+    for edge in edges_ptr:
+        cells_below = edge.CellsBelow(host_topology)
+        if cells_below:
+            result.extend(cells_below)
+    return result
 
 
 def HorizontalFacesSideways(self, host_topology):
@@ -341,7 +354,8 @@ setattr(topologic.Face, "IsExternal", IsExternal)
 setattr(topologic.Face, "IsWorld", IsWorld)
 setattr(topologic.Face, "IsOpen", IsOpen)
 setattr(topologic.Face, "FaceAbove", FaceAbove)
-setattr(topologic.Face, "FaceBelow", FaceBelow)
+setattr(topologic.Face, "FacesBelow", FacesBelow)
+setattr(topologic.Face, "CellsBelow", CellsBelow)
 setattr(topologic.Face, "HorizontalFacesSideways", HorizontalFacesSideways)
 setattr(topologic.Face, "Normal", Normal)
 setattr(topologic.Face, "TopLevelConditions", TopLevelConditions)

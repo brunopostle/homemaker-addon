@@ -20,6 +20,7 @@ def IsVertical(self):
     return False
 
 
+# FIXME doesn't appear to be in use
 def FaceAbove(self, host_topology):
     """Is there a vertical face attached above?"""
     faces_ptr = []
@@ -30,14 +31,15 @@ def FaceAbove(self, host_topology):
     return None
 
 
-def FaceBelow(self, host_topology):
-    """Is there a vertical face attached below?"""
+def FacesBelow(self, host_topology):
+    """Is there a non-horizontal face attached below?"""
     faces_ptr = []
+    faces_result = []
     self.Faces(host_topology, faces_ptr)
     for face in faces_ptr:
-        if face.IsVertical() and face.Centroid().Z() < self.Centroid().Z():
-            return face
-    return None
+        if face.Centroid().Z() < self.Centroid().Z():
+            faces_result.append(face)
+    return faces_result
 
 
 def CellsBelow(self, host_topology):
@@ -58,6 +60,6 @@ def Length(self):
 setattr(topologic.Edge, "IsHorizontal", IsHorizontal)
 setattr(topologic.Edge, "IsVertical", IsVertical)
 setattr(topologic.Edge, "FaceAbove", FaceAbove)
-setattr(topologic.Edge, "FaceBelow", FaceBelow)
+setattr(topologic.Edge, "FacesBelow", FacesBelow)
 setattr(topologic.Edge, "CellsBelow", CellsBelow)
 setattr(topologic.Edge, "Length", Length)
