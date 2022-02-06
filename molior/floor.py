@@ -99,9 +99,6 @@ class Floor(TraceClass):
                 face_surface = create_face_surface(self.file, vertices, normal)
 
                 # generate space boundaries
-                curve_bounded_plane = create_curve_bounded_plane(
-                    self.file, nodes_2d, matrix
-                )
                 for cell in face.CellsOrdered(self.cellcomplex):
                     if cell == None:
                         continue
@@ -112,7 +109,7 @@ class Floor(TraceClass):
                     )
                     boundary.ConnectionGeometry = (
                         self.file.createIfcConnectionSurfaceGeometry(
-                            curve_bounded_plane
+                            create_curve_bounded_plane(self.file, nodes_2d, matrix)
                         )
                     )
                     boundary.RelatedBuildingElement = element
@@ -128,6 +125,9 @@ class Floor(TraceClass):
                     if cell_index != None:
                         # can't assign psets to an IfcRelationship, use Description instead
                         boundary.Description = "CellIndex " + cell_index
+                    face_index = face.Get("index")
+                    if face_index != None:
+                        boundary.Name = "Floor/FaceIndex " + face_index
 
                 # don't generate structural surfaces if this is only a boundary between cells
                 if element.is_a("IfcVirtualElement"):

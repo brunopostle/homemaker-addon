@@ -42,7 +42,7 @@ from molior.wall import Wall
 from molior.repeat import Repeat
 
 from molior.style import Style
-from molior.geometry import subtract_3d, x_product_3d
+from molior.geometry import subtract_3d, x_product_3d, matrix_align
 import molior.ifc
 from molior.ifc import (
     create_site,
@@ -144,19 +144,21 @@ class Molior:
         surface_lookup = {}
         curve_list = []
         for member in self.file.by_type("IfcStructuralSurfaceMember"):
-            member.ObjectPlacement = structural_placement
-            pset_topology = ifcopenshell.util.element.get_psets(member).get(
-                "EPset_Topology"
-            )
-            if pset_topology:
-                surface_lookup[pset_topology["FaceIndex"]] = member
+            if get_building(member) == self.building:
+                member.ObjectPlacement = structural_placement
+                pset_topology = ifcopenshell.util.element.get_psets(member).get(
+                    "EPset_Topology"
+                )
+                if pset_topology:
+                    surface_lookup[pset_topology["FaceIndex"]] = member
         for member in self.file.by_type("IfcStructuralCurveMember"):
-            member.ObjectPlacement = structural_placement
-            pset_topology = ifcopenshell.util.element.get_psets(member).get(
-                "EPset_Topology"
-            )
-            if pset_topology:
-                curve_list.append([pset_topology["FaceIndex"], member])
+            if get_building(member) == self.building:
+                member.ObjectPlacement = structural_placement
+                pset_topology = ifcopenshell.util.element.get_psets(member).get(
+                    "EPset_Topology"
+                )
+                if pset_topology:
+                    curve_list.append([pset_topology["FaceIndex"], member])
 
         # iterate all the edges in the topologic model
         edges_ptr = []
@@ -388,11 +390,12 @@ class Molior:
 
         space_lookup = {}
         for space in self.file.by_type("IfcSpace"):
-            pset_topology = ifcopenshell.util.element.get_psets(space).get(
-                "EPset_Topology"
-            )
-            if pset_topology:
-                space_lookup[pset_topology["CellIndex"]] = space
+            if get_building(space) == self.building:
+                pset_topology = ifcopenshell.util.element.get_psets(space).get(
+                    "EPset_Topology"
+                )
+                if pset_topology:
+                    space_lookup[pset_topology["CellIndex"]] = space
 
         # create Space elements for Cells that don't already have one
         cells_ptr = []
@@ -428,27 +431,33 @@ class Molior:
                     product=element,
                     representation=shape,
                 )
+                run(
+                    "geometry.edit_object_placement",
+                    self.file,
+                    product=element,
+                    matrix=matrix_align([0.0, 0.0, elevation], [1.0, 0.0, 0.0]),
+                )
 
         # attach spaces to space boundaries
         for boundary in self.file.by_type("IfcRelSpaceBoundary2ndLevel"):
-            if boundary.Description:
-                items = boundary.Description.split()
-                if len(items) == 2 and items[0] == "CellIndex":
-                    if items[1] in space_lookup:
-                        # FIXME Boundary of void Space gets misplaced
-                        boundary.RelatingSpace = space_lookup[items[1]]
-                        # there ought to be a better way..
-                        storey_elevation = boundary.RelatingSpace.Decomposes[
-                            0
-                        ].RelatingObject.Elevation
-                        coor = (
-                            boundary.ConnectionGeometry.SurfaceOnRelatingElement.BasisSurface.Position.Location.Coordinates
-                        )
-                        boundary.ConnectionGeometry.SurfaceOnRelatingElement.BasisSurface.Position.Location.Coordinates = (
-                            coor[0],
-                            coor[1],
-                            coor[2] - storey_elevation,
-                        )
+            if get_building(boundary.RelatedBuildingElement) == self.building:
+                if boundary.Description:
+                    items = boundary.Description.split()
+                    if len(items) == 2 and items[0] == "CellIndex":
+                        if items[1] in space_lookup:
+                            boundary.RelatingSpace = space_lookup[items[1]]
+                            # there ought to be a better way..
+                            storey_elevation = boundary.RelatingSpace.Decomposes[
+                                0
+                            ].RelatingObject.Elevation
+                            coor = (
+                                boundary.ConnectionGeometry.SurfaceOnRelatingElement.BasisSurface.Position.Location.Coordinates
+                            )
+                            boundary.ConnectionGeometry.SurfaceOnRelatingElement.BasisSurface.Position.Location.Coordinates = (
+                                coor[0],
+                                coor[1],
+                                coor[2] - storey_elevation,
+                            )
 
         # molior.floor attaches Slab elements directly to Storey, re-attach to relevant Space
         for element in self.file.by_type("IfcSlab"):

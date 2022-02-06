@@ -103,9 +103,6 @@ class Wall(TraceClass):
             # generate space boundaries
             boundaries = []
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
-            curve_bounded_plane = create_curve_bounded_plane(
-                self.file, nodes_2d, matrix
-            )
             for cell in face.CellsOrdered(self.cellcomplex):
                 if cell == None:
                     boundaries.append(None)
@@ -126,12 +123,17 @@ class Wall(TraceClass):
 
                 boundary.RelatedBuildingElement = mywall
                 boundary.ConnectionGeometry = (
-                    self.file.createIfcConnectionSurfaceGeometry(curve_bounded_plane)
+                    self.file.createIfcConnectionSurfaceGeometry(
+                        create_curve_bounded_plane(self.file, nodes_2d, matrix)
+                    )
                 )
                 cell_index = cell.Get("index")
                 if not cell_index == None:
                     # can't assign psets to an IfcRelationship, use Description instead
                     boundary.Description = "CellIndex " + str(cell_index)
+                face_index = face.Get("index")
+                if face_index != None:
+                    boundary.Name = "FaceIndex " + face_index
                 boundaries.append(boundary)
 
             if mywall.is_a("IfcVirtualElement"):
@@ -528,9 +530,6 @@ class Wall(TraceClass):
                     [*left_2d, soffit],
                 ]
                 nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
-                curve_bounded_plane = create_curve_bounded_plane(
-                    self.file, nodes_2d, matrix
-                )
                 cell_id = 0
                 for cell in face.CellsOrdered(self.cellcomplex):
                     parent_boundary = boundaries[cell_id]
@@ -549,10 +548,11 @@ class Wall(TraceClass):
                     boundary.RelatedBuildingElement = entity
                     boundary.ConnectionGeometry = (
                         self.file.createIfcConnectionSurfaceGeometry(
-                            curve_bounded_plane
+                            create_curve_bounded_plane(self.file, nodes_2d, matrix)
                         )
                     )
                     boundary.Description = parent_boundary.Description
+                    boundary.Name = parent_boundary.Name
                     boundary.ParentBoundary = parent_boundary
 
     def init_openings(self):

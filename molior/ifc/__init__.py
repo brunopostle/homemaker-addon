@@ -528,14 +528,23 @@ def get_building(entity):
     """Retrieve whatever Building contains this entity, or None"""
     if entity.is_a("IfcElement"):
         parents = entity.ContainedInStructure
+        decomposes = entity.Decomposes
         if not parents:
-            return None
-        parent = parents[0].RelatingStructure
-    elif entity.is_a("IfcSpatialElement") or entity.is_a("IfcStructuralItem"):
+            if not decomposes:
+                return None
+            parent = decomposes[0].RelatingObject
+        else:
+            parent = parents[0].RelatingStructure
+    elif entity.is_a("IfcSpatialElement"):
         decomposes = entity.Decomposes
         if not decomposes:
             return None
         parent = decomposes[0].RelatingObject
+    elif entity.is_a("IfcStructuralItem"):
+        assignments = entity.HasAssignments
+        if not assignments:
+            return None
+        parent = assignments[0].RelatingGroup
     elif entity.is_a("IfcSystem"):
         services = entity.ServicesBuildings
         if not services:

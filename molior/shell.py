@@ -91,27 +91,33 @@ class Shell(BaseClass):
                 face[1]["front_cell"],
             )
 
-            # generate space boundary for back cell
-            boundary = run(
-                "root.create_entity",
-                self.file,
-                ifc_class="IfcRelSpaceBoundary2ndLevel",
-            )
-            boundary.ConnectionGeometry = self.file.createIfcConnectionSurfaceGeometry(
-                create_curve_bounded_plane(self.file, nodes_2d, matrix)
-            )
-            if element.is_a("IfcVirtualElement"):
-                boundary.PhysicalOrVirtualBoundary = "VIRTUAL"
-            else:
-                boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
-            boundary.InternalOrExternalBoundary = "EXTERNAL"
-            boundary.RelatedBuildingElement = element
+            # generate space boundar(y|ies)
+            for mycell in face[1]["back_cell"], face[1]["front_cell"]:
+                if mycell:
+                    boundary = run(
+                        "root.create_entity",
+                        self.file,
+                        ifc_class="IfcRelSpaceBoundary2ndLevel",
+                    )
+                    boundary.ConnectionGeometry = (
+                        self.file.createIfcConnectionSurfaceGeometry(
+                            create_curve_bounded_plane(self.file, nodes_2d, matrix)
+                        )
+                    )
+                    if element.is_a("IfcVirtualElement"):
+                        boundary.PhysicalOrVirtualBoundary = "VIRTUAL"
+                    else:
+                        boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
+                    boundary.InternalOrExternalBoundary = "EXTERNAL"
+                    boundary.RelatedBuildingElement = element
 
-            if face[1]["back_cell"]:
-                cell_index = face[1]["back_cell"].Get("index")
-                if cell_index != None:
-                    # can't assign psets to an IfcRelationship, use Description instead
-                    boundary.Description = "CellIndex " + str(cell_index)
+                    cell_index = mycell.Get("index")
+                    if cell_index != None:
+                        # can't assign psets to an IfcRelationship, use Description instead
+                        boundary.Description = "CellIndex " + str(cell_index)
+                    face_index = face[1]["face"].Get("index")
+                    if face_index != None:
+                        boundary.Name = "FaceIndex " + face_index
 
             if element.is_a("IfcVirtualElement"):
                 continue
