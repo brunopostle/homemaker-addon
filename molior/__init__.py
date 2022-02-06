@@ -303,6 +303,7 @@ class Molior:
                                     },
                                 )
 
+                        # FIXME connect ends of horizontal members to other members
                         # member is non-horizontal, but one end coincides with this horizontal connection
                         elif (
                             abs(start_coors[2] - connection_elevation) < 0.001

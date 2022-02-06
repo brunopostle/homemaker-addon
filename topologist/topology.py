@@ -53,12 +53,12 @@ def FacesInclined(self, faces_ptr):
             faces_ptr.append(face)
 
 
-def FacesExternal(self, host_topology):
-    """List of external Faces directly attached to this Topology"""
+def FacesWorld(self, host_topology):
+    """List of external world Faces directly attached to this Topology"""
     faces_ptr = []
     elements_ptr = self.Faces_Cached(host_topology)
     for face in elements_ptr:
-        if face.IsExternal(host_topology):
+        if face.IsWorld(host_topology):
             faces_ptr.append(face)
     return faces_ptr
 
@@ -202,7 +202,7 @@ setattr(topologic.Topology, "Faces_Cached", Faces_Cached)
 setattr(topologic.Topology, "FacesVertical", FacesVertical)
 setattr(topologic.Topology, "FacesHorizontal", FacesHorizontal)
 setattr(topologic.Topology, "FacesInclined", FacesInclined)
-setattr(topologic.Topology, "FacesExternal", FacesExternal)
+setattr(topologic.Topology, "FacesWorld", FacesWorld)
 setattr(topologic.Topology, "Elevation", Elevation)
 setattr(topologic.Topology, "Height", Height)
 setattr(topologic.Topology, "Mesh", Mesh)

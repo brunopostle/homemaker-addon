@@ -147,7 +147,7 @@ def GetTraces(self):
                 elevations[elevation] = 0
 
             # TODO open wall top and bottom traces
-            if face.IsExternal(self):
+            if face.IsWorld(self):
                 normal = face.Normal()
                 for condition in face.TopLevelConditions(self):
                     edge = condition[0]

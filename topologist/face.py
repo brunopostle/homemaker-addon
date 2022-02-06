@@ -279,12 +279,11 @@ def Normal(self):
 
 def TopLevelConditions(self, host_topology):
     """Assuming this is a vertical external wall, how do the top edges continue?"""
-    # FIXME treats condition where above is an open wall same as eave
     result = []
     edges_ptr = []
     self.EdgesTop(edges_ptr)
     for edge in edges_ptr:
-        faces_ptr = edge.FacesExternal(host_topology)
+        faces_ptr = edge.FacesWorld(host_topology)
         for (
             face
         ) in faces_ptr:  # there should only be one external face (not including self)
@@ -312,12 +311,11 @@ def TopLevelConditions(self, host_topology):
 
 def BottomLevelConditions(self, host_topology):
     """Assuming this is a vertical external wall, how do the bottom edges continue?"""
-    # FIXME treats condition where below is an open wall same as footing
     result = []
     edges_ptr = []
     self.EdgesBottom(edges_ptr)
     for edge in edges_ptr:
-        faces_ptr = edge.FacesExternal(host_topology)
+        faces_ptr = edge.FacesWorld(host_topology)
         for (
             face
         ) in faces_ptr:  # there should only be one external face (not including self)
