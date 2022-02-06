@@ -159,6 +159,7 @@ def GetEntity(self, cellcomplex, vertex):
             return entity
 
 
+# FIXME doesn't appear to be in use
 def Dot(self, cellcomplex):
     """A generic GraphViz .dot file"""
     # neato -Tpng < graph.dot > graph.png

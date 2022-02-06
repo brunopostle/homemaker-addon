@@ -133,6 +133,7 @@ def AxisOuter(self):
             ]
 
 
+# FIXME doesn't appear to be in use
 def AxisOuterTop(self):
     """2D top edge of a vertical face, for external walls, anti-clockwise in plan"""
     edges_ptr = []
@@ -253,6 +254,7 @@ def CellsBelow(self, host_topology):
     return result
 
 
+# FIXME doesn't appear to be in use
 def HorizontalFacesSideways(self, host_topology):
     """Which horizontal faces are attached to the bottom Edges of this Face?"""
     edges_ptr = []

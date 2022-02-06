@@ -31,6 +31,7 @@ def FacesVertical(self, faces_ptr):
             faces_ptr.append(face)
 
 
+# FIXME doesn't appear to be in use
 def FacesHorizontal(self, faces_ptr):
     """List of horizontal Faces within this Topology"""
     elements_ptr = []
