@@ -426,6 +426,34 @@ class Molior:
                     "Tessellation",
                     [create_tessellation_from_mesh(self.file, *cell.Mesh())],
                 )
+                style = run("style.add_style", self.file, name="Void Space")
+                run(
+                    "style.add_surface_style",
+                    self.file,
+                    style=style,
+                    attributes={
+                        "SurfaceColour": {
+                            "Name": None,
+                            "Red": 0.5,
+                            "Green": 0.5,
+                            "Blue": 0.5,
+                        },
+                        "DiffuseColour": {
+                            "Name": None,
+                            "Red": 0.5,
+                            "Green": 0.5,
+                            "Blue": 0.5,
+                        },
+                        "Transparency": 0.5,
+                        "ReflectanceMethod": "PLASTIC",
+                    },
+                )
+                run(
+                    "style.assign_representation_styles",
+                    self.file,
+                    shape_representation=shape,
+                    styles=[style],
+                )
                 run(
                     "geometry.assign_representation",
                     self.file,

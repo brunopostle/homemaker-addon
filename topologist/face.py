@@ -279,6 +279,7 @@ def Normal(self):
 
 def TopLevelConditions(self, host_topology):
     """Assuming this is a vertical external wall, how do the top edges continue?"""
+    # TODO traces where face above is open
     result = []
     edges_ptr = []
     self.EdgesTop(edges_ptr)
@@ -311,6 +312,7 @@ def TopLevelConditions(self, host_topology):
 
 def BottomLevelConditions(self, host_topology):
     """Assuming this is a vertical external wall, how do the bottom edges continue?"""
+    # TODO traces where face below is open
     result = []
     edges_ptr = []
     self.EdgesBottom(edges_ptr)

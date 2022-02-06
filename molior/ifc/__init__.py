@@ -364,6 +364,7 @@ def assign_storey_byindex(self, entity, building, index):
             product=entity,
             relating_structure=storeys[str(index)],
         )
+    return storeys[str(index)]
 
 
 def assign_space_byindex(self, entity, building, index):
