@@ -53,12 +53,12 @@ class Floor(TraceClass):
         if (
             type(cell) == Cell
             and type(self.cellcomplex) == CellComplex
-            and cell.Get("usage") == "stair"
+            and cell.Usage() == "stair"
         ):
             below_cells_ptr = []
             cell.CellsBelow(self.cellcomplex, below_cells_ptr)
             for cell_below in below_cells_ptr:
-                if cell_below.Get("usage") == "stair":
+                if cell_below.Usage() == "stair":
                     self.ifc = "IfcVirtualElement"
                     break
 

@@ -21,7 +21,16 @@ wall-panel:
   class: Shell
   ifc: IfcWall
   predefined_type: USERDEFINED
-  condition: panel
+  condition: external-panel
+  layerset:
+    - [0.16, "Error"]
+  inner: 0.08
+  outer: 0.08
+partition-panel:
+  class: Shell
+  ifc: IfcWall
+  predefined_type: USERDEFINED
+  condition: internal-panel
   layerset:
     - [0.16, "Error"]
   inner: 0.08

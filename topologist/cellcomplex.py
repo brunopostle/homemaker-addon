@@ -232,13 +232,22 @@ def GetHulls(self):
         if face.IsVertical():
             if not face.AxisOuter():
                 # vertical face has no horizontal bottom edge, add to hull for wall panels
-                myhulls.add_face(
-                    "panel",
-                    stylename,
-                    face=face,
-                    front_cell=front_cell,
-                    back_cell=back_cell,
-                )
+                if face.IsExternal(self):
+                    myhulls.add_face(
+                        "external-panel",
+                        stylename,
+                        face=face,
+                        front_cell=front_cell,
+                        back_cell=back_cell,
+                    )
+                else:
+                    myhulls.add_face(
+                        "internal-panel",
+                        stylename,
+                        face=face,
+                        front_cell=front_cell,
+                        back_cell=back_cell,
+                    )
         elif face.IsHorizontal():
             # collect flat roof areas (not outdoor spaces)
             if face.IsUpward() and face.IsWorld(self):
@@ -249,6 +258,23 @@ def GetHulls(self):
                     front_cell=front_cell,
                     back_cell=back_cell,
                 )
+            elif face.CellAbove(self) and face.CellAbove(self).Usage() == "void":
+                if face.IsExternal(self):
+                    myhulls.add_face(
+                        "soffit",
+                        stylename,
+                        face=face,
+                        front_cell=front_cell,
+                        back_cell=back_cell,
+                    )
+                else:
+                    myhulls.add_face(
+                        "vault",
+                        stylename,
+                        face=face,
+                        front_cell=front_cell,
+                        back_cell=back_cell,
+                    )
         else:
             # collect roof, soffit, and vaulted ceiling faces as hulls
             if face.IsExternal(self):

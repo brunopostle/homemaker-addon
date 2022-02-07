@@ -4,11 +4,12 @@ soffits etc.
 
 There are hulls for these conditions:
 
-* panel (a vertical wall that doesn't have a horizontal bottom edge)
+* external-panel (a vertical wall that doesn't have a horizontal bottom edge)
+* internal-panel (a vertical wall that doesn't have a horizontal bottom edge)
 * flat (a flat roof)
 * roof (an inclined roof)
-* soffit (an inclined soffit)
-* vault (an inclined divider between internal spaces)
+* soffit (a non-vertical soffit)
+* vault (a non-vertical divider between internal spaces)
 
 """
 

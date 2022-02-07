@@ -120,7 +120,6 @@ class Molior:
 
         # use the topologic model to connect stuff
         if self.cellcomplex:
-            # TODO create and process a hull for internal faces that have no elements
             self.connect_structure()
             self.connect_spaces()
             self.stash_topology()

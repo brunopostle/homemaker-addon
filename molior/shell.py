@@ -194,6 +194,7 @@ class Shell(BaseClass):
 
             # create a representation
             if float(normal_x[2]) < 0.001 or not uniform_pitch:
+                # FIXME thickness should be inner + outer
                 extrude_height = self.outer
                 extrude_direction = [0.0, 0.0, 1.0]
             else:
