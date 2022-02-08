@@ -2,7 +2,7 @@ import ifcopenshell.api
 
 from topologist.helpers import string_to_coor, el
 from molior.baseclass import BaseClass
-from molior.geometry import map_to_2d
+from molior.geometry import map_to_2d, matrix_align
 from molior.ifc import (
     add_face_topology_epsets,
     create_extruded_area_solid,
@@ -26,7 +26,6 @@ class Shell(BaseClass):
         self.predefined_type = "USERDEFINED"
         self.layerset = [[0.03, "Plaster"], [0.2, "Insulation"], [0.05, "Tiles"]]
         self.structural_material = "Concrete"
-        self.inner = 0.08
         self.outer = 0.20
         self.type = "molior-shell"
         for arg in args:
@@ -34,6 +33,7 @@ class Shell(BaseClass):
         self.thickness = 0.0
         for layer in self.layerset:
             self.thickness += layer[0]
+        self.inner = self.thickness - self.outer
         self.identifier = self.style + "/" + self.name
 
     def execute(self):
@@ -185,25 +185,26 @@ class Shell(BaseClass):
             )
             self.add_psets(myelement_type)
 
-            # Usage isn't created until after type.assign_type
-            for inverse in self.file.get_inverse(
-                ifcopenshell.util.element.get_material(myelement_type)
-            ):
-                if inverse.is_a("IfcMaterialLayerSetUsage"):
-                    inverse.OffsetFromReferenceLine = 0.0 - self.inner
-
             # create a representation
             if float(normal_x[2]) < 0.001 or not uniform_pitch:
-                # FIXME thickness should be inner + outer
-                extrude_height = self.outer
+                extrude_height = self.thickness
                 extrude_direction = [0.0, 0.0, 1.0]
+                matrix = matrix @ matrix_align([0.0, 0.0, -self.inner], [1.0, 0.0, 0.0])
             else:
-                extrude_height = self.outer / float(normal_x[2])
+                extrude_height = self.thickness / float(normal_x[2])
                 extrude_direction = [
                     0.0,
                     0 - float(normal_x[1]),
                     float(normal_x[2]),
                 ]
+                matrix = matrix @ matrix_align(
+                    [
+                        0.0,
+                        self.inner * float(normal_x[1]),
+                        0.0 - (self.inner * float(normal_x[2])),
+                    ],
+                    [1.0, self.inner * float(normal_x[1]), 0.0],
+                )
             shape = self.file.createIfcShapeRepresentation(
                 body_context,
                 "Body",

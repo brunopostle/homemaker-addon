@@ -6,7 +6,6 @@ pitched-roof:
   condition: roof
   layerset:
     - [0.16, "Error"]
-  inner: 0.08
   outer: 0.08
 inclined-soffit:
   class: Shell
@@ -15,7 +14,6 @@ inclined-soffit:
   condition: soffit
   layerset:
     - [0.16, "Error"]
-  inner: 0.08
   outer: 0.08
 wall-panel:
   class: Shell
@@ -24,7 +22,6 @@ wall-panel:
   condition: external-panel
   layerset:
     - [0.16, "Error"]
-  inner: 0.08
   outer: 0.08
 partition-panel:
   class: Shell
@@ -33,7 +30,6 @@ partition-panel:
   condition: internal-panel
   layerset:
     - [0.16, "Error"]
-  inner: 0.08
   outer: 0.08
 flat-roof:
   class: Shell
@@ -42,5 +38,4 @@ flat-roof:
   condition: flat
   layerset:
     - [0.16, "Error"]
-  inner: 0.08
   outer: 0.08

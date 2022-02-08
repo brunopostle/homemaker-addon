@@ -4,14 +4,20 @@ pitched-roof:
   ifc: IfcRoof
   predefined_type: FREEFORM
   condition: roof
-  inner: 0.08
+  layerset:
+    - [0.03, "Plaster"]
+    - [0.10, "Insulation"]
+    - [0.05, "Tiles"]
   outer: 0.12
 ceiling-soffit:
   class: Shell
   ifc: IfcBuildingElementProxy
   predefined_type: USERDEFINED
   condition: soffit
-  inner: 0.02
+  layerset:
+    - [0.03, "Plaster"]
+    - [0.21, "Insulation"]
+    - [0.03, "Plaster"]
   outer: 0.25
 wall-panel:
   class: Shell
@@ -21,7 +27,6 @@ wall-panel:
   layerset:
     - [0.3, "Masonry"]
     - [0.03, "Plaster"]
-  inner: 0.08
   outer: 0.25
 partition-panel:
   class: Shell
@@ -32,14 +37,16 @@ partition-panel:
     - [0.03, "Plaster"]
     - [0.10, "Insulation"]
     - [0.03, "Plaster"]
-  inner: 0.08
   outer: 0.08
 flat-roof:
   class: Shell
   ifc: IfcRoof
   predefined_type: FLAT_ROOF
   condition: flat
-  inner: 0.08
+  layerset:
+    - [0.03, "Plaster"]
+    - [0.20, "Insulation"]
+    - [0.03, "Tiles"]
   outer: 0.12
 ceiling-vault:
   class: Shell
@@ -50,5 +57,4 @@ ceiling-vault:
     - [0.03, "Plaster"]
     - [0.10, "Insulation"]
     - [0.03, "Plaster"]
-  inner: 0.08
   outer: 0.08
