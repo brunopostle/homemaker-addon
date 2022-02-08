@@ -1,6 +1,6 @@
-"""Hulls are 3D shells that define non-wall planar building elements,
-differentiated by style properties.  Typically these define roofs,
-soffits etc.
+"""Hulls are 3D shells that define planar building elements, differentiated by
+style properties.  Typically these define roofs, soffits etc.. and are drawn
+using a simple thickened plate corresponding to the original Face.
 
 There are hulls for these conditions:
 
@@ -10,6 +10,28 @@ There are hulls for these conditions:
 * roof (an inclined roof)
 * soffit (a non-vertical soffit)
 * vault (a non-vertical divider between internal spaces)
+
+In addition, there are hulls that correspond to identically named traces.
+
+Each wall condition with horizontal bottom edges:
+
+* external (a vertical wall between inside and outside)
+* internal (a vertical wall between twon internal spaces)
+* open (an external 'wall' to outdoor space)
+
+Each cell floor perimeter, note that internal shell faces have no up or down
+orientation, use the equivalent trace instead:
+
+* kitchen
+* living
+* bedroom
+* toilet
+* sahn (an outdoor circulation space)
+* circulation
+* stair
+* retail
+* outside
+* void (an internal space that doesn't qualify as a room)
 
 """
 

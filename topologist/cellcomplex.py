@@ -230,7 +230,33 @@ def GetHulls(self):
         front_cell, back_cell = face.CellsOrdered(self)
 
         if face.IsVertical():
-            if not face.AxisOuter():
+            if face.AxisOuter():
+                # these hulls are duplicates of traces wth the same names
+                if face.IsOpen(self):
+                    myhulls.add_face(
+                        "open",
+                        stylename,
+                        face=face,
+                        front_cell=front_cell,
+                        back_cell=back_cell,
+                    )
+                elif face.IsExternal(self):
+                    myhulls.add_face(
+                        "external",
+                        stylename,
+                        face=face,
+                        front_cell=front_cell,
+                        back_cell=back_cell,
+                    )
+                elif face.IsInternal(self):
+                    myhulls.add_face(
+                        "internal",
+                        stylename,
+                        face=face,
+                        front_cell=front_cell,
+                        back_cell=back_cell,
+                    )
+            else:
                 # vertical face has no horizontal bottom edge, add to hull for wall panels
                 if face.IsExternal(self):
                     myhulls.add_face(
@@ -248,8 +274,8 @@ def GetHulls(self):
                         front_cell=front_cell,
                         back_cell=back_cell,
                     )
-            # TODO build hulls for equivalent of 'open', 'external' and 'internal' traces
         elif face.IsHorizontal():
+            cell_above = face.CellAbove(self)
             # collect flat roof areas (not outdoor spaces)
             if face.IsUpward() and face.IsWorld(self):
                 myhulls.add_face(
@@ -259,18 +285,28 @@ def GetHulls(self):
                     front_cell=front_cell,
                     back_cell=back_cell,
                 )
-            elif face.CellAbove(self) and face.CellAbove(self).Usage() == "void":
-                if face.IsExternal(self):
+            elif cell_above:
+                if cell_above.Usage() == "void":
+                    if face.IsExternal(self):
+                        myhulls.add_face(
+                            "soffit",
+                            stylename,
+                            face=face,
+                            front_cell=front_cell,
+                            back_cell=back_cell,
+                        )
+                    else:
+                        myhulls.add_face(
+                            "vault",
+                            stylename,
+                            face=face,
+                            front_cell=front_cell,
+                            back_cell=back_cell,
+                        )
+                elif cell_above.Usage() != None:
+                    # these hulls are duplicates of traces wth the same names
                     myhulls.add_face(
-                        "soffit",
-                        stylename,
-                        face=face,
-                        front_cell=front_cell,
-                        back_cell=back_cell,
-                    )
-                else:
-                    myhulls.add_face(
-                        "vault",
+                        cell_above.Usage(),
                         stylename,
                         face=face,
                         front_cell=front_cell,

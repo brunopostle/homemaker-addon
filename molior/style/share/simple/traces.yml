@@ -1,0 +1,35 @@
+---
+exterior:
+  condition: noop
+ground beam:
+  condition: noop
+interior:
+  condition: noop
+internal ground beam:
+  condition: noop
+eaves:
+  condition: noop
+parapet:
+  condition: noop
+external beam:
+  condition: noop
+column:
+  condition: noop
+bedroom-floor:
+  condition: noop
+circulation-floor:
+  condition: noop
+kitchen-floor:
+  condition: noop
+living-floor:
+  condition: noop
+outside-floor:
+  condition: noop
+retail-floor:
+  condition: noop
+sahn-floor:
+  condition: noop
+stair-floor:
+  condition: noop
+toilet-floor:
+  condition: noop

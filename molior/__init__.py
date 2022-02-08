@@ -498,7 +498,7 @@ class Molior:
                 pset_topology = ifcopenshell.util.element.get_psets(element).get(
                     "EPset_Topology"
                 )
-                if pset_topology:
+                if pset_topology and "Cellindex" in pset_topology:
                     assign_space_byindex(
                         self.file, element, self.building, pset_topology["CellIndex"]
                     )
