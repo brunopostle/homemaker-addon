@@ -3,6 +3,7 @@
 from functools import lru_cache
 import topologic
 from topologic import Vertex, Edge, Face, FaceUtility, CellUtility
+from topologist.helpers import el
 import topologist.ugraph as ugraph
 
 
@@ -356,6 +357,48 @@ def BottomLevelConditions(self, host_topology):
     return result
 
 
+def EdgesTop(self, result_edges_ptr):
+    """A list of horizontal edges at the highest level of this face"""
+    edges_ptr = []
+    self.Edges(None, edges_ptr)
+    level = el(self.Elevation() + self.Height())
+    for edge in edges_ptr:
+        vertex_start = edge.StartVertex()
+        vertex_end = edge.EndVertex()
+        if el(vertex_start.Z()) == level and el(vertex_end.Z()) == level:
+            result_edges_ptr.append(edge)
+
+
+def EdgesBottom(self, result_edges_ptr):
+    """A list of horizontal edges at the lowest level of this face"""
+    edges_ptr = []
+    self.Edges(None, edges_ptr)
+    level = self.Elevation()
+    for edge in edges_ptr:
+        vertex_start = edge.StartVertex()
+        vertex_end = edge.EndVertex()
+        if el(vertex_start.Z()) == level and el(vertex_end.Z()) == level:
+            result_edges_ptr.append(edge)
+
+
+def EdgesCrop(self, result_edges_ptr):
+    """Which edges are not vertical or top/bottom?"""
+    edges_ptr = []
+    self.ExternalBoundary().Edges(None, edges_ptr)
+    bottom = self.Elevation()
+    top = el(self.Elevation() + self.Height())
+    for edge in edges_ptr:
+        vertex_start = edge.StartVertex()
+        vertex_end = edge.EndVertex()
+        if el(vertex_start.Z()) == top and el(vertex_end.Z()) == top:
+            continue
+        elif el(vertex_start.Z()) == bottom and el(vertex_end.Z()) == bottom:
+            continue
+        elif edge.IsVertical():
+            continue
+        result_edges_ptr.append(edge)
+
+
 setattr(topologic.Face, "CellsOrdered", CellsOrdered)
 setattr(topologic.Face, "VerticesPerimeter", VerticesPerimeter)
 setattr(topologic.Face, "BadNormal", BadNormal)
@@ -376,3 +419,6 @@ setattr(topologic.Face, "HorizontalFacesSideways", HorizontalFacesSideways)
 setattr(topologic.Face, "Normal", Normal)
 setattr(topologic.Face, "TopLevelConditions", TopLevelConditions)
 setattr(topologic.Face, "BottomLevelConditions", BottomLevelConditions)
+setattr(topologic.Face, "EdgesTop", EdgesTop)
+setattr(topologic.Face, "EdgesBottom", EdgesBottom)
+setattr(topologic.Face, "EdgesCrop", EdgesCrop)

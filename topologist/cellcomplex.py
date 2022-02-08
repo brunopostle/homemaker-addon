@@ -248,6 +248,7 @@ def GetHulls(self):
                         front_cell=front_cell,
                         back_cell=back_cell,
                     )
+            # TODO build hulls for equivalent of 'open', 'external' and 'internal' traces
         elif face.IsHorizontal():
             # collect flat roof areas (not outdoor spaces)
             if face.IsUpward() and face.IsWorld(self):

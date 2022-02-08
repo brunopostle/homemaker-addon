@@ -103,48 +103,6 @@ def Mesh(self):
     return vertices, faces
 
 
-def EdgesTop(self, result_edges_ptr):
-    """A list of horizontal edges at the highest level of this face"""
-    edges_ptr = []
-    self.Edges(None, edges_ptr)
-    level = el(self.Elevation() + self.Height())
-    for edge in edges_ptr:
-        vertex_start = edge.StartVertex()
-        vertex_end = edge.EndVertex()
-        if el(vertex_start.Z()) == level and el(vertex_end.Z()) == level:
-            result_edges_ptr.append(edge)
-
-
-def EdgesBottom(self, result_edges_ptr):
-    """A list of horizontal edges at the lowest level of this face"""
-    edges_ptr = []
-    self.Edges(None, edges_ptr)
-    level = self.Elevation()
-    for edge in edges_ptr:
-        vertex_start = edge.StartVertex()
-        vertex_end = edge.EndVertex()
-        if el(vertex_start.Z()) == level and el(vertex_end.Z()) == level:
-            result_edges_ptr.append(edge)
-
-
-def EdgesCrop(self, result_edges_ptr):
-    """Which edges are not vertical or top/bottom?"""
-    edges_ptr = []
-    self.Edges(None, edges_ptr)
-    bottom = self.Elevation()
-    top = el(self.Elevation() + self.Height())
-    for edge in edges_ptr:
-        vertex_start = edge.StartVertex()
-        vertex_end = edge.EndVertex()
-        if el(vertex_start.Z()) == top and el(vertex_end.Z()) == top:
-            continue
-        elif el(vertex_start.Z()) == bottom and el(vertex_end.Z()) == bottom:
-            continue
-        elif edge.IsVertical():
-            continue
-        result_edges_ptr.append(edge)
-
-
 def Set(self, key, value):
     """Simple string value dictionary access"""
     dictionary = self.GetDictionary()
@@ -206,9 +164,6 @@ setattr(topologic.Topology, "FacesWorld", FacesWorld)
 setattr(topologic.Topology, "Elevation", Elevation)
 setattr(topologic.Topology, "Height", Height)
 setattr(topologic.Topology, "Mesh", Mesh)
-setattr(topologic.Topology, "EdgesTop", EdgesTop)
-setattr(topologic.Topology, "EdgesBottom", EdgesBottom)
-setattr(topologic.Topology, "EdgesCrop", EdgesCrop)
 setattr(topologic.Topology, "Set", Set)
 setattr(topologic.Topology, "Get", Get)
 setattr(topologic.Topology, "DumpDictionary", DumpDictionary)
