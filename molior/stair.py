@@ -16,7 +16,6 @@ class Stair(TraceClass):
         self.inner = 0.08
         self.path = []
         self.riser = 0.19
-        self.type = "molior-stair"
         self.usage = ""
         self.width = 1.0
         for arg in args:

@@ -27,7 +27,6 @@ class Shell(BaseClass):
         self.layerset = [[0.03, "Plaster"], [0.2, "Insulation"], [0.05, "Tiles"]]
         self.structural_material = "Concrete"
         self.outer = 0.20
-        self.type = "molior-shell"
         for arg in args:
             self.__dict__[arg] = args[arg]
         self.thickness = 0.0

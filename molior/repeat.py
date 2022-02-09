@@ -40,7 +40,6 @@ class Repeat(TraceClass):
         self.path = []
         self.spacing = 1.0
         self.traces = []
-        self.type = "molior-repeat"
         self.not_start = True
         self.not_end = True
         self.not_corner = False

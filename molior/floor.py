@@ -31,7 +31,6 @@ class Floor(TraceClass):
         self.layerset = [[0.2, "Concrete"], [0.02, "Screed"]]
         self.structural_material = "Concrete"
         self.path = []
-        self.type = "molior-floor"
         for arg in args:
             self.__dict__[arg] = args[arg]
         self.thickness = 0.0

@@ -26,7 +26,6 @@ class Space(TraceClass):
         self.ifc = "IfcSpace"
         self.inner = 0.08
         self.path = []
-        self.type = "molior-space"
         self.usage = ""
         for arg in args:
             self.__dict__[arg] = args[arg]

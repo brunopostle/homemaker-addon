@@ -34,7 +34,6 @@ class Extrusion(TraceClass):
             {"ProfileType": "AREA", "XDim": 0.2, "YDim": 0.3},
         ]
         self.path = []
-        self.type = "molior-extrusion"
         for arg in args:
             self.__dict__[arg] = args[arg]
         self.identifier = self.style + "/" + self.name
