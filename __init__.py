@@ -171,7 +171,7 @@ def topologic_faces_from_blender_object(blender_object):
 
 def mesh_from_cellcomplex(cc):
     faces_ptr = []
-    cc.Faces(faces_ptr)
+    cc.Faces(cc, faces_ptr)
     vertices = []
     faces = []
     materials = []
