@@ -206,7 +206,7 @@ class Shell(BaseClass):
                 )
             shape = self.file.createIfcShapeRepresentation(
                 body_context,
-                "Body",
+                body_context.ContextIdentifier,
                 "SweptSolid",
                 [
                     create_extruded_area_solid(
