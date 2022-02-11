@@ -51,6 +51,7 @@ from molior.ifc import (
     create_storeys,
     add_face_topology_epsets,
     add_cell_topology_epsets,
+    add_topologic_epsets,
     assign_space_byindex,
     assign_storey_byindex,
     get_building,
@@ -617,12 +618,7 @@ class Molior:
                     [create_tessellation_from_mesh(self.file, *face.Mesh())],
                 ),
             )
-            add_face_topology_epsets(
-                self.file,
-                element,
-                face,
-                *reversed(face.CellsOrdered(self.cellcomplex)),
-            )
+            add_topologic_epsets(self.file, element, face)
 
         # Create a Virtual Element with a Point Representation for each Cell
         cells = []
@@ -654,8 +650,7 @@ class Molior:
                     [point],
                 ),
             )
-
-            add_cell_topology_epsets(self.file, element, cell)
+            add_topologic_epsets(self.file, element, cell)
 
     def build_trace(
         self,
