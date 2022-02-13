@@ -663,6 +663,7 @@ def get_extruded_type_by_name(
             "ifc_class": "IfcRectangleProfileDef",
             "material": "Cheese",
             "parameters": {"ProfileType": "AREA", "XDim": 0.1, "YDim": 0.2},
+            "position": {"Location": [0.0, 0.0], "RefDirection": [1.0, 0.0]},
         }
     ],
 ):
@@ -700,13 +701,19 @@ def get_extruded_type_by_name(
             self,
             profile_set=profile_set,
             material=get_material_by_name(
-                self, subcontext, profile["material"], profile["style_materials"]
+                self, subcontext, profile["material"], style_materials
             ),
         )
         # create a Parameterized Profile
         parameterized_profile = run(
             "profile.add_parameterized_profile", self, ifc_class=profile["ifc_class"]
         )
+        if "position" in profile:
+            position = profile["position"]
+            parameterized_profile.Position = self.createIfcAxis2Placement2D(
+                self.createIfcCartesianPoint(position["Location"]),
+                self.createIfcDirection(position["RefDirection"]),
+            )
         run(
             "profile.edit_profile",
             self,
