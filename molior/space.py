@@ -9,6 +9,7 @@ from molior.ifc import (
     create_extruded_area_solid,
     create_tessellation_from_mesh,
     assign_storey_byindex,
+    get_context_by_name,
 )
 
 run = ifcopenshell.api.run
@@ -33,9 +34,7 @@ class Space(TraceClass):
 
     def execute(self):
         """Generate some ifc"""
-        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
-            if item.ContextIdentifier == "Body":
-                body_context = item
+        body_context = get_context_by_name(self.file, context_identifier="Body")
         # the cell is the first cell attached to any edge in the chain
         cell = self.chain.graph[next(iter(self.chain.graph))][1]["back_cell"]
 

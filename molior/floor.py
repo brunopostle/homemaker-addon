@@ -13,6 +13,7 @@ from molior.ifc import (
     create_face_surface,
     assign_storey_byindex,
     get_material_by_name,
+    get_context_by_name,
 )
 
 run = ifcopenshell.api.run
@@ -39,11 +40,10 @@ class Floor(TraceClass):
 
     def execute(self):
         """Generate some ifc"""
-        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
-            if item.ContextIdentifier == "Reference":
-                reference_context = item
-            if item.ContextIdentifier == "Body":
-                body_context = item
+        reference_context = get_context_by_name(
+            self.file, context_identifier="Reference"
+        )
+        body_context = get_context_by_name(self.file, context_identifier="Body")
 
         # every node in the graph references the cell, pick one
         cell = self.chain.graph[next(iter(self.chain.graph))][1]["back_cell"]

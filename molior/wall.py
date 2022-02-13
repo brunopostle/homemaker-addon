@@ -23,6 +23,7 @@ from molior.ifc import (
     assign_representation_fromDXF,
     assign_storey_byindex,
     get_material_by_name,
+    get_context_by_name,
     create_curve_bounded_plane,
 )
 
@@ -58,13 +59,11 @@ class Wall(TraceClass):
 
     def execute(self):
         """Generate some ifc"""
-        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
-            if item.ContextIdentifier == "Reference":
-                reference_context = item
-            if item.ContextIdentifier == "Body":
-                body_context = item
-            if item.ContextIdentifier == "Axis":
-                axis_context = item
+        reference_context = get_context_by_name(
+            self.file, context_identifier="Reference"
+        )
+        body_context = get_context_by_name(self.file, context_identifier="Body")
+        axis_context = get_context_by_name(self.file, context_identifier="Axis")
         self.init_openings()
         style = molior.Molior.style
 

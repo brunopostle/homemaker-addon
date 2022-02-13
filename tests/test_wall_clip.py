@@ -12,6 +12,7 @@ from molior.ifc import (
     create_building,
     create_storeys,
     assign_storey_byindex,
+    get_context_by_name,
 )
 from molior.geometry import matrix_align
 
@@ -21,9 +22,7 @@ run = ifcopenshell.api.run
 class Tests(unittest.TestCase):
     def setUp(self):
         ifc = molior.ifc.init(name="Our Project")
-        for item in ifc.by_type("IfcGeometricRepresentationSubContext"):
-            if item.ContextIdentifier == "Body":
-                body_context = item
+        self.body_context = get_context_by_name(ifc, context_identifier="Body")
 
         project = ifc.by_type("IfcProject")[0]
         site = create_site(ifc, project, "My Site")
@@ -108,7 +107,7 @@ class Tests(unittest.TestCase):
             ),
         )
         clipped_representation = ifc.createIfcShapeRepresentation(
-            body_context,
+            self.body_context,
             "Body",
             "Clipping",
             [clipped2],

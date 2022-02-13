@@ -14,6 +14,7 @@ from molior.ifc import (
     create_extruded_area_solid,
     create_tessellations_from_dxf,
     assign_storey_byindex,
+    get_context_by_name,
 )
 from molior.geometry import matrix_transform, matrix_align
 
@@ -23,11 +24,8 @@ run = ifcopenshell.api.run
 class Tests(unittest.TestCase):
     def setUp(self):
         ifc = molior.ifc.init(name="My Project")
-        for item in ifc.by_type("IfcGeometricRepresentationSubContext"):
-            if item.ContextIdentifier == "Body":
-                body_context = item
-            if item.ContextIdentifier == "Axis":
-                axis_context = item
+        self.body_context = get_context_by_name(ifc, context_identifier="Body")
+        self.axis_context = get_context_by_name(ifc, context_identifier="Axis")
 
         project = ifc.by_type("IfcProject")[0]
         site = create_site(ifc, project, "My Site")
@@ -36,7 +34,7 @@ class Tests(unittest.TestCase):
 
         # a centreline axis
         poly = ifc.createIfcShapeRepresentation(
-            axis_context,
+            self.axis_context,
             "Axis",
             "Curve2D",
             [
@@ -55,7 +53,7 @@ class Tests(unittest.TestCase):
 
         # a vertically extruded solid
         shape = ifc.createIfcShapeRepresentation(
-            body_context,
+            self.body_context,
             "Body",
             "SweptSolid",
             [
@@ -76,7 +74,7 @@ class Tests(unittest.TestCase):
 
         # load a DXF polyface mesh as a Tessellation
         brep = ifc.createIfcShapeRepresentation(
-            body_context,
+            self.body_context,
             "Body",
             "Tessellation",
             create_tessellations_from_dxf(ifc, "molior/style/share/shopfront.dxf"),
@@ -154,11 +152,9 @@ class Tests(unittest.TestCase):
 
         # make the ifc model available to other test methods
         self.ifc = ifc
-        self.body_context = body_context
 
     def test_write(self):
         ifc = self.ifc
-        body_context = self.body_context
         # create a lookup table of existing typeproducts in this ifc
         lookup = {}
         for typeproduct in ifc.by_type("IfcTypeProduct"):
@@ -210,7 +206,7 @@ class Tests(unittest.TestCase):
             ifc,
             product=mywall,
             representation=ifc.createIfcShapeRepresentation(
-                body_context,
+                self.body_context,
                 "Body",
                 "SweptSolid",
                 [
@@ -247,7 +243,7 @@ class Tests(unittest.TestCase):
             ifc,
             product=myopening,
             representation=ifc.createIfcShapeRepresentation(
-                body_context,
+                self.body_context,
                 "Body",
                 "SweptSolid",
                 [

@@ -14,6 +14,7 @@ from molior.ifc import (
     create_extruded_area_solid,
     assign_representation_fromDXF,
     assign_storey_byindex,
+    get_context_by_name,
 )
 from molior.geometry import matrix_align
 
@@ -23,9 +24,7 @@ run = ifcopenshell.api.run
 class Tests(unittest.TestCase):
     def setUp(self):
         ifc = molior.ifc.init(name="My Project")
-        for item in ifc.by_type("IfcGeometricRepresentationSubContext"):
-            if item.ContextIdentifier == "Body":
-                body_context = item
+        self.body_context = get_context_by_name(ifc, context_identifier="Body")
 
         project = ifc.by_type("IfcProject")[0]
         site = create_site(ifc, project, "My Site")
@@ -58,7 +57,11 @@ class Tests(unittest.TestCase):
 
         # load geometry from a DXF file and assign to the window
         assign_representation_fromDXF(
-            ifc, body_context, myproduct, "default", "molior/style/share/shopfront.dxf"
+            ifc,
+            self.body_context,
+            myproduct,
+            "default",
+            "molior/style/share/shopfront.dxf",
         )
 
         # create a wall
@@ -69,7 +72,7 @@ class Tests(unittest.TestCase):
             ifc,
             product=mywall,
             representation=ifc.createIfcShapeRepresentation(
-                body_context,
+                self.body_context,
                 "Body",
                 "SweptSolid",
                 [
@@ -107,7 +110,7 @@ class Tests(unittest.TestCase):
             ifc,
             product=myopening,
             representation=ifc.createIfcShapeRepresentation(
-                body_context,
+                self.body_context,
                 "Body",
                 "SweptSolid",
                 [
@@ -155,7 +158,11 @@ class Tests(unittest.TestCase):
 
         # shopfront.dxf is already imported and mapped
         assign_representation_fromDXF(
-            ifc, body_context, myproduct, "default", "molior/style/share/shopfront.dxf"
+            ifc,
+            self.body_context,
+            myproduct,
+            "default",
+            "molior/style/share/shopfront.dxf",
         )
 
         # create an opening
@@ -177,7 +184,7 @@ class Tests(unittest.TestCase):
             ifc,
             product=myopening,
             representation=ifc.createIfcShapeRepresentation(
-                body_context,
+                self.body_context,
                 "Body",
                 "SweptSolid",
                 [

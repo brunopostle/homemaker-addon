@@ -53,6 +53,7 @@ from molior.ifc import (
     add_topologic_epsets,
     assign_space_byindex,
     assign_storey_byindex,
+    get_context_by_name,
     get_parent_building,
     create_tessellation_from_mesh,
 )
@@ -126,9 +127,9 @@ class Molior:
 
     def connect_structure(self):
         """Given Structural Member entities are tagged with Topologic indexes, connect them"""
-        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
-            if item.ContextIdentifier == "Reference":
-                reference_context = item
+        reference_context = get_context_by_name(
+            self.file, context_identifier="Reference"
+        )
 
         structural_placement = self.file.createIfcLocalPlacement(
             None,
@@ -384,9 +385,7 @@ class Molior:
 
     def connect_spaces(self):
         """Given objects and boundaries are tagged with Topologic indexes, assign them to correct spaces"""
-        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
-            if item.ContextIdentifier == "Body":
-                body_context = item
+        body_context = get_context_by_name(self.file, context_identifier="Body")
 
         space_lookup = {}
         for space in self.file.by_type("IfcSpace"):
@@ -575,9 +574,9 @@ class Molior:
 
     def stash_topology(self):
         """Represent a Topologic model as IFC geometry"""
-        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
-            if item.ContextIdentifier == "Reference":
-                reference_context = item
+        reference_context = get_context_by_name(
+            self.file, context_identifier="Reference"
+        )
         system = run("system.add_system", self.file)
         system.Name = "Topology/" + self.building.Name
         rel = run(

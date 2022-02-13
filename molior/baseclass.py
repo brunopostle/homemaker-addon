@@ -11,7 +11,7 @@ from molior.geometry import (
     subtract_2d,
     line_intersection,
 )
-from molior.ifc import get_material_by_name, add_pset
+from molior.ifc import get_material_by_name, add_pset, get_context_by_name
 
 run = ifcopenshell.api.run
 
@@ -45,9 +45,7 @@ class BaseClass:
 
     def get_element_type(self):
         """Retrieve or create an Ifc Type definition for this Molior object"""
-        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
-            if item.ContextIdentifier == "Body":
-                body_context = item
+        body_context = get_context_by_name(self.file, context_identifier="Body")
         element_types = {}
         for element_type in self.file.by_type(self.ifc + "Type"):
             element_types[element_type.Name] = element_type

@@ -7,7 +7,7 @@ import unittest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import ifcopenshell
 import molior.ifc
-from molior.ifc import create_extruded_area_solid
+from molior.ifc import create_extruded_area_solid, get_context_by_name
 
 run = ifcopenshell.api.run
 
@@ -15,9 +15,7 @@ run = ifcopenshell.api.run
 class Tests(unittest.TestCase):
     def setUp(self):
         self.file = molior.ifc.init(name="Our Project")
-        for item in self.file.by_type("IfcGeometricRepresentationSubContext"):
-            if item.ContextIdentifier == "Body":
-                self.body_context = item
+        self.body_context = get_context_by_name(self.file, context_identifier="Body")
 
     def test_add_surface_style(self):
         style = run("style.add_style", self.file, name="Outdoor wall")
