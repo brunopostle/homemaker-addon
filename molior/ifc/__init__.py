@@ -19,10 +19,9 @@ from molior.geometry import (
 run = ifcopenshell.api.run
 
 
-def init(name="Homemaker Project"):
+def init(name="Homemaker Project", file=run("project.create_file")):
     """Creates and sets up an ifc 'file' object"""
-    file = run("project.create_file")
-
+    # TODO skip each of these if already existing
     run("owner.add_person", file)
     run("owner.add_organisation", file)
 
@@ -66,6 +65,7 @@ def init(name="Homemaker Project"):
 
 def create_site(self, project, site_name):
     """Add a Site to a Project"""
+    # TODO return existing site if project already contains site with this name
     site = run("root.create_entity", self, ifc_class="IfcSite", name=site_name)
     run("aggregate.assign_object", self, product=site, relating_object=project)
     return site
@@ -73,6 +73,7 @@ def create_site(self, project, site_name):
 
 def create_building(self, site, building_name):
     """Add a Building to a Site"""
+    # TODO return existing building if site already contains building with this name
     building = run(
         "root.create_entity", self, ifc_class="IfcBuilding", name=building_name
     )
@@ -82,6 +83,7 @@ def create_building(self, site, building_name):
 
 def create_structural_analysis_model(self, building, model_name):
     """Add a structural model to a building"""
+    # TODO return existing model if building already contains model with this name
     model = run("structural.add_structural_analysis_model", self)
     model.Name = "Structure/" + model_name
     rel = run(
@@ -100,6 +102,7 @@ def create_storeys(self, building, elevations):
     if elevations == {}:
         elevations[0.0] = 0
     for elevation in sorted(elevations):
+        # TODO skip if building already contains storey with this name
         mystorey = run(
             "root.create_entity",
             self,
@@ -348,7 +351,7 @@ def assign_storey_byindex(self, entity, building, index):
     """Assign object to a storey by index"""
     storeys = {}
     for storey in self.by_type("IfcBuildingStorey"):
-        if get_building(storey) == building:
+        if get_parent_building(storey) == building:
             storeys[storey.Name] = storey
     if entity.is_a("IfcSpatialElement"):
         run(
@@ -371,7 +374,7 @@ def assign_space_byindex(self, entity, building, index):
     """Assign object to a Space by index"""
     spaces = {}
     for space in self.by_type("IfcSpace"):
-        if get_building(space) == building:
+        if get_parent_building(space) == building:
             pset_topology = ifcopenshell.util.element.get_psets(space).get(
                 "EPset_Topology"
             )
@@ -529,7 +532,7 @@ def get_library_by_name(self, library_name):
     return library
 
 
-def get_building(entity):
+def get_parent_building(entity):
     """Retrieve whatever Building contains this entity, or None"""
     if entity.is_a("IfcElement"):
         parents = entity.ContainedInStructure
@@ -559,7 +562,7 @@ def get_building(entity):
         return None
     if parent.is_a("IfcBuilding"):
         return parent
-    return get_building(parent)
+    return get_parent_building(parent)
 
 
 def get_material_by_name(self, subcontext, material_name, style_materials):

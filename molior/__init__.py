@@ -49,12 +49,11 @@ from molior.ifc import (
     create_building,
     create_structural_analysis_model,
     create_storeys,
-    add_face_topology_epsets,
     add_cell_topology_epsets,
     add_topologic_epsets,
     assign_space_byindex,
     assign_storey_byindex,
-    get_building,
+    get_parent_building,
     create_tessellation_from_mesh,
 )
 import topologist.ushell as ushell
@@ -144,7 +143,7 @@ class Molior:
         surface_lookup = {}
         curve_list = []
         for member in self.file.by_type("IfcStructuralSurfaceMember"):
-            if get_building(member) == self.building:
+            if get_parent_building(member) == self.building:
                 member.ObjectPlacement = structural_placement
                 pset_topology = ifcopenshell.util.element.get_psets(member).get(
                     "EPset_Topology"
@@ -152,7 +151,7 @@ class Molior:
                 if pset_topology:
                     surface_lookup[pset_topology["FaceIndex"]] = member
         for member in self.file.by_type("IfcStructuralCurveMember"):
-            if get_building(member) == self.building:
+            if get_parent_building(member) == self.building:
                 member.ObjectPlacement = structural_placement
                 pset_topology = ifcopenshell.util.element.get_psets(member).get(
                     "EPset_Topology"
@@ -391,7 +390,7 @@ class Molior:
 
         space_lookup = {}
         for space in self.file.by_type("IfcSpace"):
-            if get_building(space) == self.building:
+            if get_parent_building(space) == self.building:
                 pset_topology = ifcopenshell.util.element.get_psets(space).get(
                     "EPset_Topology"
                 )
@@ -474,7 +473,7 @@ class Molior:
 
         # attach spaces to space boundaries
         for boundary in self.file.by_type("IfcRelSpaceBoundary2ndLevel"):
-            if get_building(boundary.RelatedBuildingElement) == self.building:
+            if get_parent_building(boundary.RelatedBuildingElement) == self.building:
                 if boundary.Description:
                     items = boundary.Description.split()
                     if len(items) == 2 and items[0] == "CellIndex":
@@ -495,7 +494,7 @@ class Molior:
 
         # molior.floor attaches Slab elements directly to Storey, re-attach to relevant Space
         for element in self.file.by_type("IfcSlab"):
-            if get_building(element) == self.building:
+            if get_parent_building(element) == self.building:
                 pset_topology = ifcopenshell.util.element.get_psets(element).get(
                     "EPset_Topology"
                 )
@@ -506,7 +505,7 @@ class Molior:
 
         # attach Window elements to relevant Space
         for element in self.file.by_type("IfcWindow"):
-            if get_building(element) == self.building:
+            if get_parent_building(element) == self.building:
                 pset_topology = ifcopenshell.util.element.get_psets(element).get(
                     "EPset_Topology"
                 )
@@ -526,7 +525,7 @@ class Molior:
 
         # attach Door elements to Space
         for element in self.file.by_type("IfcDoor"):
-            if get_building(element) == self.building:
+            if get_parent_building(element) == self.building:
                 pset_topology = ifcopenshell.util.element.get_psets(element).get(
                     "EPset_Topology"
                 )
