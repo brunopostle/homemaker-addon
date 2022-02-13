@@ -29,7 +29,7 @@ class Tests(unittest.TestCase):
 
         # create a Site and Building, and attach to the Project in the IFC
         # parameters are Name and a dictionary of elevations
-        molior_builder.add_building(name="My House", elevations={6.15: "Upper Level"})
+        molior_builder.get_building(name="My House", elevations={6.15: "Upper Level"})
 
         # Add a Roof
 

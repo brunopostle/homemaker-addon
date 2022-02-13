@@ -60,7 +60,7 @@ molior_object = Molior(
     normals=normals,
     cellcomplex=cc,
 )
-molior_object.add_building(name="dxf2ifc building", elevations=elevations)
+molior_object.get_building(name="dxf2ifc building", elevations=elevations)
 molior_object.execute()
 
 profiler.stop()

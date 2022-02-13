@@ -81,7 +81,7 @@ class Molior:
             self.__dict__[arg] = args[arg]
         Molior.style = Style({"share_dir": self.share_dir})
 
-    def add_building(self, name="Homemaker Building", elevations={}):
+    def get_building(self, name="Homemaker Building", elevations={}):
         """Create and relate Site, Building and Storey Spatial Element products, set as current building"""
         if self.file == None:
             self.file = molior.ifc.init()

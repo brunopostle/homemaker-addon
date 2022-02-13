@@ -143,7 +143,7 @@ def homemaker(
         cellcomplex=cc,
         share_dir=share_dir,
     )
-    molior_object.add_building(name=name, elevations=elevations)
+    molior_object.get_building(name=name, elevations=elevations)
     molior_object.execute()
 
     return molior_object.file

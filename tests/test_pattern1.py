@@ -994,7 +994,7 @@ class Tests(unittest.TestCase):
             normals=normals,
             cellcomplex=self.cc,
         )
-        molior_object.add_building(name="My test building", elevations=elevations)
+        molior_object.get_building(name="My test building", elevations=elevations)
         molior_object.execute()
         molior_object.file.write("_test.ifc")
 

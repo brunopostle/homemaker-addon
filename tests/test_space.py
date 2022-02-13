@@ -94,7 +94,7 @@ class Tests(unittest.TestCase):
             normals=normals.normals,
             cellcomplex=dummy_cell,
         )
-        molior_object.add_building(name="Our House", elevations={3.15: 2, 6.15: 3})
+        molior_object.get_building(name="Our House", elevations={3.15: 2, 6.15: 3})
         self.space = molior_object.build_trace(
             stylename="default",
             condition="kitchen",
