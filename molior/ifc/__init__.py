@@ -34,33 +34,56 @@ def init(name="Homemaker Project", file=run("project.create_file")):
 
     run("unit.assign_unit", file, length={"is_metric": True, "raw": "METERS"})
 
-    parent_context = run("context.add_context", file, context_type="Model")
-    run(
-        "context.add_context",
+    get_context_by_name(
         file,
         context_identifier="Body",
-        context_type=parent_context.ContextType,
-        parent=parent_context,
+        parent_context_identifier="Model",
         target_view="MODEL_VIEW",
     )
-    run(
-        "context.add_context",
+    get_context_by_name(
         file,
         context_identifier="Reference",
-        context_type=parent_context.ContextType,
-        parent=parent_context,
+        parent_context_identifier="Model",
         target_view="GRAPH_VIEW",
     )
-    run(
-        "context.add_context",
+    get_context_by_name(
         file,
         context_identifier="Axis",
-        context_type=parent_context.ContextType,
-        parent=parent_context,
+        parent_context_identifier="Model",
         target_view="GRAPH_VIEW",
     )
 
     return file
+
+
+def get_context_by_name(
+    self,
+    parent_context_identifier="Model",
+    context_identifier="Body",
+    target_view="MODEL_VIEW",
+):
+    """Retrieve or create a Representation Context"""
+    for context in self.by_type("IfcGeometricRepresentationContext"):
+        if context.ContextIdentifier == context_identifier:
+            return context
+        elif (
+            not context.ContextIdentifier and context.ContextType == context_identifier
+        ):
+            # a Context not a Sub Context
+            return context
+    if context_identifier in ["Model", "Plan", "NotDefined"]:
+        return run("context.add_context", self, context_type=context_identifier)
+    parent_context = get_context_by_name(
+        self, context_identifier=parent_context_identifier
+    )
+    return run(
+        "context.add_context",
+        self,
+        context_identifier=context_identifier,
+        context_type=parent_context.ContextType,
+        parent=parent_context,
+        target_view=target_view,
+    )
 
 
 def create_site(self, project, site_name):
@@ -467,8 +490,10 @@ def assign_representation_fromDXF(self, subcontext, element, stylename, path_dxf
 def get_type_by_dxf(self, subcontext, ifc_type, stylename, path_dxf):
     """Fetch a TypeProduct from DXF geometry unless a TypeProduct with this name already exists"""
     identifier = stylename + "/" + os.path.splitext(os.path.split(path_dxf)[-1])[0]
+    # FIXME should material be defined in the Type?
 
     # let's see if there is an existing Type Product defined in the relevant library
+    # FIXME use get_library_by_name()
     for library in self.by_type("IfcProjectLibrary"):
         if library.Name == stylename:
             for declares in library.Declares:
@@ -622,3 +647,78 @@ def get_material_by_name(self, subcontext, material_name, style_materials):
             context=subcontext,
         )
     return mymaterial
+
+
+def get_extruded_type_by_name(
+    self,
+    context_identifier="Body",
+    ifc_type="IfcColumnType",
+    name="My Cheesy Column",
+    stylename="default",
+    style_materials={
+        "Cheese": {"surface_colour": [0.3, 1.0, 0.0], "diffuse_colour": [0.3, 1.0, 0.0]}
+    },
+    profiles=[
+        {
+            "ifc_class": "IfcRectangleProfileDef",
+            "material": "Cheese",
+            "parameters": {"ProfileType": "AREA", "XDim": 0.1, "YDim": 0.2},
+        }
+    ],
+):
+    """Retrieve an extruded type, creating if necessary"""
+    subcontext = get_context_by_name(self, context_identifier)
+    identifier = stylename + "/" + name
+    library = get_library_by_name(self, stylename)
+
+    # use an existing Type if defined in this library
+    for declares in library.Declares:
+        for definition in declares.RelatedDefinitions:
+            if definition.is_a(ifc_type) and definition.Name == identifier:
+                return definition
+
+    # create the Type
+    type_product = run("root.create_entity", self, ifc_class=ifc_type, name=identifier)
+    run(
+        "project.assign_declaration",
+        self,
+        definition=type_product,
+        relating_context=library,
+    )
+    # this type is going have a Material Profile Set
+    profile_set = run(
+        "material.assign_material",
+        self,
+        product=type_product,
+        type="IfcMaterialProfileSet",
+    ).RelatingMaterial
+
+    for profile in profiles:
+        # add an item to this Material Profile Set
+        material_profile = run(
+            "material.add_profile",
+            self,
+            profile_set=profile_set,
+            material=get_material_by_name(
+                self, subcontext, profile["material"], profile["style_materials"]
+            ),
+        )
+        # create a Parameterized Profile
+        parameterized_profile = run(
+            "profile.add_parameterized_profile", self, ifc_class=profile["ifc_class"]
+        )
+        run(
+            "profile.edit_profile",
+            self,
+            profile=parameterized_profile,
+            attributes=profile["parameters"],
+        )
+        # add our Parameterized Profile to this item
+        run(
+            "material.assign_profile",
+            self,
+            material_profile=material_profile,
+            profile=parameterized_profile,
+        )
+
+    return type_product
