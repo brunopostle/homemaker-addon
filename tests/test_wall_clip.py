@@ -108,7 +108,7 @@ class Tests(unittest.TestCase):
         )
         clipped_representation = ifc.createIfcShapeRepresentation(
             self.body_context,
-            "Body",
+            self.body_context.ContextIdentifier,
             "Clipping",
             [clipped2],
         )

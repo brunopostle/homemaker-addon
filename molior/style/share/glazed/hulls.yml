@@ -1,0 +1,62 @@
+---
+pitched-roof:
+  class: Grillage
+  ifc: IfcRoof
+  predefined_type: USERDEFINED
+  condition: roof
+  outer: 0.12
+  thickness: 0.2
+  profiles:
+    - 
+      ifc_class: IfcIShapeProfileDef
+      material: Hot Rolled Steel
+      parameters:
+          ProfileType: AREA
+          OverallWidth: 0.1
+          OverallDepth: 0.2
+          WebThickness: 0.005
+          FlangeThickness: 0.01
+          FilletRadius: 0.005
+      position: 
+        Location: [0.0, -0.1]
+        RefDirection: [1.0, 0.0]
+    -
+      ifc_class: IfcLShapeProfileDef
+      material: Hot Rolled Steel
+      parameters:
+        ProfileType: AREA
+        Depth: 0.06
+        Width: 0.1
+        Thickness: 0.008
+        FilletRadius: 0.005
+        EdgeRadius: 0.005
+      position: 
+        Location: [0.055, -0.1]
+        RefDirection: [1.0, 0.0]
+    -
+      ifc_class: IfcLShapeProfileDef
+      material: Hot Rolled Steel
+      parameters:
+        ProfileType: AREA
+        Depth: 0.1
+        Width: 0.06
+        Thickness: 0.008
+        FilletRadius: 0.005
+        EdgeRadius: 0.005
+      position: 
+        Location: [-0.055, -0.1]
+        RefDirection: [0.0, 1.0]
+ceiling-soffit:
+  class: Grillage
+  ifc: IfcBuildingElementProxy
+  predefined_type: USERDEFINED
+  condition: soffit
+  outer: 0.25
+  thickness: 0.2
+wall-panel:
+  class: Grillage
+  ifc: IfcWall
+  predefined_type: USERDEFINED
+  condition: external-panel
+  outer: 0.25
+  thickness: 0.33

@@ -21,6 +21,12 @@ Wrought Iron:
     psets:
         Pset_MaterialCommon:
             MassDensity: 7800
+Hot Rolled Steel:
+    surface_colour: [0.6, 0.6, 0.6]
+    diffuse_colour: [0.6, 0.6, 0.6]
+    psets:
+        Pset_MaterialCommon:
+            MassDensity: 7800
 Plaster:
     surface_colour: [1.0, 1.0, 0.8]
     diffuse_colour: [1.0, 1.0, 0.8]

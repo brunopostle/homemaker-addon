@@ -40,6 +40,7 @@ from molior.space import Space
 from molior.stair import Stair
 from molior.wall import Wall
 from molior.repeat import Repeat
+from molior.grillage import Grillage
 
 from molior.style import Style
 from molior.geometry import subtract_3d, x_product_3d, matrix_align
@@ -736,7 +737,7 @@ class Molior:
                     "style_materials": myconfig["materials"],
                 }
                 vals.update(config)
-                modules = {"Shell": Shell}
+                modules = {"Shell": Shell, "Grillage": Grillage}
                 part = modules[config["class"]](vals)
 
                 part.execute()

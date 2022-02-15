@@ -73,7 +73,7 @@ class Tests(unittest.TestCase):
             product=mywall,
             representation=ifc.createIfcShapeRepresentation(
                 self.body_context,
-                "Body",
+                self.body_context.ContextIdentifier,
                 "SweptSolid",
                 [
                     create_extruded_area_solid(
@@ -111,7 +111,7 @@ class Tests(unittest.TestCase):
             product=myopening,
             representation=ifc.createIfcShapeRepresentation(
                 self.body_context,
-                "Body",
+                self.body_context.ContextIdentifier,
                 "SweptSolid",
                 [
                     create_extruded_area_solid(
@@ -185,7 +185,7 @@ class Tests(unittest.TestCase):
             product=myopening,
             representation=ifc.createIfcShapeRepresentation(
                 self.body_context,
-                "Body",
+                self.body_context.ContextIdentifier,
                 "SweptSolid",
                 [
                     create_extruded_area_solid(

@@ -54,7 +54,7 @@ class Tests(unittest.TestCase):
         # a vertically extruded solid
         shape = ifc.createIfcShapeRepresentation(
             self.body_context,
-            "Body",
+            self.body_context.ContextIdentifier,
             "SweptSolid",
             [
                 create_extruded_area_solid(
@@ -75,7 +75,7 @@ class Tests(unittest.TestCase):
         # load a DXF polyface mesh as a Tessellation
         brep = ifc.createIfcShapeRepresentation(
             self.body_context,
-            "Body",
+            self.body_context.ContextIdentifier,
             "Tessellation",
             create_tessellations_from_dxf(ifc, "molior/style/share/shopfront.dxf"),
         )
@@ -207,7 +207,7 @@ class Tests(unittest.TestCase):
             product=mywall,
             representation=ifc.createIfcShapeRepresentation(
                 self.body_context,
-                "Body",
+                self.body_context.ContextIdentifier,
                 "SweptSolid",
                 [
                     create_extruded_area_solid(
@@ -244,7 +244,7 @@ class Tests(unittest.TestCase):
             product=myopening,
             representation=ifc.createIfcShapeRepresentation(
                 self.body_context,
-                "Body",
+                self.body_context.ContextIdentifier,
                 "SweptSolid",
                 [
                     create_extruded_area_solid(

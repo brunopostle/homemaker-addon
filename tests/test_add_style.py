@@ -43,7 +43,7 @@ class Tests(unittest.TestCase):
 
         shape = self.file.createIfcShapeRepresentation(
             self.body_context,
-            "Body",
+            self.body_context.ContextIdentifier,
             "SweptSolid",
             [
                 create_extruded_area_solid(

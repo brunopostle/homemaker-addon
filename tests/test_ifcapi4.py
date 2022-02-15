@@ -8,12 +8,9 @@ import ifcopenshell.api
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior.ifc
 from molior.ifc import (
-    create_site,
-    create_building,
     get_extruded_type_by_name,
     get_context_by_name,
 )
-from molior.geometry import matrix_transform, matrix_align
 
 run = ifcopenshell.api.run
 
@@ -68,15 +65,19 @@ class Tests(unittest.TestCase):
             relating_type=column_type,
         )
 
-        # a vertically extruded solid
+        # an extruded solid
         shape = self.file.createIfcShapeRepresentation(
             self.body_context,
-            "Body",
+            self.body_context.ContextIdentifier,
             "SweptSolid",
             [
                 self.file.createIfcExtrudedAreaSolid(
                     material_profile.Profile,
-                    None,
+                    self.file.createIfcAxis2Placement3D(
+                        self.file.createIfcCartesianPoint([0.0, 0.0, 0.0]),
+                        self.file.createIfcDirection([0.0, 1.0, 0.0]),
+                        self.file.createIfcDirection([1.0, 0.0, 0.0]),
+                    ),
                     self.file.createIfcDirection([0.0, 0.0, 1.0]),
                     3.0,
                 )
