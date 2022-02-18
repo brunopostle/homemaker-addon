@@ -1,7 +1,7 @@
 ---
 pitched-roof:
   class: Grillage
-  ifc: IfcRoof
+  ifc: IfcMember
   predefined_type: USERDEFINED
   condition: roof
   outer: 0.12
@@ -55,7 +55,7 @@ ceiling-soffit:
   thickness: 0.2
 wall-panel:
   class: Grillage
-  ifc: IfcWall
+  ifc: IfcMember
   predefined_type: USERDEFINED
   condition: external-panel
   outer: 0.25

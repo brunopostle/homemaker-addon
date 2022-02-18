@@ -210,12 +210,14 @@ class Grillage(BaseClass):
             # FIXME set range, spacing, start, and length of linear elements
             for index in range(-5, 5):
 
-                profile_set_aggregate = run(
+                # create an element to host all extrusions
+                linear_element = run(
                     "root.create_entity",
                     self.file,
                     ifc_class=self.ifc,
                     name=self.identifier,
                 )
+                csg_list = []
                 for material_profile in product_type.HasAssociations[
                     0
                 ].RelatingMaterial.MaterialProfiles:
@@ -235,56 +237,52 @@ class Grillage(BaseClass):
                     )
 
                     # clip it
-                    clipped_shape = self.file.createIfcShapeRepresentation(
-                        body_context,
-                        body_context.ContextIdentifier,
-                        "CSG",
-                        [
-                            self.file.createIfcBooleanResult(
-                                "INTERSECTION", extrusion, clippy
-                            )
-                        ],
+                    csg_list.append(
+                        self.file.createIfcBooleanResult(
+                            "INTERSECTION", extrusion, clippy
+                        )
                     )
-                    # assign the clipped shape to an element
-                    linear_element = run(
-                        "root.create_entity",
-                        self.file,
-                        ifc_class=self.ifc,
-                        name=self.identifier,
-                    )
-                    run(
-                        "material.assign_material",
-                        self.file,
-                        product=linear_element,
-                        material=material_profile.Material,
-                    )
-                    run(
-                        "geometry.assign_representation",
-                        self.file,
-                        product=linear_element,
-                        representation=clipped_shape,
-                    )
-                    # apparently aggregated elements need to be placed independently of the aggregate
-                    run(
-                        "geometry.edit_object_placement",
-                        self.file,
-                        product=linear_element,
-                        matrix=matrix_clippy,
-                    )
-                    # stuff it in the profile_set aggregate
-                    run(
-                        "aggregate.assign_object",
-                        self.file,
-                        product=linear_element,
-                        relating_object=profile_set_aggregate,
-                    )
-                # TODO create recursive grillage in-between
 
-                # stuff the profile_set aggregate in the face aggregate
+                shape_representation = self.file.createIfcShapeRepresentation(
+                    body_context,
+                    body_context.ContextIdentifier,
+                    "CSG",
+                    csg_list,
+                )
+                run(
+                    "geometry.assign_representation",
+                    self.file,
+                    product=linear_element,
+                    representation=shape_representation,
+                )
+                run(
+                    "material.assign_material",
+                    self.file,
+                    product=linear_element,
+                    material=product_type.HasAssociations[0].RelatingMaterial,
+                )
+
+                # Somehow this performs a boolean intersection
+                # run(
+                #     "type.assign_type",
+                #     self.file,
+                #     related_object=linear_element,
+                #     relating_type=product_type,
+                # )
+
+                # apparently aggregated elements need to be placed independently of the aggregate
+                run(
+                    "geometry.edit_object_placement",
+                    self.file,
+                    product=linear_element,
+                    matrix=matrix_clippy,
+                )
+
+                # stuff the element into the face aggregate
                 run(
                     "aggregate.assign_object",
                     self.file,
-                    product=profile_set_aggregate,
+                    product=linear_element,
                     relating_object=face_aggregate,
                 )
 
