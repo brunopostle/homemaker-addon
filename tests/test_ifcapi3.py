@@ -48,12 +48,12 @@ class Tests(unittest.TestCase):
 
         assign_extrusion_fromDXF(
             ifc,
-            self.body_context,
-            element,
-            directrix,
-            "courtyard",
-            "molior/style/share/courtyard/eaves.dxf",
-            transform,
+            context_identifier="Body",
+            element=element,
+            directrix=directrix,
+            stylename="courtyard",
+            path_dxf="molior/style/share/courtyard/eaves.dxf",
+            transform=transform,
         )
 
         run("geometry.edit_object_placement", ifc, product=element, matrix=numpy.eye(4))
@@ -71,12 +71,12 @@ class Tests(unittest.TestCase):
 
         assign_extrusion_fromDXF(
             ifc,
-            self.body_context,
-            element,
-            directrix,
-            "courtyard",
-            "molior/style/share/courtyard/eaves.dxf",
-            transform,
+            context_identifier="Body",
+            element=element,
+            directrix=directrix,
+            stylename="courtyard",
+            path_dxf="molior/style/share/courtyard/eaves.dxf",
+            transform=transform,
         )
 
         run(

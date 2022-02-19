@@ -55,7 +55,6 @@ class Repeat(TraceClass):
         reference_context = get_context_by_name(
             self.file, context_identifier="Reference"
         )
-        body_context = get_context_by_name(self.file, context_identifier="Body")
         style = molior.Molior.style
         myconfig = style.get(self.style)
         if self.asset in self.style_assets:
@@ -273,9 +272,9 @@ class Repeat(TraceClass):
                             profile_set=profile_set,
                             material=get_material_by_name(
                                 self.file,
-                                reference_context,
-                                self.structural_material,
-                                self.style_materials,
+                                context_identifier="Reference",
+                                name=self.structural_material,
+                                style_materials=self.style_materials,
                             ),
                         )
                         run(
@@ -303,13 +302,20 @@ class Repeat(TraceClass):
                     )
                     # load geometry from a DXF file and assign to the entity
                     assign_representation_fromDXF(
-                        self.file, body_context, entity, self.style, dxf_path
+                        self.file,
+                        context_identifier="Body",
+                        element=entity,
+                        stylename=self.style,
+                        path_dxf=dxf_path,
                     )
                     run(
                         "material.assign_material",
                         self.file,
                         product=entity,
                         material=get_material_by_name(
-                            self.file, body_context, self.material, self.style_materials
+                            self.file,
+                            context_identifier="Body",
+                            name=self.material,
+                            style_materials=self.style_materials,
                         ),
                     )

@@ -302,9 +302,9 @@ class Wall(TraceClass):
                 product=structural_surface,
                 material=get_material_by_name(
                     self.file,
-                    reference_context,
-                    self.structural_material,
-                    self.style_materials,
+                    context_identifier="Reference",
+                    name=self.structural_material,
+                    style_materials=self.style_materials,
                 ),
             )
 
@@ -454,12 +454,19 @@ class Wall(TraceClass):
                     self.file,
                     product=entity,
                     material=get_material_by_name(
-                        self.file, body_context, db["material"], self.style_materials
+                        self.file,
+                        context_identifier="Body",
+                        name=db["material"],
+                        style_materials=self.style_materials,
                     ),
                 )
                 # load geometry from a DXF file and assign to the entity
                 assign_representation_fromDXF(
-                    self.file, body_context, entity, self.style, dxf_path
+                    self.file,
+                    context_identifier="Body",
+                    element=entity,
+                    stylename=self.style,
+                    path_dxf=dxf_path,
                 )
 
                 # create an opening

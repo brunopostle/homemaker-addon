@@ -11,7 +11,7 @@ from molior.geometry import (
     subtract_2d,
     line_intersection,
 )
-from molior.ifc import get_material_by_name, add_pset, get_context_by_name
+from molior.ifc import get_material_by_name, add_pset
 
 run = ifcopenshell.api.run
 
@@ -45,7 +45,6 @@ class BaseClass:
 
     def get_element_type(self):
         """Retrieve or create an Ifc Type definition for this Molior object"""
-        body_context = get_context_by_name(self.file, context_identifier="Body")
         element_types = {}
         for element_type in self.file.by_type(self.ifc + "Type"):
             element_types[element_type.Name] = element_type
@@ -81,7 +80,10 @@ class BaseClass:
                     self.file,
                     layer_set=mylayerset,
                     material=get_material_by_name(
-                        self.file, body_context, mylayer[1], self.style_materials
+                        self.file,
+                        context_identifier="Body",
+                        name=mylayer[1],
+                        style_materials=self.style_materials,
                     ),
                 )
                 layer.LayerThickness = mylayer[0]

@@ -44,7 +44,6 @@ class Extrusion(TraceClass):
         reference_context = get_context_by_name(
             self.file, context_identifier="Reference"
         )
-        body_context = get_context_by_name(self.file, context_identifier="Body")
         style = molior.Molior.style
         element = run(
             "root.create_entity",
@@ -124,9 +123,9 @@ class Extrusion(TraceClass):
                     profile_set=profile_set,
                     material=get_material_by_name(
                         self.file,
-                        reference_context,
-                        self.structural_material,
-                        self.style_materials,
+                        context_identifier="Reference",
+                        name=self.structural_material,
+                        style_materials=self.style_materials,
                     ),
                 )
                 run(
@@ -141,7 +140,10 @@ class Extrusion(TraceClass):
             self.file,
             product=element,
             material=get_material_by_name(
-                self.file, body_context, self.material, self.style_materials
+                self.file,
+                context_identifier="Body",
+                name=self.material,
+                style_materials=self.style_materials,
             ),
         )
 
@@ -179,12 +181,12 @@ class Extrusion(TraceClass):
 
         assign_extrusion_fromDXF(
             self.file,
-            body_context,
-            element,
-            directrix,
-            self.style,
-            dxf_path,
-            transform,
+            context_identifier="Body",
+            element=element,
+            directrix=directrix,
+            stylename=self.style,
+            path_dxf=dxf_path,
+            transform=transform,
         )
 
         run(

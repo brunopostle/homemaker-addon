@@ -58,10 +58,10 @@ class Tests(unittest.TestCase):
         # load geometry from a DXF file and assign to the window
         assign_representation_fromDXF(
             ifc,
-            self.body_context,
-            myproduct,
-            "default",
-            "molior/style/share/shopfront.dxf",
+            context_identifier="Body",
+            element=myproduct,
+            stylename="default",
+            path_dxf="molior/style/share/shopfront.dxf",
         )
 
         # create a wall
@@ -159,10 +159,10 @@ class Tests(unittest.TestCase):
         # shopfront.dxf is already imported and mapped
         assign_representation_fromDXF(
             ifc,
-            self.body_context,
-            myproduct,
-            "default",
-            "molior/style/share/shopfront.dxf",
+            context_identifier="Body",
+            element=myproduct,
+            stylename="default",
+            path_dxf="molior/style/share/shopfront.dxf",
         )
 
         # create an opening

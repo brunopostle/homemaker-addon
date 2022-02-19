@@ -175,9 +175,9 @@ class Floor(TraceClass):
                     product=structural_surface,
                     material=get_material_by_name(
                         self.file,
-                        reference_context,
-                        self.structural_material,
-                        self.style_materials,
+                        context_identifier="Reference",
+                        name=self.structural_material,
+                        style_materials=self.style_materials,
                     ),
                 )
 

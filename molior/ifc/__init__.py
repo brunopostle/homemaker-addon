@@ -252,10 +252,17 @@ def create_face_surface(self, polygon, normal):
 
 
 def assign_extrusion_fromDXF(
-    self, subcontext, element, directrix, stylename, path_dxf, transform
+    self,
+    context_identifier="Body",
+    element=None,
+    directrix=[[0.0, 0.0], [0.0, 1.0]],
+    stylename="default",
+    path_dxf="/dev/null",
+    transform=None,
 ):
     """Create an extrusion given a directrix and DXF profile filepath"""
     identifier = stylename + "/" + os.path.splitext(os.path.split(path_dxf)[-1])[0]
+    subcontext = get_context_by_name(self, context_identifier)
 
     # let's see if there is an existing MaterialProfileSet recorded
     materialprofilesets = {}
@@ -312,6 +319,7 @@ def assign_extrusion_fromDXF(
     )
     plane = self.createIfcPlane(axis)
 
+    # TODO create Extruded Area Solid if directrix is single segment
     run(
         "geometry.assign_representation",
         self,
@@ -474,10 +482,20 @@ def add_cell_topology_epsets(self, entity, cell):
             add_pset(self, entity, "EPset_Topology", {"Usage": cell_usage})
 
 
-def assign_representation_fromDXF(self, subcontext, element, stylename, path_dxf):
+def assign_representation_fromDXF(
+    self,
+    context_identifier="Body",
+    element=None,
+    stylename="default",
+    path_dxf="/dev/null",
+):
     """Assign geometry from DXF unless a TypeProduct with this name already exists"""
     product_type = get_type_by_dxf(
-        self, subcontext, element.is_a() + "Type", stylename, path_dxf
+        self,
+        context_identifier=context_identifier,
+        ifc_type=element.is_a() + "Type",
+        stylename=stylename,
+        path_dxf=path_dxf,
     )
     run(
         "type.assign_type",
@@ -487,19 +505,24 @@ def assign_representation_fromDXF(self, subcontext, element, stylename, path_dxf
     )
 
 
-def get_type_by_dxf(self, subcontext, ifc_type, stylename, path_dxf):
+def get_type_by_dxf(
+    self,
+    context_identifier="Body",
+    ifc_type="IfcBuildingElementProxyType",
+    stylename="default",
+    path_dxf="/dev/null",
+):
     """Fetch a TypeProduct from DXF geometry unless a TypeProduct with this name already exists"""
     identifier = stylename + "/" + os.path.splitext(os.path.split(path_dxf)[-1])[0]
+    subcontext = get_context_by_name(self, context_identifier)
     # FIXME should material be defined in the Type?
 
     # let's see if there is an existing Type Product defined in the relevant library
-    # FIXME use get_library_by_name()
-    for library in self.by_type("IfcProjectLibrary"):
-        if library.Name == stylename:
-            for declares in library.Declares:
-                for definition in declares.RelatedDefinitions:
-                    if definition.is_a(ifc_type) and definition.Name == identifier:
-                        return definition
+    library = get_library_by_name(self, stylename)
+    for declares in library.Declares:
+        for definition in declares.RelatedDefinitions:
+            if definition.is_a(ifc_type) and definition.Name == identifier:
+                return definition
     # otherwise, load a DXF polyface mesh as a Tessellation
     brep = self.createIfcShapeRepresentation(
         subcontext,
@@ -517,7 +540,7 @@ def get_type_by_dxf(self, subcontext, ifc_type, stylename, path_dxf):
         "project.assign_declaration",
         self,
         definition=type_product,
-        relating_context=get_library_by_name(self, stylename),
+        relating_context=library,
     )
     if type_product.is_a("IfcDoorType"):
         type_product.PredefinedType = "DOOR"
@@ -590,34 +613,40 @@ def get_parent_building(entity):
     return get_parent_building(parent)
 
 
-def get_material_by_name(self, subcontext, material_name, style_materials):
+def get_material_by_name(
+    self, context_identifier="Body", name="Error", style_materials={}
+):
     """Retrieve an IfcMaterial by name, creating it if necessary"""
     materials = {}
     for material in self.by_type("IfcMaterial"):
         materials[material.Name] = material
-    if material_name in materials:
-        mymaterial = materials[material_name]
+    if name in materials:
+        mymaterial = materials[name]
     else:
         # we need to create a new material
-        mymaterial = run("material.add_material", self, name=material_name)
+        mymaterial = run("material.add_material", self, name=name)
         params = {
             "surface_colour": [0.9, 0.9, 0.9],
             "diffuse_colour": [1.0, 1.0, 1.0],
             "transparency": 0.0,
             "external_definition": None,
         }
-        if material_name in style_materials:
-            params.update(style_materials[material_name])
-            if "psets" in style_materials[material_name]:
-                for name, properties in style_materials[material_name]["psets"].items():
-                    pset = run("pset.add_pset", self, product=mymaterial, name=name)
+        if name in style_materials:
+            params.update(style_materials[name])
+            if "psets" in style_materials[name]:
+                for pset_name, pset_properties in style_materials[name][
+                    "psets"
+                ].items():
+                    pset = run(
+                        "pset.add_pset", self, product=mymaterial, name=pset_name
+                    )
                     run(
                         "pset.edit_pset",
                         self,
                         pset=pset,
-                        properties=properties,
+                        properties=pset_properties,
                     )
-        style = run("style.add_style", self, name=material_name)
+        style = run("style.add_style", self, name=name)
         run(
             "style.add_surface_style",
             self,
@@ -644,7 +673,7 @@ def get_material_by_name(self, subcontext, material_name, style_materials):
             self,
             material=mymaterial,
             style=style,
-            context=subcontext,
+            context=get_context_by_name(self, context_identifier),
         )
     return mymaterial
 
@@ -668,7 +697,6 @@ def get_extruded_type_by_name(
     ],
 ):
     """Retrieve an extruded type, creating if necessary"""
-    subcontext = get_context_by_name(self, context_identifier)
     identifier = stylename + "/" + name
     library = get_library_by_name(self, stylename)
 
@@ -702,7 +730,10 @@ def get_extruded_type_by_name(
             self,
             profile_set=profile_set,
             material=get_material_by_name(
-                self, subcontext, profile["material"], style_materials
+                self,
+                context_identifier=context_identifier,
+                name=profile["material"],
+                style_materials=style_materials,
             ),
         )
         # create a Parameterized Profile
