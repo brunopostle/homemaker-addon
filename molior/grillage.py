@@ -218,6 +218,7 @@ class Grillage(BaseClass):
                     name=self.identifier,
                 )
                 csg_list = []
+                # FIXME Type may have other associations
                 for material_profile in product_type.HasAssociations[
                     0
                 ].RelatingMaterial.MaterialProfiles:

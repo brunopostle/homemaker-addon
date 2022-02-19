@@ -262,18 +262,22 @@ def assign_extrusion_fromDXF(
 ):
     """Create an extrusion given a directrix and DXF profile filepath"""
     identifier = stylename + "/" + os.path.splitext(os.path.split(path_dxf)[-1])[0]
-    subcontext = get_context_by_name(self, context_identifier)
+    library = get_library_by_name(self, stylename)
 
-    # let's see if there is an existing MaterialProfileSet recorded
-    materialprofilesets = {}
-    for materialprofileset in self.by_type("IfcMaterialProfileSet"):
-        materialprofilesets[materialprofileset.Name] = materialprofileset
+    ifc_type = element.is_a() + "Type"
+    materialprofileset = None
+    # use an existing Type if defined in this library
+    for declares in library.Declares:
+        for definition in declares.RelatedDefinitions:
+            if definition.is_a(ifc_type) and definition.Name == identifier:
+                # FIXME Type may have other associations
+                materialprofileset = definition.HasAssociations[0].RelatingMaterial
 
-    if identifier in materialprofilesets:
+    if materialprofileset:
         # profile(s) already defined, use them
         closedprofiledefs = [
             materialprofile.Profile
-            for materialprofile in materialprofilesets[identifier].MaterialProfiles
+            for materialprofile in materialprofileset.MaterialProfiles
         ]
     else:
         # profile(s) not defined, load from the DXF
@@ -300,15 +304,33 @@ def assign_extrusion_fromDXF(
                     ),
                 )
                 profile_index += 1
-        # record profile(s) in a MaterialProfileSet so we can find them again
-        self.createIfcMaterialProfileSet(
-            identifier,
-            None,
-            [
-                self.createIfcMaterialProfile(None, None, None, profiledef)
-                for profiledef in closedprofiledefs
-            ],
+
+        # record profile(s) in a Type so we can find them again
+        type_product = run(
+            "root.create_entity",
+            self,
+            ifc_class=ifc_type,
+            name=identifier,
         )
+        run(
+            "project.assign_declaration",
+            self,
+            definition=type_product,
+            relating_context=library,
+        )
+        type_product.PredefinedType = "USERDEFINED"
+        # this type is going have a Material Profile Set
+        profile_set = run(
+            "material.assign_material",
+            self,
+            product=type_product,
+            type="IfcMaterialProfileSet",
+        ).RelatingMaterial
+
+        profile_set.MaterialProfiles = [
+            self.createIfcMaterialProfile(None, None, None, profiledef)
+            for profiledef in closedprofiledefs
+        ]
 
     # define these outside the loop as they are the same for each profile
     axis = self.createIfcAxis2Placement3D(
@@ -320,6 +342,7 @@ def assign_extrusion_fromDXF(
     plane = self.createIfcPlane(axis)
 
     # TODO create Extruded Area Solid if directrix is single segment
+    subcontext = get_context_by_name(self, context_identifier)
     run(
         "geometry.assign_representation",
         self,
