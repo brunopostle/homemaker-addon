@@ -270,8 +270,11 @@ def assign_extrusion_fromDXF(
     for declares in library.Declares:
         for definition in declares.RelatedDefinitions:
             if definition.is_a(ifc_type) and definition.Name == identifier:
-                # FIXME Type may have other associations
-                materialprofileset = definition.HasAssociations[0].RelatingMaterial
+                for association in definition.HasAssociations:
+                    if association.is_a(
+                        "IfcRelAssociatesMaterial"
+                    ) and association.RelatingMaterial.is_a("IfcMaterialProfileSet"):
+                        materialprofileset = association.RelatingMaterial
 
     if materialprofileset:
         # profile(s) already defined, use them
@@ -720,7 +723,7 @@ def get_extruded_type_by_name(
     ],
 ):
     """Retrieve an extruded type, creating if necessary"""
-    identifier = stylename + "/" + name
+    identifier = name
     library = get_library_by_name(self, stylename)
 
     # use an existing Type if defined in this library

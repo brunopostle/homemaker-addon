@@ -218,11 +218,17 @@ class Grillage(BaseClass):
                     name=self.identifier,
                 )
                 csg_list = []
-                # FIXME Type may have other associations
-                for material_profile in product_type.HasAssociations[
-                    0
-                ].RelatingMaterial.MaterialProfiles:
 
+                material_profiles = []
+                for association in product_type.HasAssociations:
+                    if association.is_a(
+                        "IfcRelAssociatesMaterial"
+                    ) and association.RelatingMaterial.is_a("IfcMaterialProfileSet"):
+                        material_profiles = (
+                            association.RelatingMaterial.MaterialProfiles
+                        )
+
+                for material_profile in material_profiles:
                     # extrude each profile in the profile set
                     extrusion = self.file.createIfcExtrudedAreaSolid(
                         material_profile.Profile,
