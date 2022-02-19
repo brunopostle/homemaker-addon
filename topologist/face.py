@@ -2,7 +2,7 @@
 
 from functools import lru_cache
 import topologic
-from topologic import Vertex, Edge, Face, FaceUtility, CellUtility
+from topologic import Vertex, Edge, Face, Cluster, FaceUtility, CellUtility
 from topologist.helpers import el
 import topologist.ugraph as ugraph
 
@@ -395,6 +395,39 @@ def EdgesCrop(self, result_edges_ptr):
         result_edges_ptr.append(edge)
 
 
+def ParallelSlice(self, inc=0.45, degrees=90):
+    """Crop a face with parallel lines"""
+    vertices = []
+    self.Vertices(None, vertices)
+    minx = min(node.Coordinates()[0] for node in vertices)
+    maxx = max(node.Coordinates()[0] for node in vertices)
+    miny = min(node.Coordinates()[1] for node in vertices)
+    maxy = max(node.Coordinates()[1] for node in vertices)
+    # create Topologic Edges for slicing the Face
+    cutting_edges = []
+    x = minx
+    # FIXME set start and angle of linear elements
+    while x < maxx:
+        cutting_edges.append(
+            Edge.ByStartVertexEndVertex(
+                *[Vertex.ByCoordinates(x, y, 0.0) for y in [miny, maxy]]
+            )
+        )
+        x += inc
+    shell = self.Slice(Cluster.ByTopologies(cutting_edges))
+    topologic_faces = []
+    shell.Faces(None, topologic_faces)
+    topologic_edges = []
+    shell.Edges(None, topologic_edges)
+    cropped_edges = []
+    for topologic_edge in topologic_edges:
+        myfaces = []
+        topologic_edge.Faces(shell, myfaces)
+        if len(myfaces) == 2:
+            cropped_edges.append(topologic_edge)
+    return topologic_faces, cropped_edges
+
+
 setattr(topologic.Face, "CellsOrdered", CellsOrdered)
 setattr(topologic.Face, "VerticesPerimeter", VerticesPerimeter)
 setattr(topologic.Face, "BadNormal", BadNormal)
@@ -418,3 +451,4 @@ setattr(topologic.Face, "BottomLevelConditions", BottomLevelConditions)
 setattr(topologic.Face, "EdgesTop", EdgesTop)
 setattr(topologic.Face, "EdgesBottom", EdgesBottom)
 setattr(topologic.Face, "EdgesCrop", EdgesCrop)
+setattr(topologic.Face, "ParallelSlice", ParallelSlice)

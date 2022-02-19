@@ -1,11 +1,11 @@
 import ifcopenshell.api
 
 from topologist.helpers import string_to_coor, el
+from topologic import Face, Vertex
 from molior.baseclass import BaseClass
 from molior.geometry import map_to_2d, matrix_align
 from molior.ifc import (
     add_face_topology_epsets,
-    create_extruded_area_solid,
     create_curve_bounded_plane,
     create_face_surface,
     assign_storey_byindex,
@@ -86,6 +86,12 @@ class Grillage(BaseClass):
                 face[1]["face"],
                 face[1]["back_cell"],
                 face[1]["front_cell"],
+            )
+            run(
+                "geometry.edit_object_placement",
+                self.file,
+                product=face_aggregate,
+                matrix=matrix,
             )
 
             # generate space boundar(y|ies)
@@ -175,26 +181,17 @@ class Grillage(BaseClass):
 
             # generate repeating grillage elements
 
-            run(
-                "geometry.edit_object_placement",
-                self.file,
-                product=face_aggregate,
-                matrix=matrix,
+            # create a Topologic Face for slicing
+            topologic_face = Face.ByVertices(
+                [Vertex.ByCoordinates(*node) for node in nodes_2d]
             )
+            cropped_faces, cropped_edges = topologic_face.ParallelSlice(0.4, 90.0)
 
-            # create a box representing the outer extents for clipping the repeating elements
-            extrude_direction = [0.0, 0.0, 1.0]
-            matrix_clippy = matrix @ matrix_align(
+            # shift down to inner face
+            matrix_inner = matrix @ matrix_align(
                 [0.0, 0.0, -self.inner], [1.0, 0.0, 0.0]
             )
-            clippy = create_extruded_area_solid(
-                self.file,
-                nodes_2d,
-                self.thickness,
-                extrude_direction,
-            )
-
-            # create a Type for the extrusion
+            # create or retrieve a Type for the linear elements
             product_type = get_extruded_type_by_name(
                 self.file,
                 style_materials=self.style_materials,
@@ -207,9 +204,18 @@ class Grillage(BaseClass):
             product_type.PredefinedType = self.predefined_type
             self.add_psets(product_type)
 
-            # FIXME set range, spacing, start, and length of linear elements
-            for index in range(-5, 5):
+            # retrieve the Material Profile Set from the Product Type
+            material_profiles = []
+            profile_set = None
+            for association in product_type.HasAssociations:
+                if association.is_a(
+                    "IfcRelAssociatesMaterial"
+                ) and association.RelatingMaterial.is_a("IfcMaterialProfileSet"):
+                    profile_set = association.RelatingMaterial
+                    material_profiles = profile_set.MaterialProfiles
 
+            # multiple linear elements on this Face
+            for cropped_edge in cropped_edges:
                 # create an element to host all extrusions
                 linear_element = run(
                     "root.create_entity",
@@ -217,44 +223,35 @@ class Grillage(BaseClass):
                     ifc_class=self.ifc,
                     name=self.identifier,
                 )
-                csg_list = []
 
-                material_profiles = []
-                for association in product_type.HasAssociations:
-                    if association.is_a(
-                        "IfcRelAssociatesMaterial"
-                    ) and association.RelatingMaterial.is_a("IfcMaterialProfileSet"):
-                        material_profiles = (
-                            association.RelatingMaterial.MaterialProfiles
-                        )
+                # flip edge if y direction is negative
+                start = cropped_edge.StartVertex().Coordinates()
+                end = cropped_edge.EndVertex().Coordinates()
+                begin = start
+                if end[1] < start[1]:
+                    begin = end
 
+                # extrude each profile in the profile set
+                extrusion_list = []
                 for material_profile in material_profiles:
-                    # extrude each profile in the profile set
                     extrusion = self.file.createIfcExtrudedAreaSolid(
                         material_profile.Profile,
                         self.file.createIfcAxis2Placement3D(
-                            self.file.createIfcCartesianPoint(
-                                [float(index), -5.0, 0.0]
-                            ),
+                            self.file.createIfcCartesianPoint(begin),
                             self.file.createIfcDirection([0.0, 1.0, 0.0]),
                             self.file.createIfcDirection([1.0, 0.0, 0.0]),
                         ),
                         self.file.createIfcDirection([0.0, 0.0, 1.0]),
-                        10.0,
+                        cropped_edge.Length(),
                     )
+                    extrusion_list.append(extrusion)
 
-                    # clip it
-                    csg_list.append(
-                        self.file.createIfcBooleanResult(
-                            "INTERSECTION", extrusion, clippy
-                        )
-                    )
-
+                # stuff extrusions into a Shape Representation for the Element
                 shape_representation = self.file.createIfcShapeRepresentation(
                     body_context,
                     body_context.ContextIdentifier,
-                    "CSG",
-                    csg_list,
+                    "SweptSolid",
+                    extrusion_list,
                 )
                 run(
                     "geometry.assign_representation",
@@ -266,7 +263,7 @@ class Grillage(BaseClass):
                     "material.assign_material",
                     self.file,
                     product=linear_element,
-                    material=product_type.HasAssociations[0].RelatingMaterial,
+                    material=profile_set,
                 )
 
                 # Somehow this performs a boolean intersection
@@ -282,7 +279,7 @@ class Grillage(BaseClass):
                     "geometry.edit_object_placement",
                     self.file,
                     product=linear_element,
-                    matrix=matrix_clippy,
+                    matrix=matrix_inner,
                 )
 
                 # stuff the element into the face aggregate
