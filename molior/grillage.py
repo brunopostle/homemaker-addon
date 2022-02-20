@@ -1,4 +1,5 @@
 import ifcopenshell.api
+import numpy
 
 from topologist.helpers import string_to_coor, el
 from topologic import Face, Vertex
@@ -35,11 +36,11 @@ class Grillage(BaseClass):
                 "position": {"Location": [0.0, 0.0], "RefDirection": [1.0, 0.0]},
             }
         ]
-        self.outer = 0.20
-        self.thickness = 0.4
+        self.spacing = 0.45
+        self.angle = 90.0
+        self.inner = 0.0
         for arg in args:
             self.__dict__[arg] = args[arg]
-        self.inner = self.thickness - self.outer
         self.identifier = self.style + "/" + self.name
 
     def execute(self):
@@ -143,7 +144,7 @@ class Grillage(BaseClass):
                 face[1]["back_cell"],
                 face[1]["front_cell"],
             )
-            structural_surface.Thickness = self.thickness
+            structural_surface.Thickness = 0.2
             run(
                 "structural.assign_structural_analysis_model",
                 self.file,
@@ -185,7 +186,7 @@ class Grillage(BaseClass):
             topologic_face = Face.ByVertices(
                 [Vertex.ByCoordinates(*node) for node in nodes_2d]
             )
-            cropped_faces, cropped_edges = topologic_face.ParallelSlice(0.4, 90.0)
+            cropped_faces, cropped_edges = topologic_face.ParallelSlice(self.spacing, numpy.deg2rad(self.angle))
 
             # shift down to inner face
             matrix_inner = matrix @ matrix_align(
@@ -224,12 +225,7 @@ class Grillage(BaseClass):
                     name=self.identifier,
                 )
 
-                # flip edge if y direction is negative
-                start = cropped_edge.StartVertex().Coordinates()
-                end = cropped_edge.EndVertex().Coordinates()
-                begin = start
-                if end[1] < start[1]:
-                    begin = end
+                direction = cropped_edge.NormalisedVector()
 
                 # extrude each profile in the profile set
                 extrusion_list = []
@@ -237,9 +233,9 @@ class Grillage(BaseClass):
                     extrusion = self.file.createIfcExtrudedAreaSolid(
                         material_profile.Profile,
                         self.file.createIfcAxis2Placement3D(
-                            self.file.createIfcCartesianPoint(begin),
-                            self.file.createIfcDirection([0.0, 1.0, 0.0]),
-                            self.file.createIfcDirection([1.0, 0.0, 0.0]),
+                            self.file.createIfcCartesianPoint(cropped_edge.StartVertex().Coordinates()),
+                            self.file.createIfcDirection(direction),
+                            self.file.createIfcDirection([direction[1], -direction[0], direction[2]]),
                         ),
                         self.file.createIfcDirection([0.0, 0.0, 1.0]),
                         cropped_edge.Length(),

@@ -57,9 +57,20 @@ def Length(self):
     return VertexUtility.Distance(self.StartVertex(), self.EndVertex())
 
 
+def NormalisedVector(self):
+    """Vector with a mgnitude of 1"""
+    start = self.StartVertex().Coordinates()
+    end = self.EndVertex().Coordinates()
+    length = self.Length()
+    if length == 0.0:
+        return [1.0, 0.0, 0.0]
+    return [(end[0] - start[0]) / length, (end[1] - start[1]) / length, (end[2] - start[2]) / length]
+
+
 setattr(topologic.Edge, "IsHorizontal", IsHorizontal)
 setattr(topologic.Edge, "IsVertical", IsVertical)
 setattr(topologic.Edge, "FaceAbove", FaceAbove)
 setattr(topologic.Edge, "FacesBelow", FacesBelow)
 setattr(topologic.Edge, "CellsBelow", CellsBelow)
 setattr(topologic.Edge, "Length", Length)
+setattr(topologic.Edge, "NormalisedVector", NormalisedVector)

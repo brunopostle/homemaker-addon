@@ -1,0 +1,63 @@
+---
+pitched-roof:
+  condition: noop
+purlin:
+  class: Grillage
+  ifc: IfcMember
+  predefined_type: USERDEFINED
+  condition: roof
+  angle: 0.0
+  spacing: 1.8
+  inner: 0.0
+  profiles:
+    - 
+      ifc_class: IfcIShapeProfileDef
+      material: Hot Rolled Steel
+      parameters:
+          ProfileType: AREA
+          OverallWidth: 0.1
+          OverallDepth: 0.2
+          WebThickness: 0.005
+          FlangeThickness: 0.01
+          FilletRadius: 0.005
+      position: 
+        Location: [0.0, 0.25]
+        RefDirection: [1.0, 0.0]
+joist:
+  class: Grillage
+  ifc: IfcMember
+  predefined_type: USERDEFINED
+  condition: roof
+  angle: 90.0
+  spacing: 0.45
+  inner: 0.0
+  profiles:
+    -
+      ifc_class: IfcRectangleProfileDef
+      material: C24 Wood
+      parameters:
+        ProfileType: AREA
+        XDim: 0.047
+        YDim: 0.22
+      position: 
+        Location: [0.0, 0.04]
+        RefDirection: [1.0, 0.0]
+batten:
+  class: Grillage
+  ifc: IfcBuildingElementProxy
+  predefined_type: USERDEFINED
+  condition: roof
+  angle: 0.0
+  spacing: 0.20
+  inner: 0.0
+  profiles:
+    -
+      ifc_class: IfcRectangleProfileDef
+      material: Tanalised Timber
+      parameters:
+        ProfileType: AREA
+        XDim: 0.038
+        YDim: 0.026
+      position: 
+        Location: [0.0, -0.083]
+        RefDirection: [1.0, 0.0]

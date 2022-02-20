@@ -59,6 +59,10 @@ Tiles:
             MassDensity: 1500
         Pset_MaterialEnergy:
             ThermalConductivityTemperatureDerivative: 0.7
+C24 Wood:
+    surface_colour: [1.0, 0.8, 0.6]
+Tanalised Timber:
+    surface_colour: [0.8, 1.0, 0.6]
 Error:
     surface_colour: [1.0, 0.0, 0.0]
     diffuse_colour: [1.0, 0.0, 0.0]
