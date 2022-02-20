@@ -19,8 +19,10 @@ from molior.geometry import (
 run = ifcopenshell.api.run
 
 
-def init(name="Homemaker Project", file=run("project.create_file")):
+def init(name="Homemaker Project", file=None):
     """Creates and sets up an ifc 'file' object"""
+    if file == None:
+        file = run("project.create_file")
     # TODO skip each of these if already existing
     run("owner.add_person", file)
     run("owner.add_organisation", file)
