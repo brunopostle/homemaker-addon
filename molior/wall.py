@@ -324,6 +324,7 @@ class Wall(TraceClass):
                     subtract_3d(end_coor, [0.0, 0.0, self.elevation]),
                 )
                 # clip beyond the end of the wall if necessary
+                # FIXME sometimes doesn't clip
                 if (
                     el(start_coor[2]) < el(self.elevation + self.height)
                     and distance_2d(

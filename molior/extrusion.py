@@ -54,7 +54,12 @@ class Extrusion(TraceClass):
         )
         self.add_psets(element)
 
-        if element.is_a("IfcBeam") or element.is_a("IfcFooting"):
+        if (
+            element.is_a("IfcBeam")
+            or element.is_a("IfcFooting")
+            or element.is_a("IfcMember")
+        ):
+            # TODO skip unless Pset_MemberCommon.LoadBearing
             # generate structural edges
             segments = self.segments()
             for id_segment in range(segments):
@@ -107,6 +112,7 @@ class Extrusion(TraceClass):
                         ],
                     ),
                 )
+                # FIXME create Type and Profile Set using get_extruded_type_by_name()
                 profile = self.file.create_entity(
                     self.structural_profile[0], **self.structural_profile[1]
                 )
@@ -179,6 +185,7 @@ class Extrusion(TraceClass):
             self.scale,
         )
 
+        # TODO Axis Representation
         assign_extrusion_fromDXF(
             self.file,
             context_identifier="Body",

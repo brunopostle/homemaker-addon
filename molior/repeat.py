@@ -203,7 +203,9 @@ class Repeat(TraceClass):
                     )
 
                     # structural stuff
-                    if entity.is_a("IfcColumn"):
+                    if entity.is_a("IfcColumn") or entity.is_a("IfcMember"):
+                        # TODO support IfcPile IfcFooting
+                        # TODO skip unless Pset_MemberCommon.LoadBearing
                         start = [*location, self.elevation]
                         end = [*location, self.elevation + self.height]
                         structural_member = run(
@@ -256,6 +258,7 @@ class Repeat(TraceClass):
                                 ],
                             ),
                         )
+                        # FIXME create Type and Profile Set using get_extruded_type_by_name()
                         profile = self.file.create_entity(
                             self.structural_profile[0], **self.structural_profile[1]
                         )
@@ -308,6 +311,7 @@ class Repeat(TraceClass):
                         stylename=self.style,
                         path_dxf=dxf_path,
                     )
+                    # TODO Axis Representation
                     run(
                         "material.assign_material",
                         self.file,

@@ -186,7 +186,9 @@ class Grillage(BaseClass):
             topologic_face = Face.ByVertices(
                 [Vertex.ByCoordinates(*node) for node in nodes_2d]
             )
-            cropped_faces, cropped_edges = topologic_face.ParallelSlice(self.spacing, numpy.deg2rad(self.angle))
+            cropped_faces, cropped_edges = topologic_face.ParallelSlice(
+                self.spacing, numpy.deg2rad(self.angle)
+            )
 
             # shift down to inner face
             matrix_inner = matrix @ matrix_align(
@@ -233,9 +235,13 @@ class Grillage(BaseClass):
                     extrusion = self.file.createIfcExtrudedAreaSolid(
                         material_profile.Profile,
                         self.file.createIfcAxis2Placement3D(
-                            self.file.createIfcCartesianPoint(cropped_edge.StartVertex().Coordinates()),
+                            self.file.createIfcCartesianPoint(
+                                cropped_edge.StartVertex().Coordinates()
+                            ),
                             self.file.createIfcDirection(direction),
-                            self.file.createIfcDirection([direction[1], -direction[0], direction[2]]),
+                            self.file.createIfcDirection(
+                                [direction[1], -direction[0], direction[2]]
+                            ),
                         ),
                         self.file.createIfcDirection([0.0, 0.0, 1.0]),
                         cropped_edge.Length(),
@@ -249,6 +255,7 @@ class Grillage(BaseClass):
                     "SweptSolid",
                     extrusion_list,
                 )
+                # TODO Axis Representation
                 run(
                     "geometry.assign_representation",
                     self.file,

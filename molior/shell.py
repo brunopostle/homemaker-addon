@@ -123,6 +123,8 @@ class Shell(BaseClass):
             if not self.do_representation:
                 continue
 
+            # TODO only if element.is_a("IfcPlate") or element.is_a("IfcSlab") or element.is_a("IfcWall")
+            # TODO skip unless Pset_MemberCommon.LoadBearing
             # generate structural surfaces
             structural_surface = run(
                 "root.create_entity",

@@ -64,7 +64,11 @@ def NormalisedVector(self):
     length = self.Length()
     if length == 0.0:
         return [1.0, 0.0, 0.0]
-    return [(end[0] - start[0]) / length, (end[1] - start[1]) / length, (end[2] - start[2]) / length]
+    return [
+        (end[0] - start[0]) / length,
+        (end[1] - start[1]) / length,
+        (end[2] - start[2]) / length,
+    ]
 
 
 setattr(topologic.Edge, "IsHorizontal", IsHorizontal)
