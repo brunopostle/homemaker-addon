@@ -92,6 +92,10 @@ def create_site(self, project, site_name):
     """Add a Site to a Project"""
     # TODO return existing site if project already contains site with this name
     site = run("root.create_entity", self, ifc_class="IfcSite", name=site_name)
+    # TODO allow setting location
+    site.RefLatitude = [53, 23, 0]
+    site.RefLongitude = [1, 28, 0]
+    site.RefElevation = 75.0
     run("aggregate.assign_object", self, product=site, relating_object=project)
     return site
 
