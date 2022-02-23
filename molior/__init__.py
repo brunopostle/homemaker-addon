@@ -491,6 +491,15 @@ class Molior:
                                 coor[1],
                                 coor[2] - storey_elevation,
                             )
+                for (
+                    element_boundary
+                ) in boundary.RelatedBuildingElement.ProvidesBoundaries:
+                    if (
+                        element_boundary.Name
+                        and element_boundary.Name == boundary.Name
+                        and element_boundary != boundary
+                    ):
+                        boundary.CorrespondingBoundary = element_boundary
 
         # molior.floor attaches Slab elements directly to Storey, re-attach to relevant Space
         for element in self.file.by_type("IfcSlab"):
@@ -498,7 +507,7 @@ class Molior:
                 pset_topology = ifcopenshell.util.element.get_psets(element).get(
                     "EPset_Topology"
                 )
-                if pset_topology and "Cellindex" in pset_topology:
+                if pset_topology and "CellIndex" in pset_topology:
                     assign_space_byindex(
                         self.file, element, self.building, pset_topology["CellIndex"]
                     )
