@@ -7,7 +7,6 @@ from molior.baseclass import BaseClass
 from molior.geometry import map_to_2d, matrix_align
 from molior.ifc import (
     add_face_topology_epsets,
-    create_curve_bounded_plane,
     create_face_surface,
     assign_storey_byindex,
     get_material_by_name,
@@ -94,34 +93,6 @@ class Grillage(BaseClass):
                 product=face_aggregate,
                 matrix=matrix,
             )
-
-            # generate space boundar(y|ies)
-            for mycell in face[1]["back_cell"], face[1]["front_cell"]:
-                if mycell:
-                    boundary = run(
-                        "root.create_entity",
-                        self.file,
-                        ifc_class="IfcRelSpaceBoundary2ndLevel",
-                    )
-                    boundary.ConnectionGeometry = (
-                        self.file.createIfcConnectionSurfaceGeometry(
-                            create_curve_bounded_plane(self.file, nodes_2d, matrix)
-                        )
-                    )
-                    if face_aggregate.is_a("IfcVirtualElement"):
-                        boundary.PhysicalOrVirtualBoundary = "VIRTUAL"
-                    else:
-                        boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
-                    boundary.InternalOrExternalBoundary = "EXTERNAL"
-                    boundary.RelatedBuildingElement = face_aggregate
-
-                    cell_index = mycell.Get("index")
-                    if cell_index != None:
-                        # can't assign psets to an IfcRelationship, use Description instead
-                        boundary.Description = "CellIndex " + str(cell_index)
-                    face_index = face[1]["face"].Get("index")
-                    if face_index != None:
-                        boundary.Name = "FaceIndex " + face_index
 
             if face_aggregate.is_a("IfcVirtualElement"):
                 continue
