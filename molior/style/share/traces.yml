@@ -100,24 +100,28 @@ column:
 bedroom-space:
   class: Space
   condition: bedroom
+  predefined_type: INTERNAL
   psets:
       Pset_SpaceCommon:
           IsExternal: false
 circulation-space:
   class: Space
   condition: circulation
+  predefined_type: INTERNAL
   psets:
       Pset_SpaceCommon:
           IsExternal: false
 kitchen-space:
   class: Space
   condition: kitchen
+  predefined_type: INTERNAL
   psets:
       Pset_SpaceCommon:
           IsExternal: false
 living-space:
   class: Space
   condition: living
+  predefined_type: INTERNAL
   psets:
       Pset_SpaceCommon:
           IsExternal: false
@@ -125,12 +129,14 @@ outside-space:
   class: Space
   condition: outside
   inner: 0.25
+  predefined_type: EXTERNAL
   psets:
       Pset_SpaceCommon:
           IsExternal: true
 retail-space:
   class: Space
   condition: retail
+  predefined_type: INTERNAL
   psets:
       Pset_SpaceCommon:
           IsExternal: false
@@ -138,18 +144,21 @@ sahn-space:
   class: Space
   condition: sahn
   inner: 0.25
+  predefined_type: EXTERNAL
   psets:
       Pset_SpaceCommon:
           IsExternal: true
 stair-space:
   class: Space
   condition: stair
+  predefined_type: INTERNAL
   psets:
       Pset_SpaceCommon:
           IsExternal: false
 toilet-space:
   class: Space
   condition: toilet
+  predefined_type: INTERNAL
   psets:
       Pset_SpaceCommon:
           IsExternal: false

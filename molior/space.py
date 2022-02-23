@@ -25,6 +25,7 @@ class Space(TraceClass):
         self.ceiling = 0.2
         self.floor = 0.02
         self.ifc = "IfcSpace"
+        self.predefined_type = "INTERNAL"
         self.inner = 0.08
         self.path = []
         self.usage = ""
@@ -42,6 +43,7 @@ class Space(TraceClass):
             "root.create_entity",
             self.file,
             ifc_class=self.ifc,
+            predefined_type=self.predefined_type,
             name=self.usage + "/" + str(cell.Get("index")),
         )
 
