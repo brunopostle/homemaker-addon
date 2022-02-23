@@ -102,7 +102,11 @@ class Wall(TraceClass):
             # generate space boundaries
             boundaries = []
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
-            for cell in face.CellsOrdered(self.cellcomplex):
+            nodes_2d_flipped, matrix_flipped, _ = map_to_2d(
+                reversed(vertices), [-v for v in normal]
+            )
+            cells_ordered = face.CellsOrdered(self.cellcomplex)
+            for cell in cells_ordered:
                 if cell == None:
                     boundaries.append(None)
                     continue
@@ -121,10 +125,17 @@ class Wall(TraceClass):
                     boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
 
                 boundary.RelatedBuildingElement = mywall
-                boundary.ConnectionGeometry = (
-                    self.file.createIfcConnectionSurfaceGeometry(
-                        create_curve_bounded_plane(self.file, nodes_2d, matrix)
+                if cell == cells_ordered[0]:
+                    # the face points to this cell
+                    curve_bounded_plane = create_curve_bounded_plane(
+                        self.file, nodes_2d_flipped, matrix_flipped
                     )
+                else:
+                    curve_bounded_plane = create_curve_bounded_plane(
+                        self.file, nodes_2d, matrix
+                    )
+                boundary.ConnectionGeometry = (
+                    self.file.createIfcConnectionSurfaceGeometry(curve_bounded_plane)
                 )
                 cell_index = cell.Get("index")
                 if not cell_index == None:
@@ -537,8 +548,11 @@ class Wall(TraceClass):
                     [*left_2d, soffit],
                 ]
                 nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
+                nodes_2d_flipped, matrix_flipped, _ = map_to_2d(
+                    reversed(vertices), [-v for v in normal]
+                )
                 cell_id = 0
-                for cell in face.CellsOrdered(self.cellcomplex):
+                for cell in cells_ordered:
                     parent_boundary = boundaries[cell_id]
                     cell_id += 1
                     if cell == None:
@@ -553,9 +567,18 @@ class Wall(TraceClass):
                         parent_boundary.InternalOrExternalBoundary
                     )
                     boundary.RelatedBuildingElement = entity
+                    if cell == cells_ordered[0]:
+                        # the face points to this cell
+                        curve_bounded_plane = create_curve_bounded_plane(
+                            self.file, nodes_2d_flipped, matrix_flipped
+                        )
+                    else:
+                        curve_bounded_plane = create_curve_bounded_plane(
+                            self.file, nodes_2d, matrix
+                        )
                     boundary.ConnectionGeometry = (
                         self.file.createIfcConnectionSurfaceGeometry(
-                            create_curve_bounded_plane(self.file, nodes_2d, matrix)
+                            curve_bounded_plane
                         )
                     )
                     boundary.Description = parent_boundary.Description

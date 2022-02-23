@@ -64,6 +64,9 @@ class Shell(BaseClass):
             normal = face[1]["face"].Normal()
             # need this for boundaries
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
+            nodes_2d_flipped, matrix_flipped, _ = map_to_2d(
+                reversed(vertices), [-v for v in normal]
+            )
             # need this for structure
             face_surface = create_face_surface(self.file, vertices, normal)
             for vertex in vertices:
@@ -98,9 +101,18 @@ class Shell(BaseClass):
                         self.file,
                         ifc_class="IfcRelSpaceBoundary2ndLevel",
                     )
+                    if mycell == face[1]["front_cell"]:
+                        # the face points to this cell
+                        curve_bounded_plane = create_curve_bounded_plane(
+                            self.file, nodes_2d_flipped, matrix_flipped
+                        )
+                    else:
+                        curve_bounded_plane = create_curve_bounded_plane(
+                            self.file, nodes_2d, matrix
+                        )
                     boundary.ConnectionGeometry = (
                         self.file.createIfcConnectionSurfaceGeometry(
-                            create_curve_bounded_plane(self.file, nodes_2d, matrix)
+                            curve_bounded_plane
                         )
                     )
                     if element.is_a("IfcVirtualElement"):

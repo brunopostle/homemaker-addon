@@ -94,11 +94,15 @@ class Floor(TraceClass):
                 normal = face.Normal()
                 # need this for boundaries
                 nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
+                nodes_2d_flipped, matrix_flipped, _ = map_to_2d(
+                    reversed(vertices), [-v for v in normal]
+                )
                 # need this for structure
                 face_surface = create_face_surface(self.file, vertices, normal)
 
+                cells_ordered = face.CellsOrdered(self.cellcomplex)
                 # generate space boundaries
-                for cell in face.CellsOrdered(self.cellcomplex):
+                for cell in cells_ordered:
                     if cell == None:
                         continue
                     boundary = run(
@@ -106,9 +110,18 @@ class Floor(TraceClass):
                         self.file,
                         ifc_class="IfcRelSpaceBoundary2ndLevel",
                     )
+                    if cell == cells_ordered[0]:
+                        # the face points to this cell
+                        curve_bounded_plane = create_curve_bounded_plane(
+                            self.file, nodes_2d_flipped, matrix_flipped
+                        )
+                    else:
+                        curve_bounded_plane = create_curve_bounded_plane(
+                            self.file, nodes_2d, matrix
+                        )
                     boundary.ConnectionGeometry = (
                         self.file.createIfcConnectionSurfaceGeometry(
-                            create_curve_bounded_plane(self.file, nodes_2d, matrix)
+                            curve_bounded_plane
                         )
                     )
                     boundary.RelatedBuildingElement = element
@@ -147,10 +160,7 @@ class Floor(TraceClass):
                 assignment.RelatedObjects = [element]
 
                 add_face_topology_epsets(
-                    self.file,
-                    structural_surface,
-                    face,
-                    *reversed(face.CellsOrdered(self.cellcomplex))
+                    self.file, structural_surface, face, *reversed(cells_ordered)
                 )
                 run(
                     "structural.assign_structural_analysis_model",
