@@ -150,7 +150,7 @@ class Floor(TraceClass):
                     self.file,
                     structural_surface,
                     face,
-                    *face.CellsOrdered(self.cellcomplex)
+                    *reversed(face.CellsOrdered(self.cellcomplex))
                 )
                 run(
                     "structural.assign_structural_analysis_model",
