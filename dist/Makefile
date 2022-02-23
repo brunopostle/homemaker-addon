@@ -8,6 +8,8 @@ dist:
 	cp -r ../molior/ ../topologist/ ../__init__.py ../widgets.blend ../README.md ../LICENSE homemaker_tmp/
 	rm -rf homemaker_tmp/*/__pycache__
 	rm -rf homemaker_tmp/*/*/__pycache__
+	rm -f homemaker_tmp/*/*.{orig,rej}
+	rm -f homemaker_tmp/*/*/*.{orig,rej}
 	mkdir -p working
 
 	cd working && wget https://files.pythonhosted.org/packages/ac/dd/f6fc54a770ba0222261b33d60d9c9e01aa35d989f1cdfe892ae84e319779/ezdxf-0.16.3-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl
