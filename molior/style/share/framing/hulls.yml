@@ -1,6 +1,8 @@
 ---
 pitched-roof:
-  condition: noop
+  class: Shell
+  condition: roof
+  ifc: IfcVirtualElement
 purlin:
   class: Grillage
   ifc: IfcMember

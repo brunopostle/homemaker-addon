@@ -23,3 +23,5 @@ openwall:
       Pset_WallCommon:
           IsExternal: true
           LoadBearing: true
+external-open:
+  condition: noop

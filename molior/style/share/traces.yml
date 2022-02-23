@@ -46,6 +46,10 @@ interior:
   floor: 0.02
   cycles: 0
   do_populate_interior_openings: 1
+external-open:
+  class: Wall
+  ifc: IfcVirtualElement
+  condition: open
 internal ground beam:
   class: Extrusion
   ifc: IfcFooting
