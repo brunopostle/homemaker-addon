@@ -95,7 +95,7 @@ def map_to_2d(vertices, normal_vector):
 
     # outline of roof shifted and rotated to z=0 plane
     nodes_2d = [
-        [float(node[0]), float(node[1]), 0.0]
+        [float(node[0]), float(node[1])]
         for node in numpy.transpose(combined_inv @ nodes_3d)
     ]
 

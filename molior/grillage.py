@@ -155,7 +155,7 @@ class Grillage(BaseClass):
 
             # create a Topologic Face for slicing
             topologic_face = Face.ByVertices(
-                [Vertex.ByCoordinates(*node) for node in nodes_2d]
+                [Vertex.ByCoordinates(*node, 0.0) for node in nodes_2d]
             )
             cropped_faces, cropped_edges = topologic_face.ParallelSlice(
                 self.spacing, numpy.deg2rad(self.angle)
