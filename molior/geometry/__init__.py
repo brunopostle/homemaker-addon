@@ -1,5 +1,6 @@
 from math import sqrt, pi, atan, cos, sin
 import numpy
+from ifcopenshell.util.placement import a2p
 
 
 # FIXME doesn't seem to be in use
@@ -100,6 +101,16 @@ def map_to_2d(vertices, normal_vector):
     ]
 
     return nodes_2d, combined, [normal_x[0][0], normal_x[1][0], normal_x[2][0]]
+
+
+def map_to_2d_simple(vertices, normal):
+    """Transform 3d nodes and their normal to 2d nodes and a return matrix"""
+    vertices = list(vertices)
+    xvector = normalise_3d(subtract_3d(vertices[1], vertices[0]))
+    matrix = a2p(vertices[0], normal, xvector)
+    inverse = numpy.linalg.inv(matrix)
+    nodes_2d = [transform(inverse, node3d)[0:2] for node3d in vertices]
+    return nodes_2d, matrix
 
 
 # FIXME replace these with appropriate numpy functions

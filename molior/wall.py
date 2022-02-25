@@ -13,7 +13,7 @@ from molior.geometry import (
     subtract_3d,
     add_3d,
     transform,
-    map_to_2d,
+    map_to_2d_simple,
 )
 from molior.ifc import (
     add_face_topology_epsets,
@@ -101,10 +101,6 @@ class Wall(TraceClass):
 
             # generate space boundaries
             boundaries = []
-            nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
-            nodes_2d_flipped, matrix_flipped, _ = map_to_2d(
-                reversed(vertices), [-v for v in normal]
-            )
             cells_ordered = face.CellsOrdered(self.cellcomplex)
             for cell in cells_ordered:
                 if cell == None:
@@ -127,13 +123,15 @@ class Wall(TraceClass):
                 boundary.RelatedBuildingElement = mywall
                 if cell == cells_ordered[0]:
                     # the face points to this cell
-                    curve_bounded_plane = create_curve_bounded_plane(
-                        self.file, nodes_2d_flipped, matrix_flipped
+                    nodes_2d, matrix = map_to_2d_simple(
+                        reversed(vertices), [-v for v in normal]
                     )
                 else:
-                    curve_bounded_plane = create_curve_bounded_plane(
-                        self.file, nodes_2d, matrix
-                    )
+                    nodes_2d, matrix = map_to_2d_simple(vertices, normal)
+
+                curve_bounded_plane = create_curve_bounded_plane(
+                    self.file, nodes_2d, matrix
+                )
                 boundary.ConnectionGeometry = (
                     self.file.createIfcConnectionSurfaceGeometry(curve_bounded_plane)
                 )
@@ -547,10 +545,6 @@ class Wall(TraceClass):
                     [*right_2d, soffit],
                     [*left_2d, soffit],
                 ]
-                nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
-                nodes_2d_flipped, matrix_flipped, _ = map_to_2d(
-                    reversed(vertices), [-v for v in normal]
-                )
                 cell_id = 0
                 for cell in cells_ordered:
                     parent_boundary = boundaries[cell_id]
@@ -569,13 +563,15 @@ class Wall(TraceClass):
                     boundary.RelatedBuildingElement = entity
                     if cell == cells_ordered[0]:
                         # the face points to this cell
-                        curve_bounded_plane = create_curve_bounded_plane(
-                            self.file, nodes_2d_flipped, matrix_flipped
+                        nodes_2d, matrix = map_to_2d_simple(
+                            reversed(vertices), [-v for v in normal]
                         )
                     else:
-                        curve_bounded_plane = create_curve_bounded_plane(
-                            self.file, nodes_2d, matrix
-                        )
+                        nodes_2d, matrix = map_to_2d_simple(vertices, normal)
+
+                    curve_bounded_plane = create_curve_bounded_plane(
+                        self.file, nodes_2d, matrix
+                    )
                     boundary.ConnectionGeometry = (
                         self.file.createIfcConnectionSurfaceGeometry(
                             curve_bounded_plane

@@ -3,7 +3,7 @@ import ifcopenshell.api
 from topologic import Cell, CellComplex
 
 from molior.baseclass import TraceClass
-from molior.geometry import matrix_align, map_to_2d
+from molior.geometry import matrix_align, map_to_2d_simple
 from molior.ifc import (
     add_pset,
     add_face_topology_epsets,
@@ -92,11 +92,6 @@ class Floor(TraceClass):
                 face.VerticesPerimeter(perimeter_vertices_ptr)
                 vertices = [v.Coordinates() for v in perimeter_vertices_ptr]
                 normal = face.Normal()
-                # need this for boundaries
-                nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
-                nodes_2d_flipped, matrix_flipped, _ = map_to_2d(
-                    reversed(vertices), [-v for v in normal]
-                )
                 # need this for structure
                 face_surface = create_face_surface(self.file, vertices, normal)
 
@@ -110,15 +105,18 @@ class Floor(TraceClass):
                         self.file,
                         ifc_class="IfcRelSpaceBoundary2ndLevel",
                     )
+
                     if cell == cells_ordered[0]:
                         # the face points to this cell
-                        curve_bounded_plane = create_curve_bounded_plane(
-                            self.file, nodes_2d_flipped, matrix_flipped
+                        nodes_2d, matrix = map_to_2d_simple(
+                            reversed(vertices), [-v for v in normal]
                         )
                     else:
-                        curve_bounded_plane = create_curve_bounded_plane(
-                            self.file, nodes_2d, matrix
-                        )
+                        nodes_2d, matrix = map_to_2d_simple(vertices, normal)
+
+                    curve_bounded_plane = create_curve_bounded_plane(
+                        self.file, nodes_2d, matrix
+                    )
                     boundary.ConnectionGeometry = (
                         self.file.createIfcConnectionSurfaceGeometry(
                             curve_bounded_plane

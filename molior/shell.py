@@ -2,7 +2,7 @@ import ifcopenshell.api
 
 from topologist.helpers import string_to_coor, el
 from molior.baseclass import BaseClass
-from molior.geometry import map_to_2d, matrix_align
+from molior.geometry import map_to_2d, map_to_2d_simple, matrix_align
 from molior.ifc import (
     add_face_topology_epsets,
     create_extruded_area_solid,
@@ -62,11 +62,6 @@ class Shell(BaseClass):
         for face in self.hull.faces:
             vertices = [[*string_to_coor(node_str)] for node_str in face[0]]
             normal = face[1]["face"].Normal()
-            # need this for boundaries
-            nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
-            nodes_2d_flipped, matrix_flipped, _ = map_to_2d(
-                reversed(vertices), [-v for v in normal]
-            )
             # need this for structure
             face_surface = create_face_surface(self.file, vertices, normal)
             for vertex in vertices:
@@ -101,15 +96,18 @@ class Shell(BaseClass):
                         self.file,
                         ifc_class="IfcRelSpaceBoundary2ndLevel",
                     )
+
                     if mycell == face[1]["front_cell"]:
                         # the face points to this cell
-                        curve_bounded_plane = create_curve_bounded_plane(
-                            self.file, nodes_2d_flipped, matrix_flipped
+                        nodes_2d, matrix = map_to_2d_simple(
+                            reversed(vertices), [-v for v in normal]
                         )
                     else:
-                        curve_bounded_plane = create_curve_bounded_plane(
-                            self.file, nodes_2d, matrix
-                        )
+                        nodes_2d, matrix = map_to_2d_simple(vertices, normal)
+
+                    curve_bounded_plane = create_curve_bounded_plane(
+                        self.file, nodes_2d, matrix
+                    )
                     boundary.ConnectionGeometry = (
                         self.file.createIfcConnectionSurfaceGeometry(
                             curve_bounded_plane
@@ -197,6 +195,8 @@ class Shell(BaseClass):
                 relating_type=myelement_type,
             )
             self.add_psets(myelement_type)
+
+            nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
 
             # create a representation
             if float(normal_x[2]) < 0.001 or not uniform_pitch:

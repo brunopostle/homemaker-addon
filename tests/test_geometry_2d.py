@@ -14,6 +14,8 @@ from molior.geometry import (
     points_2line,
     line_intersection,
     transform,
+    map_to_2d,
+    map_to_2d_simple,
 )
 
 
@@ -64,6 +66,47 @@ class Tests(unittest.TestCase):
         line3 = points_2line([4, 0], [4, 5])
         point = line_intersection(line2, line3)
         self.assertEqual(point, None)
+
+    def test_map_to_2d(self):
+        # returns a 2d polygon, a matrix to map from 2d back to 3d, and a normal representing the original vertical
+        polygon3d = [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]]
+        normal = [0, 0, 1]
+
+        polygon2d, matrix, normal = map_to_2d(polygon3d, normal)
+        self.assertEqual(normal, matrix[:, 2][0:3].tolist())
+        polygon2d_a, matrix_a = map_to_2d_simple(polygon3d, normal)
+        self.assertEqual(normal, matrix_a[:, 2][0:3].tolist())
+
+        polygon3d = [[0, 0, 0], [0, 1, 0], [1, 1, 0], [1, 0, 0]]
+        normal = [0, 0, -1]
+
+        polygon2d, matrix, normal = map_to_2d(polygon3d, normal)
+        self.assertEqual(normal, matrix[:, 2][0:3].tolist())
+        polygon2d_a, matrix_a = map_to_2d_simple(polygon3d, normal)
+        self.assertEqual(normal, matrix_a[:, 2][0:3].tolist())
+
+        polygon3d = [[0, 0, 0], [1, 0, 0], [1, 0, 1], [0, 0, 1]]
+        normal = [0, -1, 0]
+
+        polygon2d, matrix, normal = map_to_2d(polygon3d, normal)
+        self.assertEqual(normal, matrix[:, 2][0:3].tolist())
+        polygon2d_a, matrix_a = map_to_2d_simple(polygon3d, normal)
+        self.assertEqual(normal, matrix_a[:, 2][0:3].tolist())
+
+        # polygon3d = [[0, 0, 0], [0, 0, 1], [1, 0, 1], [1, 0, 0]]
+        # normal = [0, 1, 0]
+        # polygon2d, matrix, normal = map_to_2d(polygon3d, normal)
+        # self.assertEqual(normal, matrix[:, 2][0:3].tolist())
+
+        # polygon3d = [[0, 0, 0], [0, 1, 0], [0, 1, 1], [0, 0, 1]]
+        # normal = [1, 0, 0]
+        # polygon2d, matrix, normal = map_to_2d(polygon3d, normal)
+        # self.assertEqual(normal, matrix[:, 2][0:3].tolist())
+
+        # polygon3d = [[0, 0, 0], [0, 0, 1], [0, 1, 1], [0, 1, 0]]
+        # normal = [-1, 0, 0]
+        # polygon2d, matrix, normal = map_to_2d(polygon3d, normal)
+        # self.assertEqual(normal, matrix[:, 2][0:3].tolist())
 
 
 if __name__ == "__main__":
