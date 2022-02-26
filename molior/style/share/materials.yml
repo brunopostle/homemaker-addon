@@ -43,6 +43,13 @@ Concrete:
             MassDensity: 2800
         Pset_MaterialEnergy:
             ThermalConductivityTemperatureDerivative: 0.8
+Screed:
+    surface_colour: [0.4, 0.4, 0.4]
+    psets:
+        Pset_MaterialCommon:
+            MassDensity: 2800
+        Pset_MaterialEnergy:
+            ThermalConductivityTemperatureDerivative: 0.8
 Insulation:
     surface_colour: [1.0, 0.6, 0.6]
     diffuse_colour: [1.0, 0.6, 0.6]
