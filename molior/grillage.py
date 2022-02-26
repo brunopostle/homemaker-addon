@@ -197,6 +197,8 @@ class Grillage(BaseClass):
                     ifc_class=self.ifc,
                     name=self.identifier,
                 )
+                linear_element.PredefinedType = self.predefined_type
+                self.add_psets(linear_element)
 
                 direction = cropped_edge.NormalisedVector()
 

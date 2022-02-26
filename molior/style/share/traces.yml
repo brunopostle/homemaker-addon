@@ -29,6 +29,9 @@ ground beam:
     - ProfileType: AREA
       XDim: 0.4
       YDim: 0.4
+  psets:
+      Pset_FootingCommon:
+          LoadBearing: true
 interior:
   class: Wall
   ifc: IfcWall
@@ -60,6 +63,9 @@ internal ground beam:
   extension: 0.0
   cycles: 0
   material: Concrete
+  psets:
+      Pset_FootingCommon:
+          LoadBearing: true
 eaves:
   class: Extrusion
   ifc: IfcRoof

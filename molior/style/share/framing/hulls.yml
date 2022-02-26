@@ -6,7 +6,7 @@ pitched-roof:
 purlin:
   class: Grillage
   ifc: IfcMember
-  predefined_type: USERDEFINED
+  predefined_type: PURLIN
   condition: roof
   angle: 0.0
   spacing: 1.8
@@ -25,10 +25,13 @@ purlin:
       position: 
         Location: [0.0, 0.25]
         RefDirection: [1.0, 0.0]
+  psets:
+      Pset_MemberCommon:
+          LoadBearing: true
 joist:
   class: Grillage
   ifc: IfcMember
-  predefined_type: USERDEFINED
+  predefined_type: RAFTER
   condition: roof
   angle: 90.0
   spacing: 0.45
@@ -44,6 +47,9 @@ joist:
       position: 
         Location: [0.0, 0.04]
         RefDirection: [1.0, 0.0]
+  psets:
+      Pset_MemberCommon:
+          LoadBearing: true
 batten:
   class: Grillage
   ifc: IfcBuildingElementProxy

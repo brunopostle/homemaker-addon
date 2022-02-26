@@ -1,6 +1,7 @@
 exterior:
   class: Wall
   ifc: IfcWall
+  predefined_type: SOLIDWALL
   condition: external
   inner: 0.305
   outer: 0.305
@@ -14,6 +15,7 @@ exterior:
 balustrade_small:
   class: Repeat
   ifc: IfcRailing
+  predefined_type: BALUSTRADE
   asset: balustrade_small
   condition: none
   xshift: 0.0

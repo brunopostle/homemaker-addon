@@ -2,6 +2,7 @@
 exterior:
   class: Wall
   ifc: IfcWall
+  predefined_type: SOLIDWALL
   condition: external
   inner: 0.305
   outer: 0.305

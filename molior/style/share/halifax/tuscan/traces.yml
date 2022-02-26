@@ -2,6 +2,7 @@
 exterior:
   class: Wall
   ifc: IfcWall
+  predefined_type: SOLIDWALL
   condition: external
   inner: 0.1524
   outer: 0.254
@@ -17,6 +18,7 @@ column:
 colonnade:
   class: Repeat
   ifc: IfcColumn
+  predefined_type: COLUMN
   asset: column
   condition: open
   outer: 0.0
@@ -68,6 +70,7 @@ handrail:
 balustrade_large:
   class: Repeat
   ifc: IfcRailing
+  predefined_type: BALUSTRADE
   asset: balustrade_large
   condition: none
   outer: 0.0
