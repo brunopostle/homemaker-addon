@@ -92,7 +92,6 @@ bedroom-floor:
   outer: 0.15
   psets:
       Pset_SlabCommon:
-          IsExternal: false
           LoadBearing: true
 circulation-floor:
   class: Shell
@@ -103,7 +102,6 @@ circulation-floor:
   outer: 0.15
   psets:
       Pset_SlabCommon:
-          IsExternal: false
           LoadBearing: true
 kitchen-floor:
   class: Shell
@@ -114,7 +112,6 @@ kitchen-floor:
   outer: 0.15
   psets:
       Pset_SlabCommon:
-          IsExternal: false
           LoadBearing: true
 living-floor:
   class: Shell
@@ -125,7 +122,6 @@ living-floor:
   outer: 0.15
   psets:
       Pset_SlabCommon:
-          IsExternal: false
           LoadBearing: true
 outside-floor:
   class: Shell
@@ -147,7 +143,6 @@ retail-floor:
   outer: 0.15
   psets:
       Pset_SlabCommon:
-          IsExternal: false
           LoadBearing: true
 sahn-floor:
   class: Shell
@@ -169,7 +164,6 @@ stair-floor:
   outer: 0.15
   psets:
       Pset_SlabCommon:
-          IsExternal: true
           LoadBearing: true
 toilet-floor:
   class: Shell
@@ -180,5 +174,4 @@ toilet-floor:
   outer: 0.15
   psets:
       Pset_SlabCommon:
-          IsExternal: true
           LoadBearing: true

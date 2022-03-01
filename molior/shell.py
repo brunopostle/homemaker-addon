@@ -118,6 +118,7 @@ class Shell(BaseClass):
                     else:
                         boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
                     boundary.InternalOrExternalBoundary = "EXTERNAL"
+                    # FIXME also INTERNAL, EXTERNAL_EARTH and EXTERNAL_FIRE
                     boundary.RelatedBuildingElement = element
 
                     cell_index = mycell.Get("index")

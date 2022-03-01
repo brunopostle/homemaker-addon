@@ -131,6 +131,7 @@ class Floor(TraceClass):
                         boundary.InternalOrExternalBoundary = "INTERNAL"
                     else:
                         boundary.InternalOrExternalBoundary = "EXTERNAL"
+                        # FIXME also EXTERNAL_EARTH
                     cell_index = cell.Get("index")
                     if cell_index != None:
                         # can't assign psets to an IfcRelationship, use Description instead

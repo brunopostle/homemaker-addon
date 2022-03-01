@@ -115,6 +115,7 @@ class Wall(TraceClass):
                     boundary.InternalOrExternalBoundary = "INTERNAL"
                 else:
                     boundary.InternalOrExternalBoundary = "EXTERNAL"
+                    # FIXME also EXTERNAL_FIRE for party walls
                 if mywall.is_a("IfcVirtualElement"):
                     boundary.PhysicalOrVirtualBoundary = "VIRTUAL"
                 else:

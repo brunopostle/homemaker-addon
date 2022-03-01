@@ -180,28 +180,24 @@ bedroom-floor:
   condition: bedroom
   psets:
       Pset_SlabCommon:
-          IsExternal: false
           LoadBearing: true
 circulation-floor:
   class: Floor
   condition: circulation
   psets:
       Pset_SlabCommon:
-          IsExternal: false
           LoadBearing: true
 kitchen-floor:
   class: Floor
   condition: kitchen
   psets:
       Pset_SlabCommon:
-          IsExternal: false
           LoadBearing: true
 living-floor:
   class: Floor
   condition: living
   psets:
       Pset_SlabCommon:
-          IsExternal: false
           LoadBearing: true
 outside-floor:
   class: Floor
@@ -220,7 +216,6 @@ retail-floor:
   condition: retail
   psets:
       Pset_SlabCommon:
-          IsExternal: false
           LoadBearing: true
 sahn-floor:
   class: Floor
@@ -234,12 +229,10 @@ stair-floor:
   condition: stair
   psets:
       Pset_SlabCommon:
-          IsExternal: false
           LoadBearing: true
 toilet-floor:
   class: Floor
   condition: toilet
   psets:
       Pset_SlabCommon:
-          IsExternal: false
           LoadBearing: true
