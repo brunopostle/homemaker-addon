@@ -16,7 +16,12 @@ from molior.geometry import (
     transform,
     map_to_2d,
     map_to_2d_simple,
+    normal_by_perimeter,
 )
+import topologist
+
+assert topologist
+from topologic import Face, Vertex
 
 
 class Tests(unittest.TestCase):
@@ -107,6 +112,35 @@ class Tests(unittest.TestCase):
         # normal = [-1, 0, 0]
         # polygon2d, matrix, normal = map_to_2d(polygon3d, normal)
         # self.assertEqual(normal, matrix[:, 2][0:3].tolist())
+
+    def test_normal(self):
+        polygon3d = [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]]
+        face = Face.ByVertices([Vertex.ByCoordinates(*node) for node in polygon3d])
+        self.assertEqual(face.Normal(), normal_by_perimeter(polygon3d))
+
+        polygon3d = [[0, 0, 0], [0, 1, 0], [1, 1, 0], [1, 0, 0]]
+        face = Face.ByVertices([Vertex.ByCoordinates(*node) for node in polygon3d])
+        self.assertEqual(face.Normal(), normal_by_perimeter(polygon3d))
+
+        polygon3d = [[0, 0, 0], [1, 0, 0], [1, 0, 1], [0, 0, 1]]
+        face = Face.ByVertices([Vertex.ByCoordinates(*node) for node in polygon3d])
+        self.assertEqual(face.Normal(), normal_by_perimeter(polygon3d))
+
+        polygon3d = [[0, 0, 0], [0, 0, 1], [1, 0, 1], [1, 0, 0]]
+        face = Face.ByVertices([Vertex.ByCoordinates(*node) for node in polygon3d])
+        self.assertEqual(face.Normal(), normal_by_perimeter(polygon3d))
+
+        polygon3d = [[0, 0, 0], [0, 1, 0], [0, 1, 1], [0, 0, 1]]
+        face = Face.ByVertices([Vertex.ByCoordinates(*node) for node in polygon3d])
+        self.assertEqual(face.Normal(), normal_by_perimeter(polygon3d))
+
+        polygon3d = [[0, 0, 0], [0, 0, 1], [0, 1, 1], [0, 1, 0]]
+        face = Face.ByVertices([Vertex.ByCoordinates(*node) for node in polygon3d])
+        self.assertEqual(face.Normal(), normal_by_perimeter(polygon3d))
+
+        polygon3d = [[0, 0, 0], [0, 0, 1], [0, 0, 2], [0, 1, 0]]
+        face = Face.ByVertices([Vertex.ByCoordinates(*node) for node in polygon3d])
+        self.assertEqual(face.Normal(), normal_by_perimeter(polygon3d))
 
 
 if __name__ == "__main__":

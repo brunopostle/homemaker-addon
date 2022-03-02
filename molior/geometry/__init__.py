@@ -106,11 +106,22 @@ def map_to_2d(vertices, normal_vector):
 def map_to_2d_simple(vertices, normal):
     """Transform 3d nodes and their normal to 2d nodes and a return matrix"""
     vertices = list(vertices)
+    if dot_product_3d(normal, normal_by_perimeter(vertices)) < 0.0:
+        vertices.reverse()
     xvector = normalise_3d(subtract_3d(vertices[1], vertices[0]))
     matrix = a2p(vertices[0], normal, xvector)
     inverse = numpy.linalg.inv(matrix)
     nodes_2d = [transform(inverse, node3d)[0:2] for node3d in vertices]
     return nodes_2d, matrix
+
+
+def normal_by_perimeter(vertices):
+    """assuming set of vertices represent a planar face, calculate normal"""
+    for index in range(len(vertices)):
+        vector_a = normalise_3d(subtract_3d(vertices[index - 1], vertices[index - 2]))
+        vector_b = normalise_3d(subtract_3d(vertices[index], vertices[index - 1]))
+        if dot_product_3d(vector_a, vector_b) < 0.99:
+            return x_product_3d(vector_a, vector_b)
 
 
 # FIXME replace these with appropriate numpy functions
@@ -174,6 +185,10 @@ def x_product_3d(A, B):
     y = A[2] * B[0] - B[2] * A[0]
     z = A[0] * B[1] - B[0] * A[1]
     return normalise_3d([x, y, z])
+
+
+def dot_product_3d(A, B):
+    return (A[0] * B[0]) + (A[1] * B[1]) + (A[2] * B[2])
 
 
 def normalise_3d(A):
