@@ -409,7 +409,7 @@ def EdgesCrop(self, result_edges_ptr):
         result_edges_ptr.append(edge)
 
 
-def ParallelSlice(self, inc=0.45, radians=0.0):
+def ParallelSlice(self, inc=0.45, radians=0.0, origin=[0.0, 0.0]):
     """Crop a face with parallel lines"""
     vertices = []
     self.Vertices(None, vertices)
@@ -417,36 +417,36 @@ def ParallelSlice(self, inc=0.45, radians=0.0):
     maxx = max(node.Coordinates()[0] for node in vertices)
     miny = min(node.Coordinates()[1] for node in vertices)
     maxy = max(node.Coordinates()[1] for node in vertices)
-    midx = (minx + maxx) / 2
 
     # create Topologic Edges for slicing the Face
+    # FIXME fixx and fixy adjustment only works for orthogonal angles
     cutting_edges = []
     if abs(math.tan(radians)) > 1.0:
         shift = (maxy - miny) / math.tan(radians)
-        inc /= abs(math.sin(radians))
-        # align with midpoint of baseline
-        fixx = inc - (midx % inc)
+        incx = inc / abs(math.sin(radians))
+        fixx = (minx - origin[0]) % incx
         x = minx - abs(shift) - fixx
         while x < maxx + abs(shift):
             cutting_edges.append(
                 Edge.ByStartVertexEndVertex(
-                    Vertex.ByCoordinates(x + inc, miny, 0.0),
-                    Vertex.ByCoordinates(x + inc + shift, maxy, 0.0),
+                    Vertex.ByCoordinates(x + incx, miny, 0.0),
+                    Vertex.ByCoordinates(x + incx + shift, maxy, 0.0),
                 )
             )
-            x += inc
+            x += incx
     else:
         shift = (maxx - minx) * math.tan(radians)
-        inc /= abs(math.cos(radians))
-        y = miny - abs(shift)
+        incy = inc / abs(math.cos(radians))
+        fixy = (miny - origin[1]) % incy
+        y = miny - abs(shift) - fixy
         while y < maxy + abs(shift):
             cutting_edges.append(
                 Edge.ByStartVertexEndVertex(
-                    Vertex.ByCoordinates(minx, y + inc, 0.0),
-                    Vertex.ByCoordinates(maxx, y + inc + shift, 0.0),
+                    Vertex.ByCoordinates(minx, y + incy, 0.0),
+                    Vertex.ByCoordinates(maxx, y + incy + shift, 0.0),
                 )
             )
-            y += inc
+            y += incy
 
     shell = self.Slice(Cluster.ByTopologies(cutting_edges))
     topologic_faces = []

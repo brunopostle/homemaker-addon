@@ -4,7 +4,7 @@ import numpy
 from topologist.helpers import string_to_coor, el
 from topologic import Face, Vertex
 from molior.baseclass import BaseClass
-from molior.geometry import map_to_2d, matrix_align
+from molior.geometry import map_to_2d, matrix_align, transform
 from molior.ifc import (
     add_face_topology_epsets,
     create_face_surface,
@@ -153,12 +153,13 @@ class Grillage(BaseClass):
 
             # generate repeating grillage elements
 
+            origin = transform(numpy.linalg.inv(matrix), [0.0, 0.0])
             # create a Topologic Face for slicing
             topologic_face = Face.ByVertices(
                 [Vertex.ByCoordinates(*node, 0.0) for node in nodes_2d]
             )
             cropped_faces, cropped_edges = topologic_face.ParallelSlice(
-                self.spacing, numpy.deg2rad(self.angle)
+                self.spacing, numpy.deg2rad(self.angle), origin
             )
 
             # shift down to inner face
