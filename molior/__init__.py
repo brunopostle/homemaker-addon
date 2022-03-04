@@ -598,6 +598,23 @@ class Molior:
         rel.RelatingSystem = system
         rel.RelatedBuildings = [self.building]
 
+        style = run("style.add_style", self.file, name="CellComplex")
+        run(
+            "style.add_surface_style",
+            self.file,
+            style=style,
+            attributes={
+                "SurfaceColour": {
+                    "Name": "Translucent Blue",
+                    "Red": 0.2,
+                    "Green": 0.2,
+                    "Blue": 1.0,
+                },
+                "Transparency": 0.8,
+                "ReflectanceMethod": "PLASTIC",
+            },
+        )
+
         # Create a Virtual Element with a Shape Representation for each Face
         faces = []
         self.cellcomplex.Faces(None, faces)
@@ -625,6 +642,12 @@ class Molior:
                     "Tessellation",
                     [create_tessellation_from_mesh(self.file, *face.Mesh())],
                 ),
+            )
+            run(
+                "style.assign_representation_styles",
+                self.file,
+                shape_representation=element.Representation.Representations[0],
+                styles=[style],
             )
             add_topologic_epsets(self.file, element, face)
 
