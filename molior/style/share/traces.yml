@@ -2,6 +2,7 @@
 exterior:
   class: Wall
   ifc: IfcWall
+  predefined_type: SOLIDWALL
   condition: external
   layerset:
     - [0.3, "Masonry"]
@@ -35,6 +36,7 @@ ground beam:
 interior:
   class: Wall
   ifc: IfcWall
+  predefined_type: SOLIDWALL
   condition: internal
   outer: 0.08
   layerset:

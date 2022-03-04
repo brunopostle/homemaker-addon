@@ -43,6 +43,7 @@ class Wall(TraceClass):
         self.floor = 0.02
         self.ifc = "IfcWall"
         self.predefined_type = "SOLIDWALL"
+        self.party_wall = False
         self.layerset = [[0.3, "Masonry"], [0.03, "Plaster"]]
         self.structural_material = "Masonry"
         self.opening_material = "Timber"
@@ -85,6 +86,8 @@ class Wall(TraceClass):
                 ifc_class=self.ifc,
                 name=self.identifier,
             )
+            if not mywall.is_a("IfcVirtualElement"):
+                mywall.PredefinedType = self.predefined_type
             run(
                 "aggregate.assign_object",
                 self.file,
@@ -111,11 +114,12 @@ class Wall(TraceClass):
                     self.file,
                     ifc_class="IfcRelSpaceBoundary2ndLevel",
                 )
-                if face.IsInternal(self.cellcomplex):
+                if self.party_wall:
+                    boundary.InternalOrExternalBoundary = "EXTERNAL_FIRE"
+                elif face.IsInternal(self.cellcomplex):
                     boundary.InternalOrExternalBoundary = "INTERNAL"
                 else:
                     boundary.InternalOrExternalBoundary = "EXTERNAL"
-                    # FIXME also EXTERNAL_FIRE for party walls
                 if mywall.is_a("IfcVirtualElement"):
                     boundary.PhysicalOrVirtualBoundary = "VIRTUAL"
                 else:

@@ -25,6 +25,7 @@ class Shell(BaseClass):
         super().__init__(args)
         self.ifc = "IfcRoof"
         self.predefined_type = "USERDEFINED"
+        self.party_wall = False
         self.layerset = [[0.03, "Plaster"], [0.2, "Insulation"], [0.05, "Tiles"]]
         self.structural_material = "Concrete"
         self.outer = 0.20
@@ -74,6 +75,8 @@ class Shell(BaseClass):
                 ifc_class=self.ifc,
                 name=self.identifier,
             )
+            if not element.is_a("IfcVirtualElement"):
+                element.PredefinedType = self.predefined_type
             run(
                 "aggregate.assign_object",
                 self.file,
@@ -117,8 +120,12 @@ class Shell(BaseClass):
                         boundary.PhysicalOrVirtualBoundary = "VIRTUAL"
                     else:
                         boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
-                    boundary.InternalOrExternalBoundary = "EXTERNAL"
-                    # FIXME also INTERNAL, EXTERNAL_EARTH and EXTERNAL_FIRE
+                    if self.party_wall:
+                        boundary.InternalOrExternalBoundary = "EXTERNAL_FIRE"
+                    elif face[1]["face"].IsInternal(self.cellcomplex):
+                        boundary.InternalOrExternalBoundary = "INTERNAL"
+                    else:
+                        boundary.InternalOrExternalBoundary = "EXTERNAL"
                     boundary.RelatedBuildingElement = element
 
                     cell_index = mycell.Get("index")

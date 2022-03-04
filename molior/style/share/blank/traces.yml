@@ -5,6 +5,7 @@ exterior:
   condition: external
   inner: 0.08
   outer: 0.25
+  party_wall: true
   psets:
       Pset_WallCommon:
           IsExternal: true
@@ -19,6 +20,7 @@ openwall:
   condition: open
   inner: 0.08
   outer: 0.25
+  party_wall: true
   psets:
       Pset_WallCommon:
           IsExternal: true

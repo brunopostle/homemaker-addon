@@ -265,6 +265,19 @@ def CellAbove(self, host_topology):
     return None
 
 
+def CellBelow(self, host_topology):
+    """Is this Face a ceiling with a Cell below, return it"""
+    if not self.IsVertical():
+        cells = self.Cells_Cached(host_topology)
+        if len(cells) == 2:
+            if cells[0].Centroid().Z() < cells[1].Centroid().Z():
+                return cells[0]
+            return cells[1]
+        elif len(cells) == 1 and cells[0].Centroid().Z() < self.Centroid().Z():
+            return cells[0]
+    return None
+
+
 # FIXME doesn't appear to be in use
 def HorizontalFacesSideways(self, host_topology):
     """Which horizontal faces are attached to the bottom Edges of this Face?"""
@@ -465,6 +478,7 @@ setattr(topologic.Face, "FaceAbove", FaceAbove)
 setattr(topologic.Face, "FacesBelow", FacesBelow)
 setattr(topologic.Face, "CellsBelow", CellsBelow)
 setattr(topologic.Face, "CellAbove", CellAbove)
+setattr(topologic.Face, "CellBelow", CellBelow)
 setattr(topologic.Face, "HorizontalFacesSideways", HorizontalFacesSideways)
 setattr(topologic.Face, "Normal", Normal)
 setattr(topologic.Face, "TopLevelConditions", TopLevelConditions)

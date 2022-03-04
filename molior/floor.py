@@ -67,6 +67,8 @@ class Floor(TraceClass):
             ifc_class=self.ifc,
             name=self.name + "/" + str(cell.Get("index")),
         )
+        if not element.is_a("IfcVirtualElement"):
+            element.PredefinedType = self.predefined_type
         # Slab will be re-assigned to Space later
         assign_storey_byindex(self.file, element, self.building, self.level)
 
@@ -127,11 +129,12 @@ class Floor(TraceClass):
                         boundary.PhysicalOrVirtualBoundary = "VIRTUAL"
                     else:
                         boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
-                    if face.IsInternal(self.cellcomplex):
+                    if not face.CellBelow(self.cellcomplex):
+                        boundary.InternalOrExternalBoundary = "EXTERNAL_EARTH"
+                    elif face.IsInternal(self.cellcomplex):
                         boundary.InternalOrExternalBoundary = "INTERNAL"
                     else:
                         boundary.InternalOrExternalBoundary = "EXTERNAL"
-                        # FIXME also EXTERNAL_EARTH
                     cell_index = cell.Get("index")
                     if cell_index != None:
                         # can't assign psets to an IfcRelationship, use Description instead
