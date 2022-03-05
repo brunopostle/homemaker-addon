@@ -16,9 +16,14 @@ class Normals:
         if not label in self.normals:
             self.normals[label] = {}
 
-        vertex_str = (
-            str(vertex.X()) + "__" + str(vertex.Y()) + "__" + str(el(vertex.Z()))
-        )
+        if vertex.__class__ == [].__class__:
+            vertex_str = (
+                str(vertex[0]) + "__" + str(vertex[1]) + "__" + str(el(vertex[2]))
+            )
+        else:
+            vertex_str = (
+                str(vertex.X()) + "__" + str(vertex.Y()) + "__" + str(el(vertex.Z()))
+            )
 
         if vertex_str in self.normals[label]:
             self.normals[label][vertex_str] = numpy.add(

@@ -341,6 +341,7 @@ def BottomLevelConditions(self, host_topology):
     edges_ptr = []
     self.EdgesBottom(edges_ptr)
     for edge in edges_ptr:
+        # FIXME FacesWorld() doesn't account for external walls facing outside cells
         faces_ptr = edge.FacesWorld(host_topology)
         for (
             face
