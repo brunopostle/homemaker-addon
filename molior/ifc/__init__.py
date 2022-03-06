@@ -34,7 +34,13 @@ def init(name="Homemaker Project", file=None):
         name=name,
     )
 
-    run("unit.assign_unit", file, length={"is_metric": True, "raw": "METERS"})
+    unit_assignment = run(
+        "unit.assign_unit", file, length={"is_metric": True, "raw": "METERS"}
+    )
+    unit_assignment.Units = [
+        *unit_assignment.Units,
+        run("unit.add_si_unit", file, name="RADIAN", unit_type="PLANEANGLEUNIT"),
+    ]
 
     get_context_by_name(
         file,
