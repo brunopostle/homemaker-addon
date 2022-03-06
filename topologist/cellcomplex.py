@@ -147,6 +147,7 @@ def GetTraces(self):
                 elevations[elevation] = 0
 
                 if face.IsWorld(self):
+                    normal = face.Normal()
                     for condition in face.TopLevelConditions(self):
                         edge = condition[0]
                         axis = [edge.EndVertex(), edge.StartVertex()]
@@ -165,6 +166,9 @@ def GetTraces(self):
                             back_cell=back_cell,
                         )
                         elevations[el(elevation + height)] = 0
+                        if not face.IsOpen(self):
+                            mynormals.add_vector("top", axis[0], normal)
+                            mynormals.add_vector("top", axis[1], normal)
 
                     for condition in face.BottomLevelConditions(self):
                         edge = condition[0]
@@ -183,12 +187,9 @@ def GetTraces(self):
                             front_cell=front_cell,
                             back_cell=back_cell,
                         )
-                if face.IsExternal(self) and not face.IsOpen(self):
-                    normal = face.Normal()
-                    mynormals.add_vector("top", axis[0], normal)
-                    mynormals.add_vector("top", axis[1], normal)
-                    mynormals.add_vector("bottom", axis[0], normal)
-                    mynormals.add_vector("bottom", axis[1], normal)
+                        if not face.IsOpen(self):
+                            mynormals.add_vector("bottom", axis[0], normal)
+                            mynormals.add_vector("bottom", axis[1], normal)
 
     cells_ptr = []
     self.Cells(None, cells_ptr)
