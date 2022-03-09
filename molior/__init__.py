@@ -46,9 +46,9 @@ from molior.style import Style
 from molior.geometry import subtract_3d, x_product_3d, matrix_align
 import molior.ifc
 from molior.ifc import (
-    create_site,
-    create_building,
-    create_structural_analysis_model,
+    get_site_by_name,
+    get_building_by_name,
+    get_structural_analysis_model_by_name,
     create_storeys,
     add_cell_topology_epsets,
     add_topologic_epsets,
@@ -87,9 +87,9 @@ class Molior:
         if self.file == None:
             self.file = molior.ifc.init()
         self.project = self.file.by_type("IfcProject")[0]
-        site = create_site(self.file, self.project, "Site " + name)
-        self.building = create_building(self.file, site, name)
-        self.structural_analysis_model = create_structural_analysis_model(
+        site = get_site_by_name(self.file, self.project, "Site " + name)
+        self.building = get_building_by_name(self.file, site, name)
+        self.structural_analysis_model = get_structural_analysis_model_by_name(
             self.file, self.building, name
         )
         self.elevations = elevations

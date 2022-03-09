@@ -8,8 +8,8 @@ import ifcopenshell.api
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior.ifc
 from molior.ifc import (
-    create_site,
-    create_building,
+    get_site_by_name,
+    get_building_by_name,
     create_storeys,
     create_extruded_area_solid,
     create_tessellations_from_dxf,
@@ -28,8 +28,8 @@ class Tests(unittest.TestCase):
         self.axis_context = get_context_by_name(ifc, context_identifier="Axis")
 
         project = ifc.by_type("IfcProject")[0]
-        site = create_site(ifc, project, "My Site")
-        self.building = create_building(ifc, site, "My Building")
+        site = get_site_by_name(ifc, project, "My Site")
+        self.building = get_building_by_name(ifc, site, "My Building")
         create_storeys(ifc, self.building, {0.0: 0})
 
         # a centreline axis

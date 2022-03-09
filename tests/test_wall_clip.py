@@ -8,8 +8,8 @@ import ifcopenshell.api
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior.ifc
 from molior.ifc import (
-    create_site,
-    create_building,
+    get_site_by_name,
+    get_building_by_name,
     create_storeys,
     assign_storey_byindex,
     get_context_by_name,
@@ -25,8 +25,8 @@ class Tests(unittest.TestCase):
         self.body_context = get_context_by_name(ifc, context_identifier="Body")
 
         project = ifc.by_type("IfcProject")[0]
-        site = create_site(ifc, project, "My Site")
-        building = create_building(ifc, site, "My Building")
+        site = get_site_by_name(ifc, project, "My Site")
+        building = get_building_by_name(ifc, site, "My Building")
         create_storeys(ifc, building, {0.0: 2})
 
         # geometry for an unclipped wall

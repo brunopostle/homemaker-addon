@@ -94,33 +94,49 @@ def get_context_by_name(
     )
 
 
-def create_site(self, project, site_name):
-    """Add a Site to a Project"""
-    # TODO return existing site if project already contains site with this name
-    site = run("root.create_entity", self, ifc_class="IfcSite", name=site_name)
+def get_site_by_name(self, parent, name):
+    """Add a Site to a Project, or retrieve if already there"""
+    for site in self.by_type("IfcSite"):
+        if (
+            site.Name == name
+            and site.Decomposes
+            and site.Decomposes[0].RelatingObject == parent
+        ):
+            return site
+    site = run("root.create_entity", self, ifc_class="IfcSite", name=name)
     # TODO allow setting location
     site.RefLatitude = [53, 23, 0]
     site.RefLongitude = [1, 28, 0]
     site.RefElevation = 75.0
-    run("aggregate.assign_object", self, product=site, relating_object=project)
+    run("aggregate.assign_object", self, product=site, relating_object=parent)
     return site
 
 
-def create_building(self, site, building_name):
-    """Add a Building to a Site"""
-    # TODO return existing building if site already contains building with this name
-    building = run(
-        "root.create_entity", self, ifc_class="IfcBuilding", name=building_name
-    )
-    run("aggregate.assign_object", self, product=building, relating_object=site)
+def get_building_by_name(self, parent, name):
+    """Add a Building to a Site, or retrieve if already there"""
+    for building in self.by_type("IfcBuilding"):
+        if (
+            building.Name == name
+            and building.Decomposes
+            and building.Decomposes[0].RelatingObject == parent
+        ):
+            return building
+    building = run("root.create_entity", self, ifc_class="IfcBuilding", name=name)
+    run("aggregate.assign_object", self, product=building, relating_object=parent)
     return building
 
 
-def create_structural_analysis_model(self, building, model_name):
-    """Add a structural model to a building"""
-    # TODO return existing model if building already contains model with this name
+def get_structural_analysis_model_by_name(self, spatial_element, name):
+    """Add a structural model to a building, or retrieve if already there"""
+    for model in self.by_type("IfcStructuralAnalysisModel"):
+        if (
+            model.Name == "Structure/" + name
+            and model.ServicesBuildings
+            and spatial_element in model.ServicesBuildings[0].RelatedBuildings
+        ):
+            return model
     model = run("structural.add_structural_analysis_model", self)
-    model.Name = "Structure/" + model_name
+    model.Name = "Structure/" + name
     rel = run(
         "root.create_entity",
         self,
@@ -128,16 +144,22 @@ def create_structural_analysis_model(self, building, model_name):
         name=model.Name,
     )
     rel.RelatingSystem = model
-    rel.RelatedBuildings = [building]
+    rel.RelatedBuildings = [spatial_element]
     return model
 
 
-def create_storeys(self, building, elevations):
+def create_storeys(self, parent, elevations):
     """Add Storey Spatial Elements to a Building, given a dictionary of elevations/name"""
     if elevations == {}:
         elevations[0.0] = 0
     for elevation in sorted(elevations):
-        # TODO skip if building already contains storey with this name
+        for storey in self.by_type("IfcBuildingStorey"):
+            if (
+                storey.Name == str(elevations[elevation])
+                and storey.Decomposes
+                and storey.Decomposes[0].RelatingObject == parent
+            ):
+                continue
         mystorey = run(
             "root.create_entity",
             self,
@@ -148,7 +170,7 @@ def create_storeys(self, building, elevations):
         mystorey.Description = "Storey " + mystorey.Name
         mystorey.LongName = mystorey.Description
         mystorey.CompositionType = "ELEMENT"
-        run("aggregate.assign_object", self, product=mystorey, relating_object=building)
+        run("aggregate.assign_object", self, product=mystorey, relating_object=parent)
         run(
             "geometry.edit_object_placement",
             self,
