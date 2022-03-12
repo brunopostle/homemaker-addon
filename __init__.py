@@ -44,6 +44,7 @@ class ObjectTopologise(bpy.types.Operator):
 
         # Generate a Topologic CellComplex
         cc = CellComplex.ByFaces(faces_ptr, 0.0001)
+        cc.ApplyDictionary(faces_ptr)
         new_object = bpy.data.objects.new("cellcomplex", mesh_from_cellcomplex(cc))
         bpy.data.collections.items()[0][1].objects.link(new_object)
 
@@ -189,7 +190,28 @@ def mesh_from_cellcomplex(cc):
 
     new_mesh = bpy.data.meshes.new("faces")
     new_mesh.from_pydata(vertices, [], faces)
-    # FIXME reapply materials
+
+    # populate material slots for this new mesh
+    for material_name in materials:
+        if not material_name in bpy.data.materials:
+            bpy.data.materials.new(material_name)
+        if not material_name in new_mesh.materials:
+            material = bpy.data.materials[material_name]
+            new_mesh.materials.append(material)
+    # get names/index for each material slot
+    lookup = {}
+    for index in range(len(new_mesh.materials)):
+        lookup[new_mesh.materials[index].name] = index
+    # need a bmesh to assign materials
+    bm = bmesh.new()
+    bm.from_mesh(new_mesh)
+    index = 0
+    for face in bm.faces:
+        face.material_index = lookup[materials[index]]
+        index +=1
+    bm.to_mesh(new_mesh)
+    bm.free()
+
     new_mesh.update()
     return new_mesh
 
