@@ -45,17 +45,17 @@ class ObjectTopologise(bpy.types.Operator):
         # Generate a Topologic CellComplex
         cc = CellComplex.ByFaces(faces_ptr, 0.0001)
         cc.ApplyDictionary(faces_ptr)
-        new_object = bpy.data.objects.new("cellcomplex", mesh_from_cellcomplex(cc))
+        new_object = bpy.data.objects.new(blender_object.name, mesh_from_cellcomplex(cc))
         bpy.data.collections.items()[0][1].objects.link(new_object)
 
         return {"FINISHED"}
 
 
 class ObjectHomemaker(bpy.types.Operator):
-    """Object Homemaker Topologise"""
+    """Object Homemaker"""
 
     bl_idname = "object.homemaker"
-    bl_label = "Homemaker Topologise"
+    bl_label = "Homemaker"
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
