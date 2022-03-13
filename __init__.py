@@ -208,7 +208,7 @@ def mesh_from_cellcomplex(cc):
     index = 0
     for face in bm.faces:
         face.material_index = lookup[materials[index]]
-        index +=1
+        index += 1
     bm.to_mesh(new_mesh)
     bm.free()
 

@@ -359,6 +359,26 @@ class Wall(TraceClass):
                             [0.0, 0.0, self.elevation],
                         ),
                     )
+                elif (
+                    el(start_coor[2]) < el(self.elevation + self.height)
+                    and distance_2d(
+                        start_coor[0:2],
+                        transform(matrix_reverse, self.corner_coor(id_segment)),
+                    )
+                    < 0.001
+                ):
+                    solid = clip_solid(
+                        self.file,
+                        solid,
+                        subtract_3d(
+                            start_coor,
+                            [0.0, 0.0, self.elevation],
+                        ),
+                        subtract_3d(
+                            add_3d(start_coor, [-1.0, 0.0, 0.0]),
+                            [0.0, 0.0, self.elevation],
+                        ),
+                    )
                 # clip beyond the start of the wall if necessary
                 if (
                     el(end_coor[2]) < el(self.elevation + self.height)
@@ -377,6 +397,26 @@ class Wall(TraceClass):
                         ),
                         subtract_3d(
                             subtract_3d(end_coor, [1.0, 0.0, 0.0]),
+                            [0.0, 0.0, self.elevation],
+                        ),
+                    )
+                elif (
+                    el(end_coor[2]) < el(self.elevation + self.height)
+                    and distance_2d(
+                        end_coor[0:2],
+                        transform(matrix_reverse, self.corner_coor(id_segment + 1)),
+                    )
+                    < 0.001
+                ):
+                    solid = clip_solid(
+                        self.file,
+                        solid,
+                        subtract_3d(
+                            end_coor,
+                            [0.0, 0.0, self.elevation],
+                        ),
+                        subtract_3d(
+                            subtract_3d(end_coor, [-1.0, 0.0, 0.0]),
                             [0.0, 0.0, self.elevation],
                         ),
                     )
