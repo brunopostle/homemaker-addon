@@ -45,7 +45,9 @@ class ObjectTopologise(bpy.types.Operator):
         # Generate a Topologic CellComplex
         cc = CellComplex.ByFaces(faces_ptr, 0.0001)
         cc.ApplyDictionary(faces_ptr)
-        new_object = bpy.data.objects.new(blender_object.name, mesh_from_cellcomplex(cc))
+        new_object = bpy.data.objects.new(
+            blender_object.name, mesh_from_cellcomplex(cc)
+        )
         bpy.data.collections.items()[0][1].objects.link(new_object)
 
         return {"FINISHED"}
