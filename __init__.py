@@ -85,7 +85,7 @@ class ObjectHomemaker(bpy.types.Operator):
             # generate an ifcopenshell model
             # TODO styles are loaded from share_dir, allow blender user to set custom share_dir path
             file = homemaker(
-                file=blenderbim.bim.ifc.IfcStore.file,
+                file=blenderbim.bim.ifc.IfcStore.get_file(),
                 faces_ptr=faces_ptr,
                 widgets=widgets,
                 name=blender_object.name,
