@@ -75,6 +75,15 @@ class Wall(TraceClass):
             ifc_class=self.ifc,
             name=self.identifier,
         )
+        run(
+            "geometry.edit_object_placement",
+            self.file,
+            product=aggregate,
+            matrix=matrix_align(
+                [*self.corner_coor(0), self.elevation],
+                [*self.corner_coor(1), self.elevation],
+            ),
+        )
         assign_storey_byindex(self.file, aggregate, self.building, self.level)
 
         previous_wall = None
@@ -338,7 +347,6 @@ class Wall(TraceClass):
                     subtract_3d(end_coor, [0.0, 0.0, self.elevation]),
                 )
                 # clip beyond the end of the wall if necessary
-                # FIXME sometimes doesn't clip
                 if (
                     el(start_coor[2]) < el(self.elevation + self.height)
                     and distance_2d(

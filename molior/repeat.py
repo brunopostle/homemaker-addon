@@ -100,6 +100,15 @@ class Repeat(TraceClass):
                 name=self.identifier,
                 predefined_type=self.predefined_type,
             )
+            run(
+                "geometry.edit_object_placement",
+                self.file,
+                product=aggregate,
+                matrix=matrix_align(
+                    [*self.corner_coor(id_segment), self.elevation],
+                    [*self.corner_coor(id_segment + 1), self.elevation],
+                ),
+            )
             # assign the aggregate to a storey
             assign_storey_byindex(self.file, aggregate, self.building, self.level)
 

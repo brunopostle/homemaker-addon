@@ -55,6 +55,11 @@ class Grillage(BaseClass):
             ifc_class=self.ifc,
             name=self.identifier,
         )
+        run(
+            "geometry.edit_object_placement",
+            self.file,
+            product=aggregate,
+        )
 
         elevation = None
         for face in self.hull.faces:

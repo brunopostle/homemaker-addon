@@ -50,6 +50,11 @@ class Shell(BaseClass):
             ifc_class=self.ifc,
             name=self.identifier,
         )
+        run(
+            "geometry.edit_object_placement",
+            self.file,
+            product=aggregate,
+        )
 
         inclines = []
         uniform_pitch = False
