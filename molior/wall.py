@@ -475,8 +475,9 @@ class Wall(TraceClass):
                 dxf_path = style.get_file(self.style, filename)
 
                 l, r = self.opening_coor(id_segment, id_opening)
-                left_2d = l[0:2]
-                right_2d = r[0:2]
+                offset = scale_2d(self.outer, self.normal_segment(id_segment))
+                left_2d = add_2d(l[0:2], offset)
+                right_2d = add_2d(r[0:2], offset)
 
                 if db["type"] == "window":
                     ifc_class = "IfcWindow"
@@ -543,8 +544,8 @@ class Wall(TraceClass):
 
                 # give the opening a Body representation
                 # TODO IFC library objects may come with a more complex opening shape
-                inner = self.inner + 0.02
-                outer = 0 - self.outer - 0.02
+                inner = self.thickness + 0.02
+                outer = -0.02
                 run(
                     "geometry.assign_representation",
                     self.file,
