@@ -38,6 +38,8 @@ Plaster:
 Concrete:
     surface_colour: [0.6, 0.6, 0.6]
     diffuse_colour: [0.6, 0.6, 0.6]
+    category: "concrete"
+    description: "My concrete material"
     psets:
         Pset_MaterialCommon:
             MassDensity: 2800

@@ -689,10 +689,14 @@ def get_material_by_name(
             "surface_colour": [0.9, 0.9, 0.9],
             "diffuse_colour": [1.0, 1.0, 1.0],
             "transparency": 0.0,
+            "category": None,
+            "description": None,
             "external_definition": None,
         }
         if name in style_materials:
             params.update(style_materials[name])
+            mymaterial.Category = params["category"]
+            mymaterial.Description = params["description"]
             if "psets" in style_materials[name]:
                 for pset_name, pset_properties in style_materials[name][
                     "psets"

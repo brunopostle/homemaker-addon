@@ -86,6 +86,7 @@ class BaseClass:
                         style_materials=self.style_materials,
                     ),
                 )
+                # TODO IsVentilated, Description & Category
                 layer.LayerThickness = mylayer[0]
                 layer.Name = mylayer[1]
 
