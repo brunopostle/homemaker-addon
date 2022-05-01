@@ -56,11 +56,13 @@ hulls = cc.GetHulls()
 molior_object = Molior(
     circulation=circulation,
     traces=traces,
+    name="dxf2ifc building",
+    elevations=elevations,
     hulls=hulls,
     normals=normals,
     cellcomplex=cc,
 )
-molior_object.get_building(name="dxf2ifc building", elevations=elevations)
+molior_object.get_building()
 molior_object.execute()
 
 profiler.stop()

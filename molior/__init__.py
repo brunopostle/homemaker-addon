@@ -75,6 +75,7 @@ class Molior:
         self.hulls = {}
         self.normals = {}
         self.elevations = {}
+        self.name = "Homemaker Building"
         self.circulation = None
         self.cellcomplex = None
         self.share_dir = "share"
@@ -82,18 +83,17 @@ class Molior:
             self.__dict__[arg] = args[arg]
         Molior.style = Style({"share_dir": self.share_dir})
 
-    def get_building(self, name="Homemaker Building", elevations={}):
+    def get_building(self):
         """Create and relate Site, Building and Storey Spatial Element products, set as current building"""
         if self.file == None:
             self.file = molior.ifc.init()
         self.project = self.file.by_type("IfcProject")[0]
-        site = get_site_by_name(self.file, self.project, "Site " + name)
-        self.building = get_building_by_name(self.file, site, name)
+        site = get_site_by_name(self.file, self.project, "Site " + self.name)
+        self.building = get_building_by_name(self.file, site, self.name)
         self.structural_analysis_model = get_structural_analysis_model_by_name(
-            self.file, self.building, name
+            self.file, self.building, self.name
         )
-        self.elevations = elevations
-        create_storeys(self.file, self.building, elevations)
+        create_storeys(self.file, self.building, self.elevations)
 
     def execute(self):
         """Iterate through 'traces' and 'hulls' and populate an ifc 'file' object"""

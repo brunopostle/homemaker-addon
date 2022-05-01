@@ -11,7 +11,8 @@ from molior import Molior
 
 import logging
 from blenderbim.bim import import_ifc
-import blenderbim.bim.ifc
+from blenderbim.bim.ifc import IfcStore
+import blenderbim.tool as tool
 import bpy
 import bmesh
 
@@ -61,6 +62,7 @@ class ObjectHomemaker(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
+        IfcStore.begin_transaction(self)
         # FIXME this resets widget origins which looks ugly
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
@@ -79,21 +81,24 @@ class ObjectHomemaker(bpy.types.Operator):
                     have_project = True
                     delete_collection(collection)
             if not have_project:
-                blenderbim.bim.ifc.IfcStore.purge()
-                blenderbim.bim.ifc.IfcStore.file = None
+                IfcStore.purge()
+                IfcStore.file = None
 
             # generate an ifcopenshell model
             # TODO styles are loaded from share_dir, allow blender user to set custom share_dir path
-            file = homemaker(
-                file=blenderbim.bim.ifc.IfcStore.get_file(),
+            self.molior_object = homemaker(
+                file=tool.Ifc.get(),
                 faces_ptr=faces_ptr,
                 widgets=widgets,
                 name=blender_object.name,
                 share_dir="share",
             )
 
+            # runs _execute()
+            IfcStore.execute_ifc_operator(self, context)
+
             # no idea why we have to reassign this
-            blenderbim.bim.ifc.IfcStore.file = file
+            IfcStore.file = self.molior_object.file
 
             # (re)build blender collections and geometry from IfcStore
             ifc_import_settings = import_ifc.IfcImportSettings.factory(
@@ -110,8 +115,15 @@ class ObjectHomemaker(bpy.types.Operator):
                     for bl_object in collection.objects:
                         if re.match("^IfcVirtualElement/", bl_object.name):
                             bl_object.hide_viewport = True
+
+        IfcStore.add_transaction_operation(self)
+        IfcStore.end_transaction(self)
         return {"FINISHED"}
 
+
+    def _execute(self, context):
+        self.molior_object.get_building()
+        self.molior_object.execute()
 
 def homemaker(
     file=None, faces_ptr=[], widgets=[], name="My Building", share_dir="share"
@@ -137,19 +149,17 @@ def homemaker(
     traces, normals, elevations = cc.GetTraces()
     hulls = cc.GetHulls()
 
-    molior_object = Molior(
+    return Molior(
         file=file,
         circulation=circulation,
         traces=traces,
+        elevations=elevations,
+        name=name,
         hulls=hulls,
         normals=normals,
         cellcomplex=cc,
         share_dir=share_dir,
     )
-    molior_object.get_building(name=name, elevations=elevations)
-    molior_object.execute()
-
-    return molior_object.file
 
 
 def topologic_faces_from_blender_object(blender_object):

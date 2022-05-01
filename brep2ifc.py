@@ -52,11 +52,13 @@ print("Traces calculated", datetime.datetime.now())
 molior_object = Molior(
     circulation=circulation,
     traces=traces,
+    name="brep2ifc building",
+    elevations=elevations,
     hulls=hulls,
     normals=normals,
     cellcomplex=cc,
 )
-molior_object.get_building(name="brep2ifc building", elevations=elevations)
+molior_object.get_building()
 molior_object.execute()
 print("IFC model created", datetime.datetime.now())
 
