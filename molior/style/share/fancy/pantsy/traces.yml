@@ -12,3 +12,6 @@ brackets:
   spacing: 0.3
   alternate: 0
   material: Travertine
+  psets:
+      Pset_RoofCommon:
+          IsExternal: true

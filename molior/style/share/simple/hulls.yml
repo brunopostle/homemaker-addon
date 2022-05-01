@@ -8,7 +8,7 @@ exterior:
     - [0.30, "Concrete"]
   outer: 0.15
   psets:
-      Pset_SlabCommon:
+      Pset_WallCommon:
           IsExternal: true
           LoadBearing: true
 interior:
@@ -20,7 +20,7 @@ interior:
     - [0.30, "Concrete"]
   outer: 0.15
   psets:
-      Pset_SlabCommon:
+      Pset_WallCommon:
           IsExternal: false
           LoadBearing: true
 pitched-roof:
@@ -32,7 +32,7 @@ pitched-roof:
     - [0.30, "Concrete"]
   outer: 0.15
   psets:
-      Pset_SlabCommon:
+      Pset_RoofCommon:
           IsExternal: true
           LoadBearing: true
 inclined-soffit:
@@ -44,7 +44,7 @@ inclined-soffit:
     - [0.30, "Concrete"]
   outer: 0.15
   psets:
-      Pset_SlabCommon:
+      Pset_BuildingElementProxyCommon:
           IsExternal: true
           LoadBearing: true
 wall-panel:
@@ -56,7 +56,7 @@ wall-panel:
     - [0.30, "Concrete"]
   outer: 0.15
   psets:
-      Pset_SlabCommon:
+      Pset_WallCommon:
           IsExternal: true
           LoadBearing: true
 partition-panel:
@@ -68,7 +68,7 @@ partition-panel:
     - [0.30, "Concrete"]
   outer: 0.15
   psets:
-      Pset_SlabCommon:
+      Pset_WallCommon:
           IsExternal: false
           LoadBearing: true
 flat-roof:
@@ -80,7 +80,7 @@ flat-roof:
     - [0.30, "Concrete"]
   outer: 0.15
   psets:
-      Pset_SlabCommon:
+      Pset_RoofCommon:
           IsExternal: true
           LoadBearing: true
 bedroom-floor:

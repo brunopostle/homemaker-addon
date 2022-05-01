@@ -56,7 +56,6 @@ class Style:
                     self.data[stylename] = {}
                 if not stylename in self.files:
                     self.files[stylename] = {}
-                # TODO convert files to json, then remove yaml support
                 if ext == ".yml":
                     fh = open(os.path.join(root, name), "rb")
                     data = yaml.safe_load(fh.read())

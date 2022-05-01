@@ -65,7 +65,6 @@ class Space(TraceClass):
         )
         add_cell_topology_epsets(self.file, element, cell)
 
-        # FIXME should create IfcSpaceType for this
         self.add_psets(element)
 
         assign_storey_byindex(self.file, element, self.building, self.level)

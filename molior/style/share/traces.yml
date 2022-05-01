@@ -76,6 +76,9 @@ eaves:
   condition: top-backward-up
   outer: 0.25
   extension: 0.25
+  psets:
+      Pset_RoofCommon:
+          IsExternal: true
 parapet:
   class: Extrusion
   ifc: IfcWall
@@ -84,6 +87,9 @@ parapet:
   condition: top-backward-level
   outer: 0.0
   extension: 0.25
+  psets:
+      Pset_RoofCommon:
+          IsExternal: true
 external beam:
   class: Extrusion
   ifc: IfcBeam

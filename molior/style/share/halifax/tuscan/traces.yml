@@ -56,6 +56,9 @@ crown:
   yshift: -0.675
   extension: 0.254
   material: Sandstone
+  psets:
+      Pset_WallCommon:
+          IsExternal: true
 handrail:
   class: Extrusion
   ifc: IfcRailing
@@ -67,6 +70,10 @@ handrail:
   yshift: 1.02
   extension: -0.25
   material: Walnut
+  psets:
+      Pset_RailingCommon:
+          IsExternal: true
+          Height: 1.0
 balustrade_large:
   class: Repeat
   ifc: IfcRailing
@@ -78,3 +85,7 @@ balustrade_large:
   spacing: 1.2
   material: Wrought Iron
   traces: [balustrade_small, bar]
+  psets:
+      Pset_RailingCommon:
+          IsExternal: true
+          Height: 1.0

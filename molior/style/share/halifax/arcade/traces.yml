@@ -24,5 +24,8 @@ crown:
   outer: 0.0
   extension: 0.305
   material: Sandstone
+  psets:
+      Pset_WallCommon:
+          IsExternal: true
 parapet:
   condition: noop
