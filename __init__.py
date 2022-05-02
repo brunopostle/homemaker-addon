@@ -92,9 +92,9 @@ class ObjectHomemaker(bpy.types.Operator):
             share_dir = "share"
 
             # Molior objects build IFC buildings
-            self.molior_object = get_molior(
+            self.molior_object = Molior.from_faces_and_widgets(
                 file=IfcStore.file,
-                faces_ptr=topologic_faces_from_blender_object(blender_object),
+                faces=topologic_faces_from_blender_object(blender_object),
                 widgets=widgets,
                 name=blender_object.name,
                 share_dir=share_dir,
@@ -131,43 +131,6 @@ class ObjectHomemaker(bpy.types.Operator):
 
     def _execute(self, context):
         self.molior_object.execute()
-
-
-def get_molior(
-    file=None, faces_ptr=[], widgets=[], name="My Building", share_dir="share"
-):
-    # Generate a Topologic CellComplex
-    cc = CellComplex.ByFaces(faces_ptr, 0.0001)
-    # Give every Cell and Face an index number
-    cc.IndexTopology()
-    # Copy styles from Faces to the CellComplex
-    cc.ApplyDictionary(faces_ptr)
-    # Assign Cell usages from widgets
-    cc.AllocateCells(widgets)
-    # Generate a circulation Graph
-    circulation = cc.Adjacency()
-    circulation.Circulation(cc)
-    circulation.Separation(circulation.ShortestPathTable(), cc)
-
-    # print(circulation.Dot(cc))
-
-    # Traces are 2D paths that define walls, extrusions and rooms
-    # Hulls are 3D shells that define pitched roofs and soffits
-    # Collect unique elevations and assign storey numbers
-    traces, normals, elevations = cc.GetTraces()
-    hulls = cc.GetHulls()
-
-    return Molior(
-        file=file,
-        circulation=circulation,
-        traces=traces,
-        elevations=elevations,
-        name=name,
-        hulls=hulls,
-        normals=normals,
-        cellcomplex=cc,
-        share_dir=share_dir,
-    )
 
 
 def topologic_faces_from_blender_object(blender_object):

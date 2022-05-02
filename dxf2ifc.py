@@ -13,7 +13,7 @@ import sys, os
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
-from topologic import Vertex, Face, FaceUtility, CellComplex
+from topologic import Vertex, Face, FaceUtility
 from molior import Molior
 import ezdxf
 from pyinstrument import Profiler
@@ -34,34 +34,9 @@ for entity in model:
             if FaceUtility.Area(face_stl) > 0.00001:
                 faces_ptr.append(face_stl)
 
-# generate a CellComplex from the Face data
-cc = CellComplex.ByFaces(faces_ptr, 0.0001)
-
 profiler.start()
 
-# Give every Cell and Face an index number
-cc.IndexTopology()
-# Copy styles from Faces to the CellComplex
-# cc.ApplyDictionary(faces_ptr)
-# Assign Cell usages from widgets
-cc.AllocateCells([])
-# Generate a cirulation Graph
-circulation = cc.Adjacency()
-circulation.Circulation(cc)
-
-# Traces are 2D paths that define walls, extrusions and rooms
-traces, normals, elevations = cc.GetTraces()
-hulls = cc.GetHulls()
-
-molior_object = Molior(
-    circulation=circulation,
-    traces=traces,
-    name="dxf2ifc building",
-    elevations=elevations,
-    hulls=hulls,
-    normals=normals,
-    cellcomplex=cc,
-)
+molior_object = Molior.from_faces_and_widgets(faces=faces_ptr, name="dxf2ifc building")
 molior_object.execute()
 
 profiler.stop()

@@ -32,7 +32,7 @@ IfcOpenShell.
 
 import re
 import ifcopenshell.util
-from topologic import CellUtility
+from topologic import CellComplex, CellUtility
 from molior.extrusion import Extrusion
 from molior.floor import Floor
 from molior.shell import Shell
@@ -66,6 +66,53 @@ run = ifcopenshell.api.run
 
 class Molior:
     """A Builder, has resources to build"""
+
+    @classmethod
+    def from_faces_and_widgets(
+        cls, file=None, faces=[], widgets=[], name="My Building", share_dir="share"
+    ):
+        """Create a Molior object from lists of Topologic Faces and widgets"""
+        # Generate a Topologic CellComplex
+        cellcomplex = CellComplex.ByFaces(faces, 0.0001)
+        # Copy styles from Faces to the CellComplex
+        cellcomplex.ApplyDictionary(faces)
+        # Assign Cell usages from widgets
+        # FIXME widgets should be vertices with dictionary not two-part list
+        cellcomplex.AllocateCells(widgets)
+
+        return cls.from_cellcomplex(
+            file=file, cellcomplex=cellcomplex, name=name, share_dir=share_dir
+        )
+
+    @classmethod
+    def from_cellcomplex(
+        cls, file=None, cellcomplex=None, name="My Building", share_dir="share"
+    ):
+        """Create a Molior object from a tagged CellComplex"""
+        # Give every Cell and Face an index number
+        cellcomplex.IndexTopology()
+        # Generate a circulation Graph
+        circulation = cellcomplex.Adjacency()
+        circulation.Circulation(cellcomplex)
+        circulation.Separation(circulation.ShortestPathTable(), cellcomplex)
+
+        # Traces are 2D paths that define walls, extrusions and rooms
+        # Hulls are 3D shells that define pitched roofs and soffits
+        # Collect unique elevations and assign storey numbers
+        traces, normals, elevations = cellcomplex.GetTraces()
+        hulls = cellcomplex.GetHulls()
+
+        return cls(
+            file=file,
+            circulation=circulation,
+            traces=traces,
+            elevations=elevations,
+            name=name,
+            hulls=hulls,
+            normals=normals,
+            cellcomplex=cellcomplex,
+            share_dir=share_dir,
+        )
 
     def __init__(self, **args):
         self.file = None
