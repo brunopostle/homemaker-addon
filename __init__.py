@@ -208,7 +208,7 @@ def process_blender_objects(selected_objects):
             continue
         # Collect widgets (if any) for allocating room/space usage
         label = re.match(
-            "(bedroom|circulation|circulation_stair|stair|kitchen|living|outside|retail|sahn|toilet)",
+            "(bedroom|circulation|circulation_stair|stair|kitchen|living|outside|retail|sahn|toilet|void)",
             blender_object.name,
             flags=re.IGNORECASE,
         )
