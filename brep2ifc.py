@@ -58,7 +58,6 @@ molior_object = Molior(
     normals=normals,
     cellcomplex=cc,
 )
-molior_object.get_building()
 molior_object.execute()
 print("IFC model created", datetime.datetime.now())
 

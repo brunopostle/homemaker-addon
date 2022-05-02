@@ -87,8 +87,14 @@ class Tests(unittest.TestCase):
 
         ifc = molior.ifc.init(name="Our Project")
 
-        molior_object = Molior(file=ifc, circulation=None, normals=normals.normals)
-        molior_object.get_building(name="My House", elevations={3.15: 2})
+        molior_object = Molior(
+            file=ifc,
+            circulation=None,
+            normals=normals.normals,
+            name="My House",
+            elevations={3.15: 2},
+        )
+        molior_object.init_building()
         self.repeat = molior_object.build_trace(
             stylename="fancy",
             condition="top-backward-up",
@@ -143,8 +149,14 @@ class Tests(unittest.TestCase):
         )
         paths = trace.find_paths()
 
-        molior_object = Molior(file=ifc, circulation=None, normals=normals.normals)
-        molior_object.get_building(name="My House", elevations={3.15: 2})
+        molior_object = Molior(
+            file=ifc,
+            circulation=None,
+            normals=normals.normals,
+            name="My House",
+            elevations={3.15: 2},
+        )
+        molior_object.init_building()
         self.repeat2 = molior_object.build_trace(
             stylename="fancy",
             condition="top-backward-up",

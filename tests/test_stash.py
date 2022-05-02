@@ -971,8 +971,8 @@ class Tests(unittest.TestCase):
         # Molior builds IFC models
         from molior import Molior
 
-        molior = Molior(cellcomplex=mycellcomplex)
-        molior.get_building(name="My Topologic building")
+        molior = Molior(cellcomplex=mycellcomplex, name="My Topologic building")
+        molior.init_building()
         molior.stash_topology()
         molior.file.write("_test.ifc")
 

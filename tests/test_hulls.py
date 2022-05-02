@@ -126,10 +126,11 @@ class Tests(unittest.TestCase):
             circulation=None,
             traces=traces,
             hulls=hulls,
+            name="My House",
+            elevations=elevations,
             normals=normals,
             cellcomplex=self.cc,
         )
-        molior_object.get_building(name="My House", elevations=elevations)
         molior_object.execute()
         ifc.write("_test.ifc")
 

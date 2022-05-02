@@ -23,13 +23,15 @@ class Tests(unittest.TestCase):
         # the Molior module builds stuff in an IFC file
         molior_builder = Molior(
             file=self.ifc,
+            name="My House",
+            elevations={3.15: "Upper Level"},
             # cellcomplex=my_cellcomplex,
             # circulation=my_circulation,
         )
 
         # create a Site and Building, and attach to the Project in the IFC
         # parameters are Name and a dictionary of elevations
-        molior_builder.get_building(name="My House", elevations={3.15: "Upper Level"})
+        molior_builder.init_building()
 
         # Add a Wall
 

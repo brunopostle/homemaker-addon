@@ -67,6 +67,7 @@ class ObjectHomemaker(bpy.types.Operator):
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
         blender_objects, widgets = process_blender_objects(context.selected_objects)
+        file = tool.Ifc.get()
 
         # Each remaining blender_object becomes a separate building
         for blender_object in blender_objects:
@@ -81,13 +82,14 @@ class ObjectHomemaker(bpy.types.Operator):
                     have_project = True
                     delete_collection(collection)
             if not have_project:
-                IfcStore.purge()
-                IfcStore.file = None
+                IfcStore.purge()  # doesn't seem to do anything?
+                file = None
+                file = tool.Ifc.get()
 
             # generate an ifcopenshell model
             # TODO styles are loaded from share_dir, allow blender user to set custom share_dir path
-            self.molior_object = homemaker(
-                file=tool.Ifc.get(),
+            self.molior_object = get_molior(
+                file=file,
                 faces_ptr=faces_ptr,
                 widgets=widgets,
                 name=blender_object.name,
@@ -120,12 +122,11 @@ class ObjectHomemaker(bpy.types.Operator):
         IfcStore.end_transaction(self)
         return {"FINISHED"}
 
-
     def _execute(self, context):
-        self.molior_object.get_building()
         self.molior_object.execute()
 
-def homemaker(
+
+def get_molior(
     file=None, faces_ptr=[], widgets=[], name="My Building", share_dir="share"
 ):
     # Generate a Topologic CellComplex

@@ -91,10 +91,12 @@ class Tests(unittest.TestCase):
         molior_object = Molior(
             file=ifc,
             circulation=None,
+            name="Our House",
+            elevations={3.15: 2, 6.15: 3},
             normals=normals.normals,
             cellcomplex=dummy_cell,
         )
-        molior_object.get_building(name="Our House", elevations={3.15: 2, 6.15: 3})
+        molior_object.init_building()
         self.space = molior_object.build_trace(
             stylename="default",
             condition="kitchen",

@@ -83,7 +83,7 @@ class Molior:
             self.__dict__[arg] = args[arg]
         Molior.style = Style({"share_dir": self.share_dir})
 
-    def get_building(self):
+    def init_building(self):
         """Create and relate Site, Building and Storey Spatial Element products, set as current building"""
         if self.file == None:
             self.file = molior.ifc.init()
@@ -97,6 +97,7 @@ class Molior:
 
     def execute(self):
         """Iterate through 'traces' and 'hulls' and populate an ifc 'file' object"""
+        self.init_building()
         for condition in self.traces:
             for elevation in self.traces[condition]:
                 for height in self.traces[condition][elevation]:

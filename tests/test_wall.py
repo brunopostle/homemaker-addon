@@ -69,8 +69,10 @@ class Tests(unittest.TestCase):
             circulation=None,
             normals=normals.normals,
             cellcomplex=dummy_cell,
+            name="My House",
+            elevations={3.15: 2},
         )
-        molior_object.get_building(name="My House", elevations={3.15: 2})
+        molior_object.init_building()
         self.wall = molior_object.build_trace(
             stylename="default",
             condition="external",
