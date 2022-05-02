@@ -223,7 +223,8 @@ def process_blender_objects(selected_objects):
             vertex = Vertex.ByCoordinates(
                 centre[0] / total, centre[1] / total, centre[2] / total
             )
-            widgets.append([label[0], vertex])
+            vertex.Set("usage", label[0])
+            widgets.append(vertex)
         else:
             blender_objects.append(blender_object)
 

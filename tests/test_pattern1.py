@@ -7,6 +7,9 @@ from topologic import Vertex, Face, CellComplex
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from topologist.fitness import p159_light_on_two_sides_of_every_room
 from molior import Molior
+import topologist.vertex
+
+assert topologist.vertex
 
 
 class Tests(unittest.TestCase):
@@ -950,7 +953,8 @@ class Tests(unittest.TestCase):
         widgets = []
         for widget in widgets_text:
             vertex = Vertex.ByCoordinates(*widget[1])
-            widgets.append([widget[0], vertex])
+            vertex.Set("usage", widget[0])
+            widgets.append(vertex)
 
         faces_ptr = []
         for face in faces_text:

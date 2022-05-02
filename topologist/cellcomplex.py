@@ -39,8 +39,8 @@ def AllocateCells(self, widgets):
             cell.Set("usage", "void")
             continue
         for widget in widgets:
-            if CellUtility.Contains(cell, widget[1], 0.001) == 0:
-                cell.Set("usage", widget[0].lower())
+            if CellUtility.Contains(cell, widget, 0.001) == 0:
+                cell.Set("usage", widget.Get("usage").lower())
                 break
 
     # tag faces between indoor and outdoor spaces that face inwards

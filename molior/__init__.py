@@ -71,13 +71,14 @@ class Molior:
     def from_faces_and_widgets(
         cls, file=None, faces=[], widgets=[], name="My Building", share_dir="share"
     ):
-        """Create a Molior object from lists of Topologic Faces and widgets"""
+        """Create a Molior object from lists of Topologic Faces and widgets."""
+        """Faces can have a 'style' Dictionary attribute."""
+        """Widgets are Topologic Vertices with a 'usage' Dictionary attribute."""
         # Generate a Topologic CellComplex
         cellcomplex = CellComplex.ByFaces(faces, 0.0001)
         # Copy styles from Faces to the CellComplex
         cellcomplex.ApplyDictionary(faces)
         # Assign Cell usages from widgets
-        # FIXME widgets should be vertices with dictionary not two-part list
         cellcomplex.AllocateCells(widgets)
 
         return cls.from_cellcomplex(
@@ -89,6 +90,8 @@ class Molior:
         cls, file=None, cellcomplex=None, name="My Building", share_dir="share"
     ):
         """Create a Molior object from a tagged CellComplex"""
+        """Faces in the CellComplex can have a 'style' Dictionary attribute."""
+        """Cells in the CellComplex can have a 'usage' Dictionary attribute."""
         # Give every Cell and Face an index number
         cellcomplex.IndexTopology()
         # Generate a circulation Graph
