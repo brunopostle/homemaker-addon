@@ -8,6 +8,7 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__) + "/libs/site/packages
 
 from topologic import Vertex, Face, CellComplex
 from molior import Molior
+import molior.ifc
 
 import logging
 from blenderbim.bim import import_ifc
@@ -62,45 +63,50 @@ class ObjectHomemaker(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
-        IfcStore.begin_transaction(self)
+        if tool.Ifc.get() == None:
+            # creates Project, Units, Representation Contexts etc..
+            IfcStore.file = molior.ifc.init()
+
+        # if no collections, reset IfcStore (workaround undo not working)
+        have_project = False
+        for collection in bpy.data.collections:
+            if re.match("^IfcProject/", collection.name):
+                have_project = True
+        if not have_project:
+            IfcStore.purge()
+            IfcStore.file = molior.ifc.init()
+
         # FIXME this resets widget origins which looks ugly
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
         blender_objects, widgets = process_blender_objects(context.selected_objects)
-        file = tool.Ifc.get()
+
+        IfcStore.begin_transaction(self)
 
         # Each remaining blender_object becomes a separate building
         for blender_object in blender_objects:
             triangulate_nonplanar(blender_object)
-            faces_ptr = topologic_faces_from_blender_object(blender_object)
             blender_object.hide_viewport = True
 
-            # delete any IfcProject/* collections, but leave IfcStore intact
-            have_project = False
-            for collection in bpy.data.collections:
-                if re.match("^IfcProject/", collection.name):
-                    have_project = True
-                    delete_collection(collection)
-            if not have_project:
-                IfcStore.purge()  # doesn't seem to do anything?
-                file = None
-                file = tool.Ifc.get()
-
-            # generate an ifcopenshell model
             # TODO styles are loaded from share_dir, allow blender user to set custom share_dir path
+            share_dir = "share"
+
+            # Molior objects build IFC buildings
             self.molior_object = get_molior(
-                file=file,
-                faces_ptr=faces_ptr,
+                file=IfcStore.file,
+                faces_ptr=topologic_faces_from_blender_object(blender_object),
                 widgets=widgets,
                 name=blender_object.name,
-                share_dir="share",
+                share_dir=share_dir,
             )
 
             # runs _execute()
             IfcStore.execute_ifc_operator(self, context)
 
-            # no idea why we have to reassign this
-            IfcStore.file = self.molior_object.file
+            # delete any IfcProject/* collections, but leave IfcStore intact
+            for collection in bpy.data.collections:
+                if re.match("^IfcProject/", collection.name):
+                    delete_collection(collection)
 
             # (re)build blender collections and geometry from IfcStore
             ifc_import_settings = import_ifc.IfcImportSettings.factory(
@@ -109,6 +115,7 @@ class ObjectHomemaker(bpy.types.Operator):
             ifc_importer = import_ifc.IfcImporter(ifc_import_settings)
             ifc_importer.execute()
 
+            # Hide Structural objects
             bpy.data.collections.get("StructuralItems").hide_viewport = True
 
             # hide IfcVirtualElement objects in IfcBuilding collections
