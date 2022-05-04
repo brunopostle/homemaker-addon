@@ -241,12 +241,17 @@ def delete_collection(blender_collection):
 
 
 def triangulate_nonplanar(blender_object):
+    bpy.ops.object.select_all(action='DESELECT')
+    bpy.context.view_layer.objects.active = blender_object
+    blender_object.select_set(True)
     object_has_nonplanar_material = False
+    object_has_other_material = False
     material_slots = blender_object.material_slots
     for material_index in range(len(material_slots)):
         if material_slots[material_index].name == "nonplanar":
             object_has_nonplanar_material = True
-            break
+        else:
+            object_has_other_material = True
 
     bpy.ops.object.mode_set(mode="EDIT")
 
@@ -255,6 +260,14 @@ def triangulate_nonplanar(blender_object):
     faces = output["faces"]
     if len(faces) > 0:
         bpy.ops.mesh.select_all(action="DESELECT")
+
+        if not object_has_other_material:
+            bpy.ops.object.material_slot_add()
+            try:
+                other_material = bpy.data.materials["default"]
+            except:
+                other_material = bpy.data.materials.new(name="default")
+            blender_object.active_material = other_material
 
         if object_has_nonplanar_material:
             blender_object.active_material_index = material_index
