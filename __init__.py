@@ -76,6 +76,9 @@ class ObjectHomemaker(bpy.types.Operator):
             IfcStore.purge()
             IfcStore.file = molior.ifc.init()
 
+        # TODO styles are loaded from share_dir, allow blender user to set custom share_dir path
+        share_dir = "share"
+
         # FIXME this resets widget origins which looks ugly
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
@@ -87,9 +90,6 @@ class ObjectHomemaker(bpy.types.Operator):
         for blender_object in blender_objects:
             triangulate_nonplanar(blender_object)
             blender_object.hide_viewport = True
-
-            # TODO styles are loaded from share_dir, allow blender user to set custom share_dir path
-            share_dir = "share"
 
             # Molior objects build IFC buildings
             self.molior_object = Molior.from_faces_and_widgets(
@@ -103,27 +103,27 @@ class ObjectHomemaker(bpy.types.Operator):
             # runs _execute()
             IfcStore.execute_ifc_operator(self, context)
 
-            # delete any IfcProject/* collections, but leave IfcStore intact
-            for collection in bpy.data.collections:
-                if re.match("^IfcProject/", collection.name):
-                    delete_collection(collection)
+        # delete any IfcProject/* collections, but leave IfcStore intact
+        for collection in bpy.data.collections:
+            if re.match("^IfcProject/", collection.name):
+                delete_collection(collection)
 
-            # (re)build blender collections and geometry from IfcStore
-            ifc_import_settings = import_ifc.IfcImportSettings.factory(
-                bpy.context, "", logging.getLogger("ImportIFC")
-            )
-            ifc_importer = import_ifc.IfcImporter(ifc_import_settings)
-            ifc_importer.execute()
+        # (re)build blender collections and geometry from IfcStore
+        ifc_import_settings = import_ifc.IfcImportSettings.factory(
+            bpy.context, "", logging.getLogger("ImportIFC")
+        )
+        ifc_importer = import_ifc.IfcImporter(ifc_import_settings)
+        ifc_importer.execute()
 
-            # Hide Structural objects
-            bpy.data.collections.get("StructuralItems").hide_viewport = True
+        # Hide Structural objects
+        bpy.data.collections.get("StructuralItems").hide_viewport = True
 
-            # hide IfcVirtualElement objects in IfcBuilding collections
-            for collection in bpy.data.collections:
-                if re.match("^IfcBuilding/", collection.name):
-                    for bl_object in collection.objects:
-                        if re.match("^IfcVirtualElement/", bl_object.name):
-                            bl_object.hide_viewport = True
+        # hide IfcVirtualElement objects in IfcBuilding collections
+        for collection in bpy.data.collections:
+            if re.match("^IfcBuilding/", collection.name):
+                for bl_object in collection.objects:
+                    if re.match("^IfcVirtualElement/", bl_object.name):
+                        bl_object.hide_viewport = True
 
         IfcStore.add_transaction_operation(self)
         IfcStore.end_transaction(self)
