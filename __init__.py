@@ -67,15 +67,6 @@ class ObjectHomemaker(bpy.types.Operator):
             # creates Project, Units, Representation Contexts etc..
             IfcStore.file = molior.ifc.init()
 
-        # if no collections, reset IfcStore (workaround undo not working)
-        have_project = False
-        for collection in bpy.data.collections:
-            if re.match("^IfcProject/", collection.name):
-                have_project = True
-        if not have_project:
-            IfcStore.purge()
-            IfcStore.file = molior.ifc.init()
-
         # TODO styles are loaded from share_dir, allow blender user to set custom share_dir path
         share_dir = "share"
 
@@ -83,8 +74,6 @@ class ObjectHomemaker(bpy.types.Operator):
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
         blender_objects, widgets = process_blender_objects(context.selected_objects)
-
-        IfcStore.begin_transaction(self)
 
         # Each remaining blender_object becomes a separate building
         for blender_object in blender_objects:
@@ -125,8 +114,6 @@ class ObjectHomemaker(bpy.types.Operator):
                     if re.match("^IfcVirtualElement/", bl_object.name):
                         bl_object.hide_viewport = True
 
-        IfcStore.add_transaction_operation(self)
-        IfcStore.end_transaction(self)
         return {"FINISHED"}
 
     def _execute(self, context):
