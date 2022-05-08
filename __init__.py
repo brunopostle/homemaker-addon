@@ -68,7 +68,7 @@ class ObjectHomemaker(bpy.types.Operator):
             IfcStore.file = molior.ifc.init()
 
         # TODO styles are loaded from share_dir, allow blender user to set custom share_dir path
-        share_dir = "share"
+        self.share_dir = "share"
 
         # FIXME this resets widget origins which looks ugly
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
@@ -80,17 +80,11 @@ class ObjectHomemaker(bpy.types.Operator):
             triangulate_nonplanar(blender_object)
             blender_object.hide_viewport = True
 
-            # Molior objects build IFC buildings
-            self.molior_object = Molior.from_faces_and_widgets(
-                file=IfcStore.file,
-                faces=topologic_faces_from_blender_object(blender_object),
-                widgets=widgets,
-                name=blender_object.name,
-                share_dir=share_dir,
-            )
+        self.blender_objects = blender_objects
+        self.widgets = widgets
 
-            # runs _execute()
-            IfcStore.execute_ifc_operator(self, context)
+        # runs _execute()
+        IfcStore.execute_ifc_operator(self, context)
 
         # delete any IfcProject/* collections, but leave IfcStore intact
         for collection in bpy.data.collections:
@@ -117,7 +111,16 @@ class ObjectHomemaker(bpy.types.Operator):
         return {"FINISHED"}
 
     def _execute(self, context):
-        self.molior_object.execute()
+        for blender_object in self.blender_objects:
+            # Molior objects build IFC buildings
+            molior_object = Molior.from_faces_and_widgets(
+                file=IfcStore.file,
+                faces=topologic_faces_from_blender_object(blender_object),
+                widgets=self.widgets,
+                name=blender_object.name,
+                share_dir=self.share_dir,
+            )
+            molior_object.execute()
 
 
 def topologic_faces_from_blender_object(blender_object):
@@ -228,7 +231,7 @@ def delete_collection(blender_collection):
 
 
 def triangulate_nonplanar(blender_object):
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action="DESELECT")
     bpy.context.view_layer.objects.active = blender_object
     blender_object.select_set(True)
     object_has_nonplanar_material = False
