@@ -196,6 +196,8 @@ def process_blender_objects(selected_objects):
     for blender_object in selected_objects:
         if not blender_object.type == "MESH":
             continue
+        elif re.match("^Ifc", blender_object.name):
+            continue
         # Collect widgets (if any) for allocating room/space usage
         label = re.match(
             "(bedroom|circulation|circulation_stair|stair|kitchen|living|outside|retail|sahn|toilet|void)",
