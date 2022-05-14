@@ -15,9 +15,10 @@ dist:
 	cd working && wget https://files.pythonhosted.org/packages/ac/dd/f6fc54a770ba0222261b33d60d9c9e01aa35d989f1cdfe892ae84e319779/ezdxf-0.16.3-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl
 	cd working && wget https://files.pythonhosted.org/packages/8a/bb/488841f56197b13700afd5658fc279a2025a39e22449b7cf29864669b15d/pyparsing-2.4.7-py2.py3-none-any.whl
 	cd working && wget https://files.pythonhosted.org/packages/12/fc/a4d5a7554e0067677823f7265cb3ae22aed8a238560b5133b58cda252dad/PyYAML-6.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl
-	cd working && wget https://github.com/brunopostle/Topologic/releases/download/2022-01-31/Topologic_2022-03-10_linux.zip
+	cd working && wget https://github.com/brunopostle/Topologic/releases/download/2022-04-27/Topologic_2022-04-26_linux.zip
 	cd working && wget https://github.com/brunopostle/Topologic/releases/download/2022-01-31/Topologic_2022-02-03_darwin.zip
-	cd working && wget https://github.com/brunopostle/Topologic/releases/download/2022-01-31/Topologic_2022-03-14_win.zip
+	cd working && wget https://github.com/brunopostle/Topologic/releases/download/2022-04-27/Topologic_2022-04-10_win.zip
+	cd working && wget https://github.com/brunopostle/Topologic/releases/download/2022-04-27/Topologic_2022-05-05_darwin-arm.zip
 
 	# EZDXF
 	cd working && unzip ezdxf-0.16.3-*.whl
@@ -37,6 +38,7 @@ dist:
 	cd working && unzip Topologic_*_linux.zip
 	cd working && unzip Topologic_*_darwin.zip
 	cd working && unzip Topologic_*_win.zip
+	cd working && unzip Topologic_*_darwin-arm.zip
 
 	# LINUX
 	cp -a homemaker_tmp homemaker
@@ -54,6 +56,12 @@ dist:
 	cp -a homemaker_tmp homemaker
 	cp working/Topologic_*_darwin/* homemaker/libs/site/packages/
 	zip -r blender-homemaker-$(VERSION)-darwin.zip ./homemaker
+	rm -rf homemaker
+
+	# MAC ARM
+	cp -a homemaker_tmp homemaker
+	cp working/Topologic_*_darwin-arm/* homemaker/libs/site/packages/
+	zip -r blender-homemaker-$(VERSION)-darwin-arm.zip ./homemaker
 	rm -rf homemaker
 
 	# NOARCH
