@@ -379,7 +379,7 @@ def assign_extrusion_fromDXF(
     plane = self.createIfcPlane(axis)
 
     # TODO create Extruded Area Solid if directrix is single segment
-    subcontext = get_context_by_name(self, context_identifier)
+    subcontext = get_context_by_name(self, context_identifier=context_identifier)
     run(
         "geometry.assign_representation",
         self,
@@ -574,7 +574,7 @@ def get_type_by_dxf(
 ):
     """Fetch a TypeProduct from DXF geometry unless a TypeProduct with this name already exists"""
     identifier = stylename + "/" + os.path.splitext(os.path.split(path_dxf)[-1])[0]
-    subcontext = get_context_by_name(self, context_identifier)
+    subcontext = get_context_by_name(self, context_identifier=context_identifier)
     # FIXME should material be defined in the Type?
 
     # let's see if there is an existing Type Product defined in the relevant library
@@ -737,7 +737,7 @@ def get_material_by_name(
             self,
             material=mymaterial,
             style=style,
-            context=get_context_by_name(self, context_identifier),
+            context=get_context_by_name(self, context_identifier=context_identifier),
         )
     return mymaterial
 
