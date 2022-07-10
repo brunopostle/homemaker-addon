@@ -594,10 +594,10 @@ class Wall(TraceClass):
                 cill = self.elevation + db["cill"]
                 soffit = cill + opening["height"]
                 vertices = [
-                    [*left_2d, cill],
-                    [*right_2d, cill],
-                    [*right_2d, soffit],
-                    [*left_2d, soffit],
+                    [*l[0:2], cill],
+                    [*r[0:2], cill],
+                    [*r[0:2], soffit],
+                    [*l[0:2], soffit],
                 ]
                 cell_id = 0
                 for cell in cells_ordered:
