@@ -100,13 +100,10 @@ class ObjectHomemaker(bpy.types.Operator):
 
         # Hide Structural objects
         bpy.data.collections.get("StructuralItems").hide_viewport = True
-
-        # hide IfcVirtualElement objects in IfcBuilding collections
+        # Hide stashed CellComplex
         for collection in bpy.data.collections:
-            if re.match("^IfcBuilding/", collection.name):
-                for bl_object in collection.objects:
-                    if re.match("^IfcVirtualElement/", bl_object.name):
-                        bl_object.hide_viewport = True
+            if re.match("^IfcVirtualElement/CellComplex", collection.name):
+                collection.hide_viewport = True
 
         return {"FINISHED"}
 

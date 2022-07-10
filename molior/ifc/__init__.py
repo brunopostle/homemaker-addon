@@ -50,6 +50,12 @@ def init(name="Homemaker Project", file=None):
     )
     get_context_by_name(
         file,
+        context_identifier="Surface",
+        parent_context_identifier="Model",
+        target_view="SKETCH_VIEW",
+    )
+    get_context_by_name(
+        file,
         context_identifier="Reference",
         parent_context_identifier="Model",
         target_view="GRAPH_VIEW",

@@ -635,19 +635,25 @@ class Molior:
 
     def stash_topology(self):
         """Represent a Topologic model as IFC geometry"""
-        reference_context = get_context_by_name(
-            self.file, context_identifier="Reference"
-        )
-        system = run("system.add_system", self.file)
-        system.Name = "Topology/" + self.building.Name
-        rel = run(
+        surface_context = get_context_by_name(self.file, context_identifier="Surface")
+
+        aggregate = run(
             "root.create_entity",
             self.file,
-            ifc_class="IfcRelServicesBuildings",
-            name=system.Name,
+            ifc_class="IfcVirtualElement",
+            name="CellComplex",
         )
-        rel.RelatingSystem = system
-        rel.RelatedBuildings = [self.building]
+        run(
+            "spatial.assign_container",
+            self.file,
+            product=aggregate,
+            relating_structure=self.building,
+        )
+        run(
+            "geometry.edit_object_placement",
+            self.file,
+            product=aggregate,
+        )
 
         style = run("style.add_style", self.file, name="CellComplex")
         run(
@@ -676,20 +682,19 @@ class Molior:
                 ifc_class="IfcVirtualElement",
                 name="face/" + str(face.Get("index")),
             )
-            run("system.assign_system", self.file, product=element, system=system)
             run(
-                "spatial.assign_container",
+                "aggregate.assign_object",
                 self.file,
                 product=element,
-                relating_structure=self.building,
+                relating_object=aggregate,
             )
             run(
                 "geometry.assign_representation",
                 self.file,
                 product=element,
                 representation=self.file.createIfcShapeRepresentation(
-                    reference_context,
-                    reference_context.ContextIdentifier,
+                    surface_context,
+                    surface_context.ContextIdentifier,
                     "Tessellation",
                     [create_tessellation_from_mesh(self.file, *face.Mesh())],
                 ),
@@ -712,12 +717,11 @@ class Molior:
                 ifc_class="IfcVirtualElement",
                 name="cell/" + str(cell.Get("index")),
             )
-            run("system.assign_system", self.file, product=element, system=system)
             run(
-                "spatial.assign_container",
+                "aggregate.assign_object",
                 self.file,
                 product=element,
-                relating_structure=self.building,
+                relating_object=aggregate,
             )
             vertex = CellUtility.InternalVertex(cell, 0.001)
             point = self.file.createIfcCartesianPoint(vertex.Coordinates())
@@ -726,8 +730,8 @@ class Molior:
                 self.file,
                 product=element,
                 representation=self.file.createIfcShapeRepresentation(
-                    reference_context,
-                    reference_context.ContextIdentifier,
+                    surface_context,
+                    surface_context.ContextIdentifier,
                     "PointCloud",  # should be Point
                     [point],
                 ),
