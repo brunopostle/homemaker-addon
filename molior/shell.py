@@ -74,6 +74,16 @@ class Shell(BaseClass):
                 if elevation == None or vertex[2] < elevation:
                     elevation = el(vertex[2])
 
+            # skip if this is within a stair core
+            if (
+                face[1]["face"].IsHorizontal()
+                and face[1]["back_cell"]
+                and face[1]["back_cell"].Usage() == "stair"
+                and face[1]["front_cell"]
+                and face[1]["front_cell"].Usage() == "stair"
+            ):
+                self.ifc = "IfcVirtualElement"
+
             element = run(
                 "root.create_entity",
                 self.file,
@@ -127,6 +137,10 @@ class Shell(BaseClass):
                         boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
                     if self.party_wall:
                         boundary.InternalOrExternalBoundary = "EXTERNAL_FIRE"
+                    elif face[1]["face"].IsHorizontal() and not face[1][
+                        "face"
+                    ].CellBelow(self.cellcomplex):
+                        boundary.InternalOrExternalBoundary = "EXTERNAL_EARTH"
                     elif face[1]["face"].IsInternal(self.cellcomplex):
                         boundary.InternalOrExternalBoundary = "INTERNAL"
                     else:
@@ -211,7 +225,11 @@ class Shell(BaseClass):
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
 
             # create a representation
-            if float(normal_x[2]) < 0.001 or not uniform_pitch:
+            if normal[2] < -0.999:
+                extrude_height = self.thickness
+                extrude_direction = [0.0, 0.0, -1.0]
+                matrix = matrix @ matrix_align([0.0, 0.0, self.inner], [1.0, 0.0, 0.0])
+            elif float(normal_x[2]) < 0.001 or not uniform_pitch:
                 extrude_height = self.thickness
                 extrude_direction = [0.0, 0.0, 1.0]
                 matrix = matrix @ matrix_align([0.0, 0.0, -self.inner], [1.0, 0.0, 0.0])

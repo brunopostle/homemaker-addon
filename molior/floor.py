@@ -3,16 +3,12 @@ import ifcopenshell.api
 from topologic import Cell, CellComplex
 
 from molior.baseclass import TraceClass
-from molior.geometry import matrix_align, map_to_2d_simple
+from molior.geometry import matrix_align
 from molior.ifc import (
     add_pset,
-    add_face_topology_epsets,
     add_cell_topology_epsets,
     create_extruded_area_solid,
-    create_curve_bounded_plane,
-    create_face_surface,
     assign_storey_byindex,
-    get_material_by_name,
     get_context_by_name,
 )
 
@@ -26,11 +22,10 @@ class Floor(TraceClass):
         if args is None:
             args = {}
         super().__init__(args)
-        self.below = 0.2
-        self.ifc = "IfcSlab"
-        self.predefined_type = "FLOOR"
-        self.layerset = [[0.2, "Concrete"], [0.02, "Screed"]]
-        self.structural_material = "Concrete"
+        self.below = 0.0
+        self.ifc = "IfcCovering"
+        self.predefined_type = "FLOORING"
+        self.layerset = [[0.02, "Tiles"]]
         self.path = []
         for arg in args:
             self.__dict__[arg] = args[arg]
@@ -40,15 +35,12 @@ class Floor(TraceClass):
 
     def execute(self):
         """Generate some ifc"""
-        reference_context = get_context_by_name(
-            self.file, context_identifier="Reference"
-        )
         body_context = get_context_by_name(self.file, context_identifier="Body")
 
         # every node in the graph references the cell, pick one
         cell = self.chain.graph[next(iter(self.chain.graph))][1]["back_cell"]
 
-        # with stairs we want a Virtual Element instead of a Slab
+        # skip if part of a stair core
         if (
             type(cell) == Cell
             and type(self.cellcomplex) == CellComplex
@@ -58,8 +50,7 @@ class Floor(TraceClass):
             cell.CellsBelow(self.cellcomplex, below_cells_ptr)
             for cell_below in below_cells_ptr:
                 if cell_below.Usage() == "stair":
-                    self.ifc = "IfcVirtualElement"
-                    break
+                    return
 
         element = run(
             "root.create_entity",
@@ -69,7 +60,7 @@ class Floor(TraceClass):
         )
         if not element.is_a("IfcVirtualElement"):
             element.PredefinedType = self.predefined_type
-        # Slab will be re-assigned to Space later
+        # Will be re-assigned to Space later
         assign_storey_byindex(self.file, element, self.building, self.level)
 
         if type(cell) == Cell:
@@ -88,109 +79,6 @@ class Floor(TraceClass):
                             [str(face.Get("index")) for face in bottom_faces_ptr]
                         )
                     },
-                )
-            for face in bottom_faces_ptr:
-                perimeter_vertices_ptr = []
-                face.VerticesPerimeter(perimeter_vertices_ptr)
-                vertices = [v.Coordinates() for v in perimeter_vertices_ptr]
-                normal = face.Normal()
-                # need this for structure
-                face_surface = create_face_surface(self.file, vertices, normal)
-
-                cells_ordered = face.CellsOrdered(self.cellcomplex)
-                # generate space boundaries
-                for cell in cells_ordered:
-                    if cell == None:
-                        continue
-                    boundary = run(
-                        "root.create_entity",
-                        self.file,
-                        ifc_class="IfcRelSpaceBoundary2ndLevel",
-                    )
-
-                    if cell == cells_ordered[0]:
-                        # the face points to this cell
-                        nodes_2d, matrix = map_to_2d_simple(
-                            reversed(vertices), [-v for v in normal]
-                        )
-                    else:
-                        nodes_2d, matrix = map_to_2d_simple(vertices, normal)
-
-                    curve_bounded_plane = create_curve_bounded_plane(
-                        self.file, nodes_2d, matrix
-                    )
-                    boundary.ConnectionGeometry = (
-                        self.file.createIfcConnectionSurfaceGeometry(
-                            curve_bounded_plane
-                        )
-                    )
-                    boundary.RelatedBuildingElement = element
-                    if element.is_a("IfcVirtualElement"):
-                        boundary.PhysicalOrVirtualBoundary = "VIRTUAL"
-                    else:
-                        boundary.PhysicalOrVirtualBoundary = "PHYSICAL"
-                    if not face.CellBelow(self.cellcomplex):
-                        boundary.InternalOrExternalBoundary = "EXTERNAL_EARTH"
-                    elif face.IsInternal(self.cellcomplex):
-                        boundary.InternalOrExternalBoundary = "INTERNAL"
-                    else:
-                        boundary.InternalOrExternalBoundary = "EXTERNAL"
-                    cell_index = cell.Get("index")
-                    if cell_index != None:
-                        # can't assign psets to an IfcRelationship, use Description instead
-                        boundary.Description = "CellIndex " + cell_index
-                    face_index = face.Get("index")
-                    if face_index != None:
-                        boundary.Name = "Floor/FaceIndex " + face_index
-
-                # don't generate structural surfaces if this is only a boundary between cells
-                if element.is_a("IfcVirtualElement"):
-                    continue
-                structural_surface = run(
-                    "root.create_entity",
-                    self.file,
-                    ifc_class="IfcStructuralSurfaceMember",
-                    name=self.name,
-                    predefined_type="SHELL",
-                )
-                structural_surface.Thickness = self.thickness
-
-                assignment = run(
-                    "root.create_entity", self.file, ifc_class="IfcRelAssignsToProduct"
-                )
-                assignment.RelatingProduct = structural_surface
-                assignment.RelatedObjects = [element]
-
-                add_face_topology_epsets(
-                    self.file, structural_surface, face, *reversed(cells_ordered)
-                )
-                run(
-                    "structural.assign_structural_analysis_model",
-                    self.file,
-                    product=structural_surface,
-                    structural_analysis_model=self.structural_analysis_model,
-                )
-                run(
-                    "geometry.assign_representation",
-                    self.file,
-                    product=structural_surface,
-                    representation=self.file.createIfcTopologyRepresentation(
-                        reference_context,
-                        reference_context.ContextIdentifier,
-                        "Face",
-                        [face_surface],
-                    ),
-                )
-                run(
-                    "material.assign_material",
-                    self.file,
-                    product=structural_surface,
-                    material=get_material_by_name(
-                        self.file,
-                        context_identifier="Reference",
-                        name=self.structural_material,
-                        style_materials=self.style_materials,
-                    ),
                 )
 
         if element.is_a("IfcVirtualElement"):

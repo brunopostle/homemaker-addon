@@ -552,8 +552,8 @@ class Molior:
                     ):
                         boundary.CorrespondingBoundary = element_boundary
 
-        # molior.floor attaches Slab elements directly to Storey, re-attach to relevant Space
-        for element in self.file.by_type("IfcSlab"):
+        # molior.floor attaches elements directly to Storey, re-attach to relevant Space
+        for element in self.file.by_type("IfcBuildingElement"):
             if get_parent_building(element) == self.building:
                 pset_topology = ifcopenshell.util.element.get_psets(element).get(
                     "EPset_Topology"

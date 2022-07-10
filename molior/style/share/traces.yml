@@ -186,61 +186,72 @@ stair:
 bedroom-floor:
   class: Floor
   condition: bedroom
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
+  ifc: IfcCovering
+  predefined_type: FLOORING
+  below: 0.0
+  layerset:
+    - [0.01, "Carpet"]
 circulation-floor:
   class: Floor
   condition: circulation
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
+  ifc: IfcCovering
+  predefined_type: FLOORING
+  below: 0.0
+  layerset:
+    - [0.01, "Carpet"]
 kitchen-floor:
   class: Floor
   condition: kitchen
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
+  ifc: IfcCovering
+  predefined_type: FLOORING
+  below: 0.0
+  layerset:
+    - [0.01, "Carpet"]
 living-floor:
   class: Floor
   condition: living
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
-outside-floor:
-  class: Floor
-  condition: outside
-  below: 0.3
+  ifc: IfcCovering
+  predefined_type: FLOORING
+  below: 0.0
   layerset:
-    - [0.2, "Concrete"]
-    - [0.1, "Insulation"]
-    - [0.02, "Tiles"]
-  psets:
-      Pset_SlabCommon:
-          IsExternal: true
-          LoadBearing: true
+    - [0.01, "Carpet"]
 retail-floor:
   class: Floor
   condition: retail
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
-sahn-floor:
-  class: Floor
-  condition: sahn
-  psets:
-      Pset_SlabCommon:
-          IsExternal: true
-          LoadBearing: true
+  ifc: IfcCovering
+  predefined_type: FLOORING
+  below: 0.0
+  layerset:
+    - [0.01, "Carpet"]
 stair-floor:
   class: Floor
   condition: stair
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
+  ifc: IfcCovering
+  predefined_type: FLOORING
+  below: 0.0
+  layerset:
+    - [0.01, "Carpet"]
 toilet-floor:
   class: Floor
   condition: toilet
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
+  ifc: IfcCovering
+  predefined_type: FLOORING
+  below: 0.0
+  layerset:
+    - [0.01, "Carpet"]
+outside-floor:
+  class: Floor
+  condition: outside
+  ifc: IfcCovering
+  predefined_type: FLOORING
+  below: 0.0
+  layerset:
+    - [0.02, "Tiles"]
+sahn-floor:
+  class: Floor
+  condition: sahn
+  ifc: IfcCovering
+  predefined_type: FLOORING
+  below: 0.0
+  layerset:
+    - [0.02, "Tiles"]
