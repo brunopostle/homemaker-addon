@@ -1,0 +1,5 @@
+ezdxf
+ifcopenshell
+numpy
+topologic
+yaml
