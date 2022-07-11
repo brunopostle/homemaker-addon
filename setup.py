@@ -14,5 +14,5 @@ setup(
     packages=find_packages(
         include=["topologist", "topologist.*", "molior", "molior.*"]
     ),
-    install_requires=["topologicPy", "yaml", "ezdxf", "numpy", "ifcopenshell"],
+    install_requires=["topologic", "yaml", "ezdxf", "numpy", "ifcopenshell"],
 )
