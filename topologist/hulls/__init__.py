@@ -39,6 +39,8 @@ import topologist.ushell as ushell
 
 
 class Hulls:
+    """Hulls are 3D shells that define planar building elements"""
+
     def __init__(self):
         self.hulls = {}
 

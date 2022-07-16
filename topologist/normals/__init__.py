@@ -1,13 +1,11 @@
-"""Normals are unit vectors indicating the local vertex orientation.
-Here they are used to tell walls and extrusions how to mitre properly.
-
-"""
-
 import numpy
 from topologist.helpers import el
 
 
 class Normals:
+    """Normals are unit vectors indicating the local vertex orientation.
+    Here they are used to tell walls and extrusions how to mitre properly."""
+
     def __init__(self):
         self.normals = {"bottom": {}, "top": {}}
 

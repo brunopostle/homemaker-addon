@@ -21,6 +21,8 @@ import os, yaml, copy, json
 
 
 class Style:
+    """Inheritable style definitions and resources"""
+
     def __init__(self, args=None):
         """Read all the data in ${share_dir} and sub-folders, collect names of
         non-YAML files. Default location is a folder called 'share' installed with this

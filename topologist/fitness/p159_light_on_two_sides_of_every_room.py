@@ -27,6 +27,8 @@ from topologic import FaceUtility
 
 
 class Assessor:
+    """An Assessor for 159 LIGHT ON TWO SIDES OF EVERY ROOM"""
+
     def __init__(self, cellcomplex, circulation, shortest_path_table, **settings):
         """Create an Assessor object that can evaluate this pattern"""
         self.settings = {
