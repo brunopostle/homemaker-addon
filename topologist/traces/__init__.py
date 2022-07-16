@@ -9,7 +9,7 @@ There are traces for each space/room usage:
 * living
 * bedroom
 * toilet
-* sahn (an outdoor circulation space)
+* sahn (an outside circulation space)
 * circulation
 * stair
 * retail
@@ -20,7 +20,7 @@ There are traces for each wall condition:
 
 * external
 * internal (these are always a single segment long)
-* open (an external 'wall' to outdoor space)
+* open (an external 'wall' to outside space)
 
 There are traces that follow the top and bottom horizontal edges of
 external walls:

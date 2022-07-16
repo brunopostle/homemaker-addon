@@ -17,7 +17,7 @@ Each wall condition with horizontal bottom edges:
 
 * external (a vertical wall between inside and outside)
 * internal (a vertical wall between twon internal spaces)
-* open (an external 'wall' to outdoor space)
+* open (an external 'wall' to outside space)
 
 Each cell floor perimeter, note that internal shell faces have no up or down
 orientation, use the equivalent trace instead:
@@ -26,7 +26,7 @@ orientation, use the equivalent trace instead:
 * living
 * bedroom
 * toilet
-* sahn (an outdoor circulation space)
+* sahn (an outside circulation space)
 * circulation
 * stair
 * retail

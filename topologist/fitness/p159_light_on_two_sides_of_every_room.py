@@ -28,6 +28,7 @@ from topologic import FaceUtility
 
 class Assessor:
     def __init__(self, cellcomplex, circulation, shortest_path_table, **settings):
+        """Create an Assessor object that can evaluate this pattern"""
         self.settings = {
             "windowless_styles": ["blank", "party"],
             "factors": {"living": 1.2, "kitchen": 1.2},
@@ -39,7 +40,7 @@ class Assessor:
             self.settings[key] = value
 
     def execute(self, cell):
-        """'crinkliness' is external wall area / floor area"""
+        """Evaluate a Cell using 'crinkliness' calculation"""
         plan_area = cell.PlanArea()
         external_wall_area = self.external_wall_area(cell)
         if plan_area <= 0.0:
@@ -59,6 +60,7 @@ class Assessor:
         return factor * external_wall_area / plan_area
 
     def external_wall_area(self, cell):
+        """Calculate external wall area of a Cell"""
         result = 0.0
         faces_ptr = []
         cell.FacesVerticalExternal(self.cellcomplex, faces_ptr)

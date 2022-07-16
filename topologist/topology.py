@@ -65,7 +65,7 @@ def FacesWorld(self, host_topology):
 
 @lru_cache(maxsize=256)
 def Elevation(self):
-    """Lowest point in this Topology"""
+    """Lowest Z-height in this Topology"""
     lowest = 9999999.9
     vertices_ptr = []
     self.Vertices(None, vertices_ptr)
@@ -88,7 +88,7 @@ def Height(self):
 
 
 def Mesh(self):
-    """A list of Vertex coordinates and a list of indexed Faces"""
+    """Returns a list of Vertex coordinates, and a list of indexed Faces"""
     vertices_ptr = []
     self.Vertices(None, vertices_ptr)
     vertices = [vertex.Coordinates() for vertex in vertices_ptr]

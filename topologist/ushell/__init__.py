@@ -40,7 +40,7 @@ class shell:
         return faces
 
     def segment(self):
-        """allocate index numbers to faces by contiguous region"""
+        """Utility to allocate index numbers to faces by contiguous region"""
         if self.faces[0][2] == None:
             # put first face in group 0
             self.faces[0][2] = 0
@@ -66,7 +66,7 @@ class shell:
                 self.segment()
 
     def decompose(self):
-        """identify contiguous regions and return a list of new shells"""
+        """Identify contiguous regions and return a list of new shells"""
         self.segment()
         results = {}
         for face in self.faces:

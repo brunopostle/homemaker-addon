@@ -7,7 +7,7 @@ import topologist.ugraph as ugraph
 
 
 def FacesTop(self, result_faces_ptr):
-    """Horizontal Faces at the top of this Cell"""
+    """List of horizontal Faces at the highest level of this Cell"""
     faces_ptr = []
     self.Faces(None, faces_ptr)
     for face in faces_ptr:
@@ -19,7 +19,7 @@ def FacesTop(self, result_faces_ptr):
 
 
 def FacesBottom(self, result_faces_ptr):
-    """Horizontal Faces at the bottom of this Cell"""
+    """List of horizontal Faces at the lowest level of this Cell"""
     faces_ptr = []
     self.Faces(None, faces_ptr)
     for face in faces_ptr:
@@ -28,7 +28,7 @@ def FacesBottom(self, result_faces_ptr):
 
 
 def FacesVerticalExternal(self, cellcomplex, result_faces_ptr):
-    """Faces between an indoor Cell and outdoor Cell (or world)"""
+    """List of vertical external Faces"""
     faces_ptr = []
     self.Faces(None, faces_ptr)
     for face in faces_ptr:
@@ -69,7 +69,7 @@ def Usage(self):
 
 
 def IsOutside(self):
-    """Cell with outdoor type"""
+    """Is this Cell outside? i.e. usage is 'outside' or 'sahn'"""
     usage = self.Usage()
     if usage == "outdoor" or usage == "outside" or usage == "sahn":
         return True
@@ -87,7 +87,7 @@ def PlanArea(self):
 
 
 def ExternalWallArea(self, cellcomplex):
-    """Surface area of vertical Faces between an indoor Cell and an outdoor Cell (or world)"""
+    """Surface area of external vertical Faces"""
     result = 0.0
     faces_ptr = []
     self.FacesVerticalExternal(cellcomplex, faces_ptr)
@@ -107,7 +107,7 @@ def Crinkliness(self, cellcomplex):
 
 
 def Perimeter(self, host_topology):
-    """2D outline of Cell vertical walls, closed, anti-clockwise"""
+    """2D outline of Cell vertical walls, closed, anti-clockwise. Result is a ugraph graph"""
     elevation = self.Elevation()
     faces_ptr = []
     self.FacesVertical(faces_ptr)

@@ -23,6 +23,7 @@ class graph:
         return None
 
     def nodes(self):
+        """Return node in use"""
         result = {}
         for vertex in self.graph:
             result[vertex] = True
@@ -30,21 +31,25 @@ class graph:
         return result
 
     def edges(self):
+        """Return edges as a list of node pairs"""
         return [[vertex, self.graph[vertex][0]] for vertex in self.graph]
 
     def starts(self):
+        """Return a list of starting nodes"""
         return [vertex_a for vertex_a in self.graph]
 
     def ends(self):
+        """Return a list of ending nodes"""
         return [self.graph[vertex_a][0] for vertex_a in self.graph]
 
     def is_simple_cycle(self):
-        """does the last node connect to the first node?"""
+        """Does the last node connect to the first node?"""
         if len(self.graph) > 0 and self.starts()[0] == self.ends()[-1]:
             return True
         return False
 
     def source_vertices(self):
+        """Return a list of starting nodes that are not ends"""
         result = []
         start_list = self.starts()
         end_list = self.ends()
@@ -54,7 +59,8 @@ class graph:
         return result
 
     def find_chains(self):
-        """find_chains() and find_cycles() destroy the graph"""
+        """Return a list of open chains as new graph objects.
+        Results are removed from this graph"""
         result = []
         source_list = self.source_vertices()
         for vertex in source_list:
@@ -73,7 +79,9 @@ class graph:
         return result
 
     def find_cycles(self):
-        """find_cycles() destroys the graph and needs to be run after find_chains()"""
+        """Return a list of closed cycles as new graph objects.
+        Results are removed from this graph. This method assumes
+        that find_chains() has already been run"""
         result = []
         for vertex in self.graph:
             if not self.graph[vertex]:
@@ -93,5 +101,5 @@ class graph:
         return result
 
     def find_paths(self):
-        """return result of find_chains() and find_cycles() as a single list"""
+        """Return result of find_chains() and find_cycles() as a single list"""
         return self.find_chains() + self.find_cycles()

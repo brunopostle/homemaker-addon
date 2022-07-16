@@ -16,7 +16,7 @@ run = ifcopenshell.api.run
 
 
 class Space(TraceClass):
-    """A room or outdoor volume, as a 2D path extruded vertically"""
+    """A room or outside volume, as a 2D path extruded vertically"""
 
     def __init__(self, args=None):
         if args is None:
@@ -130,7 +130,7 @@ class Space(TraceClass):
             )
             # FIXME report 159 LIGHT ON TWO SIDES: custom psets? STDERR?
         else:
-            style = run("style.add_style", self.file, name="Outdoor Space")
+            style = run("style.add_style", self.file, name="Outside Space")
             run(
                 "style.add_surface_style",
                 self.file,

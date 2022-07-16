@@ -9,7 +9,7 @@ import topologist.normals
 
 
 def IndexTopology(self):
-    """Index all cells and faces"""
+    """Index all cells and faces starting at zero"""
     # TODO should retain existing index numbers
     cells_ptr = []
     self.Cells(None, cells_ptr)
@@ -29,7 +29,8 @@ def IndexTopology(self):
 
 
 def AllocateCells(self, widgets):
-    """Set Cell types using widgets, or default to 'living' ('void' when no Perimeter)"""
+    """Set Cell types using a list of widgets, or default to 'living' ('void' when no Perimeter).
+    A widget is any topology (typically a Vertex) with 'usage' tagged"""
     cells_ptr = []
     self.Cells(None, cells_ptr)
     for cell in cells_ptr:
@@ -43,7 +44,7 @@ def AllocateCells(self, widgets):
                 cell.Set("usage", widget.Get("usage").lower())
                 break
 
-    # tag faces between indoor and outdoor spaces that face inwards
+    # tag faces between inside and outside spaces that face inwards
     faces_ptr = []
     self.Faces(None, faces_ptr)
     for face in faces_ptr:
@@ -51,7 +52,7 @@ def AllocateCells(self, widgets):
 
 
 def Adjacency(self):
-    """Adjacency graph has nodes for cells, and nodes for faces that connect them"""
+    """Returns a Topologic adjacency Graph that has nodes for Cells, and nodes for Faces that connect them"""
     # a graph where each cell and face between them has a vertex
     return Graph.ByTopology(self, False, True, False, False, False, False, 0.0001)
 
@@ -60,7 +61,10 @@ def Adjacency(self):
 
 
 def GetTraces(self):
-    """Traces are 2D ugraph paths that define walls, extrusions and rooms"""
+    """Returns 'traces', 'normals' and 'elevations' dictionaries.
+    Traces are 2D ugraph paths that define walls, extrusions and rooms.
+    Normals indicate horizontal mitre direction for corners.
+    Elevations indicate a 'level' id for each height in the model."""
     mytraces = topologist.traces.Traces()
     mynormals = topologist.normals.Normals()
     elevations = {}
@@ -220,7 +224,7 @@ def GetTraces(self):
 
 
 def GetHulls(self):
-    """Hulls are 3D ushell surfaces that define roofs, soffits etc.."""
+    """Returns a 'hulls' dictionary. Hulls are 3D ushell surfaces that define roofs, soffits etc.."""
     myhulls = topologist.hulls.Hulls()
 
     faces_ptr = []
@@ -278,7 +282,7 @@ def GetHulls(self):
                     )
         elif face.IsHorizontal():
             cell_above = face.CellAbove(self)
-            # collect flat roof areas (not outdoor spaces)
+            # collect flat roof areas (not outside spaces)
             if face.IsUpward() and face.IsWorld(self):
                 myhulls.add_face(
                     "flat",
@@ -347,7 +351,7 @@ def GetHulls(self):
 
 
 def ApplyDictionary(self, source_faces_ptr):
-    """Copy Dictionary items from a collection of faces"""
+    """Copy Dictionary items from a list of Faces onto this CellComplex"""
     faces_ptr = []
     self.Faces(None, faces_ptr)
     for face in faces_ptr:

@@ -6,7 +6,7 @@ overloads additional functionality onto the topologic module that is
 specific to ordinary buildings.  In particular: horizontal and vertical
 faces are considered to be floors and walls; rooms are spaces with
 vertical walls on all sides; non-horizontal faces form roofs and/or
-soffits; and cells are tagged as indoor 'rooms', voids, or outdoor
+soffits; and cells are tagged as inside 'rooms', voids, or outside
 spaces.
 
 With this model of what-a-building-is, it is possible to decompose the

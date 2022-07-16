@@ -5,7 +5,8 @@ from topologic import VertexUtility
 
 
 def Circulation(self, cellcomplex):
-    """Reduce adjacency graph to a circulation graph"""
+    """Reduce an adjacency Graph to a circulation Graph.
+    Uses heuristics for connecting rooms and floors between stair cells"""
     vertices_ptr = []
     for face in self.Faces(cellcomplex):
         vertex = face.GraphVertex(self)
