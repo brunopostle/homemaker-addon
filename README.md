@@ -30,6 +30,11 @@ Different parts of buildings can be assigned different styles.
 - Free Software, no annual licenses, these are your tools to use, customise and
 share as you wish.
 
+## Documentation
+
+There is some [Homemaker reference and API
+documentation](https://homemaker-addon.readthedocs.io)
+
 ## Roadmap
 
 This is a big project that will take a lot of work to reach its full potential,
