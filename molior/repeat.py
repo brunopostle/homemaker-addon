@@ -23,7 +23,6 @@ class Repeat(TraceClass):
             args = {}
         super().__init__(args)
         self.alternate = 0
-        self.closed = 0
         self.height = 0.0
         self.ceiling = 0.0
         self.ifc = "IfcBuildingElementProxy"

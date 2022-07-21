@@ -22,7 +22,6 @@ class BaseClass:
     def __init__(self, args=None):
         if args is None:
             args = {}
-        self.closed = 1
         self.do_representation = True
         self.elevation = 0.0
         self.extension = 0.0

@@ -37,10 +37,7 @@ class Wall(TraceClass):
         if args is None:
             args = {}
         super().__init__(args)
-        self.bounds = []
         self.ceiling = 0.35
-        self.closed = 0
-        self.floor = 0.02
         self.ifc = "IfcWall"
         self.predefined_type = "SOLIDWALL"
         self.party_wall = False
@@ -49,7 +46,6 @@ class Wall(TraceClass):
         self.opening_material = "Timber"
         self.openings = []
         self.path = []
-        self.type = "molior-wall"
         for arg in args:
             self.__dict__[arg] = args[arg]
         self.thickness = 0.0

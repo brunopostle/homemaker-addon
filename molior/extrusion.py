@@ -23,7 +23,6 @@ class Extrusion(TraceClass):
         super().__init__(args)
         self.ifc = "IfcBuildingElementProxy"
         self.predefined_type = "USERDEFINED"
-        self.closed = 0
         self.extension = 0.0
         self.scale = 1.0
         self.xshift = 0.0
