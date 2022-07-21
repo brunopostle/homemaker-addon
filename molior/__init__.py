@@ -740,9 +740,9 @@ class Molior:
         for name in myconfig["traces"]:
             config = myconfig["traces"][name]
             if "condition" in config and config["condition"] == condition:
-                closed = 0
+                closed = False
                 if chain.is_simple_cycle():
-                    closed = 1
+                    closed = True
                 path = []
                 for node in chain.graph:
                     path.append(chain.graph[node][1]["start_vertex"].Coordinates()[0:2])

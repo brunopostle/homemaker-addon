@@ -133,7 +133,7 @@ class Repeat(TraceClass):
                                 config = myconfig["traces"][name]
                                 vals = {
                                     "cellcomplex": self.cellcomplex,
-                                    "closed": 0,
+                                    "closed": False,
                                     "path": [
                                         location,
                                         add_2d(
