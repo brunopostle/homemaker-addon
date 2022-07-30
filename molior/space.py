@@ -60,6 +60,12 @@ class Space(TraceClass):
         add_pset(
             self.file,
             element,
+            "Pset_SpaceOccupancyRequirements",
+            {"OccupancyType": self.condition},
+        )
+        add_pset(
+            self.file,
+            element,
             "EPset_Pattern",
             {"Crinkliness": crinkliness, "Separation": separation},
         )
