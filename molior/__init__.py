@@ -772,7 +772,7 @@ class Molior:
                     "level": level,
                     "style_openings": myconfig["openings"],
                     "style_assets": myconfig["assets"],
-                    "style_materials": myconfig["materials"],
+                    "style_object": Molior.style,
                 }
                 vals.update(config)
                 modules = {
@@ -806,7 +806,7 @@ class Molior:
                     "name": name,
                     "style": stylename,
                     "hull": hull,
-                    "style_materials": myconfig["materials"],
+                    "style_object": Molior.style,
                 }
                 vals.update(config)
                 modules = {"Shell": Shell, "Grillage": Grillage}

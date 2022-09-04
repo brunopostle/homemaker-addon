@@ -679,9 +679,7 @@ def get_parent_building(entity):
     return get_parent_building(parent)
 
 
-def get_material_by_name(
-    self, context_identifier="Body", name="Error", style_materials={}
-):
+def get_material_by_name(self, style_object, stylename="default", name="Error"):
     """Retrieve an IfcMaterial by name, creating it if necessary"""
     materials = {}
     for material in self.by_type("IfcMaterial"):
@@ -689,62 +687,17 @@ def get_material_by_name(
     if name in materials:
         mymaterial = materials[name]
     else:
-        # we need to create a new material
-        mymaterial = run("material.add_material", self, name=name)
-        params = {
-            "surface_colour": [0.9, 0.9, 0.9],
-            "diffuse_colour": [1.0, 1.0, 1.0],
-            "transparency": 0.0,
-            "category": None,
-            "description": None,
-            "external_definition": None,
-        }
-        if name in style_materials:
-            params.update(style_materials[name])
-            mymaterial.Category = params["category"]
-            mymaterial.Description = params["description"]
-            if "psets" in style_materials[name]:
-                for pset_name, pset_properties in style_materials[name][
-                    "psets"
-                ].items():
-                    pset = run(
-                        "pset.add_pset", self, product=mymaterial, name=pset_name
-                    )
-                    run(
-                        "pset.edit_pset",
-                        self,
-                        pset=pset,
-                        properties=pset_properties,
-                    )
-        style = run("style.add_style", self, name=name)
-        run(
-            "style.add_surface_style",
-            self,
-            style=style,
-            attributes={
-                "SurfaceColour": {
-                    "Name": None,
-                    "Red": params["surface_colour"][0],
-                    "Green": params["surface_colour"][1],
-                    "Blue": params["surface_colour"][2],
-                },
-                "DiffuseColour": {
-                    "Name": None,
-                    "Red": params["diffuse_colour"][0],
-                    "Green": params["diffuse_colour"][1],
-                    "Blue": params["diffuse_colour"][2],
-                },
-                "Transparency": params["transparency"],
-                "ReflectanceMethod": "PLASTIC",
-            },
+        (found_stylename, library_file, element) = style_object.get_from_library(
+            stylename, "IfcMaterial", name
         )
-        run(
-            "style.assign_material_style",
-            self,
-            material=mymaterial,
-            style=style,
-            context=get_context_by_name(self, context_identifier=context_identifier),
-        )
+        if element:
+            # add to current project from library file
+            mymaterial = run(
+                "project.append_asset", self, library=library_file, element=element
+            )
+        else:
+            # we need to create a new material
+            mymaterial = run("material.add_material", self, name=name)
     return mymaterial
 
 
@@ -754,9 +707,7 @@ def get_extruded_type_by_name(
     ifc_type="IfcColumnType",
     name="My Cheesy Column",
     stylename="default",
-    style_materials={
-        "Cheese": {"surface_colour": [0.3, 1.0, 0.0], "diffuse_colour": [0.3, 1.0, 0.0]}
-    },
+    style_object=None,
     profiles=[
         {
             "ifc_class": "IfcRectangleProfileDef",
@@ -801,9 +752,9 @@ def get_extruded_type_by_name(
             profile_set=profile_set,
             material=get_material_by_name(
                 self,
-                context_identifier=context_identifier,
+                style_object,
                 name=profile["material"],
-                style_materials=style_materials,
+                stylename=stylename,
             ),
         )
         # create a Parameterized Profile

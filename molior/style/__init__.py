@@ -18,6 +18,7 @@ folder tree, all others will be ignored.
 """
 
 import os, yaml, copy, json
+import ifcopenshell
 
 
 class Style:
@@ -33,6 +34,7 @@ class Style:
         self.share_dir = "share"
         self.data = {}
         self.files = {}
+        self.libraries = {}
         for arg in args:
             self.__dict__[arg] = args[arg]
 
@@ -58,6 +60,8 @@ class Style:
                     self.data[stylename] = {}
                 if not stylename in self.files:
                     self.files[stylename] = {}
+                if not stylename in self.libraries:
+                    self.libraries[stylename] = {}
                 if ext == ".yml":
                     fh = open(os.path.join(root, name), "rb")
                     data = yaml.safe_load(fh.read())
@@ -65,12 +69,17 @@ class Style:
 
                     self.data[stylename][prefix] = data
                     self.data[stylename]["ancestors"] = ancestors
-                if ext == ".json":
+                elif ext == ".json":
                     with open(os.path.join(root, name)) as fh:
                         data = json.load(fh)
 
                     self.data[stylename][prefix] = data
                     self.data[stylename]["ancestors"] = ancestors
+                elif ext == ".ifc":
+                    self.libraries[stylename][prefix] = {
+                        "path": os.path.join(root, name),
+                        "file": None,
+                    }
                 else:
                     self.files[stylename][name] = os.path.join(root, name)
 
@@ -88,6 +97,29 @@ class Style:
                 if key in mydata:
                     ancestor[key].update(mydata[key])
         return ancestor
+
+    def get_from_library(self, stylename, ifc_class, name):
+        """retrieves from Project Libraries in stylename folder or ancestors as necessary"""
+        if not stylename in self.libraries:
+            return self.get_from_library("default", ifc_class, name)
+
+        # look in all IFC files in this folder
+        for prefix in self.libraries[stylename]:
+            library = self.libraries[stylename][prefix]
+            # load and cache ifc libraries if not loaded
+            if library["file"] == None:
+                library["file"] = ifcopenshell.open(library["path"])
+            for item in library["file"].by_type(ifc_class):
+                if item.Name == name:
+                    return (stylename, library["file"], item)
+
+        if len(self.data[stylename]["ancestors"]) == 0:
+            return (None, None, None)
+
+        # try ancestor
+        return self.get_from_library(
+            self.data[stylename]["ancestors"][0], ifc_class, name
+        )
 
     def get_file(self, stylename, filename):
         """retrieves a file path for a filename with ancestors filling in the gaps"""

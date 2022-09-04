@@ -11,9 +11,12 @@ from molior.ifc import (
     get_context_by_name,
     get_site_by_name,
     get_building_by_name,
+    get_library_by_name,
+    get_material_by_name,
     get_structural_analysis_model_by_name,
     create_storeys,
 )
+from molior.style import Style
 
 run = ifcopenshell.api.run
 
@@ -51,7 +54,31 @@ class Tests(unittest.TestCase):
 
         create_storeys(self.file, building, {0.0: 0})
 
-    def test_write(self):
+    def test_import_material(self):
+        # retrieve a material from an IFC library
+        mystyle = Style()
+        (stylename, library_file, element) = mystyle.get_from_library(
+            "courtyard", "IfcMaterial", "Screed"
+        )
+        # add to current project
+        local_element = run(
+            "project.append_asset", self.file, library=library_file, element=element
+        )
+
+        # create a library in this project
+        library = get_library_by_name(self.file, stylename)
+        # this doesn't work because an IFC Material isn't an Object Definition
+        # so it doesn't HasContext and can't fit in a Project Library :(
+        run(
+            "project.assign_declaration",
+            self.file,
+            definition=local_element,
+            relating_context=library,
+        )
+
+        # all in one method
+        get_material_by_name(self.file, mystyle, stylename="courtyard", name="Concrete")
+
         self.file.write("_test.ifc")
 
 

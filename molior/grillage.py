@@ -144,9 +144,9 @@ class Grillage(BaseClass):
                 product=structural_surface,
                 material=get_material_by_name(
                     self.file,
-                    context_identifier="Reference",
+                    self.style_object,
                     name=self.structural_material,
-                    style_materials=self.style_materials,
+                    stylename=self.style,
                 ),
             )
 
@@ -174,12 +174,12 @@ class Grillage(BaseClass):
             # create or retrieve a Type for the linear elements
             product_type = get_extruded_type_by_name(
                 self.file,
-                style_materials=self.style_materials,
                 profiles=self.profiles,
                 context_identifier="Body",
                 ifc_type=self.ifc + "Type",
                 name=self.identifier,
                 stylename=self.style,
+                style_object=self.style_object,
             )
             product_type.PredefinedType = self.predefined_type
             self.add_psets(product_type)

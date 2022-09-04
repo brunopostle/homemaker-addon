@@ -24,16 +24,7 @@ class Tests(unittest.TestCase):
 
         column_type = get_extruded_type_by_name(
             self.file,
-            style_materials={
-                "Cheese": {
-                    "surface_colour": [1.0, 0.8, 0.3],
-                    "diffuse_colour": [1.0, 0.8, 0.3],
-                },
-                "Tomato": {
-                    "surface_colour": [1.0, 3.0, 0.0],
-                    "diffuse_colour": [1.0, 3.0, 0.0],
-                },
-            },
+            style_object=molior.Style(),
             profiles=[
                 {
                     "ifc_class": "IfcRectangleProfileDef",
@@ -43,7 +34,7 @@ class Tests(unittest.TestCase):
                 },
                 {
                     "ifc_class": "IfcIShapeProfileDef",
-                    "material": "Tomato",
+                    "material": "Concrete",
                     "parameters": {
                         "ProfileType": "AREA",
                         "OverallWidth": 0.1,
@@ -117,6 +108,10 @@ class Tests(unittest.TestCase):
             len(self.another_file.by_type("IfcGeometricRepresentationContext")), 5
         )
         for material in self.another_file.by_type("IfcMaterial"):
+            if material.Name == "Cheese":
+                self.assertEqual(len(material.HasRepresentation), 0)
+                continue
+
             self.assertEqual(len(material.HasRepresentation), 1)
             self.assertEqual(len(material.HasRepresentation[0].Representations), 1)
             self.assertEqual(

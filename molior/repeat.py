@@ -160,7 +160,7 @@ class Repeat(TraceClass):
                                     "level": self.level,
                                     "predefined_type": self.predefined_type,
                                     "style_assets": self.style_assets,
-                                    "style_materials": self.style_materials,
+                                    "style_object": self.style_object,
                                 }
                                 vals.update(config)
                                 part = getattr(self, config["class"])(vals)
@@ -283,9 +283,9 @@ class Repeat(TraceClass):
                             profile_set=profile_set,
                             material=get_material_by_name(
                                 self.file,
-                                context_identifier="Reference",
+                                self.style_object,
                                 name=self.structural_material,
-                                style_materials=self.style_materials,
+                                stylename=self.style,
                             ),
                         )
                         run(
@@ -326,8 +326,8 @@ class Repeat(TraceClass):
                         product=entity,
                         material=get_material_by_name(
                             self.file,
-                            context_identifier="Body",
+                            self.style_object,
                             name=self.material,
-                            style_materials=self.style_materials,
+                            stylename=self.style,
                         ),
                     )

@@ -80,9 +80,9 @@ class BaseClass:
                     layer_set=mylayerset,
                     material=get_material_by_name(
                         self.file,
-                        context_identifier="Body",
+                        self.style_object,
                         name=mylayer[1],
-                        style_materials=self.style_materials,
+                        stylename=self.style,
                     ),
                 )
                 # TODO IsVentilated, Description & Category

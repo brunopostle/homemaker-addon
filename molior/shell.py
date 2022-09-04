@@ -200,9 +200,9 @@ class Shell(BaseClass):
                 product=structural_surface,
                 material=get_material_by_name(
                     self.file,
-                    context_identifier="Reference",
+                    self.style_object,
                     name=self.structural_material,
-                    style_materials=self.style_materials,
+                    stylename=self.style,
                 ),
             )
 

@@ -321,9 +321,9 @@ class Wall(TraceClass):
                 product=structural_surface,
                 material=get_material_by_name(
                     self.file,
-                    context_identifier="Reference",
+                    self.style_object,
                     name=self.structural_material,
-                    style_materials=self.style_materials,
+                    stylename=self.style,
                 ),
             )
 
@@ -515,9 +515,9 @@ class Wall(TraceClass):
                     product=entity,
                     material=get_material_by_name(
                         self.file,
-                        context_identifier="Body",
+                        self.style_object,
                         name=db["material"],
-                        style_materials=self.style_materials,
+                        stylename=self.style,
                     ),
                 )
                 # load geometry from a DXF file and assign to the entity
