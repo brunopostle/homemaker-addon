@@ -7,6 +7,7 @@ A collection of code for commonly used IFC related tasks
 import os
 import ezdxf
 import ifcopenshell.api
+import ifcopenshell.util.representation
 from molior.geometry import (
     matrix_align,
     add_2d,
@@ -50,6 +51,12 @@ def init(name="Homemaker Project", file=None):
     )
     get_context_by_name(
         file,
+        context_identifier="Box",
+        parent_context_identifier="Model",
+        target_view="MODEL_VIEW",
+    )
+    get_context_by_name(
+        file,
         context_identifier="Surface",
         parent_context_identifier="Model",
         target_view="SKETCH_VIEW",
@@ -62,8 +69,26 @@ def init(name="Homemaker Project", file=None):
     )
     get_context_by_name(
         file,
+        context_identifier="Annotation",
+        parent_context_identifier="Plan",
+        target_view="PLAN_VIEW",
+    )
+    get_context_by_name(
+        file,
+        context_identifier="Annotation",
+        parent_context_identifier="Plan",
+        target_view="SECTION_VIEW",
+    )
+    get_context_by_name(
+        file,
+        context_identifier="Annotation",
+        parent_context_identifier="Plan",
+        target_view="ELEVATION_VIEW",
+    )
+    get_context_by_name(
+        file,
         context_identifier="Axis",
-        parent_context_identifier="Model",
+        parent_context_identifier="Plan",
         target_view="GRAPH_VIEW",
     )
 
@@ -72,20 +97,25 @@ def init(name="Homemaker Project", file=None):
 
 def get_context_by_name(
     self,
-    parent_context_identifier="Model",
-    context_identifier="Body",
-    target_view="MODEL_VIEW",
+    parent_context_identifier=None,
+    context_identifier=None,
+    target_view=None,
 ):
     """Retrieve or create a Representation Context"""
-    for context in self.by_type("IfcGeometricRepresentationContext"):
-        if context.ContextIdentifier == context_identifier:
-            return context
-        elif (
-            not context.ContextIdentifier and context.ContextType == context_identifier
-        ):
-            # a Context not a Sub Context
-            return context
+    mycontext = ifcopenshell.util.representation.get_context(
+        self,
+        parent_context_identifier,
+        subcontext=context_identifier,
+        target_view=target_view,
+    )
+    if mycontext:
+        return mycontext
     if context_identifier in ["Model", "Plan", "NotDefined"]:
+        mycontext = ifcopenshell.util.representation.get_context(
+            self, context_identifier
+        )
+        if mycontext:
+            return mycontext
         return run("context.add_context", self, context_type=context_identifier)
     parent_context = get_context_by_name(
         self, context_identifier=parent_context_identifier
