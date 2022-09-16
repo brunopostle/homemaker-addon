@@ -43,56 +43,59 @@ def init(name="Homemaker Project", file=None):
         run("unit.add_si_unit", file, name="RADIAN", unit_type="PLANEANGLEUNIT"),
     ]
 
+    create_default_contexts(file)
+
+    return file
+
+def create_default_contexts(self):
     get_context_by_name(
-        file,
+        self,
         context_identifier="Body",
         parent_context_identifier="Model",
         target_view="MODEL_VIEW",
     )
     get_context_by_name(
-        file,
+        self,
         context_identifier="Box",
         parent_context_identifier="Model",
         target_view="MODEL_VIEW",
     )
     get_context_by_name(
-        file,
+        self,
         context_identifier="Surface",
         parent_context_identifier="Model",
         target_view="SKETCH_VIEW",
     )
     get_context_by_name(
-        file,
+        self,
         context_identifier="Reference",
         parent_context_identifier="Model",
         target_view="GRAPH_VIEW",
     )
     get_context_by_name(
-        file,
+        self,
         context_identifier="Annotation",
         parent_context_identifier="Plan",
         target_view="PLAN_VIEW",
     )
     get_context_by_name(
-        file,
+        self,
         context_identifier="Annotation",
         parent_context_identifier="Plan",
         target_view="SECTION_VIEW",
     )
     get_context_by_name(
-        file,
+        self,
         context_identifier="Annotation",
         parent_context_identifier="Plan",
         target_view="ELEVATION_VIEW",
     )
     get_context_by_name(
-        file,
+        self,
         context_identifier="Axis",
         parent_context_identifier="Plan",
         target_view="GRAPH_VIEW",
     )
-
-    return file
 
 
 def get_context_by_name(

@@ -122,6 +122,8 @@ class Molior:
         """Create and relate Site, Building and Storey Spatial Element products, set as current building"""
         if self.file == None:
             self.file = molior.ifc.init()
+        else:
+            molior.ifc.create_default_contexts(self.file)
         self.project = self.file.by_type("IfcProject")[0]
         site = get_site_by_name(self.file, self.project, "Site " + self.name)
         self.building = get_building_by_name(self.file, site, self.name)
