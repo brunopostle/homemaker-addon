@@ -47,6 +47,7 @@ def init(name="Homemaker Project", file=None):
 
     return file
 
+
 def create_default_contexts(self):
     get_context_by_name(
         self,
@@ -455,8 +456,9 @@ def create_tessellations_from_dxf(self, path_dxf):
     tessellations = []
     for entity in model:
         if entity.get_mode() == "AcDbPolyFaceMesh":
-            if entity.faces():
-                vertices, faces = entity.indexed_faces()
+            vertices, faces = entity.indexed_faces()
+            faces = list(faces)
+            if faces:
                 tessellations.append(
                     create_tessellation_from_mesh(
                         self,
