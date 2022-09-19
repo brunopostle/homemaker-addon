@@ -314,6 +314,7 @@ class Repeat(TraceClass):
                     # load geometry from a DXF file and assign to the entity
                     assign_representation_fromDXF(
                         self.file,
+                        self.style_object,
                         context_identifier="Body",
                         element=entity,
                         stylename=self.style,

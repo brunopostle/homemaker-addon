@@ -585,15 +585,16 @@ def add_cell_topology_epsets(self, entity, cell):
 
 def assign_representation_fromDXF(
     self,
+    style_object,
     context_identifier="Body",
     element=None,
     stylename="default",
     path_dxf="/dev/null",
 ):
     """Assign geometry from DXF unless a TypeProduct with this name already exists"""
-    product_type = get_type_by_dxf(
+    product_type = get_type_by_dxf2(
         self,
-        context_identifier=context_identifier,
+        style_object,
         ifc_type=element.is_a() + "Type",
         stylename=stylename,
         path_dxf=path_dxf,
@@ -662,6 +663,47 @@ def get_type_by_dxf(
         representation=brep,
     )
     return type_product
+
+
+def get_type_by_dxf2(
+    self,
+    style_object,
+    ifc_type="IfcBuildingElementProxyType",
+    stylename="default",
+    path_dxf="/dev/null",
+):
+    """Fetch a TypeProduct from DXF geometry unless a TypeProduct with this name already exists"""
+    identifier = os.path.splitext(os.path.split(path_dxf)[-1])[0]
+
+    # let's see if there is an existing Type Product defined in the relevant library
+    library = get_library_by_name(self, stylename)
+    for declares in library.Declares:
+        for definition in declares.RelatedDefinitions:
+            if definition.is_a(ifc_type) and definition.Name == identifier:
+                return definition
+    # otherwise, load from IFC library file
+    (found_stylename, library_file, element) = style_object.get_from_library(
+        stylename, ifc_type, identifier
+    )
+    if element:
+        # add to current project from library file
+        definition = run(
+            "project.append_asset", self, library=library_file, element=element
+        )
+    else:
+        definition = run(
+            "root.create_entity",
+            self,
+            ifc_class=ifc_type,
+            name=identifier,
+        )
+    run(
+        "project.assign_declaration",
+        self,
+        definition=definition,
+        relating_context=get_library_by_name(self, stylename),
+    )
+    return definition
 
 
 def get_library_by_name(self, library_name):
