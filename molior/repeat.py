@@ -61,11 +61,9 @@ class Repeat(TraceClass):
                 height = self.style_assets[self.asset][index]["height"]
                 if height >= self.height - self.ceiling:
                     break
-            dxf_path = style.get_file(
-                self.style, self.style_assets[self.asset][index]["file"]
-            )
+            name = self.style_assets[self.asset][index]["file"]
         else:
-            dxf_path = style.get_file(self.style, "error.dxf")
+            name = "error"
 
         segments = self.segments()
         self.outer += self.xshift
@@ -317,7 +315,7 @@ class Repeat(TraceClass):
                         self.style_object,
                         element=entity,
                         stylename=self.style,
-                        name=dxf_path,
+                        name=name,
                     )
                     # TODO Axis Representation
                     run(

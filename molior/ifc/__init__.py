@@ -449,26 +449,6 @@ def assign_extrusion_fromDXF(
     )
 
 
-def create_tessellations_from_dxf(self, path_dxf):
-    """Create Tessellations given a DXF filepath"""
-    doc = ezdxf.readfile(path_dxf)
-    model = doc.modelspace()
-    tessellations = []
-    for entity in model:
-        if entity.get_mode() == "AcDbPolyFaceMesh":
-            vertices, faces = entity.indexed_faces()
-            faces = list(faces)
-            if faces:
-                tessellations.append(
-                    create_tessellation_from_mesh(
-                        self,
-                        [vertex.dxf.location for vertex in vertices],
-                        [face.indices for face in faces],
-                    )
-                )
-    return tessellations
-
-
 def create_tessellation_from_mesh(self, vertices, faces):
     """Create a Tessellation from vertex coordinates and faces"""
     pointlist = self.createIfcCartesianPointList3D(vertices)
@@ -614,8 +594,6 @@ def get_type_object(
     name="error",
 ):
     """Fetch a Type Object locally, or from an external IFC library"""
-    name = os.path.splitext(os.path.split(name)[-1])[0]
-
     # let's see if there is an existing Type Product defined in the relevant library
     library = get_library_by_name(self, stylename)
     for declares in library.Declares:

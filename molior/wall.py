@@ -3,7 +3,6 @@ import numpy
 
 from topologic import Vertex, FaceUtility
 from topologist.helpers import el
-import molior
 from molior.baseclass import TraceClass
 from molior.geometry import (
     matrix_align,
@@ -62,7 +61,6 @@ class Wall(TraceClass):
         body_context = get_context_by_name(self.file, context_identifier="Body")
         axis_context = get_context_by_name(self.file, context_identifier="Axis")
         self.init_openings()
-        style = molior.Molior.style
 
         # traces have one or more segments, aggregate them
         aggregate = run(
@@ -467,8 +465,7 @@ class Wall(TraceClass):
             for id_opening in range(len(self.openings[id_segment])):
                 db = self.get_opening(segment[id_opening]["name"])
                 opening = db["list"][segment[id_opening]["size"]]
-                filename = opening["file"]
-                dxf_path = style.get_file(self.style, filename)
+                name = opening["file"]
 
                 l, r = self.opening_coor(id_segment, id_opening)
                 offset = scale_2d(self.outer, self.normal_segment(id_segment))
@@ -526,7 +523,7 @@ class Wall(TraceClass):
                     self.style_object,
                     element=entity,
                     stylename=self.style,
-                    name=dxf_path,
+                    name=name,
                 )
 
                 # create an opening

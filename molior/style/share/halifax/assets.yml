@@ -1,9 +1,9 @@
 ---
 balustrade_large:
   -
-    file: balustrade_102.dxf
+    file: balustrade_102
     height: 1.02
 balustrade_small:
   -
-    file: balustrade_90.dxf
+    file: balustrade_90
     height: 0.9
