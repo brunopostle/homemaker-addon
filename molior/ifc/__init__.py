@@ -583,21 +583,20 @@ def add_cell_topology_epsets(self, entity, cell):
             add_pset(self, entity, "EPset_Topology", {"Usage": cell_usage})
 
 
-def assign_representation_fromDXF(
+def assign_type_by_name(
     self,
     style_object,
-    context_identifier="Body",
     element=None,
     stylename="default",
-    path_dxf="/dev/null",
+    name="error",
 ):
-    """Assign geometry from DXF unless a TypeProduct with this name already exists"""
-    product_type = get_type_by_dxf2(
+    """Assign Type from an internal or external IFC library"""
+    product_type = get_type_object(
         self,
         style_object,
         ifc_type=element.is_a() + "Type",
         stylename=stylename,
-        path_dxf=path_dxf,
+        name=name,
     )
     run(
         "type.assign_type",
@@ -607,83 +606,25 @@ def assign_representation_fromDXF(
     )
 
 
-def get_type_by_dxf(
-    self,
-    context_identifier="Body",
-    ifc_type="IfcBuildingElementProxyType",
-    stylename="default",
-    path_dxf="/dev/null",
-):
-    """Fetch a TypeProduct from DXF geometry unless a TypeProduct with this name already exists"""
-    identifier = stylename + "/" + os.path.splitext(os.path.split(path_dxf)[-1])[0]
-    subcontext = get_context_by_name(self, context_identifier=context_identifier)
-    # FIXME should material be defined in the Type?
-
-    # let's see if there is an existing Type Product defined in the relevant library
-    library = get_library_by_name(self, stylename)
-    for declares in library.Declares:
-        for definition in declares.RelatedDefinitions:
-            if definition.is_a(ifc_type) and definition.Name == identifier:
-                return definition
-    # otherwise, load a DXF polyface mesh as a Tessellation
-    brep = self.createIfcShapeRepresentation(
-        subcontext,
-        subcontext.ContextIdentifier,
-        "Tessellation",
-        create_tessellations_from_dxf(self, path_dxf),
-    )
-    type_product = run(
-        "root.create_entity",
-        self,
-        ifc_class=ifc_type,
-        name=identifier,
-    )
-    run(
-        "project.assign_declaration",
-        self,
-        definition=type_product,
-        relating_context=library,
-    )
-    if type_product.is_a("IfcDoorType"):
-        type_product.PredefinedType = "DOOR"
-        type_product.OperationType = "SINGLE_SWING_LEFT"
-    elif type_product.is_a("IfcWindowType"):
-        type_product.PredefinedType = "WINDOW"
-        type_product.PartitioningType = "SINGLE_PANEL"
-    elif type_product.is_a("IfcColumnType"):
-        type_product.PredefinedType = "COLUMN"
-    elif type_product.is_a("IfcRailingType"):
-        type_product.PredefinedType = "BALUSTRADE"
-    else:
-        type_product.PredefinedType = "USERDEFINED"
-    run(
-        "geometry.assign_representation",
-        self,
-        product=type_product,
-        representation=brep,
-    )
-    return type_product
-
-
-def get_type_by_dxf2(
+def get_type_object(
     self,
     style_object,
     ifc_type="IfcBuildingElementProxyType",
     stylename="default",
-    path_dxf="/dev/null",
+    name="error",
 ):
-    """Fetch a TypeProduct from DXF geometry unless a TypeProduct with this name already exists"""
-    identifier = os.path.splitext(os.path.split(path_dxf)[-1])[0]
+    """Fetch a Type Object locally, or from an external IFC library"""
+    name = os.path.splitext(os.path.split(name)[-1])[0]
 
     # let's see if there is an existing Type Product defined in the relevant library
     library = get_library_by_name(self, stylename)
     for declares in library.Declares:
         for definition in declares.RelatedDefinitions:
-            if definition.is_a(ifc_type) and definition.Name == identifier:
+            if definition.is_a(ifc_type) and definition.Name == name:
                 return definition
     # otherwise, load from IFC library file
     (found_stylename, library_file, element) = style_object.get_from_library(
-        stylename, ifc_type, identifier
+        stylename, ifc_type, name
     )
     if element:
         # add to current project from library file
@@ -695,8 +636,9 @@ def get_type_by_dxf2(
             "root.create_entity",
             self,
             ifc_class=ifc_type,
-            name=identifier,
+            name=name,
         )
+    # add to internal library
     run(
         "project.assign_declaration",
         self,

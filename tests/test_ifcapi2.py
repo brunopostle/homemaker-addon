@@ -12,7 +12,7 @@ from molior.ifc import (
     get_building_by_name,
     create_storeys,
     create_extruded_area_solid,
-    assign_representation_fromDXF,
+    assign_type_by_name,
     assign_storey_byindex,
     get_context_by_name,
 )
@@ -56,14 +56,13 @@ class Tests(unittest.TestCase):
         # assign the window to a storey
         assign_storey_byindex(ifc, myproduct, building, 0)
 
-        # load geometry from a DXF file and assign to the window
-        assign_representation_fromDXF(
+        # load type and assign to the window
+        assign_type_by_name(
             ifc,
-            context_identifier="Body",
             element=myproduct,
             style_object=style_object,
             stylename="default",
-            path_dxf="molior/style/share/shopfront.dxf",
+            name="shopfront",
         )
 
         # create a wall
@@ -158,14 +157,13 @@ class Tests(unittest.TestCase):
         # assign the window to a storey
         assign_storey_byindex(ifc, myproduct, building, 0)
 
-        # shopfront.dxf is already imported and mapped
-        assign_representation_fromDXF(
+        # 'shopfront' is already imported and mapped
+        assign_type_by_name(
             ifc,
-            context_identifier="Body",
             element=myproduct,
             style_object=style_object,
             stylename="default",
-            path_dxf="molior/style/share/shopfront.dxf",
+            name="shopfront",
         )
 
         # create an opening

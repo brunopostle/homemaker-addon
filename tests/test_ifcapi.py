@@ -88,7 +88,7 @@ class Tests(unittest.TestCase):
                 "root.create_entity",
                 ifc,
                 ifc_class="IfcTypeProduct",
-                name="shopfront.dxf",
+                name="shopfront",
             ),
             representation=brep,
         )
@@ -185,7 +185,7 @@ class Tests(unittest.TestCase):
         assign_storey_byindex(ifc, myproduct, self.building, 0)
 
         # The TypeProduct knows what MappedRepresentations to use
-        typeproduct = lookup["shopfront.dxf"]
+        typeproduct = lookup["shopfront"]
         for representationmap in typeproduct.RepresentationMaps:
             run(
                 "geometry.assign_representation",

@@ -5,7 +5,7 @@ from molior.baseclass import TraceClass
 from molior.geometry import add_2d, subtract_2d, scale_2d, distance_2d, matrix_align
 from molior.ifc import (
     add_face_topology_epsets,
-    assign_representation_fromDXF,
+    assign_type_by_name,
     assign_storey_byindex,
     get_material_by_name,
     get_context_by_name,
@@ -312,13 +312,12 @@ class Repeat(TraceClass):
                         ),
                     )
                     # load geometry from a DXF file and assign to the entity
-                    assign_representation_fromDXF(
+                    assign_type_by_name(
                         self.file,
                         self.style_object,
-                        context_identifier="Body",
                         element=entity,
                         stylename=self.style,
-                        path_dxf=dxf_path,
+                        name=dxf_path,
                     )
                     # TODO Axis Representation
                     run(

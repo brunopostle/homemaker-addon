@@ -20,7 +20,7 @@ from molior.ifc import (
     create_extruded_area_solid,
     clip_solid,
     create_face_surface,
-    assign_representation_fromDXF,
+    assign_type_by_name,
     assign_storey_byindex,
     get_material_by_name,
     get_context_by_name,
@@ -521,13 +521,12 @@ class Wall(TraceClass):
                     ),
                 )
                 # load geometry from a DXF file and assign to the entity
-                assign_representation_fromDXF(
+                assign_type_by_name(
                     self.file,
                     self.style_object,
-                    context_identifier="Body",
                     element=entity,
                     stylename=self.style,
-                    path_dxf=dxf_path,
+                    name=dxf_path,
                 )
 
                 # create an opening
