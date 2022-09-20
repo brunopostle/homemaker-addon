@@ -517,7 +517,6 @@ class Wall(TraceClass):
                         stylename=self.style,
                     ),
                 )
-                # load geometry from a DXF file and assign to the entity
                 assign_type_by_name(
                     self.file,
                     self.style_object,
@@ -752,28 +751,28 @@ class Wall(TraceClass):
         return {
             "list": [
                 {
-                    "file": "error.dxf",
+                    "file": "error",
                     "height": 1.0,
                     "width": 1.0,
                     "side": 0.1,
                     "end": 0.0,
                 },
                 {
-                    "file": "error.dxf",
+                    "file": "error",
                     "height": 2.0,
                     "width": 1.0,
                     "side": 0.1,
                     "end": 0.0,
                 },
                 {
-                    "file": "error.dxf",
+                    "file": "error",
                     "height": 2.0,
                     "width": 2.0,
                     "side": 0.1,
                     "end": 0.0,
                 },
                 {
-                    "file": "error.dxf",
+                    "file": "error",
                     "height": 1.0,
                     "width": 2.0,
                     "side": 0.1,

@@ -309,7 +309,6 @@ class Repeat(TraceClass):
                             ],
                         ),
                     )
-                    # load geometry from a DXF file and assign to the entity
                     assign_type_by_name(
                         self.file,
                         self.style_object,
