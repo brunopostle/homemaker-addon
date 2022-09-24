@@ -229,6 +229,7 @@ class Wall(TraceClass):
                 rel_connects.RelatedElement = previous_wall
                 rel_connects.RelatedConnectionType = "ATEND"
                 rel_connects.RelatedPriorities = []
+                rel_connects.Description = "MITRE"
             if self.closed and id_segment == len(self.path) - 1:
                 rel_connects = run(
                     "root.create_entity",
@@ -257,6 +258,7 @@ class Wall(TraceClass):
                 rel_connects.RelatedElement = first_wall
                 rel_connects.RelatedConnectionType = "ATSTART"
                 rel_connects.RelatedPriorities = []
+                rel_connects.Description = "MITRE"
             previous_wall = mywall
 
             # axis is a straight line
