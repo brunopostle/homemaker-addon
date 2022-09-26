@@ -25,6 +25,7 @@ class Tests(unittest.TestCase):
     def setUp(self):
         ifc = molior.ifc.init(name="My Project")
         self.body_context = get_context_by_name(ifc, context_identifier="Body")
+        self.style_object = molior.Style()
 
         project = ifc.by_type("IfcProject")[0]
         site = get_site_by_name(ifc, project, "My Site")
@@ -48,6 +49,7 @@ class Tests(unittest.TestCase):
 
         assign_extrusion_fromDXF(
             ifc,
+            self.style_object,
             context_identifier="Body",
             element=element,
             directrix=directrix,
@@ -71,6 +73,7 @@ class Tests(unittest.TestCase):
 
         assign_extrusion_fromDXF(
             ifc,
+            self.style_object,
             context_identifier="Body",
             element=element,
             directrix=directrix,

@@ -187,6 +187,7 @@ class Extrusion(TraceClass):
         # TODO Axis Representation
         assign_extrusion_fromDXF(
             self.file,
+            self.style_object,
             context_identifier="Body",
             element=element,
             directrix=directrix,

@@ -206,6 +206,13 @@ class Grillage(BaseClass):
                 linear_element.PredefinedType = self.predefined_type
                 self.add_psets(linear_element)
 
+                run(
+                    "type.assign_type",
+                    self.file,
+                    related_object=linear_element,
+                    relating_type=product_type,
+                )
+
                 direction = cropped_edge.NormalisedVector()
 
                 # extrude each profile in the profile set
@@ -247,14 +254,6 @@ class Grillage(BaseClass):
                     product=linear_element,
                     material=profile_set,
                 )
-
-                # Somehow this performs a boolean intersection
-                # run(
-                #     "type.assign_type",
-                #     self.file,
-                #     related_object=linear_element,
-                #     relating_type=product_type,
-                # )
 
                 # apparently aggregated elements need to be placed independently of the aggregate
                 run(

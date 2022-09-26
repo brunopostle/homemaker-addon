@@ -327,6 +327,7 @@ def create_face_surface(self, polygon, normal):
 
 def assign_extrusion_fromDXF(
     self,
+    style_object,
     context_identifier="Body",
     element=None,
     directrix=[[0.0, 0.0], [0.0, 1.0]],
@@ -349,6 +350,13 @@ def assign_extrusion_fromDXF(
                         "IfcRelAssociatesMaterial"
                     ) and association.RelatingMaterial.is_a("IfcMaterialProfileSet"):
                         materialprofileset = association.RelatingMaterial
+    assign_type_by_name(
+        self,
+        style_object,
+        element=element,
+        stylename=stylename,
+        name=identifier,
+    )
 
     if materialprofileset:
         # profile(s) already defined, use them
