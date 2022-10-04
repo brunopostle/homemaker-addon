@@ -526,42 +526,69 @@ class Wall(TraceClass):
                     stylename=self.style,
                     name=name,
                 )
+                element_type = entity.IsTypedBy[0].RelatingType
+                print(element_type)
+                print(element_type.RepresentationMaps)
 
-                # create an opening
-                myopening = run(
-                    "root.create_entity",
-                    self.file,
-                    ifc_class="IfcOpeningElement",
-                    name="My Opening",
-                    predefined_type="OPENING",
-                )
+                # look for an opening geometry in the Type
+                myopening = None
+                for representation_map in element_type.RepresentationMaps:
+                    if representation_map.MappedRepresentation.RepresentationIdentifier == "Clearance":
+                        myopening = run(
+                            "root.create_entity",
+                            self.file,
+                            ifc_class="IfcOpeningElement",
+                            name=element_type.Name,
+                            predefined_type="OPENING",
+                        )
+                        run(
+                            "geometry.assign_representation",
+                            self.file,
+                            product=myopening,
+                            representation=self.file.createIfcShapeRepresentation(
+                                body_context,
+                                body_context.ContextIdentifier,
+                                representation_map.MappedRepresentation.RepresentationType,
+                                representation_map.MappedRepresentation.Items,
+                            ),
+                        )
 
-                # give the opening a Body representation
-                # TODO IFC library objects may come with a more complex opening shape
-                inner = self.thickness + 0.02
-                outer = -0.02
-                run(
-                    "geometry.assign_representation",
-                    self.file,
-                    product=myopening,
-                    representation=self.file.createIfcShapeRepresentation(
-                        body_context,
-                        body_context.ContextIdentifier,
-                        "SweptSolid",
-                        [
-                            create_extruded_area_solid(
-                                self.file,
-                                [
-                                    [0.0, outer],
-                                    [opening["width"], outer],
-                                    [opening["width"], inner],
-                                    [0.0, inner],
-                                ],
-                                opening["height"],
-                            )
-                        ],
-                    ),
-                )
+                if not myopening:
+                    # create a simple box shaped opening
+                    myopening = run(
+                        "root.create_entity",
+                        self.file,
+                        ifc_class="IfcOpeningElement",
+                        name="My Opening",
+                        predefined_type="OPENING",
+                    )
+
+                    # give the opening a Body representation
+                    inner = self.thickness + 0.02
+                    outer = -0.02
+                    run(
+                        "geometry.assign_representation",
+                        self.file,
+                        product=myopening,
+                        representation=self.file.createIfcShapeRepresentation(
+                            body_context,
+                            body_context.ContextIdentifier,
+                            "SweptSolid",
+                            [
+                                create_extruded_area_solid(
+                                    self.file,
+                                    [
+                                        [0.0, outer],
+                                        [opening["width"], outer],
+                                        [opening["width"], inner],
+                                        [0.0, inner],
+                                    ],
+                                    opening["height"],
+                                )
+                            ],
+                        ),
+                    )
+
                 # place the opening where the wall is
                 run(
                     "geometry.edit_object_placement",

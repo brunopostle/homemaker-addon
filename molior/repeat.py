@@ -264,7 +264,7 @@ class Repeat(TraceClass):
                                 ],
                             ),
                         )
-                        # FIXME create Type and Profile Set using get_extruded_type_by_name()
+                        # FIXME create Type and Profile Set using get_type_object()
                         profile = self.file.create_entity(
                             self.structural_profile[0], **self.structural_profile[1]
                         )
