@@ -527,8 +527,6 @@ class Wall(TraceClass):
                     name=name,
                 )
                 element_type = entity.IsTypedBy[0].RelatingType
-                print(element_type)
-                print(element_type.RepresentationMaps)
 
                 # look for an opening geometry in the Type
                 myopening = None
