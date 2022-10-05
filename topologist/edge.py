@@ -45,7 +45,7 @@ def FacesBelow(self, host_topology):
 
 
 def CellsBelow(self, host_topology):
-    """Retruns a list of Cells attached below this Edge"""
+    """Returns a list of Cells attached below this Edge"""
     result_cells_ptr = []
     cells_ptr = self.Cells_Cached(host_topology)
     for cell in cells_ptr:

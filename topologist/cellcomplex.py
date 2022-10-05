@@ -237,7 +237,7 @@ def GetHulls(self):
 
         if face.IsVertical():
             if face.AxisOuter():
-                # these hulls are duplicates of traces wth the same names
+                # these hulls are duplicates of traces with the same names
                 if face.IsOpen(self):
                     myhulls.add_face(
                         "open",
@@ -310,7 +310,7 @@ def GetHulls(self):
                             back_cell=back_cell,
                         )
                 elif cell_above.Usage() != None:
-                    # these hulls are duplicates of traces wth the same names
+                    # these hulls are duplicates of traces with the same names
                     myhulls.add_face(
                         cell_above.Usage(),
                         stylename,

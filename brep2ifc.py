@@ -23,7 +23,7 @@ print("BREP imported", datetime.datetime.now())
 
 origin = Vertex.ByCoordinates(0.0, 0.0, 0.0)
 # topology_scaled = TopologyUtility.Scale(topology, origin, 0.3048, 0.3048, 0.3048)
-# print("BREP scale from feet to metres", datetime.datetime.now())
+# print("BREP scale from feet to meters", datetime.datetime.now())
 topology_scaled = TopologyUtility.Scale(topology, origin, 1.0, 1.0, 1.0)
 
 faces_ptr = []
