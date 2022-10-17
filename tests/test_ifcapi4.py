@@ -13,6 +13,7 @@ from molior.ifc import (
     get_context_by_name,
     add_pset,
 )
+from molior.style import Style
 
 run = ifcopenshell.api.run
 
@@ -24,7 +25,7 @@ class Tests(unittest.TestCase):
 
         column_type = get_extruded_type_by_name(
             self.file,
-            style_object=molior.Style(),
+            style_object=Style(),
             profiles=[
                 {
                     "ifc_class": "IfcRectangleProfileDef",

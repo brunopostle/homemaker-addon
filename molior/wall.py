@@ -531,7 +531,10 @@ class Wall(TraceClass):
                 # look for an opening geometry in the Type
                 myopening = None
                 for representation_map in element_type.RepresentationMaps:
-                    if representation_map.MappedRepresentation.RepresentationIdentifier == "Clearance":
+                    if (
+                        representation_map.MappedRepresentation.RepresentationIdentifier
+                        == "Clearance"
+                    ):
                         myopening = run(
                             "root.create_entity",
                             self.file,

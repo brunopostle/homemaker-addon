@@ -16,6 +16,7 @@ from molior.ifc import (
     assign_storey_byindex,
     get_context_by_name,
 )
+from molior.style import Style
 from molior.geometry import matrix_align
 
 run = ifcopenshell.api.run
@@ -27,7 +28,7 @@ class Tests(unittest.TestCase):
         self.body_context = get_context_by_name(ifc, context_identifier="Body")
 
         project = ifc.by_type("IfcProject")[0]
-        style_object = molior.Style()
+        style_object = Style()
         site = get_site_by_name(ifc, project, "My Site")
         building = get_building_by_name(ifc, site, "My Building")
         create_storeys(ifc, building, {0.0: 0})
