@@ -93,9 +93,8 @@ class Repeat(TraceClass):
             aggregate = run(
                 "root.create_entity",
                 self.file,
-                ifc_class=self.ifc,
+                ifc_class="IfcElementAssembly",
                 name=self.identifier,
-                predefined_type=self.predefined_type,
             )
             run(
                 "geometry.edit_object_placement",

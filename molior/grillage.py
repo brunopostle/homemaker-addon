@@ -52,7 +52,7 @@ class Grillage(BaseClass):
         aggregate = run(
             "root.create_entity",
             self.file,
-            ifc_class=self.ifc,
+            ifc_class="IfcElementAssembly",
             name=self.identifier,
         )
         run(
