@@ -50,7 +50,7 @@ class Tests(unittest.TestCase):
 
         assign_extrusion_fromDXF(
             ifc,
-            self.style_object,
+            style_object=self.style_object,
             context_identifier="Body",
             element=element,
             directrix=directrix,
@@ -74,7 +74,7 @@ class Tests(unittest.TestCase):
 
         assign_extrusion_fromDXF(
             ifc,
-            self.style_object,
+            style_object=self.style_object,
             context_identifier="Body",
             element=element,
             directrix=directrix,

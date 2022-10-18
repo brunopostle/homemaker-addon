@@ -327,7 +327,7 @@ def create_face_surface(self, polygon, normal):
 
 def assign_extrusion_fromDXF(
     self,
-    style_object,
+    style_object=None,
     context_identifier="Body",
     element=None,
     directrix=[[0.0, 0.0], [0.0, 1.0]],
@@ -336,86 +336,24 @@ def assign_extrusion_fromDXF(
     transform=None,
 ):
     """Create an extrusion given a directrix and DXF profile filepath"""
-    identifier = stylename + "/" + os.path.splitext(os.path.split(path_dxf)[-1])[0]
-    library = get_library_by_name(self, stylename)
-
     ifc_type = element.is_a() + "Type"
-    materialprofileset = None
-    # use an existing Type if defined in this library
-    for declares in library.Declares:
-        for definition in declares.RelatedDefinitions:
-            if definition.is_a(ifc_type) and definition.Name == identifier:
-                for association in definition.HasAssociations:
-                    if association.is_a(
-                        "IfcRelAssociatesMaterial"
-                    ) and association.RelatingMaterial.is_a("IfcMaterialProfileSet"):
-                        materialprofileset = association.RelatingMaterial
-    assign_type_by_name(
+
+    type_product = get_extruded_dxf_type_by_name(
         self,
-        style_object,
-        element=element,
+        style_object=style_object,
+        ifc_type=ifc_type,
         stylename=stylename,
-        name=identifier,
+        path_dxf=path_dxf,
     )
 
-    if materialprofileset:
-        # profile(s) already defined, use them
-        closedprofiledefs = [
-            materialprofile.Profile
-            for materialprofile in materialprofileset.MaterialProfiles
-        ]
-    else:
-        # profile(s) not defined, load from the DXF
-        doc = ezdxf.readfile(path_dxf)
-        model = doc.modelspace()
-        closedprofiledefs = []
-        profile_index = 0
-        for entity in model:
-            if entity.get_mode() == "AcDb2dPolyline":
-                profile = list(entity.points())
-                if not profile[-1] == profile[0]:
-                    # a closed polyline has first and last points coincident
-                    profile.append(profile[0])
-                closedprofiledefs.append(
-                    self.createIfcArbitraryClosedProfileDef(
-                        "AREA",
-                        identifier + "_" + str(profile_index),
-                        self.createIfcPolyline(
-                            [
-                                self.createIfcCartesianPoint([point[1], point[0]])
-                                for point in profile
-                            ]
-                        ),
-                    ),
-                )
-                profile_index += 1
+    run(
+        "type.assign_type",
+        self,
+        related_object=element,
+        relating_type=type_product,
+    )
 
-        # record profile(s) in a Type so we can find them again
-        type_product = run(
-            "root.create_entity",
-            self,
-            ifc_class=ifc_type,
-            name=identifier,
-        )
-        run(
-            "project.assign_declaration",
-            self,
-            definition=type_product,
-            relating_context=library,
-        )
-        type_product.PredefinedType = "USERDEFINED"
-        # this type is going have a Material Profile Set
-        profile_set = run(
-            "material.assign_material",
-            self,
-            product=type_product,
-            type="IfcMaterialProfileSet",
-        ).RelatingMaterial
-
-        profile_set.MaterialProfiles = [
-            self.createIfcMaterialProfile(None, None, None, profiledef)
-            for profiledef in closedprofiledefs
-        ]
+    subcontext = get_context_by_name(self, context_identifier=context_identifier)
 
     # define these outside the loop as they are the same for each profile
     axis = self.createIfcAxis2Placement3D(
@@ -426,8 +364,17 @@ def assign_extrusion_fromDXF(
     )
     plane = self.createIfcPlane(axis)
 
-    # TODO create Extruded Area Solid if directrix is single segment
-    subcontext = get_context_by_name(self, context_identifier=context_identifier)
+    # TODO create chain of Extruded Area Solids with clipped ends
+    closedprofiledefs = []
+    for association in type_product.HasAssociations:
+        if association.is_a(
+            "IfcRelAssociatesMaterial"
+        ) and association.RelatingMaterial.is_a("IfcMaterialProfileSet"):
+            materialprofileset = association.RelatingMaterial
+            closedprofiledefs = [
+                materialprofile.Profile
+                for materialprofile in materialprofileset.MaterialProfiles
+            ]
     run(
         "geometry.assign_representation",
         self,
@@ -455,6 +402,81 @@ def assign_extrusion_fromDXF(
             ],
         ),
     )
+
+
+def get_extruded_dxf_type_by_name(
+    self,
+    ifc_type="IfcBuildingElementProxy",
+    name="My Building Element",
+    stylename="default",
+    path_dxf="/dev/null",
+    style_object=None,
+):
+    """Get an extrusion type given a DXF profile filepath"""
+    library = get_library_by_name(self, stylename)
+    identifier = stylename + "/" + os.path.splitext(os.path.split(path_dxf)[-1])[0]
+    # use an existing Type if defined in libraries, or create it
+    type_product = get_type_object(
+        self,
+        style_object,
+        ifc_type=ifc_type,
+        stylename=stylename,
+        name=identifier,
+    )
+    materialprofileset = None
+    for association in type_product.HasAssociations:
+        if association.is_a(
+            "IfcRelAssociatesMaterial"
+        ) and association.RelatingMaterial.is_a("IfcMaterialProfileSet"):
+            materialprofileset = association.RelatingMaterial
+
+    if not materialprofileset:
+        # profile(s) not defined, load from the DXF
+        doc = ezdxf.readfile(path_dxf)
+        model = doc.modelspace()
+        closedprofiledefs = []
+        profile_index = 0
+        for entity in model:
+            if entity.get_mode() == "AcDb2dPolyline":
+                profile = list(entity.points())
+                if not profile[-1] == profile[0]:
+                    # a closed polyline has first and last points coincident
+                    profile.append(profile[0])
+                closedprofiledefs.append(
+                    self.createIfcArbitraryClosedProfileDef(
+                        "AREA",
+                        identifier + "_" + str(profile_index),
+                        self.createIfcPolyline(
+                            [
+                                self.createIfcCartesianPoint([point[1], point[0]])
+                                for point in profile
+                            ]
+                        ),
+                    ),
+                )
+                profile_index += 1
+
+        # put Type in a library so we can find it again
+        run(
+            "project.assign_declaration",
+            self,
+            definition=type_product,
+            relating_context=library,
+        )
+        type_product.PredefinedType = "USERDEFINED"
+        # this type is going have a Material Profile Set
+        profile_set = run(
+            "material.assign_material",
+            self,
+            product=type_product,
+            type="IfcMaterialProfileSet",
+        ).RelatingMaterial
+
+        profile_set.MaterialProfiles = [
+            self.createIfcMaterialProfile(None, None, None, profiledef)
+            for profiledef in closedprofiledefs
+        ]
+    return type_product
 
 
 def create_tessellation_from_mesh(self, vertices, faces):
@@ -592,6 +614,7 @@ def assign_type_by_name(
         related_object=element,
         relating_type=product_type,
     )
+    return product_type
 
 
 def get_type_object(
