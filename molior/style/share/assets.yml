@@ -7,7 +7,7 @@ entrance door:
     side: 0.8
     end: 0.4
   -
-    file: door_panelled_short
+    file: door_panelled
     height: 2.08
     width: 0.91
     side: 0.8
@@ -20,14 +20,14 @@ flat entrance door:
     side: 0.8
     end: 0.4
   -
-    file: door_panelled_short_flat
+    file: door_panelled
     height: 2.08
     width: 0.91
     side: 0.8
     end: 0.1
 single storey entrance door:
   -
-    file: door_panelled_short_flat
+    file: door_panelled
     height: 2.08
     width: 0.91
     side: 0.8
