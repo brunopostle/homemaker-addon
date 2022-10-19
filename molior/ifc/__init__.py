@@ -463,7 +463,8 @@ def get_extruded_dxf_type_by_name(
             definition=type_product,
             relating_context=library,
         )
-        type_product.PredefinedType = "USERDEFINED"
+        if hasattr(type_product, "PredefinedType"):
+            type_product.PredefinedType = "USERDEFINED"
         # this type is going have a Material Profile Set
         profile_set = run(
             "material.assign_material",
@@ -763,7 +764,8 @@ def get_extruded_type_by_name(
         definition=type_product,
         relating_context=library,
     )
-    type_product.PredefinedType = "USERDEFINED"
+    if hasattr(type_product, "PredefinedType"):
+        type_product.PredefinedType = "USERDEFINED"
     # this type is going have a Material Profile Set
     profile_set = run(
         "material.assign_material",

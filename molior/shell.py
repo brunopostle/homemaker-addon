@@ -90,7 +90,7 @@ class Shell(BaseClass):
                 ifc_class=self.ifc,
                 name=self.identifier,
             )
-            if not element.is_a("IfcVirtualElement"):
+            if hasattr(element, "PredefinedType"):
                 element.PredefinedType = self.predefined_type
             run(
                 "aggregate.assign_object",

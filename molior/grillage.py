@@ -181,7 +181,8 @@ class Grillage(BaseClass):
                 stylename=self.style,
                 style_object=self.style_object,
             )
-            product_type.PredefinedType = self.predefined_type
+            if hasattr(product_type, "PredefinedType"):
+                product_type.PredefinedType = self.predefined_type
             self.add_psets(product_type)
 
             # retrieve the Material Profile Set from the Product Type
@@ -203,7 +204,8 @@ class Grillage(BaseClass):
                     ifc_class=self.ifc,
                     name=self.identifier,
                 )
-                linear_element.PredefinedType = self.predefined_type
+                if hasattr(linear_element, "PredefinedType"):
+                    linear_element.PredefinedType = self.predefined_type
                 self.add_psets(linear_element)
 
                 run(

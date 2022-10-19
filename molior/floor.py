@@ -58,7 +58,7 @@ class Floor(TraceClass):
             ifc_class=self.ifc,
             name=self.name + "/" + str(cell.Get("index")),
         )
-        if not element.is_a("IfcVirtualElement"):
+        if hasattr(element, "PredefinedType"):
             element.PredefinedType = self.predefined_type
         # Will be re-assigned to Space later
         assign_storey_byindex(self.file, element, self.building, self.level)

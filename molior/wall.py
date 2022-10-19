@@ -89,7 +89,7 @@ class Wall(TraceClass):
                 ifc_class=self.ifc,
                 name=self.identifier,
             )
-            if not mywall.is_a("IfcVirtualElement"):
+            if hasattr(mywall, "PredefinedType"):
                 mywall.PredefinedType = self.predefined_type
             run(
                 "aggregate.assign_object",
@@ -526,7 +526,7 @@ class Wall(TraceClass):
                     stylename=self.style,
                     name=name,
                 )
-                element_type = entity.IsTypedBy[0].RelatingType
+                element_type = ifcopenshell.util.element.get_type(entity)
 
                 # look for an opening geometry in the Type
                 myopening = None
