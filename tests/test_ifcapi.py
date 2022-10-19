@@ -74,7 +74,7 @@ class Tests(unittest.TestCase):
         )
         assign_storey_byindex(ifc, slab, self.building, 0)
 
-        product_type = get_type_object(
+        type_product = get_type_object(
             ifc,
             self.style_object,
             ifc_type="IfcDoorType",
@@ -99,7 +99,7 @@ class Tests(unittest.TestCase):
             "type.assign_type",
             ifc,
             related_object=door,
-            relating_type=product_type,
+            relating_type=type_product,
         )
         # place it in space and assign to storey
         run(
@@ -127,7 +127,7 @@ class Tests(unittest.TestCase):
             "type.assign_type",
             ifc,
             related_object=door2,
-            relating_type=product_type,
+            relating_type=type_product,
         )
         # place it in space and assign to storey
         run(

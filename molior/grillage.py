@@ -172,7 +172,7 @@ class Grillage(BaseClass):
                 [0.0, 0.0, -self.inner], [1.0, 0.0, 0.0]
             )
             # create or retrieve a Type for the linear elements
-            product_type = get_extruded_type_by_name(
+            type_product = get_extruded_type_by_name(
                 self.file,
                 profiles=self.profiles,
                 context_identifier="Body",
@@ -181,14 +181,14 @@ class Grillage(BaseClass):
                 stylename=self.style,
                 style_object=self.style_object,
             )
-            if hasattr(product_type, "PredefinedType"):
-                product_type.PredefinedType = self.predefined_type
-            self.add_psets(product_type)
+            if hasattr(type_product, "PredefinedType"):
+                type_product.PredefinedType = self.predefined_type
+            self.add_psets(type_product)
 
             # retrieve the Material Profile Set from the Product Type
             material_profiles = []
             profile_set = None
-            for association in product_type.HasAssociations:
+            for association in type_product.HasAssociations:
                 if association.is_a(
                     "IfcRelAssociatesMaterial"
                 ) and association.RelatingMaterial.is_a("IfcMaterialProfileSet"):
@@ -212,7 +212,7 @@ class Grillage(BaseClass):
                     "type.assign_type",
                     self.file,
                     related_object=linear_element,
-                    relating_type=product_type,
+                    relating_type=type_product,
                 )
 
                 direction = cropped_edge.NormalisedVector()

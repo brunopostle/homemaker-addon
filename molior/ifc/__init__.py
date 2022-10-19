@@ -602,7 +602,7 @@ def assign_type_by_name(
     name="error",
 ):
     """Assign Type from an internal or external IFC library"""
-    product_type = get_type_object(
+    type_product = get_type_object(
         self,
         style_object,
         ifc_type=element.is_a() + "Type",
@@ -613,9 +613,9 @@ def assign_type_by_name(
         "type.assign_type",
         self,
         related_object=element,
-        relating_type=product_type,
+        relating_type=type_product,
     )
-    return product_type
+    return type_product
 
 
 def get_type_object(

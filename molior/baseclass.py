@@ -46,24 +46,24 @@ class BaseClass:
     def get_element_type(self):
         """Retrieve or create an Ifc Type definition for this Molior object"""
 
-        product_type = get_type_object(
+        type_product = get_type_object(
             self.file,
             self.style_object,
             ifc_type=self.ifc + "Type",
             stylename=self.style,
             name=self.identifier,
         )
-        if hasattr(product_type, "PredefinedType"):
-            product_type.PredefinedType = self.predefined_type
+        if hasattr(type_product, "PredefinedType"):
+            type_product.PredefinedType = self.predefined_type
 
-        if not get_material(product_type):
+        if not get_material(type_product):
             run(
                 "material.assign_material",
                 self.file,
-                product=product_type,
+                product=type_product,
                 type="IfcMaterialLayerSet",
             )
-            mylayerset = get_material(product_type)
+            mylayerset = get_material(type_product)
             mylayerset.LayerSetName = self.identifier
             for mylayer in self.layerset:
                 layer = run(
@@ -80,7 +80,7 @@ class BaseClass:
                 layer.LayerThickness = mylayer[0]
                 layer.Name = mylayer[1]
 
-        return product_type
+        return type_product
 
     def add_psets(self, product):
         """self.psets is a dictionary of Psets, add them to an Ifc product"""
