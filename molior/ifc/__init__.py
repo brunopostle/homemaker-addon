@@ -448,7 +448,7 @@ def get_extruded_dxf_type_by_name(
                         identifier + "_" + str(profile_index),
                         self.createIfcPolyline(
                             [
-                                self.createIfcCartesianPoint([point[1], point[0]])
+                                self.createIfcCartesianPoint([point[0], point[1]])
                                 for point in profile
                             ]
                         ),
