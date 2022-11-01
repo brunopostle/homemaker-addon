@@ -178,8 +178,8 @@ class Extrusion(TraceClass):
         dxf_path = style.get_file(self.style, self.profile)
 
         transform = self.file.createIfcCartesianTransformationOperator2D(
-            None,
-            None,
+            self.file.createIfcDirection([0.0, 1.0]),
+            self.file.createIfcDirection([1.0, 0.0]),
             self.file.createIfcCartesianPoint([self.yshift, self.xshift]),
             self.scale,
         )
@@ -187,6 +187,7 @@ class Extrusion(TraceClass):
         # TODO Axis Representation
         assign_extrusion_fromDXF(
             self.file,
+            style_object=self.style_object,
             context_identifier="Body",
             element=element,
             directrix=directrix,

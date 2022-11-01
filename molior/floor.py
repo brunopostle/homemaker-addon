@@ -58,7 +58,7 @@ class Floor(TraceClass):
             ifc_class=self.ifc,
             name=self.name + "/" + str(cell.Get("index")),
         )
-        if not element.is_a("IfcVirtualElement"):
+        if hasattr(element, "PredefinedType"):
             element.PredefinedType = self.predefined_type
         # Will be re-assigned to Space later
         assign_storey_byindex(self.file, element, self.building, self.level)
@@ -86,16 +86,16 @@ class Floor(TraceClass):
         if not self.do_representation:
             return
         # assign a type and place a representation
-        myelement_type = self.get_element_type()
+        product_type = self.get_element_type()
         run(
             "type.assign_type",
             self.file,
             related_object=element,
-            relating_type=myelement_type,
+            relating_type=product_type,
         )
-        self.add_psets(myelement_type)
+        self.add_psets(product_type)
         for inverse in self.file.get_inverse(
-            ifcopenshell.util.element.get_material(myelement_type)
+            ifcopenshell.util.element.get_material(product_type)
         ):
             if inverse.is_a("IfcMaterialLayerSetUsage"):
                 inverse.OffsetFromReferenceLine = 0.0 - self.below

@@ -1,233 +1,233 @@
 ---
 entrance door:
   -
-    file: door_panelled_tall.dxf
+    file: door_panelled_tall
     height: 2.545
     width: 0.91
     side: 0.8
     end: 0.4
   -
-    file: door_panelled_short.dxf
+    file: door_panelled
     height: 2.08
     width: 0.91
     side: 0.8
     end: 0.1
 flat entrance door:
   -
-    file: door_panelled_tall_flat.dxf
+    file: door_panelled_tall_flat
     height: 2.545
     width: 0.91
     side: 0.8
     end: 0.4
   -
-    file: door_panelled_short_flat.dxf
+    file: door_panelled
     height: 2.08
     width: 0.91
     side: 0.8
     end: 0.1
 single storey entrance door:
   -
-    file: door_panelled_short_flat.dxf
+    file: door_panelled
     height: 2.08
     width: 0.91
     side: 0.8
     end: 0.1
 wider back door:
    -
-    file: door_panelled.dxf
+    file: door_panelled
     height: 2.08
     width: 0.91
     side: 0.6
     end: 0.1
    -
-    file: door_panelled_double.dxf
+    file: door_panelled_double
     height: 2.08
     width: 1.8
     side: 0.6
     end: 0.1
    -
-    file: door_panelled_double_tall.dxf
+    file: door_panelled_double_tall
     height: 2.545
     width: 1.8
     side: 0.6
     end: 0.1
 back door:
    -
-    file: door_panelled.dxf
+    file: door_panelled
     height: 2.08
     width: 0.91
     side: 0.6
     end: 0.1
 single inside door:
   -
-    file: door_inside.dxf
+    file: door_inside
     height: 2.1
     width: 0.8
     side: 0.1
     end: 0.1
 double inside door:
   -
-    file: door_inside_double.dxf
+    file: door_inside_double
     height: 2.1
     width: 1.6
     side: 0.1
     end: 0.1
   -
-    file: door_inside.dxf
+    file: door_inside
     height: 2.1
     width: 0.8
     side: 0.1
     end: 0.1
 entrance gate:
   -
-    file: gate.dxf
+    file: gate
     height: 2.08
     width: 1.41
     side: 0.8
     end: 0.4
 shopfront:
   -
-    file: shopfront.dxf
+    file: shopfront
     height: 2.545
     width: 5.0
     side: 0.8
     end: 0.4
   -
-    file: shopfront_smaller.dxf
+    file: shopfront_smaller
     height: 2.545
     width: 3.98
     side: 0.8
     end: 0.4
   -
-    file: shopfront_smallest.dxf
+    file: shopfront_smallest
     height: 2.545
     width: 2.96
     side: 0.8
     end: 0.4
   -
-    file: door_panelled_tall.dxf
+    file: door_panelled_tall
     height: 2.545
     width: 0.91
     side: 0.8
     end: 0.4
 sash window:
   -
-    file: sash_big.dxf
+    file: sash_big
     height: 1.82
     width: 0.91
     side: 0.8
     end: 0.3
   -
-    file: sash_narrow.dxf
+    file: sash_narrow
     height: 1.82
     width: 0.625
     side: 0.8
     end: 0.3
   -
-    file: sash_shorter.dxf
+    file: sash_shorter
     height: 1.445
     width: 0.91
     side: 0.8
     end: 0.3
   -
-    file: sash_narrow_shorter.dxf
+    file: sash_narrow_shorter
     height: 1.445
     width: 0.625
     side: 0.8
     end: 0.3
   -
-    file: sash_small.dxf
+    file: sash_small
     height: 0.995
     width: 0.625
     side: 0.8
     end: 0.3
   -
-    file: sash_big_taller.dxf
+    file: sash_big_taller
     height: 2.23
     width: 0.91
     side: 0.8
     end: 0.3
   -
-    file: sash_shortest.dxf
+    file: sash_shortest
     height: 1.025
     width: 0.91
     side: 0.8
     end: 0.3
 fancy sash window:
   -
-    file: sash_big_fancy.dxf
+    file: sash_big_fancy
     height: 1.82
     width: 0.91
     side: 0.8
     end: 0.3
 column:
   -
-    file: column_210.dxf
+    file: column_210
     height: 2.1
   -
-    file: column_220.dxf
+    file: column_220
     height: 2.2
   -
-    file: column_230.dxf
+    file: column_230
     height: 2.3
   -
-    file: column_240.dxf
+    file: column_240
     height: 2.4
   -
-    file: column_250.dxf
+    file: column_250
     height: 2.5
   -
-    file: column_260.dxf
+    file: column_260
     height: 2.6
   -
-    file: column_270.dxf
+    file: column_270
     height: 2.7
   -
-    file: column_280.dxf
+    file: column_280
     height: 2.8
   -
-    file: column_290.dxf
+    file: column_290
     height: 2.9
   -
-    file: column_300.dxf
+    file: column_300
     height: 3.0
   -
-    file: column_310.dxf
+    file: column_310
     height: 3.1
   -
-    file: column_320.dxf
+    file: column_320
     height: 3.2
   -
-    file: column_330.dxf
+    file: column_330
     height: 3.3
   -
-    file: column_340.dxf
+    file: column_340
     height: 3.4
 post:
   -
-    file: post_200.dxf
+    file: post_200
     height: 2.00
   -
-    file: post_215.dxf
+    file: post_215
     height: 2.15
   -
-    file: post_230.dxf
+    file: post_230
     height: 2.30
   -
-    file: post_245.dxf
+    file: post_245
     height: 2.45
   -
-    file: post_260.dxf
+    file: post_260
     height: 2.60
   -
-    file: post_275.dxf
+    file: post_275
     height: 2.75
   -
-    file: post_290.dxf
+    file: post_290
     height: 2.90
   -
-    file: post_305.dxf
+    file: post_305
     height: 3.05
   -
-    file: post_320.dxf
+    file: post_320
     height: 3.20

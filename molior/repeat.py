@@ -5,7 +5,7 @@ from molior.baseclass import TraceClass
 from molior.geometry import add_2d, subtract_2d, scale_2d, distance_2d, matrix_align
 from molior.ifc import (
     add_face_topology_epsets,
-    assign_representation_fromDXF,
+    assign_type_by_name,
     assign_storey_byindex,
     get_material_by_name,
     get_context_by_name,
@@ -61,11 +61,9 @@ class Repeat(TraceClass):
                 height = self.style_assets[self.asset][index]["height"]
                 if height >= self.height - self.ceiling:
                     break
-            dxf_path = style.get_file(
-                self.style, self.style_assets[self.asset][index]["file"]
-            )
+            name = self.style_assets[self.asset][index]["file"]
         else:
-            dxf_path = style.get_file(self.style, "error.dxf")
+            name = "error"
 
         segments = self.segments()
         self.outer += self.xshift
@@ -95,9 +93,8 @@ class Repeat(TraceClass):
             aggregate = run(
                 "root.create_entity",
                 self.file,
-                ifc_class=self.ifc,
+                ifc_class="IfcElementAssembly",
                 name=self.identifier,
-                predefined_type=self.predefined_type,
             )
             run(
                 "geometry.edit_object_placement",
@@ -266,7 +263,7 @@ class Repeat(TraceClass):
                                 ],
                             ),
                         )
-                        # FIXME create Type and Profile Set using get_extruded_type_by_name()
+                        # FIXME create Type and Profile Set using get_type_object()
                         profile = self.file.create_entity(
                             self.structural_profile[0], **self.structural_profile[1]
                         )
@@ -311,13 +308,12 @@ class Repeat(TraceClass):
                             ],
                         ),
                     )
-                    # load geometry from a DXF file and assign to the entity
-                    assign_representation_fromDXF(
+                    assign_type_by_name(
                         self.file,
-                        context_identifier="Body",
+                        self.style_object,
                         element=entity,
                         stylename=self.style,
-                        path_dxf=dxf_path,
+                        name=name,
                     )
                     # TODO Axis Representation
                     run(

@@ -10,12 +10,13 @@ import molior.ifc
 from molior.ifc import (
     get_site_by_name,
     get_building_by_name,
+    get_type_object,
     create_storeys,
     create_extruded_area_solid,
-    create_tessellations_from_dxf,
     assign_storey_byindex,
     get_context_by_name,
 )
+from molior.style import Style
 from molior.geometry import matrix_transform, matrix_align
 
 run = ifcopenshell.api.run
@@ -26,6 +27,7 @@ class Tests(unittest.TestCase):
         ifc = molior.ifc.init(name="My Project")
         self.body_context = get_context_by_name(ifc, context_identifier="Body")
         self.axis_context = get_context_by_name(ifc, context_identifier="Axis")
+        self.style_object = Style()
 
         project = ifc.by_type("IfcProject")[0]
         site = get_site_by_name(ifc, project, "My Site")
@@ -72,83 +74,69 @@ class Tests(unittest.TestCase):
         )
         assign_storey_byindex(ifc, slab, self.building, 0)
 
-        # load a DXF polyface mesh as a Tessellation
-        brep = ifc.createIfcShapeRepresentation(
-            self.body_context,
-            self.body_context.ContextIdentifier,
-            "Tessellation",
-            create_tessellations_from_dxf(ifc, "molior/style/share/shopfront.dxf"),
-        )
-
-        # create a mapped item that can be reused
-        run(
-            "geometry.assign_representation",
+        type_product = get_type_object(
             ifc,
-            product=run(
-                "root.create_entity",
-                ifc,
-                ifc_class="IfcTypeProduct",
-                name="shopfront.dxf",
-            ),
-            representation=brep,
+            self.style_object,
+            ifc_type="IfcDoorType",
+            stylename="default",
+            name="shopfront",
         )
-        mapped_shopfront = run("geometry.map_representation", ifc, representation=brep)
 
-        # create a window using the mapped item
-        window = run(
+        # create a door using the mapped item
+        door = run(
             "root.create_entity",
             ifc,
-            ifc_class="IfcWindow",
-            name="My Window",
+            ifc_class="IfcDoor",
+            name="My Door",
         )
         run(
             "attribute.edit_attributes",
             ifc,
-            product=window,
+            product=door,
             attributes={"OverallHeight": 2.545, "OverallWidth": 5.0},
         )
         run(
-            "geometry.assign_representation",
+            "type.assign_type",
             ifc,
-            product=window,
-            representation=mapped_shopfront,
+            related_object=door,
+            relating_type=type_product,
         )
         # place it in space and assign to storey
         run(
             "geometry.edit_object_placement",
             ifc,
-            product=window,
+            product=door,
             matrix=matrix_transform(0.0, [15.0, 0.0, 0.0]),
         )
-        assign_storey_byindex(ifc, window, self.building, 0)
+        assign_storey_byindex(ifc, door, self.building, 0)
 
-        # create another window using the mapped item
-        window2 = run(
+        # create another door using the mapped item
+        door2 = run(
             "root.create_entity",
             ifc,
-            ifc_class="IfcWindow",
-            name="My Window",
+            ifc_class="IfcDoor",
+            name="My Door",
         )
         run(
             "attribute.edit_attributes",
             ifc,
-            product=window2,
+            product=door2,
             attributes={"OverallHeight": 2.545, "OverallWidth": 5.0},
         )
         run(
-            "geometry.assign_representation",
+            "type.assign_type",
             ifc,
-            product=window2,
-            representation=mapped_shopfront,
+            related_object=door2,
+            relating_type=type_product,
         )
         # place it in space and assign to storey
         run(
             "geometry.edit_object_placement",
             ifc,
-            product=window2,
+            product=door2,
             matrix=matrix_align([11.0, 0.0, 0.0], [11.0, 2.0, 0.0]),
         )
-        assign_storey_byindex(ifc, window2, self.building, 0)
+        assign_storey_byindex(ifc, door2, self.building, 0)
 
         # make the ifc model available to other test methods
         self.ifc = ifc
@@ -160,32 +148,32 @@ class Tests(unittest.TestCase):
         for typeproduct in ifc.by_type("IfcTypeProduct"):
             lookup[typeproduct.Name] = typeproduct
 
-        # create a window
+        # create a door
         myproduct = run(
             "root.create_entity",
             ifc,
-            ifc_class="IfcWindow",
-            name="My Window",
+            ifc_class="IfcDoor",
+            name="My Door",
         )
-        # window needs some attributes
+        # door needs some attributes
         run(
             "attribute.edit_attributes",
             ifc,
             product=myproduct,
             attributes={"OverallHeight": 2.545, "OverallWidth": 5.0},
         )
-        # place the window in space
+        # place the door in space
         run(
             "geometry.edit_object_placement",
             ifc,
             product=myproduct,
             matrix=matrix_align([11.0, 0.0, 3.0], [11.0, 2.0, 0.0]),
         )
-        # assign the window to a storey
+        # assign the door to a storey
         assign_storey_byindex(ifc, myproduct, self.building, 0)
 
         # The TypeProduct knows what MappedRepresentations to use
-        typeproduct = lookup["shopfront.dxf"]
+        typeproduct = lookup["shopfront"]
         for representationmap in typeproduct.RepresentationMaps:
             run(
                 "geometry.assign_representation",
@@ -262,7 +250,7 @@ class Tests(unittest.TestCase):
         )
         # use the opening to cut the wall, no need to assign a storey
         run("void.add_opening", ifc, opening=myopening, element=mywall)
-        # associate the opening with our window
+        # associate the opening with our door
         run("void.add_filling", ifc, opening=myopening, element=myproduct)
 
         ifc.write("_test.ifc")

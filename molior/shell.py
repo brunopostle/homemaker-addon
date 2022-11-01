@@ -90,7 +90,7 @@ class Shell(BaseClass):
                 ifc_class=self.ifc,
                 name=self.identifier,
             )
-            if not element.is_a("IfcVirtualElement"):
+            if hasattr(element, "PredefinedType"):
                 element.PredefinedType = self.predefined_type
             run(
                 "aggregate.assign_object",
@@ -213,14 +213,14 @@ class Shell(BaseClass):
             assignment.RelatedObjects = [element]
 
             # get or create a Type
-            myelement_type = self.get_element_type()
+            product_type = self.get_element_type()
             run(
                 "type.assign_type",
                 self.file,
                 related_object=element,
-                relating_type=myelement_type,
+                relating_type=product_type,
             )
-            self.add_psets(myelement_type)
+            self.add_psets(product_type)
 
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
 

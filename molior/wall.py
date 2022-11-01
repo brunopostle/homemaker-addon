@@ -3,7 +3,6 @@ import numpy
 
 from topologic import Vertex, FaceUtility
 from topologist.helpers import el
-import molior
 from molior.baseclass import TraceClass
 from molior.geometry import (
     matrix_align,
@@ -20,7 +19,7 @@ from molior.ifc import (
     create_extruded_area_solid,
     clip_solid,
     create_face_surface,
-    assign_representation_fromDXF,
+    assign_type_by_name,
     assign_storey_byindex,
     get_material_by_name,
     get_context_by_name,
@@ -62,7 +61,6 @@ class Wall(TraceClass):
         body_context = get_context_by_name(self.file, context_identifier="Body")
         axis_context = get_context_by_name(self.file, context_identifier="Axis")
         self.init_openings()
-        style = molior.Molior.style
 
         # traces have one or more segments, aggregate them
         aggregate = run(
@@ -91,7 +89,7 @@ class Wall(TraceClass):
                 ifc_class=self.ifc,
                 name=self.identifier,
             )
-            if not mywall.is_a("IfcVirtualElement"):
+            if hasattr(mywall, "PredefinedType"):
                 mywall.PredefinedType = self.predefined_type
             run(
                 "aggregate.assign_object",
@@ -160,18 +158,18 @@ class Wall(TraceClass):
                 continue
 
             # reuse (or create) a Type
-            myelement_type = self.get_element_type()
+            product_type = self.get_element_type()
             run(
                 "type.assign_type",
                 self.file,
                 related_object=mywall,
-                relating_type=myelement_type,
+                relating_type=product_type,
             )
-            self.add_psets(myelement_type)
+            self.add_psets(product_type)
 
             # Usage isn't created until after type.assign_type
             for inverse in self.file.get_inverse(
-                ifcopenshell.util.element.get_material(myelement_type)
+                ifcopenshell.util.element.get_material(product_type)
             ):
                 if inverse.is_a("IfcMaterialLayerSetUsage"):
                     inverse.OffsetFromReferenceLine = 0.0 - self.outer
@@ -231,6 +229,7 @@ class Wall(TraceClass):
                 rel_connects.RelatedElement = previous_wall
                 rel_connects.RelatedConnectionType = "ATEND"
                 rel_connects.RelatedPriorities = []
+                rel_connects.Description = "MITRE"
             if self.closed and id_segment == len(self.path) - 1:
                 rel_connects = run(
                     "root.create_entity",
@@ -259,6 +258,7 @@ class Wall(TraceClass):
                 rel_connects.RelatedElement = first_wall
                 rel_connects.RelatedConnectionType = "ATSTART"
                 rel_connects.RelatedPriorities = []
+                rel_connects.Description = "MITRE"
             previous_wall = mywall
 
             # axis is a straight line
@@ -467,8 +467,7 @@ class Wall(TraceClass):
             for id_opening in range(len(self.openings[id_segment])):
                 db = self.get_opening(segment[id_opening]["name"])
                 opening = db["list"][segment[id_opening]["size"]]
-                filename = opening["file"]
-                dxf_path = style.get_file(self.style, filename)
+                name = opening["file"]
 
                 l, r = self.opening_coor(id_segment, id_opening)
                 offset = scale_2d(self.outer, self.normal_segment(id_segment))
@@ -520,50 +519,77 @@ class Wall(TraceClass):
                         stylename=self.style,
                     ),
                 )
-                # load geometry from a DXF file and assign to the entity
-                assign_representation_fromDXF(
+                assign_type_by_name(
                     self.file,
-                    context_identifier="Body",
+                    self.style_object,
                     element=entity,
                     stylename=self.style,
-                    path_dxf=dxf_path,
+                    name=name,
                 )
+                element_type = ifcopenshell.util.element.get_type(entity)
 
-                # create an opening
-                myopening = run(
-                    "root.create_entity",
-                    self.file,
-                    ifc_class="IfcOpeningElement",
-                    name="My Opening",
-                    predefined_type="OPENING",
-                )
+                # look for an opening geometry in the Type
+                myopening = None
+                for representation_map in element_type.RepresentationMaps:
+                    if (
+                        representation_map.MappedRepresentation.RepresentationIdentifier
+                        == "Clearance"
+                    ):
+                        myopening = run(
+                            "root.create_entity",
+                            self.file,
+                            ifc_class="IfcOpeningElement",
+                            name=element_type.Name,
+                            predefined_type="OPENING",
+                        )
+                        run(
+                            "geometry.assign_representation",
+                            self.file,
+                            product=myopening,
+                            representation=self.file.createIfcShapeRepresentation(
+                                body_context,
+                                body_context.ContextIdentifier,
+                                representation_map.MappedRepresentation.RepresentationType,
+                                representation_map.MappedRepresentation.Items,
+                            ),
+                        )
 
-                # give the opening a Body representation
-                # TODO IFC library objects may come with a more complex opening shape
-                inner = self.thickness + 0.02
-                outer = -0.02
-                run(
-                    "geometry.assign_representation",
-                    self.file,
-                    product=myopening,
-                    representation=self.file.createIfcShapeRepresentation(
-                        body_context,
-                        body_context.ContextIdentifier,
-                        "SweptSolid",
-                        [
-                            create_extruded_area_solid(
-                                self.file,
-                                [
-                                    [0.0, outer],
-                                    [opening["width"], outer],
-                                    [opening["width"], inner],
-                                    [0.0, inner],
-                                ],
-                                opening["height"],
-                            )
-                        ],
-                    ),
-                )
+                if not myopening:
+                    # create a simple box shaped opening
+                    myopening = run(
+                        "root.create_entity",
+                        self.file,
+                        ifc_class="IfcOpeningElement",
+                        name="My Opening",
+                        predefined_type="OPENING",
+                    )
+
+                    # give the opening a Body representation
+                    inner = self.thickness + 0.02
+                    outer = -0.02
+                    run(
+                        "geometry.assign_representation",
+                        self.file,
+                        product=myopening,
+                        representation=self.file.createIfcShapeRepresentation(
+                            body_context,
+                            body_context.ContextIdentifier,
+                            "SweptSolid",
+                            [
+                                create_extruded_area_solid(
+                                    self.file,
+                                    [
+                                        [0.0, outer],
+                                        [opening["width"], outer],
+                                        [opening["width"], inner],
+                                        [0.0, inner],
+                                    ],
+                                    opening["height"],
+                                )
+                            ],
+                        ),
+                    )
+
                 # place the opening where the wall is
                 run(
                     "geometry.edit_object_placement",
@@ -755,28 +781,28 @@ class Wall(TraceClass):
         return {
             "list": [
                 {
-                    "file": "error.dxf",
+                    "file": "error",
                     "height": 1.0,
                     "width": 1.0,
                     "side": 0.1,
                     "end": 0.0,
                 },
                 {
-                    "file": "error.dxf",
+                    "file": "error",
                     "height": 2.0,
                     "width": 1.0,
                     "side": 0.1,
                     "end": 0.0,
                 },
                 {
-                    "file": "error.dxf",
+                    "file": "error",
                     "height": 2.0,
                     "width": 2.0,
                     "side": 0.1,
                     "end": 0.0,
                 },
                 {
-                    "file": "error.dxf",
+                    "file": "error",
                     "height": 1.0,
                     "width": 2.0,
                     "side": 0.1,

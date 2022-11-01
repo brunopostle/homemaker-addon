@@ -52,7 +52,7 @@ class Grillage(BaseClass):
         aggregate = run(
             "root.create_entity",
             self.file,
-            ifc_class=self.ifc,
+            ifc_class="IfcElementAssembly",
             name=self.identifier,
         )
         run(
@@ -172,7 +172,7 @@ class Grillage(BaseClass):
                 [0.0, 0.0, -self.inner], [1.0, 0.0, 0.0]
             )
             # create or retrieve a Type for the linear elements
-            product_type = get_extruded_type_by_name(
+            type_product = get_extruded_type_by_name(
                 self.file,
                 profiles=self.profiles,
                 context_identifier="Body",
@@ -181,13 +181,14 @@ class Grillage(BaseClass):
                 stylename=self.style,
                 style_object=self.style_object,
             )
-            product_type.PredefinedType = self.predefined_type
-            self.add_psets(product_type)
+            if hasattr(type_product, "PredefinedType"):
+                type_product.PredefinedType = self.predefined_type
+            self.add_psets(type_product)
 
             # retrieve the Material Profile Set from the Product Type
             material_profiles = []
             profile_set = None
-            for association in product_type.HasAssociations:
+            for association in type_product.HasAssociations:
                 if association.is_a(
                     "IfcRelAssociatesMaterial"
                 ) and association.RelatingMaterial.is_a("IfcMaterialProfileSet"):
@@ -203,8 +204,16 @@ class Grillage(BaseClass):
                     ifc_class=self.ifc,
                     name=self.identifier,
                 )
-                linear_element.PredefinedType = self.predefined_type
+                if hasattr(linear_element, "PredefinedType"):
+                    linear_element.PredefinedType = self.predefined_type
                 self.add_psets(linear_element)
+
+                run(
+                    "type.assign_type",
+                    self.file,
+                    related_object=linear_element,
+                    relating_type=type_product,
+                )
 
                 direction = cropped_edge.NormalisedVector()
 
@@ -247,14 +256,6 @@ class Grillage(BaseClass):
                     product=linear_element,
                     material=profile_set,
                 )
-
-                # Somehow this performs a boolean intersection
-                # run(
-                #     "type.assign_type",
-                #     self.file,
-                #     related_object=linear_element,
-                #     relating_type=product_type,
-                # )
 
                 # apparently aggregated elements need to be placed independently of the aggregate
                 run(

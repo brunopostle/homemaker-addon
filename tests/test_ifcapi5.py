@@ -81,6 +81,42 @@ class Tests(unittest.TestCase):
 
         self.file.write("_test.ifc")
 
+    def test_import_door(self):
+        mystyle = Style()
+
+        (stylename, library_file, element) = mystyle.get_from_library(
+            "arcade", "IfcWIndowType", "arch_194x300"
+        )
+        # add to current project
+        local_element = run(
+            "project.append_asset", self.file, library=library_file, element=element
+        )
+        for representation_map in local_element.RepresentationMaps:
+            if (
+                representation_map.MappedRepresentation.RepresentationIdentifier
+                == "Clearance"
+            ):
+                myopening = run(
+                    "root.create_entity",
+                    self.file,
+                    ifc_class="IfcOpeningElement",
+                    name=local_element.Name,
+                    predefined_type="OPENING",
+                )
+                run(
+                    "geometry.assign_representation",
+                    self.file,
+                    product=myopening,
+                    representation=self.file.createIfcShapeRepresentation(
+                        self.body_context,
+                        self.body_context.ContextIdentifier,
+                        representation_map.MappedRepresentation.RepresentationType,
+                        representation_map.MappedRepresentation.Items,
+                    ),
+                )
+
+        self.file.write("_test.ifc")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,5 +1,6 @@
 from math import pi
 import ifcopenshell.api
+from ifcopenshell.util.element import get_material
 
 from molior.geometry import (
     add_2d,
@@ -11,7 +12,7 @@ from molior.geometry import (
     subtract_2d,
     line_intersection,
 )
-from molior.ifc import get_material_by_name, add_pset
+from molior.ifc import get_material_by_name, add_pset, get_type_object
 
 run = ifcopenshell.api.run
 
@@ -44,34 +45,25 @@ class BaseClass:
 
     def get_element_type(self):
         """Retrieve or create an Ifc Type definition for this Molior object"""
-        element_types = {}
-        for element_type in self.file.by_type(self.ifc + "Type"):
-            element_types[element_type.Name] = element_type
-        if self.identifier in element_types:
-            myelement_type = element_types[self.identifier]
-        else:
-            # we need to create a new Type
-            myelement_type = run(
-                "root.create_entity",
-                self.file,
-                ifc_class=self.ifc + "Type",
-                name=self.identifier,
-                predefined_type=self.predefined_type,
-            )
-            run(
-                "project.assign_declaration",
-                self.file,
-                definition=myelement_type,
-                relating_context=self.file.by_type("IfcProject")[0],
-            )
+
+        type_product = get_type_object(
+            self.file,
+            self.style_object,
+            ifc_type=self.ifc + "Type",
+            stylename=self.style,
+            name=self.identifier,
+        )
+        if hasattr(type_product, "PredefinedType"):
+            type_product.PredefinedType = self.predefined_type
+
+        if not get_material(type_product):
             run(
                 "material.assign_material",
                 self.file,
-                product=myelement_type,
+                product=type_product,
                 type="IfcMaterialLayerSet",
             )
-
-            mylayerset = ifcopenshell.util.element.get_material(myelement_type)
+            mylayerset = get_material(type_product)
             mylayerset.LayerSetName = self.identifier
             for mylayer in self.layerset:
                 layer = run(
@@ -85,11 +77,10 @@ class BaseClass:
                         stylename=self.style,
                     ),
                 )
-                # TODO IsVentilated, Description & Category
                 layer.LayerThickness = mylayer[0]
                 layer.Name = mylayer[1]
 
-        return myelement_type
+        return type_product
 
     def add_psets(self, product):
         """self.psets is a dictionary of Psets, add them to an Ifc product"""
