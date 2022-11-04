@@ -61,9 +61,9 @@ class Repeat(TraceClass):
                 height = self.style_assets[self.asset][index]["height"]
                 if height >= self.height - self.ceiling:
                     break
-            name = self.style_assets[self.asset][index]["file"]
+            asset_name = self.style_assets[self.asset][index]["file"]
         else:
-            name = "error"
+            asset_name = "error"
 
         segments = self.segments()
         self.outer += self.xshift
@@ -313,7 +313,7 @@ class Repeat(TraceClass):
                         self.style_object,
                         element=entity,
                         stylename=self.style,
-                        name=name,
+                        name=asset_name,
                     )
                     # TODO Axis Representation
                     run(
