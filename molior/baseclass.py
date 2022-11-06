@@ -51,7 +51,7 @@ class BaseClass:
             self.style_object,
             ifc_type=self.ifc + "Type",
             stylename=self.style,
-            name=self.identifier,
+            name=self.name,
         )
         if hasattr(type_product, "PredefinedType"):
             type_product.PredefinedType = self.predefined_type

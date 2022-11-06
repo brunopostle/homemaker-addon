@@ -333,6 +333,7 @@ def assign_extrusion_fromDXF(
     directrix=[[0.0, 0.0], [0.0, 1.0]],
     stylename="default",
     path_dxf="/dev/null",
+    name="My Extruded Type",
     transform=None,
 ):
     """Create an extrusion given a directrix and DXF profile filepath"""
@@ -344,6 +345,7 @@ def assign_extrusion_fromDXF(
         ifc_type=ifc_type,
         stylename=stylename,
         path_dxf=path_dxf,
+        name=name,
     )
 
     run(
@@ -421,7 +423,7 @@ def get_extruded_dxf_type_by_name(
         style_object,
         ifc_type=ifc_type,
         stylename=stylename,
-        name=identifier,
+        name=name,
     )
     materialprofileset = None
     for association in type_product.HasAssociations:
@@ -757,7 +759,7 @@ def get_extruded_type_by_name(
                 return definition
 
     # create the Type
-    type_product = run("root.create_entity", self, ifc_class=ifc_type, name=identifier)
+    type_product = run("root.create_entity", self, ifc_class=ifc_type, name=name)
     run(
         "project.assign_declaration",
         self,

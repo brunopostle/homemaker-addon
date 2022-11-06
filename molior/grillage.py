@@ -53,7 +53,7 @@ class Grillage(BaseClass):
             "root.create_entity",
             self.file,
             ifc_class="IfcElementAssembly",
-            name=self.identifier,
+            name=self.name,
         )
         run(
             "geometry.edit_object_placement",
@@ -76,8 +76,8 @@ class Grillage(BaseClass):
             face_aggregate = run(
                 "root.create_entity",
                 self.file,
-                ifc_class=self.ifc,
-                name=self.identifier,
+                ifc_class="IfcElementAssembly",
+                name=self.name,
             )
             run(
                 "aggregate.assign_object",
@@ -177,7 +177,7 @@ class Grillage(BaseClass):
                 profiles=self.profiles,
                 context_identifier="Body",
                 ifc_type=self.ifc + "Type",
-                name=self.identifier,
+                name=self.name,
                 stylename=self.style,
                 style_object=self.style_object,
             )
@@ -202,7 +202,7 @@ class Grillage(BaseClass):
                     "root.create_entity",
                     self.file,
                     ifc_class=self.ifc,
-                    name=self.identifier,
+                    name=self.name,
                 )
                 if hasattr(linear_element, "PredefinedType"):
                     linear_element.PredefinedType = self.predefined_type

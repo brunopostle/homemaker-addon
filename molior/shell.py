@@ -48,7 +48,7 @@ class Shell(BaseClass):
             "root.create_entity",
             self.file,
             ifc_class=self.ifc,
-            name=self.identifier,
+            name=self.name,
         )
         run(
             "geometry.edit_object_placement",
@@ -88,7 +88,7 @@ class Shell(BaseClass):
                 "root.create_entity",
                 self.file,
                 ifc_class=self.ifc,
-                name=self.identifier,
+                name=self.name,
             )
             if hasattr(element, "PredefinedType"):
                 element.PredefinedType = self.predefined_type

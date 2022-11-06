@@ -67,7 +67,7 @@ class Wall(TraceClass):
             "root.create_entity",
             self.file,
             ifc_class=self.ifc,
-            name=self.identifier,
+            name=self.name,
         )
         run(
             "geometry.edit_object_placement",
@@ -87,7 +87,7 @@ class Wall(TraceClass):
                 "root.create_entity",
                 self.file,
                 ifc_class=self.ifc,
-                name=self.identifier,
+                name=self.name,
             )
             if hasattr(mywall, "PredefinedType"):
                 mywall.PredefinedType = self.predefined_type
@@ -206,7 +206,7 @@ class Wall(TraceClass):
                     "root.create_entity",
                     self.file,
                     ifc_class="IfcRelConnectsPathElements",
-                    name=self.identifier,
+                    name=self.name,
                 )
                 rel_connects.RelatingElement = mywall
                 rel_connects.RelatingConnectionType = "ATSTART"
@@ -235,7 +235,7 @@ class Wall(TraceClass):
                     "root.create_entity",
                     self.file,
                     ifc_class="IfcRelConnectsPathElements",
-                    name=self.identifier,
+                    name=self.name,
                 )
                 rel_connects.RelatingElement = mywall
                 rel_connects.RelatingConnectionType = "ATEND"

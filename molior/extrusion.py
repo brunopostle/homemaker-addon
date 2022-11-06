@@ -48,7 +48,7 @@ class Extrusion(TraceClass):
             "root.create_entity",
             self.file,
             ifc_class=self.ifc,
-            name=self.identifier,
+            name=self.name,
             predefined_type=self.predefined_type,
         )
         self.add_psets(element)
@@ -193,6 +193,7 @@ class Extrusion(TraceClass):
             directrix=directrix,
             stylename=self.style,
             path_dxf=dxf_path,
+            name=self.name,
             transform=transform,
         )
 

@@ -94,7 +94,7 @@ class Repeat(TraceClass):
                 "root.create_entity",
                 self.file,
                 ifc_class="IfcElementAssembly",
-                name=self.identifier,
+                name=self.name,
             )
             run(
                 "geometry.edit_object_placement",
@@ -193,7 +193,7 @@ class Repeat(TraceClass):
                         "root.create_entity",
                         self.file,
                         ifc_class=self.ifc,
-                        name=self.identifier,
+                        name=self.name,
                         predefined_type=self.predefined_type,
                     )
                     self.add_psets(entity)
