@@ -507,18 +507,6 @@ class Wall(TraceClass):
                 )
                 # assign the entity to a storey
                 assign_storey_byindex(self.file, entity, self.building, self.level)
-                # assign a material
-                run(
-                    "material.assign_material",
-                    self.file,
-                    product=entity,
-                    material=get_material_by_name(
-                        self.file,
-                        self.style_object,
-                        name=db["material"],
-                        stylename=self.style,
-                    ),
-                )
                 assign_type_by_name(
                     self.file,
                     self.style_object,

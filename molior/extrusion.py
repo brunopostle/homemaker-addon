@@ -140,6 +140,7 @@ class Extrusion(TraceClass):
                     profile=profile,
                 )
 
+        # TODO material should be assigned from Type definition
         run(
             "material.assign_material",
             self.file,

@@ -316,14 +316,3 @@ class Repeat(TraceClass):
                         name=asset_name,
                     )
                     # TODO Axis Representation
-                    run(
-                        "material.assign_material",
-                        self.file,
-                        product=entity,
-                        material=get_material_by_name(
-                            self.file,
-                            self.style_object,
-                            name=self.material,
-                            stylename=self.style,
-                        ),
-                    )
