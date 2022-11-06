@@ -201,9 +201,11 @@ def process_blender_objects(selected_objects):
             blender_object.name,
             flags=re.IGNORECASE,
         )
+        total = len(blender_object.data.vertices)
+        if not total:
+            continue
         if label:
             centre = [0.0, 0.0, 0.0]
-            total = len(blender_object.data.vertices)
             for v in blender_object.data.vertices:
                 coor = v.co[:]
                 centre[0] += coor[0]
