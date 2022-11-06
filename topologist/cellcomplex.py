@@ -108,6 +108,24 @@ def GetTraces(self):
                         front_cell=front_cell,
                         back_cell=back_cell,
                     )
+                    # build normal map
+                    normal = face.Normal()
+                    edges_ptr = []
+                    face.EdgesTop(edges_ptr)
+                    for edge in edges_ptr:
+                        axis = [edge.EndVertex(), edge.StartVertex()]
+                        if face.Get("badnormal"):
+                            axis.reverse()
+                        mynormals.add_vector("top", axis[0], normal)
+                        mynormals.add_vector("top", axis[1], normal)
+                    edges_ptr = []
+                    face.EdgesBottom(edges_ptr)
+                    for edge in edges_ptr:
+                        axis = [edge.StartVertex(), edge.EndVertex()]
+                        if face.Get("badnormal"):
+                            axis.reverse()
+                        mynormals.add_vector("bottom", axis[0], normal)
+                        mynormals.add_vector("bottom", axis[1], normal)
 
                 elif face.IsInternal(self):
                     mytraces.add_axis_simple(
@@ -170,9 +188,6 @@ def GetTraces(self):
                             back_cell=back_cell,
                         )
                         elevations[el(elevation + height)] = 0
-                        if not face.IsOpen(self):
-                            mynormals.add_vector("top", axis[0], normal)
-                            mynormals.add_vector("top", axis[1], normal)
 
                     for condition in face.BottomLevelConditions(self):
                         edge = condition[0]
@@ -191,9 +206,6 @@ def GetTraces(self):
                             front_cell=front_cell,
                             back_cell=back_cell,
                         )
-                        if not face.IsOpen(self):
-                            mynormals.add_vector("bottom", axis[0], normal)
-                            mynormals.add_vector("bottom", axis[1], normal)
 
     cells_ptr = []
     self.Cells(None, cells_ptr)
