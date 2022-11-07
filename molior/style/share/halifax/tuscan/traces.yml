@@ -44,8 +44,6 @@ external beam:
       Pset_BeamCommon:
           IsExternal: true
           LoadBearing: true
-parapet:
-  condition: noop
 crown:
   class: Extrusion
   ifc: IfcWall

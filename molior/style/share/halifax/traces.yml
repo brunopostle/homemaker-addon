@@ -35,3 +35,9 @@ bar:
   yshift: 0.1
   extension: -0.025
   material: Wrought Iron
+parapet:
+  condition: noop
+coping:
+  condition: noop
+crown:
+  condition: noop

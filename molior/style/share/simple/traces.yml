@@ -11,6 +11,10 @@ eaves:
   condition: noop
 parapet:
   condition: noop
+coping:
+  condition: noop
+crown:
+  condition: noop
 external beam:
   condition: noop
 column:

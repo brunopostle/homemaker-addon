@@ -83,12 +83,37 @@ parapet:
   class: Extrusion
   ifc: IfcWall
   predefined_type: PARAPET
-  profile: parapet.dxf
+  profile: parapet_wall.dxf
+  material: Masonry
   condition: top-backward-level
   outer: 0.0
   extension: 0.25
   psets:
-      Pset_RoofCommon:
+      Pset_WallCommon:
+          IsExternal: true
+coping:
+  class: Extrusion
+  ifc: IfcCovering
+  predefined_type: ROOFING
+  profile: coping.dxf
+  material: Masonry
+  condition: top-backward-level
+  outer: 0.0
+  extension: 0.25
+  psets:
+      Pset_CoveringCommon:
+          IsExternal: true
+crown:
+  class: Extrusion
+  ifc: IfcCovering
+  predefined_type: MOLDING
+  profile: cyma.dxf
+  material: Masonry
+  condition: top-backward-level
+  outer: 0.0
+  extension: 0.25
+  psets:
+      Pset_CoveringCommon:
           IsExternal: true
 external beam:
   class: Extrusion

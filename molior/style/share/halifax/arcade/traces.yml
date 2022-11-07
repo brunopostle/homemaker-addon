@@ -27,5 +27,3 @@ crown:
   psets:
       Pset_WallCommon:
           IsExternal: true
-parapet:
-  condition: noop

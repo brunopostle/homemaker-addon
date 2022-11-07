@@ -46,8 +46,6 @@ external beam:
           LoadBearing: true
 column:
   condition: noop
-parapet:
-  condition: noop
 crown:
   class: Extrusion
   ifc: IfcWall
