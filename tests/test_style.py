@@ -26,25 +26,6 @@ class Tests(unittest.TestCase):
         default2 = mystyle.get("nonsuch")
         self.assertEqual(default, default2)
 
-        # currently highparapet.dxf only exists in courtyard style
-        self.assertFalse(mystyle.get_file("default", "highparapet.dxf"))
-        self.assertFalse(mystyle.get_file("fancy", "highparapet.dxf"))
-        self.assertTrue(mystyle.get_file("courtyard", "highparapet.dxf"))
-        # newel-bottom.dxf is in the default style so any style gets it
-        self.assertTrue(mystyle.get_file("default", "newel-bottom.dxf"))
-        self.assertTrue(mystyle.get_file("courtyard", "newel-bottom.dxf"))
-        self.assertTrue(mystyle.get_file("fancy", "newel-bottom.dxf"))
-        # newel-bottom.dxf isn't in fancy, so result is same as default
-        self.assertEqual(
-            mystyle.get_file("fancy", "newel-bottom.dxf"),
-            mystyle.get_file("default", "newel-bottom.dxf"),
-        )
-        # nonsuch style doesn't exist, so result is same as default
-        self.assertEqual(
-            mystyle.get_file("nonsuch", "newel-bottom.dxf"),
-            mystyle.get_file("default", "newel-bottom.dxf"),
-        )
-
 
 if __name__ == "__main__":
     unittest.main()
