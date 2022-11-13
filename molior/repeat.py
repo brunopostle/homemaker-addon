@@ -26,7 +26,6 @@ class Repeat(TraceClass):
         self.height = 0.0
         self.ceiling = 0.0
         self.ifc = "IfcBuildingElementProxy"
-        self.predefined_type = "USERDEFINED"
         self.inset = 0.0
         self.xshift = 0.0
         self.yshift = 0.0
@@ -155,7 +154,6 @@ class Repeat(TraceClass):
                                     "building": self.building,
                                     "structural_analysis_model": self.structural_analysis_model,
                                     "level": self.level,
-                                    "predefined_type": self.predefined_type,
                                     "style_assets": self.style_assets,
                                     "style_object": self.style_object,
                                 }
@@ -194,9 +192,7 @@ class Repeat(TraceClass):
                         self.file,
                         ifc_class=self.ifc,
                         name=self.name,
-                        predefined_type=self.predefined_type,
                     )
-                    self.add_psets(entity)
                     # place the entity in space
                     elevation = self.elevation + self.yshift
                     # assign the entity to the aggregate
