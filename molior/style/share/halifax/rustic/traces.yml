@@ -26,48 +26,28 @@ colonnade:
 external beam:
   class: Extrusion
   ifc: IfcBeam
-  predefined_type: BEAM
-  profile: beam_rustic.dxf
   condition: open
   xshift: 0.0
   yshift: -0.535
   outer: 0.0
   extension: 0.254
-  material: Sandstone
-  psets:
-      Pset_BeamCommon:
-          IsExternal: true
-          LoadBearing: true
 column:
   condition: noop
 crown:
   class: Extrusion
   ifc: IfcWall
-  predefined_type: USERDEFINED
-  profile: beam_rustic.dxf
   condition: top-backward-level
   xshift: 0.0
   yshift: -0.535
   extension: 0.254
-  material: Sandstone
-  psets:
-      Pset_WallCommon:
-          IsExternal: true
 handrail:
   class: Extrusion
   ifc: IfcRailing
-  predefined_type: BALUSTRADE
-  profile: handrail_12.dxf
   height: 0.0
   condition: none
   xshift: 0.0
   yshift: 1.02
   extension: -0.35
-  material: Mahogany
-  psets:
-      Pset_RailingCommon:
-          IsExternal: true
-          Height: 1.0
 balustrade_large:
   class: Repeat
   ifc: IfcRailing

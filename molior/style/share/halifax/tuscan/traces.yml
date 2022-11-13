@@ -26,46 +26,19 @@ colonnade:
   traces: [handrail, balustrade_large]
 external beam:
   class: Extrusion
-  predefined_type: BEAM
   ifc: IfcBeam
-  profile: beam_tuscan.dxf
   condition: open
   xshift: 0.0
   yshift: -0.675
   extension: 0.0
-  material: Sandstone
-  psets:
-      Pset_BeamCommon:
-          IsExternal: true
-          LoadBearing: true
-crown:
-  class: Extrusion
-  ifc: IfcWall
-  predefined_type: USERDEFINED
-  profile: beam_tuscan.dxf
-  condition: top-backward-level
-  xshift: 0.1024
-  yshift: -0.675
-  extension: 0.254
-  material: Sandstone
-  psets:
-      Pset_WallCommon:
-          IsExternal: true
 handrail:
   class: Extrusion
   ifc: IfcRailing
-  predefined_type: BALUSTRADE
-  profile: handrail_12.dxf
   height: 0.0
   condition: none
   xshift: 0.0
   yshift: 1.02
   extension: -0.25
-  material: Walnut
-  psets:
-      Pset_RailingCommon:
-          IsExternal: true
-          Height: 1.0
 balustrade_large:
   class: Repeat
   ifc: IfcRailing

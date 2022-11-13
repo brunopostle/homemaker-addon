@@ -55,7 +55,7 @@ class Tests(unittest.TestCase):
             element=element,
             directrix=directrix,
             stylename="courtyard",
-            path_dxf="molior/style/share/courtyard/eaves.dxf",
+            path_dxf="molior/style/share/courtyard/eaves_corona.dxf",
             transform=transform,
         )
 
@@ -79,7 +79,7 @@ class Tests(unittest.TestCase):
             element=element,
             directrix=directrix,
             stylename="courtyard",
-            path_dxf="molior/style/share/courtyard/eaves.dxf",
+            path_dxf="molior/style/share/courtyard/eaves_corona.dxf",
             transform=transform,
         )
 

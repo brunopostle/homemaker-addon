@@ -25,14 +25,11 @@ balustrade_small:
 bar:
   class: Extrusion
   ifc: IfcRailing
-  predefined_type: BALUSTRADE
-  profile: bar_4x2.dxf
   height: 0.0
   condition: none
   xshift: 0.0
   yshift: 0.1
   extension: -0.025
-  material: Wrought Iron
 parapet:
   condition: noop
 coping:
