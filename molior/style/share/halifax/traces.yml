@@ -15,7 +15,6 @@ exterior:
 balustrade_small:
   class: Repeat
   ifc: IfcRailing
-  predefined_type: BALUSTRADE
   asset: balustrade_small
   condition: none
   xshift: 0.0
@@ -23,7 +22,6 @@ balustrade_small:
   outer: 0.0
   inset: 0.125
   spacing: 0.12
-  material: Wrought Iron
 bar:
   class: Extrusion
   ifc: IfcRailing

@@ -2,7 +2,6 @@
 brackets:
   class: Repeat
   ifc: IfcRoof
-  predefined_type: USERDEFINED
   asset: bracket
   condition: top-backward-up
   outer: 0.25
@@ -11,7 +10,3 @@ brackets:
   inset: 0.1
   spacing: 0.3
   alternate: 0
-  material: Travertine
-  psets:
-      Pset_RoofCommon:
-          IsExternal: true

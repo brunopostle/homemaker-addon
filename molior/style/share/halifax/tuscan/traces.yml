@@ -18,18 +18,12 @@ column:
 colonnade:
   class: Repeat
   ifc: IfcColumn
-  predefined_type: COLUMN
   asset: column
   condition: open
   outer: 0.0
   inset: 0.0
   spacing: 2.54
   traces: [handrail, balustrade_large]
-  material: Sandstone
-  psets:
-      Pset_ColumnCommon:
-          IsExternal: true
-          LoadBearing: true
 external beam:
   class: Extrusion
   predefined_type: BEAM
@@ -75,15 +69,9 @@ handrail:
 balustrade_large:
   class: Repeat
   ifc: IfcRailing
-  predefined_type: BALUSTRADE
   asset: balustrade_large
   condition: none
   outer: 0.0
   inset: 0.3
   spacing: 1.2
-  material: Wrought Iron
   traces: [balustrade_small, bar]
-  psets:
-      Pset_RailingCommon:
-          IsExternal: true
-          Height: 1.0

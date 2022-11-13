@@ -2,7 +2,6 @@
 brackets:
   class: Repeat
   ifc: IfcRoof
-  predefined_type: USERDEFINED
   asset: bracket
   condition: top-backward-up
   outer: 0.25
@@ -12,13 +11,9 @@ brackets:
   spacing: 0.5
   alternate: 0
   traces: [monkey, low-brackets]
-  psets:
-      Pset_RoofCommon:
-          IsExternal: true
 low-brackets:
   class: Repeat
   ifc: IfcRoof
-  predefined_type: USERDEFINED
   asset: bracket
   condition: na
   outer: -0.05
@@ -28,13 +23,9 @@ low-brackets:
   spacing: 0.1
   alternate: 1
   traces: []
-  psets:
-      Pset_RoofCommon:
-          IsExternal: true
 monkey:
   class: Repeat
   ifc: IfcRoof
-  predefined_type: USERDEFINED
   asset: monkey
   condition: na
   outer: 0.05
@@ -44,6 +35,3 @@ monkey:
   spacing: -1
   alternate: 1
   traces: []
-  psets:
-      Pset_RoofCommon:
-          IsExternal: true

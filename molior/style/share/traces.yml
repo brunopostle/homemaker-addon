@@ -136,10 +136,6 @@ column:
   outer: 0.2
   inset: 0.0
   spacing: 2.0
-  psets:
-      Pset_ColumnCommon:
-          IsExternal: true
-          LoadBearing: true
 bedroom-space:
   class: Space
   condition: bedroom
