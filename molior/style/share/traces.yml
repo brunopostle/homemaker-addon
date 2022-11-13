@@ -68,16 +68,35 @@ internal ground beam:
   psets:
       Pset_FootingCommon:
           LoadBearing: true
-eaves:
+eaves_corona:
   class: Extrusion
-  ifc: IfcRoof
-  predefined_type: FREEFORM
-  profile: eaves.dxf
+  ifc: IfcCovering
+  predefined_type: MOLDING
+  profile: eaves_corona.dxf
   condition: top-backward-up
   outer: 0.25
   extension: 0.25
   psets:
-      Pset_RoofCommon:
+      Pset_CoveringCommon:
+          IsExternal: true
+eaves_gutter:
+  class: Extrusion
+  ifc: IfcPipeSegment
+  predefined_type: GUTTER
+  profile: eaves_gutter.dxf
+  condition: top-backward-up
+  outer: 0.25
+  extension: 0.25
+eaves_tiles:
+  class: Extrusion
+  ifc: IfcCovering
+  predefined_type: ROOFING
+  profile: eaves_tiles.dxf
+  condition: top-backward-up
+  outer: 0.25
+  extension: 0.25
+  psets:
+      Pset_CoveringCommon:
           IsExternal: true
 parapet:
   class: Extrusion
