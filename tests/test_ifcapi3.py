@@ -13,7 +13,6 @@ from molior.ifc import (
     get_building_by_name,
     create_storeys,
     assign_storey_byindex,
-    assign_extrusion_fromDXF,
     get_context_by_name,
 )
 from molior.style import Style
@@ -47,49 +46,6 @@ class Tests(unittest.TestCase):
             ifc.createIfcCartesianPoint([0.0, 0.0]),
             1.0,
         )
-
-        assign_extrusion_fromDXF(
-            ifc,
-            style_object=self.style_object,
-            context_identifier="Body",
-            element=element,
-            directrix=directrix,
-            stylename="courtyard",
-            path_dxf="molior/style/share/courtyard/eaves_corona.dxf",
-            transform=transform,
-        )
-
-        run("geometry.edit_object_placement", ifc, product=element, matrix=numpy.eye(4))
-        assign_storey_byindex(ifc, element, building, 0)
-
-        # do it again, hopefully dxf isn't reloaded
-
-        element = run(
-            "root.create_entity",
-            ifc,
-            ifc_class="IfcBuildingElementProxy",
-            name="Another Extrusion",
-        )
-        directrix = [[-5.0, 2.0], [-1.0, 2.0], [-1.0, 5.0], [-5.0, 5.0], [-5.0, 2.0]]
-
-        assign_extrusion_fromDXF(
-            ifc,
-            style_object=self.style_object,
-            context_identifier="Body",
-            element=element,
-            directrix=directrix,
-            stylename="courtyard",
-            path_dxf="molior/style/share/courtyard/eaves_corona.dxf",
-            transform=transform,
-        )
-
-        run(
-            "geometry.edit_object_placement",
-            ifc,
-            product=element,
-            matrix=matrix_align([0.0, 0.0, 1.0], [1.0, 0.0, 1.0]),
-        )
-        assign_storey_byindex(ifc, element, building, 0)
 
         ifc.write("_test.ifc")
 
