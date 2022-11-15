@@ -77,7 +77,6 @@ it back in the hands of people who need good ordinary buildings.
   - [TopologicCore](https://github.com/wassimj/Topologic). This is a C++ library which you build and install using the standard cmake build system. It requires the opencascade library and headers which should be available from your distribution.
 - [blenderbim](https://blenderbim.org/) blender add-on, just download the ZIP and install from the blender preferences menu.
 - [pyyaml](https://pyyaml.org/) python module.
-- [ezdxf](https://ezdxf.readthedocs.io/en/stable/index.html) python module for reading assets, which are in DXF format until we can figure out how to use IFC asset libraries.
 
 ## About
 

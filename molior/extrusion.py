@@ -6,7 +6,7 @@ from molior.geometry import matrix_align, add_2d, distance_2d
 from molior.ifc import (
     add_face_topology_epsets,
     assign_storey_byindex,
-    assign_extrusion_fromDXF,
+    assign_extrusion,
     get_material_by_name,
     get_context_by_name,
 )
@@ -23,7 +23,6 @@ class Extrusion(TraceClass):
         super().__init__(args)
         self.ifc = "IfcBuildingElementProxy"
         self.predefined_type = "USERDEFINED"
-        self.profile = "coping.dxf"
         self.extension = 0.0
         self.scale = 1.0
         self.xshift = 0.0
@@ -177,8 +176,6 @@ class Extrusion(TraceClass):
         if not self.do_representation:
             return
 
-        dxf_path = "/some/path/not/needed/any/more.dxf"
-
         transform = self.file.createIfcCartesianTransformationOperator2D(
             self.file.createIfcDirection([0.0, 1.0]),
             self.file.createIfcDirection([1.0, 0.0]),
@@ -187,14 +184,13 @@ class Extrusion(TraceClass):
         )
 
         # TODO Axis Representation
-        assign_extrusion_fromDXF(
+        assign_extrusion(
             self.file,
             style_object=self.style_object,
             context_identifier="Body",
             element=element,
             directrix=directrix,
             stylename=self.style,
-            path_dxf=dxf_path,
             name=self.name,
             transform=transform,
         )

@@ -1,3 +1,2 @@
-ezdxf
 numpy
 pyaml
