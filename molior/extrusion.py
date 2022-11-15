@@ -177,7 +177,7 @@ class Extrusion(TraceClass):
         if not self.do_representation:
             return
 
-        dxf_path = style.get_file(self.style, self.profile)
+        dxf_path = "/some/path/not/needed/any/more.dxf"
 
         transform = self.file.createIfcCartesianTransformationOperator2D(
             self.file.createIfcDirection([0.0, 1.0]),
