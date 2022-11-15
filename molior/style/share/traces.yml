@@ -18,21 +18,15 @@ exterior:
 ground beam:
   class: Extrusion
   ifc: IfcFooting
-  predefined_type: STRIP_FOOTING
-  profile: beam_ground.dxf
   condition: bottom-backward-level
   outer: 0.0
   extension: 0.25
-  material: Concrete
   structural_material: Concrete
   structural_profile:
     - IfcRectangleProfileDef
     - ProfileType: AREA
       XDim: 0.4
       YDim: 0.4
-  psets:
-      Pset_FootingCommon:
-          LoadBearing: true
 interior:
   class: Wall
   ifc: IfcWall
@@ -58,94 +52,52 @@ external-open:
 internal ground beam:
   class: Extrusion
   ifc: IfcFooting
-  predefined_type: STRIP_FOOTING
-  profile: beam_ground.dxf
   condition: internal-footing
   outer: 0.0
   extension: 0.0
   cycles: 0
-  material: Concrete
-  psets:
-      Pset_FootingCommon:
-          LoadBearing: true
 eaves_corona:
   class: Extrusion
   ifc: IfcCovering
-  predefined_type: MOLDING
-  profile: eaves_corona.dxf
   condition: top-backward-up
   outer: 0.25
   extension: 0.25
-  psets:
-      Pset_CoveringCommon:
-          IsExternal: true
 eaves_gutter:
   class: Extrusion
   ifc: IfcPipeSegment
-  predefined_type: GUTTER
-  profile: eaves_gutter.dxf
   condition: top-backward-up
   outer: 0.25
   extension: 0.25
 eaves_tiles:
   class: Extrusion
   ifc: IfcCovering
-  predefined_type: ROOFING
-  profile: eaves_tiles.dxf
   condition: top-backward-up
   outer: 0.25
   extension: 0.25
-  psets:
-      Pset_CoveringCommon:
-          IsExternal: true
 parapet:
   class: Extrusion
   ifc: IfcWall
-  predefined_type: PARAPET
-  profile: parapet_wall.dxf
-  material: Masonry
   condition: top-backward-level
   outer: 0.0
   extension: 0.25
-  psets:
-      Pset_WallCommon:
-          IsExternal: true
 coping:
   class: Extrusion
   ifc: IfcCovering
-  predefined_type: ROOFING
-  profile: coping.dxf
-  material: Masonry
   condition: top-backward-level
   outer: 0.0
   extension: 0.25
-  psets:
-      Pset_CoveringCommon:
-          IsExternal: true
 crown:
   class: Extrusion
   ifc: IfcCovering
-  predefined_type: MOLDING
-  profile: cyma.dxf
-  material: Masonry
   condition: top-backward-level
   outer: 0.0
   extension: 0.25
-  psets:
-      Pset_CoveringCommon:
-          IsExternal: true
 external beam:
   class: Extrusion
   ifc: IfcBeam
-  predefined_type: BEAM
-  profile: beam.dxf
   condition: open
   outer: 0.0
   extension: 0.0
-  psets:
-      Pset_BeamCommon:
-          IsExternal: true
-          LoadBearing: true
 column:
   class: Repeat
   ifc: IfcColumn
