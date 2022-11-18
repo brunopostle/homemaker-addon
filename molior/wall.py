@@ -51,7 +51,6 @@ class Wall(TraceClass):
         for layer in self.layerset:
             self.thickness += layer[0]
         self.inner = self.thickness - self.outer
-        self.identifier = self.style + "/" + self.name
 
     def execute(self):
         """Generate some ifc"""
@@ -159,12 +158,25 @@ class Wall(TraceClass):
 
             # reuse (or create) a Type
             product_type = self.get_element_type()
+
+            for association in product_type.HasAssociations:
+                if association.is_a("IfcRelAssociatesMaterial"):
+                    relating_material = association.RelatingMaterial
+                    if relating_material.is_a("IfcMaterialLayerSetUsage"):
+                        self.outer = -relating_material.OffsetFromReferenceLine
+                    if relating_material.is_a("IfcMaterialLayerSet"):
+                        self.thickness = 0.0
+                        for material_layer in relating_material.MaterialLayers:
+                            self.thickness += material_layer.LayerThickness
+            self.inner = self.thickness - self.outer
+
             run(
                 "type.assign_type",
                 self.file,
                 related_object=mywall,
                 relating_type=product_type,
             )
+            # FIXME remove
             self.add_psets(product_type)
 
             # Usage isn't created until after type.assign_type
@@ -286,7 +298,7 @@ class Wall(TraceClass):
                 "root.create_entity",
                 self.file,
                 ifc_class="IfcStructuralSurfaceMember",
-                name=self.identifier,
+                name=self.style + "/" + self.name,
                 predefined_type="SHELL",
             )
             assignment = run(

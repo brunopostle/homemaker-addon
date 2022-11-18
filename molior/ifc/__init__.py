@@ -4,7 +4,6 @@ A collection of code for commonly used IFC related tasks
 
 """
 
-import os
 import ifcopenshell.api
 import ifcopenshell.util.representation
 from molior.geometry import (

@@ -2,7 +2,6 @@
 
 import os
 import sys
-import numpy
 import unittest
 import ifcopenshell.api
 
@@ -12,11 +11,9 @@ from molior.ifc import (
     get_site_by_name,
     get_building_by_name,
     create_storeys,
-    assign_storey_byindex,
     get_context_by_name,
 )
 from molior.style import Style
-from molior.geometry import matrix_align
 
 run = ifcopenshell.api.run
 
