@@ -30,7 +30,6 @@ class Repeat(TraceClass):
         self.xshift = 0.0
         self.yshift = 0.0
         self.outer = 0.08
-        self.material = "Sandstone"
         self.structural_material = "Concrete"
         self.structural_profile = [
             "IfcRectangleProfileDef",
@@ -46,7 +45,6 @@ class Repeat(TraceClass):
         self.Repeat = Repeat
         for arg in args:
             self.__dict__[arg] = args[arg]
-        self.identifier = self.style + "/" + self.name
 
     def execute(self):
         """Generate some ifc"""
@@ -213,7 +211,7 @@ class Repeat(TraceClass):
                             "root.create_entity",
                             self.file,
                             ifc_class="IfcStructuralCurveMember",
-                            name=self.name,
+                            name=self.style + "/" + self.name,
                         )
                         assignment = run(
                             "root.create_entity",
