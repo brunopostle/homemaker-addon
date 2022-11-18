@@ -1,6 +1,5 @@
 import ifcopenshell.api
 
-import molior
 from molior.baseclass import TraceClass
 from molior.geometry import matrix_align, add_2d, distance_2d
 from molior.ifc import (
@@ -22,12 +21,10 @@ class Extrusion(TraceClass):
             args = {}
         super().__init__(args)
         self.ifc = "IfcBuildingElementProxy"
-        self.predefined_type = "USERDEFINED"
         self.extension = 0.0
         self.scale = 1.0
         self.xshift = 0.0
         self.yshift = 0.0
-        self.material = "Travertine"
         self.structural_material = "Concrete"
         self.structural_profile = [
             "IfcRectangleProfileDef",
@@ -36,14 +33,12 @@ class Extrusion(TraceClass):
         self.path = []
         for arg in args:
             self.__dict__[arg] = args[arg]
-        self.identifier = self.style + "/" + self.name
 
     def execute(self):
         """Generate some ifc"""
         reference_context = get_context_by_name(
             self.file, context_identifier="Reference"
         )
-        style = molior.Molior.style
         element = run(
             "root.create_entity",
             self.file,
@@ -51,7 +46,6 @@ class Extrusion(TraceClass):
             name=self.name,
             predefined_type=self.predefined_type,
         )
-        self.add_psets(element)
 
         if (
             element.is_a("IfcBeam")
@@ -68,7 +62,7 @@ class Extrusion(TraceClass):
                     "root.create_entity",
                     self.file,
                     ifc_class="IfcStructuralCurveMember",
-                    name=self.identifier,
+                    name=self.style + "/" + self.name,
                     predefined_type="RIGID_JOINED_MEMBER",
                 )
                 assignment = run(
@@ -139,19 +133,6 @@ class Extrusion(TraceClass):
                     material_profile=material_profile,
                     profile=profile,
                 )
-
-        # TODO material should be assigned from Type definition
-        run(
-            "material.assign_material",
-            self.file,
-            product=element,
-            material=get_material_by_name(
-                self.file,
-                self.style_object,
-                name=self.material,
-                stylename=self.style,
-            ),
-        )
 
         assign_storey_byindex(self.file, element, self.building, self.level)
         directrix = self.path
