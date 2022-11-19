@@ -120,16 +120,3 @@ class Style:
         return self.get_from_library(
             self.data[stylename]["ancestors"][0], ifc_class, name
         )
-
-    def get_file(self, stylename, filename):
-        """retrieves a file path for a filename with ancestors filling in the gaps"""
-        if not stylename in self.files:
-            return self.get_file("default", filename)
-        if len(self.data[stylename]["ancestors"]) == 0:
-            if filename in self.files[stylename]:
-                return self.files[stylename][filename]
-            return None
-        if filename in self.files[stylename]:
-            return self.files[stylename][filename]
-        else:
-            return self.get_file(self.data[stylename]["ancestors"][0], filename)
