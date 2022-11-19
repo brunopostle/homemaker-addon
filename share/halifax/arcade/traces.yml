@@ -2,16 +2,7 @@
 exterior:
   class: Wall
   ifc: IfcWall
-  predefined_type: SOLIDWALL
   condition: external
-  inner: 0.305
-  outer: 0.305
-  layerset:
-    - [0.61, "Sandstone"]
-  psets:
-      Pset_WallCommon:
-          IsExternal: true
-          LoadBearing: true
   do_populate_exterior_openings: 1
 crown:
   class: Extrusion

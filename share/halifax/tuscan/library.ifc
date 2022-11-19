@@ -1116,7 +1116,7 @@ DATA;
 #1109=IFCWALLTYPE('3dHQS1bkr2xfu3LpKkczSg',$,'exterior','A stone wall from the upper level of the Halifax Piece Hall',$,(#1108),$,$,$,.SOLIDWALL.);
 #1110=IFCRELASSOCIATESMATERIAL('0s3QfgdHrC5QuZyfVV7sYr',$,$,$,(#1109),#1113);
 #1112=IFCMATERIALLAYER(#96,0.4064,$,'Sandstone',$,$,$);
-#1113=IFCMATERIALLAYERSET((#1112),'exterior',$);
+#1113=IFCMATERIALLAYERSET((#1112),'tuscan/exterior',$);
 #1114=IFCMATERIALLAYERSETUSAGE(#1113,.AXIS2.,.POSITIVE.,-0.254,$);
 #1115=IFCRELASSOCIATESMATERIAL('2IkddmjpjFKO$aamv5NdQt',$,$,$,(#1109),#1114);
 #1116=IFCBEAMTYPE('3myUTwA2j6jgNriK$PUzuz',$,'external beam','A Tuscan lintel/beam from the upper level of the Halifax Piece Hall',$,$,$,$,$,.LINTEL.);
