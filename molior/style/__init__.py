@@ -40,7 +40,7 @@ class Style:
 
         if not os.path.isabs(self.share_dir):
             self.share_dir = os.path.abspath(
-                os.path.join(os.path.dirname(__file__), self.share_dir)
+                os.path.join(os.path.dirname(__file__), "..", "..", self.share_dir)
             )
         self.share_dir = os.path.normpath(self.share_dir)
         # share_dir should now be an absolute path
