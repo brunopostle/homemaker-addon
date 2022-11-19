@@ -85,20 +85,36 @@ class Floor(TraceClass):
             return
         if not self.do_representation:
             return
+
         # assign a type and place a representation
         product_type = self.get_element_type()
+
+        for association in product_type.HasAssociations:
+            if association.is_a("IfcRelAssociatesMaterial"):
+                relating_material = association.RelatingMaterial
+                if relating_material.is_a("IfcMaterialLayerSetUsage"):
+                    self.below = -relating_material.OffsetFromReferenceLine
+                if relating_material.is_a("IfcMaterialLayerSet"):
+                    self.thickness = 0.0
+                    for material_layer in relating_material.MaterialLayers:
+                        self.thickness += material_layer.LayerThickness
+
         run(
             "type.assign_type",
             self.file,
             related_object=element,
             relating_type=product_type,
         )
+
+        # FIXME remove
         self.add_psets(product_type)
+
+        # FIXME remove
         for inverse in self.file.get_inverse(
             ifcopenshell.util.element.get_material(product_type)
         ):
             if inverse.is_a("IfcMaterialLayerSetUsage"):
-                inverse.OffsetFromReferenceLine = 0.0 - self.below
+                inverse.OffsetFromReferenceLine = -self.below
 
         shape = self.file.createIfcShapeRepresentation(
             body_context,

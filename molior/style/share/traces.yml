@@ -43,7 +43,6 @@ interior:
           LoadBearing: true
   ceiling: 0.2
   floor: 0.02
-  cycles: 0
   do_populate_interior_openings: 1
 external-open:
   class: Wall
@@ -55,7 +54,6 @@ internal ground beam:
   condition: internal-footing
   outer: 0.0
   extension: 0.0
-  cycles: 0
 eaves_corona:
   class: Extrusion
   ifc: IfcCovering

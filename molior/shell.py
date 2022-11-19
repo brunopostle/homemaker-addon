@@ -35,7 +35,6 @@ class Shell(BaseClass):
         for layer in self.layerset:
             self.thickness += layer[0]
         self.inner = self.thickness - self.outer
-        self.identifier = self.style + "/" + self.name
 
     def execute(self):
         """Generate some ifc"""
@@ -166,7 +165,7 @@ class Shell(BaseClass):
                 "root.create_entity",
                 self.file,
                 ifc_class="IfcStructuralSurfaceMember",
-                name=self.identifier,
+                name=self.style + "/" + self.name,
                 predefined_type="SHELL",
             )
             add_face_topology_epsets(
@@ -214,13 +213,34 @@ class Shell(BaseClass):
 
             # get or create a Type
             product_type = self.get_element_type()
+
+            for association in product_type.HasAssociations:
+                if association.is_a("IfcRelAssociatesMaterial"):
+                    relating_material = association.RelatingMaterial
+                    if relating_material.is_a("IfcMaterialLayerSetUsage"):
+                        self.outer = -relating_material.OffsetFromReferenceLine
+                    if relating_material.is_a("IfcMaterialLayerSet"):
+                        self.thickness = 0.0
+                        for material_layer in relating_material.MaterialLayers:
+                            self.thickness += material_layer.LayerThickness
+            self.inner = self.thickness - self.outer
+
             run(
                 "type.assign_type",
                 self.file,
                 related_object=element,
                 relating_type=product_type,
             )
+
+            # FIXME remove
             self.add_psets(product_type)
+
+            # FIXME remove
+            for inverse in self.file.get_inverse(
+                ifcopenshell.util.element.get_material(product_type)
+            ):
+                if inverse.is_a("IfcMaterialLayerSetUsage"):
+                    inverse.OffsetFromReferenceLine = -self.outer
 
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
 

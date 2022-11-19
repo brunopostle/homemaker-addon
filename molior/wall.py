@@ -179,12 +179,12 @@ class Wall(TraceClass):
             # FIXME remove
             self.add_psets(product_type)
 
-            # Usage isn't created until after type.assign_type
+            # FIXME remove
             for inverse in self.file.get_inverse(
                 ifcopenshell.util.element.get_material(product_type)
             ):
                 if inverse.is_a("IfcMaterialLayerSetUsage"):
-                    inverse.OffsetFromReferenceLine = 0.0 - self.outer
+                    inverse.OffsetFromReferenceLine = -self.outer
 
             # mapping from normalised X-axis to this rotated axis
             matrix_forward = matrix_align(
