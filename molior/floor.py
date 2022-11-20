@@ -9,8 +9,8 @@ from molior.ifc import (
     add_cell_topology_epsets,
     create_extruded_area_solid,
     assign_storey_byindex,
+    assign_type_by_name,
     get_context_by_name,
-    get_type_object,
 )
 
 run = ifcopenshell.api.run
@@ -80,10 +80,10 @@ class Floor(TraceClass):
         if not self.do_representation:
             return
 
-        product_type = get_type_object(
+        product_type = assign_type_by_name(
             self.file,
             self.style_object,
-            ifc_type=self.ifc + "Type",
+            element=element,
             stylename=self.style,
             name=self.name,
         )
@@ -97,13 +97,6 @@ class Floor(TraceClass):
                 if relating_material.is_a("IfcMaterialLayerSet"):
                     for material_layer in relating_material.MaterialLayers:
                         self.thickness += material_layer.LayerThickness
-
-        run(
-            "type.assign_type",
-            self.file,
-            related_object=element,
-            relating_type=product_type,
-        )
 
         shape = self.file.createIfcShapeRepresentation(
             body_context,

@@ -23,7 +23,6 @@ from molior.ifc import (
     assign_storey_byindex,
     get_material_by_name,
     get_context_by_name,
-    get_type_object,
     create_curve_bounded_plane,
 )
 
@@ -150,11 +149,10 @@ class Wall(TraceClass):
             if not self.do_representation:
                 continue
 
-            # reuse (or create) a Type
-            product_type = get_type_object(
+            product_type = assign_type_by_name(
                 self.file,
                 self.style_object,
-                ifc_type=self.ifc + "Type",
+                element=mywall,
                 stylename=self.style,
                 name=self.name,
             )
@@ -169,13 +167,6 @@ class Wall(TraceClass):
                         for material_layer in relating_material.MaterialLayers:
                             self.thickness += material_layer.LayerThickness
             self.inner = self.thickness - self.outer
-
-            run(
-                "type.assign_type",
-                self.file,
-                related_object=mywall,
-                relating_type=product_type,
-            )
 
             # copy Usage from Type to Element
             for inverse in self.file.get_inverse(
@@ -517,14 +508,14 @@ class Wall(TraceClass):
                 )
                 # assign the entity to a storey
                 assign_storey_byindex(self.file, entity, self.building, self.level)
-                assign_type_by_name(
+
+                element_type = assign_type_by_name(
                     self.file,
                     self.style_object,
                     element=entity,
                     stylename=self.style,
                     name=name,
                 )
-                element_type = ifcopenshell.util.element.get_type(entity)
 
                 # look for an opening geometry in the Type
                 myopening = None

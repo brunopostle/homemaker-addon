@@ -9,9 +9,9 @@ from molior.ifc import (
     create_curve_bounded_plane,
     create_face_surface,
     assign_storey_byindex,
+    assign_type_by_name,
     get_material_by_name,
     get_context_by_name,
-    get_type_object,
 )
 
 run = ifcopenshell.api.run
@@ -205,11 +205,10 @@ class Shell(BaseClass):
             assignment.RelatingProduct = structural_surface
             assignment.RelatedObjects = [element]
 
-            # reuse (or create) a Type
-            product_type = get_type_object(
+            product_type = assign_type_by_name(
                 self.file,
                 self.style_object,
-                ifc_type=self.ifc + "Type",
+                element=element,
                 stylename=self.style,
                 name=self.name,
             )
@@ -224,13 +223,6 @@ class Shell(BaseClass):
                         for material_layer in relating_material.MaterialLayers:
                             self.thickness += material_layer.LayerThickness
             self.inner = self.thickness - self.outer
-
-            run(
-                "type.assign_type",
-                self.file,
-                related_object=element,
-                relating_type=product_type,
-            )
 
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
 
