@@ -156,71 +156,35 @@ bedroom-floor:
   class: Floor
   condition: bedroom
   ifc: IfcCovering
-  predefined_type: FLOORING
-  below: 0.0
-  layerset:
-    - [0.01, "Carpet"]
 circulation-floor:
   class: Floor
   condition: circulation
   ifc: IfcCovering
-  predefined_type: FLOORING
-  below: 0.0
-  layerset:
-    - [0.01, "Carpet"]
 kitchen-floor:
   class: Floor
   condition: kitchen
   ifc: IfcCovering
-  predefined_type: FLOORING
-  below: 0.0
-  layerset:
-    - [0.01, "Carpet"]
 living-floor:
   class: Floor
   condition: living
   ifc: IfcCovering
-  predefined_type: FLOORING
-  below: 0.0
-  layerset:
-    - [0.01, "Carpet"]
 retail-floor:
   class: Floor
   condition: retail
   ifc: IfcCovering
-  predefined_type: FLOORING
-  below: 0.0
-  layerset:
-    - [0.01, "Carpet"]
 stair-floor:
   class: Floor
   condition: stair
   ifc: IfcCovering
-  predefined_type: FLOORING
-  below: 0.0
-  layerset:
-    - [0.01, "Carpet"]
 toilet-floor:
   class: Floor
   condition: toilet
   ifc: IfcCovering
-  predefined_type: FLOORING
-  below: 0.0
-  layerset:
-    - [0.01, "Carpet"]
 outside-floor:
   class: Floor
   condition: outside
   ifc: IfcCovering
-  predefined_type: FLOORING
-  below: 0.0
-  layerset:
-    - [0.02, "Tiles"]
 sahn-floor:
   class: Floor
   condition: sahn
   ifc: IfcCovering
-  predefined_type: FLOORING
-  below: 0.0
-  layerset:
-    - [0.02, "Tiles"]

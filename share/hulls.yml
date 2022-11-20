@@ -84,110 +84,36 @@ ceiling-vault:
 bedroom-floor:
   class: Shell
   ifc: IfcSlab
-  predefined_type: FLOOR
   condition: bedroom
-  layerset:
-    - [0.18, "Concrete"]
-    - [0.02, "Screed"]
-  outer: 0.0
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
 circulation-floor:
   class: Shell
   ifc: IfcSlab
-  predefined_type: FLOOR
   condition: circulation
-  layerset:
-  layerset:
-    - [0.18, "Concrete"]
-    - [0.02, "Screed"]
-  outer: 0.0
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
 kitchen-floor:
   class: Shell
   ifc: IfcSlab
-  predefined_type: FLOOR
   condition: kitchen
-  layerset:
-    - [0.18, "Concrete"]
-    - [0.02, "Screed"]
-  outer: 0.0
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
 living-floor:
   class: Shell
   ifc: IfcSlab
-  predefined_type: FLOOR
   condition: living
-  layerset:
-    - [0.18, "Concrete"]
-    - [0.02, "Screed"]
-  outer: 0.0
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
 retail-floor:
   class: Shell
   ifc: IfcSlab
-  predefined_type: FLOOR
   condition: retail
-  layerset:
-    - [0.18, "Concrete"]
-    - [0.02, "Screed"]
-  outer: 0.0
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
 stair-floor:
   class: Shell
   ifc: IfcSlab
   condition: stair
-  layerset:
-    - [0.18, "Concrete"]
-    - [0.02, "Screed"]
-  outer: 0.0
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
 toilet-floor:
   class: Shell
   ifc: IfcSlab
-  predefined_type: FLOOR
   condition: toilet
-  layerset:
-    - [0.18, "Concrete"]
-    - [0.02, "Screed"]
-  outer: 0.0
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
 outside-floor:
   class: Shell
   ifc: IfcSlab
-  predefined_type: FLOOR
   condition: outside
-  layerset:
-    - [0.18, "Concrete"]
-    - [0.12, "Insulation"]
-  outer: 0.0
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
-          IsExternal: true
 sahn-floor:
   class: Shell
   ifc: IfcSlab
-  predefined_type: FLOOR
   condition: sahn
-  layerset:
-    - [0.18, "Concrete"]
-    - [0.02, "Screed"]
-  outer: 0.0
-  psets:
-      Pset_SlabCommon:
-          IsExternal: true
-          LoadBearing: true
