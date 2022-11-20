@@ -311,6 +311,21 @@ def create_extruded_area_solid(self, profile, height, direction=[0.0, 0.0, 1.0])
     )
 
 
+def create_extruded_area_solid2(self, material_profile, start, direction, length):
+    return self.createIfcExtrudedAreaSolid(
+        material_profile.Profile,
+        self.createIfcAxis2Placement3D(
+            self.createIfcCartesianPoint(start),
+            self.createIfcDirection(direction),
+            self.createIfcDirection(
+                [direction[1], -direction[0], direction[2]]
+            ),
+        ),
+        self.createIfcDirection([0.0, 0.0, 1.0]),
+        length,
+    )
+
+
 def create_curve_bounded_plane(self, polygon, matrix):
     """Create a bounded shape in the Z=0 plane"""
     return self.createIfcCurveBoundedPlane(

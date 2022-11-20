@@ -8,6 +8,7 @@ from molior.geometry import map_to_2d, matrix_align, transform
 from molior.ifc import (
     add_face_topology_epsets,
     create_face_surface,
+    create_extruded_area_solid2,
     assign_storey_byindex,
     get_material_by_name,
     get_context_by_name,
@@ -197,25 +198,14 @@ class Grillage(BaseClass):
                     relating_type=type_product,
                 )
 
+                start = cropped_edge.StartVertex().Coordinates()
                 direction = cropped_edge.NormalisedVector()
+                length = cropped_edge.Length()
 
                 # extrude each profile in the profile set
                 extrusion_list = []
                 for material_profile in material_profiles:
-                    extrusion = self.file.createIfcExtrudedAreaSolid(
-                        material_profile.Profile,
-                        self.file.createIfcAxis2Placement3D(
-                            self.file.createIfcCartesianPoint(
-                                cropped_edge.StartVertex().Coordinates()
-                            ),
-                            self.file.createIfcDirection(direction),
-                            self.file.createIfcDirection(
-                                [direction[1], -direction[0], direction[2]]
-                            ),
-                        ),
-                        self.file.createIfcDirection([0.0, 0.0, 1.0]),
-                        cropped_edge.Length(),
-                    )
+                    extrusion = create_extruded_area_solid2(self.file, material_profile, start, direction, length)
                     extrusion_list.append(extrusion)
 
                 # stuff extrusions into a Shape Representation for the Element
