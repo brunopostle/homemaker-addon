@@ -104,7 +104,7 @@ class Extrusion(TraceClass):
                         ],
                     ),
                 )
-                # FIXME create Type and Profile Set using get_extruded_type_by_name()
+                # FIXME get Type as per Grillage
                 profile = self.file.create_entity(
                     self.structural_profile[0], **self.structural_profile[1]
                 )

@@ -11,7 +11,7 @@ from molior.ifc import (
     assign_storey_byindex,
     get_material_by_name,
     get_context_by_name,
-    get_extruded_type_by_name,
+    get_type_object,
 )
 
 run = ifcopenshell.api.run
@@ -25,22 +25,12 @@ class Grillage(BaseClass):
             args = {}
         super().__init__(args)
         self.ifc = "IfcBuildingElementProxy"
-        self.predefined_type = "USERDEFINED"
         self.structural_material = "Concrete"
-        self.profiles = [
-            {
-                "ifc_class": "IfcRectangleProfileDef",
-                "material": "Concrete",
-                "parameters": {"ProfileType": "AREA", "XDim": 0.2, "YDim": 0.2},
-                "position": {"Location": [0.0, 0.0], "RefDirection": [1.0, 0.0]},
-            }
-        ]
         self.spacing = 0.45
         self.angle = 90.0
         self.inner = 0.0
         for arg in args:
             self.__dict__[arg] = args[arg]
-        self.identifier = self.style + "/" + self.name
 
     def execute(self):
         """Generate some ifc"""
@@ -110,7 +100,7 @@ class Grillage(BaseClass):
                 "root.create_entity",
                 self.file,
                 ifc_class="IfcStructuralSurfaceMember",
-                name=self.identifier,
+                name=self.style + self.name,
                 predefined_type="SHELL",
             )
             add_face_topology_epsets(
@@ -171,19 +161,14 @@ class Grillage(BaseClass):
             matrix_inner = matrix @ matrix_align(
                 [0.0, 0.0, -self.inner], [1.0, 0.0, 0.0]
             )
-            # create or retrieve a Type for the linear elements
-            type_product = get_extruded_type_by_name(
+
+            type_product = get_type_object(
                 self.file,
-                profiles=self.profiles,
-                context_identifier="Body",
+                self.style_object,
                 ifc_type=self.ifc + "Type",
-                name=self.name,
                 stylename=self.style,
-                style_object=self.style_object,
+                name=self.name,
             )
-            if hasattr(type_product, "PredefinedType"):
-                type_product.PredefinedType = self.predefined_type
-            self.add_psets(type_product)
 
             # retrieve the Material Profile Set from the Product Type
             material_profiles = []
@@ -204,9 +189,6 @@ class Grillage(BaseClass):
                     ifc_class=self.ifc,
                     name=self.name,
                 )
-                if hasattr(linear_element, "PredefinedType"):
-                    linear_element.PredefinedType = self.predefined_type
-                self.add_psets(linear_element)
 
                 run(
                     "type.assign_type",

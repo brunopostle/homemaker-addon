@@ -37,7 +37,6 @@ class BaseClass:
         self.style = "default"
         self.file = None
         self.ifc = "IfcBuildingElementProxy"
-        self.predefined_type = "USERDEFINED"
         for arg in args:
             self.__dict__[arg] = args[arg]
         self.identifier = self.style + "/" + self.name

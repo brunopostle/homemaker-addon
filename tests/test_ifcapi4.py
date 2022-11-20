@@ -9,9 +9,9 @@ import ifcopenshell.util.element
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior.ifc
 from molior.ifc import (
-    get_extruded_type_by_name,
     get_context_by_name,
     add_pset,
+    get_type_object,
 )
 from molior.style import Style
 
@@ -23,30 +23,12 @@ class Tests(unittest.TestCase):
         self.file = molior.ifc.init(name="My Project")
         self.body_context = get_context_by_name(self.file, context_identifier="Body")
 
-        column_type = get_extruded_type_by_name(
+        column_type = get_type_object(
             self.file,
-            style_object=Style(),
-            profiles=[
-                {
-                    "ifc_class": "IfcRectangleProfileDef",
-                    "material": "Cheese",
-                    "parameters": {"ProfileType": "AREA", "XDim": 0.1, "YDim": 0.1},
-                    "position": {"Location": [0.2, 0.0], "RefDirection": [1.0, 0.0]},
-                },
-                {
-                    "ifc_class": "IfcIShapeProfileDef",
-                    "material": "Concrete",
-                    "parameters": {
-                        "ProfileType": "AREA",
-                        "OverallWidth": 0.1,
-                        "OverallDepth": 0.2,
-                        "WebThickness": 0.005,
-                        "FlangeThickness": 0.01,
-                        "FilletRadius": 0.005,
-                    },
-                    "position": {"Location": [0.0, 0.0], "RefDirection": [1.0, 0.0]},
-                },
-            ],
+            Style(),
+            ifc_type="IfcMemberType",
+            stylename="framing",
+            name="purlin",
         )
 
         mycolumn = run(
