@@ -97,6 +97,37 @@ def create_default_contexts(self):
     )
 
 
+def create_storeys(self, parent, elevations):
+    """Add Storey Spatial Elements to a Building, given a dictionary of elevations/name"""
+    if elevations == {}:
+        elevations[0.0] = 0
+    for elevation in sorted(elevations):
+        for storey in self.by_type("IfcBuildingStorey"):
+            if (
+                storey.Name == str(elevations[elevation])
+                and storey.Decomposes
+                and storey.Decomposes[0].RelatingObject == parent
+            ):
+                continue
+        mystorey = run(
+            "root.create_entity",
+            self,
+            ifc_class="IfcBuildingStorey",
+            name=str(elevations[elevation]),
+        )
+        mystorey.Elevation = elevation
+        mystorey.Description = "Storey " + mystorey.Name
+        mystorey.LongName = mystorey.Description
+        mystorey.CompositionType = "ELEMENT"
+        run("aggregate.assign_object", self, product=mystorey, relating_object=parent)
+        run(
+            "geometry.edit_object_placement",
+            self,
+            product=mystorey,
+            matrix=matrix_align([0.0, 0.0, elevation], [1.0, 0.0, 0.0]),
+        )
+
+
 def get_context_by_name(
     self,
     parent_context_identifier=None,
@@ -186,35 +217,76 @@ def get_structural_analysis_model_by_name(self, spatial_element, name):
     return model
 
 
-def create_storeys(self, parent, elevations):
-    """Add Storey Spatial Elements to a Building, given a dictionary of elevations/name"""
-    if elevations == {}:
-        elevations[0.0] = 0
-    for elevation in sorted(elevations):
-        for storey in self.by_type("IfcBuildingStorey"):
-            if (
-                storey.Name == str(elevations[elevation])
-                and storey.Decomposes
-                and storey.Decomposes[0].RelatingObject == parent
-            ):
-                continue
-        mystorey = run(
-            "root.create_entity",
-            self,
-            ifc_class="IfcBuildingStorey",
-            name=str(elevations[elevation]),
+def get_library_by_name(self, library_name):
+    """Retrieve a Project Library by name, creating it if necessary"""
+    for library in self.by_type("IfcProjectLibrary"):
+        if library.Name == library_name:
+            return library
+    library = run(
+        "root.create_entity", self, ifc_class="IfcProjectLibrary", name=library_name
+    )
+    run(
+        "project.assign_declaration",
+        self,
+        definition=library,
+        relating_context=self.by_type("IfcProject")[0],
+    )
+    return library
+
+
+def get_material_by_name(self, style_object, stylename="default", name="Error"):
+    """Retrieve an IfcMaterial by name, creating it if necessary"""
+    materials = {}
+    for material in self.by_type("IfcMaterial"):
+        materials[material.Name] = material
+    if name in materials:
+        mymaterial = materials[name]
+    else:
+        (found_stylename, library_file, element) = style_object.get_from_library(
+            stylename, "IfcMaterial", name
         )
-        mystorey.Elevation = elevation
-        mystorey.Description = "Storey " + mystorey.Name
-        mystorey.LongName = mystorey.Description
-        mystorey.CompositionType = "ELEMENT"
-        run("aggregate.assign_object", self, product=mystorey, relating_object=parent)
-        run(
-            "geometry.edit_object_placement",
-            self,
-            product=mystorey,
-            matrix=matrix_align([0.0, 0.0, elevation], [1.0, 0.0, 0.0]),
-        )
+        if element:
+            # add to current project from library file
+            mymaterial = run(
+                "project.append_asset", self, library=library_file, element=element
+            )
+        else:
+            # we need to create a new material
+            mymaterial = run("material.add_material", self, name=name)
+    return mymaterial
+
+
+def get_parent_building(entity):
+    """Retrieve whatever Building contains this entity, or None"""
+    if entity.is_a("IfcElement"):
+        parents = entity.ContainedInStructure
+        decomposes = entity.Decomposes
+        if not parents:
+            if not decomposes:
+                return None
+            parent = decomposes[0].RelatingObject
+        else:
+            parent = parents[0].RelatingStructure
+    elif entity.is_a("IfcSpatialElement"):
+        decomposes = entity.Decomposes
+        if not decomposes:
+            return None
+        parent = decomposes[0].RelatingObject
+    elif entity.is_a("IfcStructuralItem"):
+        assignments = entity.HasAssignments
+        if not assignments:
+            return None
+        parent = assignments[0].RelatingGroup
+    elif entity.is_a("IfcSystem"):
+        services = entity.ServicesBuildings
+        if not services:
+            return None
+        parent = services[0].RelatedBuildings[0]
+    else:
+        return None
+    if parent.is_a("IfcBuilding"):
+        return parent
+    return get_parent_building(parent)
 
 
 def create_extruded_area_solid(self, profile, height, direction=[0.0, 0.0, 1.0]):
@@ -236,42 +308,6 @@ def create_extruded_area_solid(self, profile, height, direction=[0.0, 0.0, 1.0])
         ),
         self.createIfcDirection(direction),
         height,
-    )
-
-
-def clip_solid(self, solid, start, end):
-    """Clip a wall using a half-space solid"""
-    vector = subtract_3d(end, start)
-    perp_plan = normalise_3d([0 - vector[1], vector[0], 0.0])
-    xprod = x_product_3d(vector, perp_plan)
-
-    polygon = [
-        add_2d(start[0:2], perp_plan[0:2]),
-        add_2d(end[0:2], perp_plan[0:2]),
-        subtract_2d(end[0:2], perp_plan[0:2]),
-        subtract_2d(start[0:2], perp_plan[0:2]),
-        add_2d(start[0:2], perp_plan[0:2]),
-    ]
-
-    return self.createIfcBooleanClippingResult(
-        "DIFFERENCE",
-        solid,
-        self.createIfcPolygonalBoundedHalfSpace(
-            self.createIfcPlane(
-                self.createIfcAxis2Placement3D(
-                    self.createIfcCartesianPoint(start),
-                    self.createIfcDirection(xprod),
-                    None,
-                )
-            ),
-            False,
-            self.createIfcAxis2Placement3D(
-                self.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
-            ),
-            self.createIfcPolyline(
-                [self.createIfcCartesianPoint(point) for point in polygon]
-            ),
-        ),
     )
 
 
@@ -321,6 +357,105 @@ def create_face_surface(self, polygon, normal):
         True,
     )
     return self.createIfcFaceSurface([face_bound], surface, True)
+
+
+def create_tessellation_from_mesh(self, vertices, faces):
+    """Create a Tessellation from vertex coordinates and faces"""
+    pointlist = self.createIfcCartesianPointList3D(vertices)
+    indexedfaces = [
+        self.createIfcIndexedPolygonalFace([index + 1 for index in face])
+        for face in faces
+    ]
+    return self.createIfcPolygonalFaceSet(pointlist, None, indexedfaces, None)
+
+
+def clip_solid(self, solid, start, end):
+    """Clip a wall using a half-space solid"""
+    vector = subtract_3d(end, start)
+    perp_plan = normalise_3d([0 - vector[1], vector[0], 0.0])
+    xprod = x_product_3d(vector, perp_plan)
+
+    polygon = [
+        add_2d(start[0:2], perp_plan[0:2]),
+        add_2d(end[0:2], perp_plan[0:2]),
+        subtract_2d(end[0:2], perp_plan[0:2]),
+        subtract_2d(start[0:2], perp_plan[0:2]),
+        add_2d(start[0:2], perp_plan[0:2]),
+    ]
+
+    return self.createIfcBooleanClippingResult(
+        "DIFFERENCE",
+        solid,
+        self.createIfcPolygonalBoundedHalfSpace(
+            self.createIfcPlane(
+                self.createIfcAxis2Placement3D(
+                    self.createIfcCartesianPoint(start),
+                    self.createIfcDirection(xprod),
+                    None,
+                )
+            ),
+            False,
+            self.createIfcAxis2Placement3D(
+                self.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
+            ),
+            self.createIfcPolyline(
+                [self.createIfcCartesianPoint(point) for point in polygon]
+            ),
+        ),
+    )
+
+
+def add_pset(self, product, name, properties):
+    """Helper method to add an Ifc Pset"""
+    pset = run("pset.add_pset", self, product=product, name=name)
+    run(
+        "pset.edit_pset",
+        self,
+        pset=pset,
+        properties=properties,
+    )
+
+
+def add_face_topology_epsets(self, entity, face, back_cell, front_cell):
+    if face:
+        face_index = face.Get("index")
+        if not face_index == None:
+            add_pset(self, entity, "EPset_Topology", {"FaceIndex": str(face_index)})
+        face_stylename = face.Get("stylename")
+        if not face_stylename == None:
+            add_pset(self, entity, "EPset_Topology", {"StyleName": str(face_stylename)})
+    if front_cell:
+        front_cell_index = front_cell.Get("index")
+        if not front_cell_index == None:
+            add_pset(
+                self,
+                entity,
+                "EPset_Topology",
+                {"FrontCellIndex": str(front_cell_index)},
+            )
+    if back_cell:
+        back_cell_index = back_cell.Get("index")
+        if not back_cell_index == None:
+            add_pset(
+                self,
+                entity,
+                "EPset_Topology",
+                {"BackCellIndex": str(back_cell_index)},
+            )
+
+
+def add_topologic_epsets(self, entity, topology):
+    add_pset(self, entity, "EPset_Topologic_Dictionary", topology.DumpDictionary())
+
+
+def add_cell_topology_epsets(self, entity, cell):
+    if cell:
+        cell_index = cell.Get("index")
+        if cell_index != None:
+            add_pset(self, entity, "EPset_Topology", {"CellIndex": cell_index})
+        cell_usage = cell.Get("usage")
+        if cell_usage != None:
+            add_pset(self, entity, "EPset_Topology", {"Usage": cell_usage})
 
 
 def assign_extrusion(
@@ -402,16 +537,6 @@ def assign_extrusion(
     )
 
 
-def create_tessellation_from_mesh(self, vertices, faces):
-    """Create a Tessellation from vertex coordinates and faces"""
-    pointlist = self.createIfcCartesianPointList3D(vertices)
-    indexedfaces = [
-        self.createIfcIndexedPolygonalFace([index + 1 for index in face])
-        for face in faces
-    ]
-    return self.createIfcPolygonalFaceSet(pointlist, None, indexedfaces, None)
-
-
 def assign_storey_byindex(self, entity, building, index):
     """Assign object to a storey by index"""
     storeys = {}
@@ -461,59 +586,6 @@ def assign_space_byindex(self, entity, building, index):
             product=entity,
             relating_structure=spaces[str(index)],
         )
-
-
-def add_pset(self, product, name, properties):
-    """Helper method to add an Ifc Pset"""
-    pset = run("pset.add_pset", self, product=product, name=name)
-    run(
-        "pset.edit_pset",
-        self,
-        pset=pset,
-        properties=properties,
-    )
-
-
-def add_face_topology_epsets(self, entity, face, back_cell, front_cell):
-    if face:
-        face_index = face.Get("index")
-        if not face_index == None:
-            add_pset(self, entity, "EPset_Topology", {"FaceIndex": str(face_index)})
-        face_stylename = face.Get("stylename")
-        if not face_stylename == None:
-            add_pset(self, entity, "EPset_Topology", {"StyleName": str(face_stylename)})
-    if front_cell:
-        front_cell_index = front_cell.Get("index")
-        if not front_cell_index == None:
-            add_pset(
-                self,
-                entity,
-                "EPset_Topology",
-                {"FrontCellIndex": str(front_cell_index)},
-            )
-    if back_cell:
-        back_cell_index = back_cell.Get("index")
-        if not back_cell_index == None:
-            add_pset(
-                self,
-                entity,
-                "EPset_Topology",
-                {"BackCellIndex": str(back_cell_index)},
-            )
-
-
-def add_topologic_epsets(self, entity, topology):
-    add_pset(self, entity, "EPset_Topologic_Dictionary", topology.DumpDictionary())
-
-
-def add_cell_topology_epsets(self, entity, cell):
-    if cell:
-        cell_index = cell.Get("index")
-        if cell_index != None:
-            add_pset(self, entity, "EPset_Topology", {"CellIndex": cell_index})
-        cell_usage = cell.Get("usage")
-        if cell_usage != None:
-            add_pset(self, entity, "EPset_Topology", {"Usage": cell_usage})
 
 
 def assign_type_by_name(
@@ -578,75 +650,3 @@ def get_type_object(
         relating_context=get_library_by_name(self, stylename),
     )
     return definition
-
-
-def get_library_by_name(self, library_name):
-    """Retrieve a Project Library by name, creating it if necessary"""
-    for library in self.by_type("IfcProjectLibrary"):
-        if library.Name == library_name:
-            return library
-    library = run(
-        "root.create_entity", self, ifc_class="IfcProjectLibrary", name=library_name
-    )
-    run(
-        "project.assign_declaration",
-        self,
-        definition=library,
-        relating_context=self.by_type("IfcProject")[0],
-    )
-    return library
-
-
-def get_parent_building(entity):
-    """Retrieve whatever Building contains this entity, or None"""
-    if entity.is_a("IfcElement"):
-        parents = entity.ContainedInStructure
-        decomposes = entity.Decomposes
-        if not parents:
-            if not decomposes:
-                return None
-            parent = decomposes[0].RelatingObject
-        else:
-            parent = parents[0].RelatingStructure
-    elif entity.is_a("IfcSpatialElement"):
-        decomposes = entity.Decomposes
-        if not decomposes:
-            return None
-        parent = decomposes[0].RelatingObject
-    elif entity.is_a("IfcStructuralItem"):
-        assignments = entity.HasAssignments
-        if not assignments:
-            return None
-        parent = assignments[0].RelatingGroup
-    elif entity.is_a("IfcSystem"):
-        services = entity.ServicesBuildings
-        if not services:
-            return None
-        parent = services[0].RelatedBuildings[0]
-    else:
-        return None
-    if parent.is_a("IfcBuilding"):
-        return parent
-    return get_parent_building(parent)
-
-
-def get_material_by_name(self, style_object, stylename="default", name="Error"):
-    """Retrieve an IfcMaterial by name, creating it if necessary"""
-    materials = {}
-    for material in self.by_type("IfcMaterial"):
-        materials[material.Name] = material
-    if name in materials:
-        mymaterial = materials[name]
-    else:
-        (found_stylename, library_file, element) = style_object.get_from_library(
-            stylename, "IfcMaterial", name
-        )
-        if element:
-            # add to current project from library file
-            mymaterial = run(
-                "project.append_asset", self, library=library_file, element=element
-            )
-        else:
-            # we need to create a new material
-            mymaterial = run("material.add_material", self, name=name)
-    return mymaterial
