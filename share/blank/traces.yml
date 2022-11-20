@@ -3,13 +3,7 @@ exterior:
   class: Wall
   ifc: IfcWall
   condition: external
-  inner: 0.08
-  outer: 0.25
   party_wall: true
-  psets:
-      Pset_WallCommon:
-          IsExternal: true
-          LoadBearing: true
 column:
   condition: noop
 external beam:
@@ -18,12 +12,6 @@ openwall:
   class: Wall
   ifc: IfcWall
   condition: open
-  inner: 0.08
-  outer: 0.25
   party_wall: true
-  psets:
-      Pset_WallCommon:
-          IsExternal: true
-          LoadBearing: true
 external-open:
   condition: noop

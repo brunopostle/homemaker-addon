@@ -1,7 +1,7 @@
 """Molior builds 3D models from topologist 'traces' and 'hulls'
 
 Which traces and hulls are used, and how they are used, are defined by files in
-the 'molior/style/share' folder and subfolders.  Access to these style
+the 'share' folder and subfolders.  Access to these style
 definitions is handled by the molior.style module.
 
 Molior uses IfcOpenShell to generate IFC models of buildings, with
