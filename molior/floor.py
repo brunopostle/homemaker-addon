@@ -25,14 +25,9 @@ class Floor(TraceClass):
         super().__init__(args)
         self.below = 0.0
         self.ifc = "IfcCovering"
-        self.predefined_type = "FLOORING"
-        self.layerset = [[0.02, "Tiles"]]
         self.path = []
         for arg in args:
             self.__dict__[arg] = args[arg]
-        self.thickness = 0.0
-        for layer in self.layerset:
-            self.thickness += layer[0]
 
     def execute(self):
         """Generate some ifc"""
@@ -59,8 +54,6 @@ class Floor(TraceClass):
             ifc_class=self.ifc,
             name=self.name + "/" + str(cell.Get("index")),
         )
-        if hasattr(element, "PredefinedType"):
-            element.PredefinedType = self.predefined_type
         # Will be re-assigned to Space later
         assign_storey_byindex(self.file, element, self.building, self.level)
 
@@ -95,13 +88,13 @@ class Floor(TraceClass):
             name=self.name,
         )
 
+        self.thickness = 0.0
         for association in product_type.HasAssociations:
             if association.is_a("IfcRelAssociatesMaterial"):
                 relating_material = association.RelatingMaterial
                 if relating_material.is_a("IfcMaterialLayerSetUsage"):
                     self.below = -relating_material.OffsetFromReferenceLine
                 if relating_material.is_a("IfcMaterialLayerSet"):
-                    self.thickness = 0.0
                     for material_layer in relating_material.MaterialLayers:
                         self.thickness += material_layer.LayerThickness
 

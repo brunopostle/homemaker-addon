@@ -44,7 +44,6 @@ class Extrusion(TraceClass):
             self.file,
             ifc_class=self.ifc,
             name=self.name,
-            predefined_type=self.predefined_type,
         )
 
         if (

@@ -41,6 +41,7 @@ class Wall(TraceClass):
         self.ifc = "IfcWall"
         self.party_wall = False
         self.structural_material = "Masonry"
+        self.structural_thickness = 0.2
         self.opening_material = "Timber"
         self.openings = []
         self.path = []
@@ -158,13 +159,13 @@ class Wall(TraceClass):
                 name=self.name,
             )
 
+            self.thickness = 0.0
             for association in product_type.HasAssociations:
                 if association.is_a("IfcRelAssociatesMaterial"):
                     relating_material = association.RelatingMaterial
                     if relating_material.is_a("IfcMaterialLayerSetUsage"):
                         self.outer = -relating_material.OffsetFromReferenceLine
                     if relating_material.is_a("IfcMaterialLayerSet"):
-                        self.thickness = 0.0
                         for material_layer in relating_material.MaterialLayers:
                             self.thickness += material_layer.LayerThickness
             self.inner = self.thickness - self.outer
@@ -306,7 +307,7 @@ class Wall(TraceClass):
             add_face_topology_epsets(
                 self.file, structural_surface, face, back_cell, front_cell
             )
-            structural_surface.Thickness = self.thickness
+            structural_surface.Thickness = self.structural_thickness
             run(
                 "structural.assign_structural_analysis_model",
                 self.file,

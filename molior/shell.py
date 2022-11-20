@@ -25,17 +25,12 @@ class Shell(BaseClass):
             args = {}
         super().__init__(args)
         self.ifc = "IfcRoof"
-        self.predefined_type = "USERDEFINED"
         self.party_wall = False
-        self.layerset = [[0.03, "Plaster"], [0.2, "Insulation"], [0.05, "Tiles"]]
         self.structural_material = "Concrete"
+        self.structural_thickness = 0.2
         self.outer = 0.20
         for arg in args:
             self.__dict__[arg] = args[arg]
-        self.thickness = 0.0
-        for layer in self.layerset:
-            self.thickness += layer[0]
-        self.inner = self.thickness - self.outer
 
     def execute(self):
         """Generate some ifc"""
@@ -90,8 +85,6 @@ class Shell(BaseClass):
                 ifc_class=self.ifc,
                 name=self.name,
             )
-            if hasattr(element, "PredefinedType"):
-                element.PredefinedType = self.predefined_type
             run(
                 "aggregate.assign_object",
                 self.file,
@@ -176,7 +169,7 @@ class Shell(BaseClass):
                 face[1]["back_cell"],
                 face[1]["front_cell"],
             )
-            structural_surface.Thickness = self.thickness
+            structural_surface.Thickness = self.structural_thickness
             run(
                 "structural.assign_structural_analysis_model",
                 self.file,
@@ -221,13 +214,13 @@ class Shell(BaseClass):
                 name=self.name,
             )
 
+            self.thickness = 0.0
             for association in product_type.HasAssociations:
                 if association.is_a("IfcRelAssociatesMaterial"):
                     relating_material = association.RelatingMaterial
                     if relating_material.is_a("IfcMaterialLayerSetUsage"):
                         self.outer = -relating_material.OffsetFromReferenceLine
                     if relating_material.is_a("IfcMaterialLayerSet"):
-                        self.thickness = 0.0
                         for material_layer in relating_material.MaterialLayers:
                             self.thickness += material_layer.LayerThickness
             self.inner = self.thickness - self.outer
