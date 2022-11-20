@@ -23,6 +23,7 @@ from molior.ifc import (
     assign_storey_byindex,
     get_material_by_name,
     get_context_by_name,
+    get_type_object,
     create_curve_bounded_plane,
 )
 
@@ -149,7 +150,13 @@ class Wall(TraceClass):
                 continue
 
             # reuse (or create) a Type
-            product_type = self.get_element_type()
+            product_type = get_type_object(
+                self.file,
+                self.style_object,
+                ifc_type=self.ifc + "Type",
+                stylename=self.style,
+                name=self.name,
+            )
 
             for association in product_type.HasAssociations:
                 if association.is_a("IfcRelAssociatesMaterial"):

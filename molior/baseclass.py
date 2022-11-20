@@ -79,6 +79,17 @@ class BaseClass:
                 )
                 layer.LayerThickness = mylayer[0]
                 layer.Name = mylayer[1]
+            usage = self.file.createIfcMaterialLayerSetUsage(
+                mylayerset, "AXIS2", "POSITIVE", -self.outer
+            )
+            association = run(
+                "root.create_entity",
+                self.file,
+                ifc_class="IfcRelAssociatesMaterial",
+                name=self.identifier + " Usage",
+            )
+            association.RelatingMaterial = usage
+            association.RelatedObjects = [type_product]
 
         return type_product
 
