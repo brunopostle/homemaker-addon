@@ -2,176 +2,64 @@
 exterior:
   class: Shell
   ifc: IfcWall
-  predefined_type: USERDEFINED
   condition: external
-  layerset:
-    - [0.30, "Concrete"]
-  outer: 0.15
-  psets:
-      Pset_WallCommon:
-          IsExternal: true
-          LoadBearing: true
 interior:
   class: Shell
   ifc: IfcWall
-  predefined_type: USERDEFINED
   condition: internal
-  layerset:
-    - [0.30, "Concrete"]
-  outer: 0.15
-  psets:
-      Pset_WallCommon:
-          IsExternal: false
-          LoadBearing: true
 pitched-roof:
   class: Shell
   ifc: IfcRoof
-  predefined_type: FREEFORM
   condition: roof
-  layerset:
-    - [0.30, "Concrete"]
-  outer: 0.15
-  psets:
-      Pset_RoofCommon:
-          IsExternal: true
-          LoadBearing: true
 inclined-soffit:
   class: Shell
   ifc: IfcBuildingElementProxy
-  predefined_type: USERDEFINED
   condition: soffit
-  layerset:
-    - [0.30, "Concrete"]
-  outer: 0.15
-  psets:
-      Pset_BuildingElementProxyCommon:
-          IsExternal: true
-          LoadBearing: true
 wall-panel:
   class: Shell
   ifc: IfcWall
-  predefined_type: USERDEFINED
   condition: external-panel
-  layerset:
-    - [0.30, "Concrete"]
-  outer: 0.15
-  psets:
-      Pset_WallCommon:
-          IsExternal: true
-          LoadBearing: true
 partition-panel:
   class: Shell
   ifc: IfcWall
-  predefined_type: USERDEFINED
   condition: internal-panel
-  layerset:
-    - [0.30, "Concrete"]
-  outer: 0.15
-  psets:
-      Pset_WallCommon:
-          IsExternal: false
-          LoadBearing: true
 flat-roof:
   class: Shell
   ifc: IfcRoof
-  predefined_type: FLAT_ROOF
   condition: flat
-  layerset:
-    - [0.30, "Concrete"]
-  outer: 0.15
-  psets:
-      Pset_RoofCommon:
-          IsExternal: true
-          LoadBearing: true
 bedroom-floor:
   class: Shell
   ifc: IfcSlab
   condition: bedroom
-  layerset:
-    - [0.30, "Concrete"]
-  outer: 0.15
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
 circulation-floor:
   class: Shell
   ifc: IfcSlab
   condition: circulation
-  layerset:
-    - [0.30, "Concrete"]
-  outer: 0.15
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
 kitchen-floor:
   class: Shell
   ifc: IfcSlab
   condition: kitchen
-  layerset:
-    - [0.30, "Concrete"]
-  outer: 0.15
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
 living-floor:
   class: Shell
   ifc: IfcSlab
   condition: living
-  layerset:
-    - [0.30, "Concrete"]
-  outer: 0.15
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
 outside-floor:
   class: Shell
   ifc: IfcSlab
   condition: outside
-  layerset:
-    - [0.30, "Concrete"]
-  outer: 0.15
-  psets:
-      Pset_SlabCommon:
-          IsExternal: true
-          LoadBearing: true
 retail-floor:
   class: Shell
   ifc: IfcSlab
   condition: retail
-  layerset:
-    - [0.30, "Concrete"]
-  outer: 0.15
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
 sahn-floor:
   class: Shell
   ifc: IfcSlab
   condition: sahn
-  layerset:
-    - [0.30, "Concrete"]
-  outer: 0.15
-  psets:
-      Pset_SlabCommon:
-          IsExternal: true
-          LoadBearing: true
 stair-floor:
   class: Shell
   ifc: IfcSlab
   condition: stair
-  layerset:
-    - [0.30, "Concrete"]
-  outer: 0.15
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true
 toilet-floor:
   class: Shell
   ifc: IfcSlab
   condition: toilet
-  layerset:
-    - [0.30, "Concrete"]
-  outer: 0.15
-  psets:
-      Pset_SlabCommon:
-          LoadBearing: true

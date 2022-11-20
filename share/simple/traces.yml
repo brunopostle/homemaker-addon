@@ -9,6 +9,12 @@ internal ground beam:
   condition: noop
 eaves:
   condition: noop
+eaves_corona:
+  condition: noop
+eaves_tiles:
+  condition: noop
+eaves_gutter:
+  condition: noop
 parapet:
   condition: noop
 coping:
