@@ -10,6 +10,7 @@ from molior.ifc import (
     create_extruded_area_solid,
     assign_storey_byindex,
     get_context_by_name,
+    get_type_object,
 )
 
 run = ifcopenshell.api.run
@@ -86,8 +87,13 @@ class Floor(TraceClass):
         if not self.do_representation:
             return
 
-        # assign a type and place a representation
-        product_type = self.get_element_type()
+        product_type = get_type_object(
+            self.file,
+            self.style_object,
+            ifc_type=self.ifc + "Type",
+            stylename=self.style,
+            name=self.name,
+        )
 
         for association in product_type.HasAssociations:
             if association.is_a("IfcRelAssociatesMaterial"):
@@ -105,16 +111,6 @@ class Floor(TraceClass):
             related_object=element,
             relating_type=product_type,
         )
-
-        # FIXME remove
-        self.add_psets(product_type)
-
-        # FIXME remove
-        for inverse in self.file.get_inverse(
-            ifcopenshell.util.element.get_material(product_type)
-        ):
-            if inverse.is_a("IfcMaterialLayerSetUsage"):
-                inverse.OffsetFromReferenceLine = -self.below
 
         shape = self.file.createIfcShapeRepresentation(
             body_context,

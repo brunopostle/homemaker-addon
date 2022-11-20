@@ -1,6 +1,5 @@
 from math import pi
 import ifcopenshell.api
-from ifcopenshell.util.element import get_material
 
 from molior.geometry import (
     add_2d,
@@ -12,7 +11,7 @@ from molior.geometry import (
     subtract_2d,
     line_intersection,
 )
-from molior.ifc import get_material_by_name, add_pset, get_type_object
+from molior.ifc import add_pset
 
 run = ifcopenshell.api.run
 
@@ -42,56 +41,6 @@ class BaseClass:
         for arg in args:
             self.__dict__[arg] = args[arg]
         self.identifier = self.style + "/" + self.name
-
-    def get_element_type(self):
-        """Retrieve or create an Ifc Type definition for this Molior object"""
-
-        type_product = get_type_object(
-            self.file,
-            self.style_object,
-            ifc_type=self.ifc + "Type",
-            stylename=self.style,
-            name=self.name,
-        )
-        if hasattr(type_product, "PredefinedType"):
-            type_product.PredefinedType = self.predefined_type
-
-        if not get_material(type_product):
-            run(
-                "material.assign_material",
-                self.file,
-                product=type_product,
-                type="IfcMaterialLayerSet",
-            )
-            mylayerset = get_material(type_product)
-            mylayerset.LayerSetName = self.identifier
-            for mylayer in self.layerset:
-                layer = run(
-                    "material.add_layer",
-                    self.file,
-                    layer_set=mylayerset,
-                    material=get_material_by_name(
-                        self.file,
-                        self.style_object,
-                        name=mylayer[1],
-                        stylename=self.style,
-                    ),
-                )
-                layer.LayerThickness = mylayer[0]
-                layer.Name = mylayer[1]
-            usage = self.file.createIfcMaterialLayerSetUsage(
-                mylayerset, "AXIS2", "POSITIVE", -self.outer
-            )
-            association = run(
-                "root.create_entity",
-                self.file,
-                ifc_class="IfcRelAssociatesMaterial",
-                name=self.identifier + " Usage",
-            )
-            association.RelatingMaterial = usage
-            association.RelatedObjects = [type_product]
-
-        return type_product
 
     def add_psets(self, product):
         """self.psets is a dictionary of Psets, add them to an Ifc product"""

@@ -11,6 +11,7 @@ from molior.ifc import (
     assign_storey_byindex,
     get_material_by_name,
     get_context_by_name,
+    get_type_object,
 )
 
 run = ifcopenshell.api.run
@@ -211,8 +212,14 @@ class Shell(BaseClass):
             assignment.RelatingProduct = structural_surface
             assignment.RelatedObjects = [element]
 
-            # get or create a Type
-            product_type = self.get_element_type()
+            # reuse (or create) a Type
+            product_type = get_type_object(
+                self.file,
+                self.style_object,
+                ifc_type=self.ifc + "Type",
+                stylename=self.style,
+                name=self.name,
+            )
 
             for association in product_type.HasAssociations:
                 if association.is_a("IfcRelAssociatesMaterial"):
@@ -231,16 +238,6 @@ class Shell(BaseClass):
                 related_object=element,
                 relating_type=product_type,
             )
-
-            # FIXME remove
-            self.add_psets(product_type)
-
-            # FIXME remove
-            for inverse in self.file.get_inverse(
-                ifcopenshell.util.element.get_material(product_type)
-            ):
-                if inverse.is_a("IfcMaterialLayerSetUsage"):
-                    inverse.OffsetFromReferenceLine = -self.outer
 
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
 
