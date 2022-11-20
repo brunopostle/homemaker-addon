@@ -2,18 +2,7 @@
 exterior:
   class: Wall
   ifc: IfcWall
-  predefined_type: SOLIDWALL
   condition: external
-  layerset:
-    - [0.3, "Masonry"]
-    - [0.03, "Plaster"]
-  outer: 0.25
-  psets:
-      Pset_WallCommon:
-          IsExternal: true
-          LoadBearing: true
-      Custom_Pset:
-          Awesomeness: much
   do_populate_exterior_openings: 1
 ground beam:
   class: Extrusion
@@ -30,17 +19,7 @@ ground beam:
 interior:
   class: Wall
   ifc: IfcWall
-  predefined_type: SOLIDWALL
   condition: internal
-  outer: 0.08
-  layerset:
-    - [0.03, "Plaster"]
-    - [0.1, "Masonry"]
-    - [0.03, "Plaster"]
-  psets:
-      Pset_WallCommon:
-          IsExternal: false
-          LoadBearing: true
   ceiling: 0.2
   floor: 0.02
   do_populate_interior_openings: 1

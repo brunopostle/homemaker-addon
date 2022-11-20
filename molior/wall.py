@@ -38,19 +38,13 @@ class Wall(TraceClass):
         super().__init__(args)
         self.ceiling = 0.35
         self.ifc = "IfcWall"
-        self.predefined_type = "SOLIDWALL"
         self.party_wall = False
-        self.layerset = [[0.3, "Masonry"], [0.03, "Plaster"]]
         self.structural_material = "Masonry"
         self.opening_material = "Timber"
         self.openings = []
         self.path = []
         for arg in args:
             self.__dict__[arg] = args[arg]
-        self.thickness = 0.0
-        for layer in self.layerset:
-            self.thickness += layer[0]
-        self.inner = self.thickness - self.outer
 
     def execute(self):
         """Generate some ifc"""
@@ -88,8 +82,6 @@ class Wall(TraceClass):
                 ifc_class=self.ifc,
                 name=self.name,
             )
-            if hasattr(mywall, "PredefinedType"):
-                mywall.PredefinedType = self.predefined_type
             run(
                 "aggregate.assign_object",
                 self.file,
@@ -176,10 +168,8 @@ class Wall(TraceClass):
                 related_object=mywall,
                 relating_type=product_type,
             )
-            # FIXME remove
-            self.add_psets(product_type)
 
-            # FIXME remove
+            # copy Usage from Type to Element
             for inverse in self.file.get_inverse(
                 ifcopenshell.util.element.get_material(product_type)
             ):
