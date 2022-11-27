@@ -316,12 +316,12 @@ def create_extruded_area_solid2(self, material_profile, start, direction, length
         material_profile.Profile,
         self.createIfcAxis2Placement3D(
             self.createIfcCartesianPoint(start),
-            self.createIfcDirection(direction),
+            self.createIfcDirection(subtract_3d([0.0, 0.0, 0.0], direction)),
             self.createIfcDirection(
                 [direction[1], -direction[0], direction[2]]
             ),
         ),
-        self.createIfcDirection([0.0, 0.0, 1.0]),
+        self.createIfcDirection([0.0, 0.0, -1.0]),
         length,
     )
 
