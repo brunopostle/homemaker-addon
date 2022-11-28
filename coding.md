@@ -184,7 +184,6 @@ A *Shape Representation* can have one of these *RepresentationType* values:
   - *AdvancedBrep* (Brep's based on advanced faces, with b-spline surface geometry, with and without voids)
   - *CSG* (Boolean results of operations between solid models, half spaces and Boolean results)
   - *Clipping* (Boolean differences between swept area solids, half spaces and Boolean results)
-)
 - *BoundingBox* (simplistic 3D representation by a bounding box)
 - *SectionedSpine* (cross section based representation of a spine curve and planar cross sections. It can represent a surface or a solid and the interpolations of the between the cross sections is not defined)
 - *LightSource* (light source with (depending on type) position, orientation, light colour, intensity and attenuation)

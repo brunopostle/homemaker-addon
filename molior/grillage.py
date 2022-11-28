@@ -149,13 +149,12 @@ class Grillage(BaseClass):
 
             # generate repeating grillage elements
 
-            origin = transform(numpy.linalg.inv(matrix), [0.0, 0.0])
             # create a Topologic Face for slicing
             topologic_face = Face.ByVertices(
                 [Vertex.ByCoordinates(*node, 0.0) for node in nodes_2d]
             )
             cropped_faces, cropped_edges = topologic_face.ParallelSlice(
-                self.spacing, numpy.deg2rad(self.angle), origin
+                self.spacing, numpy.deg2rad(self.angle)
             )
 
             # shift down to inner face
