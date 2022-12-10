@@ -199,6 +199,7 @@ class Wall(TraceClass):
                 self.height,
             )
 
+            # FIXME use geometry.connect_path
             # Rel Connects Path Elements
             if previous_wall == None:
                 first_wall = mywall

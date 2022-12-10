@@ -204,7 +204,9 @@ class Grillage(BaseClass):
                 # extrude each profile in the profile set
                 extrusion_list = []
                 for material_profile in material_profiles:
-                    extrusion = create_extruded_area_solid2(self.file, material_profile, start, direction, length)
+                    extrusion = create_extruded_area_solid2(
+                        self.file, material_profile, start, direction, length
+                    )
                     extrusion_list.append(extrusion)
 
                 # stuff extrusions into a Shape Representation for the Element

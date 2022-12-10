@@ -49,7 +49,9 @@ def map_to_2d(vertices, normal_vector):
         if elevation_local == None or vertices[vertex_id][2] < elevation_local:
             elevation_local = vertices[vertex_id][2]
             id_lowest = vertex_id
-    vertices = [vertices[index -len(vertices) + id_lowest] for index in range(len(vertices))]
+    vertices = [
+        vertices[index - len(vertices) + id_lowest] for index in range(len(vertices))
+    ]
 
     # coordinates need to be vertical in 4 high matrix
     nodes_3d = numpy.array([[*vertex, 1.0] for vertex in vertices]).T
