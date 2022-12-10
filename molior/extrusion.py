@@ -1,13 +1,19 @@
+import numpy
 import ifcopenshell.api
+from ifcopenshell.util.placement import a2p
 
 from molior.baseclass import TraceClass
-from molior.geometry import matrix_align, add_2d, distance_2d
+from molior.geometry import (
+    normalise_3d,
+    subtract_3d,
+    magnitude_3d,
+)
 from molior.ifc import (
     add_face_topology_epsets,
     assign_storey_byindex,
-    assign_extrusion,
     get_material_by_name,
     get_context_by_name,
+    get_type_object,
 )
 
 run = ifcopenshell.api.run
@@ -36,27 +42,206 @@ class Extrusion(TraceClass):
 
     def execute(self):
         """Generate some ifc"""
+
+        # contexts
+
         reference_context = get_context_by_name(
             self.file, context_identifier="Reference"
         )
-        element = run(
-            "root.create_entity",
+        axis_context = get_context_by_name(self.file, context_identifier="Axis")
+        body_context = get_context_by_name(self.file, context_identifier="Body")
+
+        # type
+
+        type_product = get_type_object(
             self.file,
-            ifc_class=self.ifc,
+            self.style_object,
+            ifc_type=self.ifc + "Type",
+            stylename=self.style,
             name=self.name,
         )
 
-        if (
-            element.is_a("IfcBeam")
-            or element.is_a("IfcFooting")
-            or element.is_a("IfcMember")
-        ):
-            # TODO skip unless Pset_MemberCommon.LoadBearing
-            # generate structural edges
-            segments = self.segments()
-            for id_segment in range(segments):
-                start = [*self.corner_coor(id_segment), self.elevation + self.height]
-                end = [*self.corner_coor(id_segment + 1), self.elevation + self.height]
+        # loop through segments
+
+        first_element = None
+        previous_element = None
+        segments = self.segments()
+
+        for id_segment in range(segments):
+
+            # create an element
+
+            linear_element = run(
+                "root.create_entity",
+                self.file,
+                ifc_class=self.ifc,
+                name=self.name,
+            )
+            run(
+                "type.assign_type",
+                self.file,
+                related_object=linear_element,
+                relating_type=type_product,
+            )
+
+            # axis and matrix stuff
+
+            start = [*self.corner_coor(id_segment), self.elevation + self.height]
+            end = [*self.corner_coor(id_segment + 1), self.elevation + self.height]
+            vector = subtract_3d(end, start)
+            direction = normalise_3d(vector)
+            length = magnitude_3d(vector)
+
+            start_extension = 0.0
+            end_extension = 0.0
+            if self.closed or id_segment > 0:
+                start_extension += 1.0
+            if self.closed or id_segment < segments - 1:
+                end_extension += 1.0
+            if not self.closed and id_segment == 0:
+                start_extension += self.extension
+            if not self.closed and id_segment == segments - 1:
+                end_extension += self.extension
+
+            to_x_axis = [
+                [0.0, 0.0, -1.0, length + end_extension],
+                [-1.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 1.0],
+            ]
+            placement = a2p(start, [0.0, 0.0, 1.0], direction)
+            matrix = placement @ to_x_axis
+            inverse = numpy.linalg.inv(matrix)
+
+            # clip ends
+
+            clippings = []
+
+            clipping_matrix_start = self.clipping_plane(id_segment)
+            clipping_matrix_end = self.clipping_plane(id_segment + 1)
+            clipping_matrix_end[0][2] = -clipping_matrix_end[0][2]
+            clipping_matrix_end[1][2] = -clipping_matrix_end[1][2]
+
+            if self.closed or id_segment > 0:
+                clippings.append(
+                    {
+                        "type": "IfcBooleanClippingResult",
+                        "operand_type": "IfcHalfSpaceSolid",
+                        "matrix": (inverse @ clipping_matrix_start).tolist(),
+                    }
+                )
+            if self.closed or id_segment < segments - 1:
+                clippings.append(
+                    {
+                        "type": "IfcBooleanClippingResult",
+                        "operand_type": "IfcHalfSpaceSolid",
+                        "matrix": (inverse @ clipping_matrix_end).tolist(),
+                    }
+                )
+
+            # connect ends
+
+            if previous_element:
+                run(
+                    "geometry.connect_path",
+                    self.file,
+                    relating_element=linear_element,
+                    related_element=previous_element,
+                    relating_connection="ATEND",
+                    related_connection="ATSTART",
+                    description="MITRE",
+                )
+            else:
+                first_element = linear_element
+
+            previous_element = linear_element
+
+            if self.closed and id_segment == segments - 1:
+                run(
+                    "geometry.connect_path",
+                    self.file,
+                    relating_element=first_element,
+                    related_element=linear_element,
+                    relating_connection="ATEND",
+                    related_connection="ATSTART",
+                    description="MITRE",
+                )
+
+            # representations
+
+            material_profiles = []
+            profile_set = None
+            for association in type_product.HasAssociations:
+                if association.is_a(
+                    "IfcRelAssociatesMaterial"
+                ) and association.RelatingMaterial.is_a("IfcMaterialProfileSet"):
+                    profile_set = association.RelatingMaterial
+                    material_profiles = association.RelatingMaterial.MaterialProfiles
+
+            shape_representation = run(
+                "geometry.add_profile_representation",
+                self.file,
+                context=body_context,
+                profile=material_profiles[0].Profile,
+                depth=length + start_extension + end_extension,
+                clippings=clippings,
+            )
+
+            run(
+                "geometry.assign_representation",
+                self.file,
+                product=linear_element,
+                representation=shape_representation,
+            )
+
+            axis_representation = run(
+                "geometry.add_axis_representation",
+                self.file,
+                context=axis_context,
+                axis=[[0.0, 0.0, 0.0], [0.0, 0.0, length]],
+            )
+            run(
+                "geometry.assign_representation",
+                self.file,
+                product=linear_element,
+                representation=axis_representation,
+            )
+
+            # location
+
+            shift_matrix = [
+                [1.0, 0.0, 0.0, self.xshift],
+                [0.0, 1.0, 0.0, self.yshift],
+                [0.0, 0.0, 1.0, 0.0],
+                [0.0, 0.0, 0.0, 1.0],
+            ]
+
+            run(
+                "geometry.edit_object_placement",
+                self.file,
+                product=linear_element,
+                matrix=matrix @ shift_matrix,
+            )
+
+            assign_storey_byindex(self.file, linear_element, self.building, self.level)
+
+            if self.parent_aggregate != None:
+                run(
+                    "aggregate.assign_object",
+                    self.file,
+                    product=linear_element,
+                    relating_object=self.parent_aggregate,
+                )
+
+            # structural stuff
+
+            if (
+                linear_element.is_a("IfcBeam")
+                or linear_element.is_a("IfcFooting")
+                or linear_element.is_a("IfcMember")
+            ):
+                # TODO skip unless Pset_MemberCommon.LoadBearing
+                # generate structural edges
                 structural_member = run(
                     "root.create_entity",
                     self.file,
@@ -68,7 +253,7 @@ class Extrusion(TraceClass):
                     "root.create_entity", self.file, ifc_class="IfcRelAssignsToProduct"
                 )
                 assignment.RelatingProduct = structural_member
-                assignment.RelatedObjects = [element]
+                assignment.RelatedObjects = [linear_element]
 
                 segment = self.chain.edges()[id_segment]
                 face = self.chain.graph[segment[0]][1]["face"]
@@ -132,54 +317,3 @@ class Extrusion(TraceClass):
                     material_profile=material_profile,
                     profile=profile,
                 )
-
-        assign_storey_byindex(self.file, element, self.building, self.level)
-        directrix = self.path
-        if self.closed:
-            directrix.append(directrix[0])
-        else:
-            # FIXME merge continuing extrusions when profile/material is the same
-            directrix[0] = add_2d(directrix[0], self.extension_start())
-            directrix[-1] = add_2d(directrix[-1], self.extension_end())
-
-        if self.parent_aggregate != None:
-            run(
-                "aggregate.assign_object",
-                self.file,
-                product=element,
-                relating_object=self.parent_aggregate,
-            )
-
-        if self.segments() == 1 and distance_2d(directrix[0], directrix[1]) < 0.001:
-            # better not to create a representation for zero length extrusions
-            return
-        if not self.do_representation:
-            return
-
-        transform = self.file.createIfcCartesianTransformationOperator2D(
-            self.file.createIfcDirection([0.0, 1.0]),
-            self.file.createIfcDirection([1.0, 0.0]),
-            self.file.createIfcCartesianPoint([self.yshift, self.xshift]),
-            self.scale,
-        )
-
-        # TODO Axis Representation
-        assign_extrusion(
-            self.file,
-            style_object=self.style_object,
-            context_identifier="Body",
-            element=element,
-            directrix=directrix,
-            stylename=self.style,
-            name=self.name,
-            transform=transform,
-        )
-
-        run(
-            "geometry.edit_object_placement",
-            self.file,
-            product=element,
-            matrix=matrix_align(
-                [0.0, 0.0, self.elevation + self.height], [1.0, 0.0, 0.0]
-            ),
-        )

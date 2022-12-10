@@ -84,6 +84,19 @@ class TraceClass(BaseClass):
             index += len(self.path)
         return self.path[index]
 
+    def clipping_plane(self, index):
+        """A plane defined by x, y & z directions and a point on the plane"""
+        mitre = normalise_2d(
+            add_2d(self.normal_segment(index), self.normal_segment(index - 1))
+        )
+        coor = self.corner_coor(index)
+        return [
+            [mitre[0], 0.0, mitre[1], coor[0]],
+            [mitre[1], 0.0, -mitre[0], coor[1]],
+            [0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ]
+
     def corner_offset(self, index, distance):
         """2D coordinates of a corner offset by an arbitrary distance"""
         offset_a = scale_2d(distance, self.normal_segment(index - 1))

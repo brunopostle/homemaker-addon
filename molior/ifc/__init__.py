@@ -92,7 +92,7 @@ def create_default_contexts(self):
     get_context_by_name(
         self,
         context_identifier="Axis",
-        parent_context_identifier="Plan",
+        parent_context_identifier="Model",
         target_view="GRAPH_VIEW",
     )
 
@@ -471,85 +471,6 @@ def add_cell_topology_epsets(self, entity, cell):
         cell_usage = cell.Get("usage")
         if cell_usage != None:
             add_pset(self, entity, "EPset_Topology", {"Usage": cell_usage})
-
-
-def assign_extrusion(
-    self,
-    style_object=None,
-    context_identifier="Body",
-    element=None,
-    directrix=[[0.0, 0.0], [0.0, 1.0]],
-    stylename="default",
-    name="My Extruded Type",
-    transform=None,
-):
-    """Create an extrusion given a directrix"""
-    ifc_type = element.is_a() + "Type"
-
-    type_product = get_type_object(
-        self,
-        style_object,
-        ifc_type=ifc_type,
-        stylename=stylename,
-        name=name,
-    )
-
-    run(
-        "type.assign_type",
-        self,
-        related_object=element,
-        relating_type=type_product,
-    )
-
-    subcontext = get_context_by_name(self, context_identifier=context_identifier)
-
-    # define these outside the loop as they are the same for each profile
-    axis = self.createIfcAxis2Placement3D(
-        self.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
-    )
-    polyline = self.createIfcPolyline(
-        [self.createIfcCartesianPoint(point) for point in directrix]
-    )
-    plane = self.createIfcPlane(axis)
-
-    # TODO create chain of Extruded Area Solids with clipped ends
-    closedprofiledefs = []
-    for association in type_product.HasAssociations:
-        if association.is_a(
-            "IfcRelAssociatesMaterial"
-        ) and association.RelatingMaterial.is_a("IfcMaterialProfileSet"):
-            materialprofileset = association.RelatingMaterial
-            closedprofiledefs = [
-                materialprofile.Profile
-                for materialprofile in materialprofileset.MaterialProfiles
-            ]
-    run(
-        "geometry.assign_representation",
-        self,
-        product=element,
-        representation=self.createIfcShapeRepresentation(
-            subcontext,
-            subcontext.ContextIdentifier,
-            "AdvancedSweptSolid",
-            [
-                self.createIfcSurfaceCurveSweptAreaSolid(
-                    self.createIfcDerivedProfileDef(
-                        "AREA",
-                        None,
-                        closedprofiledef,
-                        transform,
-                        None,
-                    ),
-                    axis,
-                    polyline,
-                    0.0,
-                    1.0,
-                    plane,
-                )
-                for closedprofiledef in closedprofiledefs
-            ],
-        ),
-    )
 
 
 def assign_storey_byindex(self, entity, building, index):
