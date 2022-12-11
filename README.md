@@ -56,10 +56,7 @@ needs reimplementing.
 
 - Extended style system, buildings can be styled with an extensive inheritable
 style system, but this is just the start, there is lots more that needs to
-be done: grillages, subtractive geometry etc.
-
-- Assets such as windows, doors and extrusion profiles are currently provided
-in DXF format, these need to be ported to a native IFC Library.
+be done.
 
 - Costing, Carbon and Life Cycle Analysis. IFC can hold detailed information on
 quantities, costs and scheduling, the library needs to make this stuff easy.
@@ -85,6 +82,6 @@ in particular Topologic, Blenderbim and IfcOpenShell.
 
 The homemaker-addon is a python port of the Homemaker [Topologise blender add-on](https://bitbucket.org/brunopostle/urb/src/master/blender/topologise.py).
 
-Copyright 2021, Bruno Postle <bruno@postle.net>
+Copyright 2022, Bruno Postle <bruno@postle.net>
 License: GPLv3.
 3D and 2D asset and style files bundled with this software are additionally licensed 'CC BY 4.0'

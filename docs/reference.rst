@@ -161,6 +161,28 @@ allows inheritance to be defined entirely by rearrangement of the configuration
 data.  This also means that there may only be one folder called 'thin' in the
 folder tree, all others will be ignored.
 
+library.ifc
+~~~~~~~~~~~
+
+The ``library.ifc`` file contains IFC Type definitions for the style.  Types
+define 3D geometry, 2D profiles, layersets, materials, usage and psets for
+building elements such as windows, walls, beams, columns, mouldings etc...
+
+This file is a collection of these Types and can be modified using a Native IFC
+editor.  Type definitions are accessed from the configuration files using the
+Class and Name pair as key, e.g. if your library has two 'IfcDoor' Types called
+'shopfront', only the first one will be available.  A different style may also
+provide an 'IfcDoor' 'shopfront' Type, these co-exist in the generated IFC
+model in separate named Project Libraries.
+
+Only Type definitions that are requested are copied into named Project
+Libraries in the generated IFC model.
+
+This file does not need to contain all the Type assets used by this style.  If
+a Class and Name combination can't be found, then this Type definition will be
+recursively retrieved from the parent style.  This allows the designer to
+create a custom style where only a single item is different.
+
 hulls.yml
 ~~~~~~~~~
 
@@ -194,22 +216,11 @@ trace definition with the same *Name*, but with an invalid ``condition`` (such a
 assets.yml
 ~~~~~~~~~~
 
-Initially 3D assets are provided in DXF format, where each representation (a
-single size of window, door, column etc...) is represented by one or more
-POLYFACE meshes in a single DXF file.  These assets are organised by *Name* in
-the ``assets.yml`` file, where each item can have one or more sizes which are
-dynamically fitted to the available space.
-
-Note: 3D DXF files are a temporary measure, to be replaced by *Types* in *IFC
-Project Libraries*.
-
-materials.yml
-~~~~~~~~~~~~~
-
-Each item in ``materials.yml`` represents an *IFC Material*, organised by *Name*.
-
-Note: This file is a temporary measure, to be replaced by *Materials* in *IFC
-Project Libraries*.
+3D assets are contained in ``library.ifc``, where each Type (a single size of
+window, door, column etc...) has Representations, Materials, Psets etc..  These
+assets are referenced by *Class* and *Name* in the ``assets.yml`` file.  This
+additional layer of reference allows a window, for example, to be defined by
+one or more sizes which are dynamically fitted to the available space.
 
 openings.yml
 ~~~~~~~~~~~~
