@@ -12,8 +12,8 @@ from molior.ifc import (
     get_building_by_name,
     create_storeys,
     create_extruded_area_solid,
-    assign_type_by_name,
     assign_storey_byindex,
+    get_type_object,
     get_context_by_name,
 )
 from molior.style import Style
@@ -58,12 +58,18 @@ class Tests(unittest.TestCase):
         assign_storey_byindex(ifc, myproduct, building, 0)
 
         # load type and assign to the window
-        assign_type_by_name(
+        product_type = get_type_object(
             ifc,
-            element=myproduct,
-            style_object=style_object,
+            style_object,
+            ifc_type="IfcWindowType",
             stylename="default",
             name="shopfront",
+        )
+        run(
+            "type.assign_type",
+            ifc,
+            related_object=myproduct,
+            relating_type=product_type,
         )
 
         # create a wall
@@ -159,12 +165,18 @@ class Tests(unittest.TestCase):
         assign_storey_byindex(ifc, myproduct, building, 0)
 
         # 'shopfront' is already imported and mapped
-        assign_type_by_name(
+        product_type = get_type_object(
             ifc,
-            element=myproduct,
-            style_object=style_object,
+            style_object,
+            ifc_type="IfcWindowType",
             stylename="default",
             name="shopfront",
+        )
+        run(
+            "type.assign_type",
+            ifc,
+            related_object=myproduct,
+            relating_type=product_type,
         )
 
         # create an opening

@@ -9,7 +9,8 @@ from molior.ifc import (
     create_curve_bounded_plane,
     create_face_surface,
     assign_storey_byindex,
-    assign_type_by_name,
+    get_type_object,
+    get_thickness_and_offset,
     get_material_by_name,
     get_context_by_name,
 )
@@ -28,7 +29,6 @@ class Shell(BaseClass):
         self.party_wall = False
         self.structural_material = "Concrete"
         self.structural_thickness = 0.2
-        self.outer = 0.20
         for arg in args:
             self.__dict__[arg] = args[arg]
 
@@ -205,38 +205,38 @@ class Shell(BaseClass):
             assignment.RelatingProduct = structural_surface
             assignment.RelatedObjects = [element]
 
-            product_type = assign_type_by_name(
+            # type (IfcVirtualElementType isn't valid)
+
+            product_type = get_type_object(
                 self.file,
                 self.style_object,
-                element=element,
+                ifc_type=self.ifc + "Type",
                 stylename=self.style,
                 name=self.name,
             )
+            run(
+                "type.assign_type",
+                self.file,
+                related_object=element,
+                relating_type=product_type,
+            )
 
-            self.thickness = 0.0
-            for association in product_type.HasAssociations:
-                if association.is_a("IfcRelAssociatesMaterial"):
-                    relating_material = association.RelatingMaterial
-                    if relating_material.is_a("IfcMaterialLayerSetUsage"):
-                        self.outer = -relating_material.OffsetFromReferenceLine
-                    if relating_material.is_a("IfcMaterialLayerSet"):
-                        for material_layer in relating_material.MaterialLayers:
-                            self.thickness += material_layer.LayerThickness
-            self.inner = self.thickness - self.outer
+            thickness, offset = get_thickness_and_offset(self.file, product_type)
+            inner = thickness + offset
 
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
 
             # create a representation
             if normal[2] < -0.999:
-                extrude_height = self.thickness
+                extrude_height = thickness
                 extrude_direction = [0.0, 0.0, -1.0]
-                matrix = matrix @ matrix_align([0.0, 0.0, self.inner], [1.0, 0.0, 0.0])
+                matrix = matrix @ matrix_align([0.0, 0.0, inner], [1.0, 0.0, 0.0])
             elif float(normal_x[2]) < 0.001 or not uniform_pitch:
-                extrude_height = self.thickness
+                extrude_height = thickness
                 extrude_direction = [0.0, 0.0, 1.0]
-                matrix = matrix @ matrix_align([0.0, 0.0, -self.inner], [1.0, 0.0, 0.0])
+                matrix = matrix @ matrix_align([0.0, 0.0, -inner], [1.0, 0.0, 0.0])
             else:
-                extrude_height = self.thickness / float(normal_x[2])
+                extrude_height = thickness / float(normal_x[2])
                 extrude_direction = [
                     0.0,
                     0 - float(normal_x[1]),
@@ -245,11 +245,13 @@ class Shell(BaseClass):
                 matrix = matrix @ matrix_align(
                     [
                         0.0,
-                        self.inner * float(normal_x[1]),
-                        0.0 - (self.inner * float(normal_x[2])),
+                        inner * float(normal_x[1]),
+                        0.0 - (inner * float(normal_x[2])),
                     ],
-                    [1.0, self.inner * float(normal_x[1]), 0.0],
+                    [1.0, inner * float(normal_x[1]), 0.0],
                 )
+
+            # TODO use geometry.add_slab_representation
             shape = self.file.createIfcShapeRepresentation(
                 body_context,
                 body_context.ContextIdentifier,

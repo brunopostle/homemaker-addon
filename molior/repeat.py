@@ -5,8 +5,8 @@ from molior.baseclass import TraceClass
 from molior.geometry import add_2d, subtract_2d, scale_2d, distance_2d, matrix_align
 from molior.ifc import (
     add_face_topology_epsets,
-    assign_type_by_name,
     assign_storey_byindex,
+    get_type_object,
     get_material_by_name,
     get_context_by_name,
 )
@@ -302,11 +302,18 @@ class Repeat(TraceClass):
                             ],
                         ),
                     )
-                    assign_type_by_name(
+                    type_product = get_type_object(
                         self.file,
                         self.style_object,
-                        element=entity,
+                        ifc_type=self.ifc + "Type",
                         stylename=self.style,
                         name=asset_name,
                     )
+                    run(
+                        "type.assign_type",
+                        self.file,
+                        related_object=entity,
+                        relating_type=type_product,
+                    )
+
                     # TODO Axis Representation

@@ -289,20 +289,40 @@ def get_parent_building(entity):
     return get_parent_building(parent)
 
 
-def create_extruded_area_solid(self, profile, height, direction=[0.0, 0.0, 1.0]):
-    """A simple vertically extruded profile"""
-    if not profile[-1] == profile[0]:
-        # a closed polyline has first and last points coincident
-        profile.append(profile[0])
+def get_thickness_and_offset(self, product):
+    """Gets total thickness and offset for extruded products and types"""
+    thickness = 0.0
+    offset = 0.0
+    for association in product.HasAssociations:
+        if association.is_a("IfcRelAssociatesMaterial"):
+            relating_material = association.RelatingMaterial
+            if relating_material.is_a("IfcMaterialLayerSetUsage"):
+                offset = relating_material.OffsetFromReferenceLine
+            if relating_material.is_a("IfcMaterialLayerSet"):
+                for material_layer in relating_material.MaterialLayers:
+                    thickness += material_layer.LayerThickness
+    return thickness, offset
 
-    return self.createIfcExtrudedAreaSolid(
-        self.createIfcArbitraryClosedProfileDef(
-            "AREA",
-            None,
-            self.createIfcPolyline(
-                [self.createIfcCartesianPoint(point) for point in profile]
-            ),
+
+def create_closed_profile_from_points(self, points):
+    """Creates a closed 2D profile from list of 2D points"""
+    # a closed polyline has first and last points coincident
+    if not points[-1] == points[0]:
+        points.append(points[0])
+
+    return self.createIfcArbitraryClosedProfileDef(
+        "AREA",
+        None,
+        self.createIfcPolyline(
+            [self.createIfcCartesianPoint(point) for point in points]
         ),
+    )
+
+
+def create_extruded_area_solid(self, points, height, direction=[0.0, 0.0, 1.0]):
+    """A simple vertically extruded profile"""
+    return self.createIfcExtrudedAreaSolid(
+        create_closed_profile_from_points(self, points),
         self.createIfcAxis2Placement3D(
             self.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
         ),
@@ -520,30 +540,6 @@ def assign_space_byindex(self, entity, building, index):
             product=entity,
             relating_structure=spaces[str(index)],
         )
-
-
-def assign_type_by_name(
-    self,
-    style_object,
-    element=None,
-    stylename="default",
-    name="error",
-):
-    """Assign Type from an internal or external IFC library"""
-    type_product = get_type_object(
-        self,
-        style_object,
-        ifc_type=element.is_a() + "Type",
-        stylename=stylename,
-        name=name,
-    )
-    run(
-        "type.assign_type",
-        self,
-        related_object=element,
-        relating_type=type_product,
-    )
-    return type_product
 
 
 def get_type_object(

@@ -4,7 +4,7 @@ import numpy
 from topologist.helpers import string_to_coor, el
 from topologic import Face, Vertex
 from molior.baseclass import BaseClass
-from molior.geometry import map_to_2d, matrix_align, transform
+from molior.geometry import map_to_2d, matrix_align
 from molior.ifc import (
     add_face_topology_epsets,
     create_face_surface,

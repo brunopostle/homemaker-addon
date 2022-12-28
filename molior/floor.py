@@ -7,9 +7,10 @@ from molior.geometry import matrix_align
 from molior.ifc import (
     add_pset,
     add_cell_topology_epsets,
-    create_extruded_area_solid,
+    create_closed_profile_from_points,
     assign_storey_byindex,
-    assign_type_by_name,
+    get_thickness_and_offset,
+    get_type_object,
     get_context_by_name,
 )
 
@@ -23,7 +24,6 @@ class Floor(TraceClass):
         if args is None:
             args = {}
         super().__init__(args)
-        self.below = 0.0
         self.ifc = "IfcCovering"
         self.path = []
         for arg in args:
@@ -31,9 +31,12 @@ class Floor(TraceClass):
 
     def execute(self):
         """Generate some ifc"""
+
+        # contexts
+
         body_context = get_context_by_name(self.file, context_identifier="Body")
 
-        # every node in the graph references the cell, pick one
+        # every node in the graph references the Topologic cell, pick one
         cell = self.chain.graph[next(iter(self.chain.graph))][1]["back_cell"]
 
         # skip if part of a stair core
@@ -48,20 +51,24 @@ class Floor(TraceClass):
                 if cell_below.Usage() == "stair":
                     return
 
+        # create an element
+
         element = run(
             "root.create_entity",
             self.file,
             ifc_class=self.ifc,
             name=self.name + "/" + str(cell.Get("index")),
         )
+
         # Will be re-assigned to Space later
         assign_storey_byindex(self.file, element, self.building, self.level)
+
+        # topologic stuff
 
         if type(cell) == Cell:
             bottom_faces_ptr = []
             cell.FacesBottom(bottom_faces_ptr)
 
-            # topology stuff
             if cell.Get("index") != None:
                 add_cell_topology_epsets(self.file, element, cell)
                 add_pset(
@@ -75,52 +82,50 @@ class Floor(TraceClass):
                     },
                 )
 
+        # representation
+
         if element.is_a("IfcVirtualElement"):
             return
         if not self.do_representation:
             return
 
-        product_type = assign_type_by_name(
+        # type (IfcVirtualElementType isn't valid)
+
+        type_product = get_type_object(
             self.file,
             self.style_object,
-            element=element,
+            ifc_type=self.ifc + "Type",
             stylename=self.style,
             name=self.name,
         )
-
-        self.thickness = 0.0
-        for association in product_type.HasAssociations:
-            if association.is_a("IfcRelAssociatesMaterial"):
-                relating_material = association.RelatingMaterial
-                if relating_material.is_a("IfcMaterialLayerSetUsage"):
-                    self.below = -relating_material.OffsetFromReferenceLine
-                if relating_material.is_a("IfcMaterialLayerSet"):
-                    for material_layer in relating_material.MaterialLayers:
-                        self.thickness += material_layer.LayerThickness
-
-        shape = self.file.createIfcShapeRepresentation(
-            body_context,
-            body_context.ContextIdentifier,
-            "SweptSolid",
-            [
-                create_extruded_area_solid(
-                    self.file,
-                    [self.corner_in(index) for index in range(len(self.path))],
-                    self.thickness,
-                )
-            ],
+        run(
+            "type.assign_type",
+            self.file,
+            related_object=element,
+            relating_type=type_product,
         )
+
+        thickness, offset = get_thickness_and_offset(self.file, type_product)
+
+        shape_representation = run(
+            "geometry.add_profile_representation",
+            self.file,
+            context=body_context,
+            profile=create_closed_profile_from_points(
+                self.file, [self.corner_in(index) for index in range(len(self.path))]
+            ),
+            depth=thickness,
+        )
+
         run(
             "geometry.assign_representation",
             self.file,
             product=element,
-            representation=shape,
+            representation=shape_representation,
         )
         run(
             "geometry.edit_object_placement",
             self.file,
             product=element,
-            matrix=matrix_align(
-                [0.0, 0.0, self.elevation - self.below], [1.0, 0.0, 0.0]
-            ),
+            matrix=matrix_align([0.0, 0.0, self.elevation + offset], [1.0, 0.0, 0.0]),
         )

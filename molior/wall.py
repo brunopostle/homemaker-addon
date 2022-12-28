@@ -19,10 +19,11 @@ from molior.ifc import (
     create_extruded_area_solid,
     clip_solid,
     create_face_surface,
-    assign_type_by_name,
     assign_storey_byindex,
+    get_type_object,
     get_material_by_name,
     get_context_by_name,
+    get_thickness_and_offset,
     create_curve_bounded_plane,
 )
 
@@ -49,11 +50,15 @@ class Wall(TraceClass):
 
     def execute(self):
         """Generate some ifc"""
+
+        #  contexts
+
         reference_context = get_context_by_name(
             self.file, context_identifier="Reference"
         )
         body_context = get_context_by_name(self.file, context_identifier="Body")
         axis_context = get_context_by_name(self.file, context_identifier="Axis")
+
         self.init_openings()
 
         # traces have one or more segments, aggregate them
@@ -83,6 +88,7 @@ class Wall(TraceClass):
                 ifc_class=self.ifc,
                 name=self.name,
             )
+
             run(
                 "aggregate.assign_object",
                 self.file,
@@ -144,29 +150,32 @@ class Wall(TraceClass):
                     boundary.Name = "FaceIndex " + face_index
                 boundaries.append(boundary)
 
+            # representation
+
             if mywall.is_a("IfcVirtualElement"):
                 continue
             if not self.do_representation:
                 continue
 
-            product_type = assign_type_by_name(
+            # type (IfcVirtualElementType isn't valid)
+
+            product_type = get_type_object(
                 self.file,
                 self.style_object,
-                element=mywall,
+                ifc_type=self.ifc + "Type",
                 stylename=self.style,
                 name=self.name,
             )
+            run(
+                "type.assign_type",
+                self.file,
+                related_object=mywall,
+                relating_type=product_type,
+            )
 
-            self.thickness = 0.0
-            for association in product_type.HasAssociations:
-                if association.is_a("IfcRelAssociatesMaterial"):
-                    relating_material = association.RelatingMaterial
-                    if relating_material.is_a("IfcMaterialLayerSetUsage"):
-                        self.outer = -relating_material.OffsetFromReferenceLine
-                    if relating_material.is_a("IfcMaterialLayerSet"):
-                        for material_layer in relating_material.MaterialLayers:
-                            self.thickness += material_layer.LayerThickness
-            self.inner = self.thickness - self.outer
+            thickness, offset = get_thickness_and_offset(self.file, product_type)
+            self.outer = -offset
+            self.inner = thickness - self.outer
 
             # copy Usage from Type to Element
             for inverse in self.file.get_inverse(
@@ -472,9 +481,9 @@ class Wall(TraceClass):
                 name = opening["file"]
 
                 l, r = self.opening_coor(id_segment, id_opening)
-                offset = scale_2d(self.outer, self.normal_segment(id_segment))
-                left_2d = add_2d(l[0:2], offset)
-                right_2d = add_2d(r[0:2], offset)
+                opening_offset = scale_2d(self.outer, self.normal_segment(id_segment))
+                left_2d = add_2d(l[0:2], opening_offset)
+                right_2d = add_2d(r[0:2], opening_offset)
 
                 if db["type"] == "window":
                     ifc_class = "IfcWindow"
@@ -510,12 +519,18 @@ class Wall(TraceClass):
                 # assign the entity to a storey
                 assign_storey_byindex(self.file, entity, self.building, self.level)
 
-                element_type = assign_type_by_name(
+                element_type = get_type_object(
                     self.file,
                     self.style_object,
-                    element=entity,
+                    ifc_type=ifc_class + "Type",
                     stylename=self.style,
                     name=name,
+                )
+                run(
+                    "type.assign_type",
+                    self.file,
+                    related_object=entity,
+                    relating_type=element_type,
                 )
 
                 # look for an opening geometry in the Type
@@ -555,7 +570,7 @@ class Wall(TraceClass):
                     )
 
                     # give the opening a Body representation
-                    inner = self.thickness + 0.02
+                    inner = thickness + 0.02
                     outer = -0.02
                     run(
                         "geometry.assign_representation",
