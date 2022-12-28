@@ -65,6 +65,21 @@ class Repeat(TraceClass):
         segments = self.segments()
         self.outer += self.xshift
 
+        # aggregate all segments in the path
+
+        if segments > 1:
+            path_aggregate = run(
+                "root.create_entity",
+                self.file,
+                ifc_class="IfcElementAssembly",
+                name=self.name,
+            )
+            run(
+                "geometry.edit_object_placement",
+                self.file,
+                product=path_aggregate,
+            )
+
         for id_segment in range(segments):
             if self.length_segment(id_segment) < 2 * self.inset:
                 continue
@@ -93,6 +108,13 @@ class Repeat(TraceClass):
                 ifc_class="IfcElementAssembly",
                 name=self.name,
             )
+            if segments > 1:
+                run(
+                    "aggregate.assign_object",
+                    self.file,
+                    product=aggregate,
+                    relating_object=path_aggregate,
+                )
             run(
                 "geometry.edit_object_placement",
                 self.file,
@@ -102,8 +124,6 @@ class Repeat(TraceClass):
                     [*self.corner_coor(id_segment + 1), self.elevation],
                 ),
             )
-            # assign the aggregate to a storey
-            assign_storey_byindex(self.file, aggregate, self.building, self.level)
 
             if self.parent_aggregate != None:
                 run(
@@ -191,8 +211,6 @@ class Repeat(TraceClass):
                         ifc_class=self.ifc,
                         name=self.name,
                     )
-                    # place the entity in space
-                    elevation = self.elevation + self.yshift
                     # assign the entity to the aggregate
                     run(
                         "aggregate.assign_object",
@@ -202,6 +220,7 @@ class Repeat(TraceClass):
                     )
 
                     # structural stuff
+
                     if entity.is_a("IfcColumn") or entity.is_a("IfcMember"):
                         # TODO support IfcPile IfcFooting
                         # TODO skip unless Pset_MemberCommon.LoadBearing
@@ -286,22 +305,13 @@ class Repeat(TraceClass):
                             profile=profile,
                         )
 
+                    # representation
+
                     if entity.is_a("IfcVirtualElement"):
                         continue
                     if not self.do_representation:
                         continue
-                    run(
-                        "geometry.edit_object_placement",
-                        self.file,
-                        product=entity,
-                        matrix=matrix_align(
-                            [*location, elevation],
-                            [
-                                *add_2d(location, self.direction_segment(id_segment)),
-                                elevation,
-                            ],
-                        ),
-                    )
+
                     type_product = get_type_object(
                         self.file,
                         self.style_object,
@@ -315,5 +325,37 @@ class Repeat(TraceClass):
                         related_object=entity,
                         relating_type=type_product,
                     )
-
                     # TODO Axis Representation
+
+                    # place the entity in space
+                    elevation = self.elevation + self.yshift
+                    run(
+                        "geometry.edit_object_placement",
+                        self.file,
+                        product=entity,
+                        matrix=matrix_align(
+                            [*location, elevation],
+                            [
+                                *add_2d(location, self.direction_segment(id_segment)),
+                                elevation,
+                            ],
+                        ),
+                    )
+
+        # segments done
+
+        if segments > 1:
+            top_object = path_aggregate
+        else:
+            top_object = aggregate
+        if self.parent_aggregate != None:
+            run(
+                "aggregate.assign_object",
+                self.file,
+                product=top_object,
+                relating_object=self.parent_aggregate,
+            )
+        else:
+            assign_storey_byindex(self.file, top_object, self.building, self.level)
+
+        return top_object

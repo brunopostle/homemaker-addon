@@ -67,6 +67,21 @@ class Extrusion(TraceClass):
         previous_element = None
         segments = self.segments()
 
+        # aggregate all segments in the path
+
+        if segments > 1:
+            path_aggregate = run(
+                "root.create_entity",
+                self.file,
+                ifc_class="IfcElementAssembly",
+                name=self.name,
+            )
+            run(
+                "geometry.edit_object_placement",
+                self.file,
+                product=path_aggregate,
+            )
+
         for id_segment in range(segments):
 
             # create an element
@@ -83,6 +98,13 @@ class Extrusion(TraceClass):
                 related_object=linear_element,
                 relating_type=type_product,
             )
+            if segments > 1:
+                run(
+                    "aggregate.assign_object",
+                    self.file,
+                    product=linear_element,
+                    relating_object=path_aggregate,
+                )
 
             # axis and matrix stuff
 
@@ -223,16 +245,6 @@ class Extrusion(TraceClass):
                 matrix=matrix @ shift_matrix,
             )
 
-            assign_storey_byindex(self.file, linear_element, self.building, self.level)
-
-            if self.parent_aggregate != None:
-                run(
-                    "aggregate.assign_object",
-                    self.file,
-                    product=linear_element,
-                    relating_object=self.parent_aggregate,
-                )
-
             # structural stuff
 
             if (
@@ -317,3 +329,21 @@ class Extrusion(TraceClass):
                     material_profile=material_profile,
                     profile=profile,
                 )
+
+        # segments done
+
+        if segments > 1:
+            top_object = path_aggregate
+        else:
+            top_object = linear_element
+        if self.parent_aggregate != None:
+            run(
+                "aggregate.assign_object",
+                self.file,
+                product=top_object,
+                relating_object=self.parent_aggregate,
+            )
+        else:
+            assign_storey_byindex(self.file, top_object, self.building, self.level)
+
+        return top_object
