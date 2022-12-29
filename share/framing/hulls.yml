@@ -3,24 +3,21 @@ pitched-roof:
   class: Shell
   condition: roof
   ifc: IfcVirtualElement
-purlin:
+purlins:
   class: Grillage
-  ifc: IfcMember
   condition: roof
   angle: 0.0
   spacing: 1.8
-  inner: 0.0
-joist:
+  traces: [purlin]
+joists:
   class: Grillage
-  ifc: IfcMember
   condition: roof
   angle: 90.0
   spacing: 0.45
-  inner: 0.0
-batten:
+  traces: [joist]
+battens:
   class: Grillage
-  ifc: IfcBuildingElementProxy
   condition: roof
   angle: 0.0
   spacing: 0.20
-  inner: 0.0
+  traces: [batten]

@@ -8,11 +8,9 @@ from molior.geometry import map_to_2d, add_2d, scale_2d
 from molior.ifc import (
     add_face_topology_epsets,
     create_face_surface,
-    create_extruded_area_solid2,
     assign_storey_byindex,
     get_material_by_name,
     get_context_by_name,
-    get_type_object,
 )
 from molior.extrusion import Extrusion
 from molior.repeat import Repeat
@@ -27,7 +25,6 @@ class Grillage(BaseClass):
         if args is None:
             args = {}
         super().__init__(args)
-        self.ifc = "IfcBuildingElementProxy"
         self.structural_material = "Concrete"
         self.spacing = 0.45
         self.angle = 90.0
@@ -45,7 +42,6 @@ class Grillage(BaseClass):
         reference_context = get_context_by_name(
             self.file, context_identifier="Reference"
         )
-        body_context = get_context_by_name(self.file, context_identifier="Body")
 
         myconfig = self.style_object.get(self.style)
 
@@ -165,89 +161,16 @@ class Grillage(BaseClass):
                 self.spacing, numpy.deg2rad(self.angle)
             )
 
-            type_product = get_type_object(
-                self.file,
-                self.style_object,
-                ifc_type=self.ifc + "Type",
-                stylename=self.style,
-                name=self.name,
-            )
-
-            # retrieve the Material Profile Set from the Product Type
-            material_profiles = []
-            profile_set = None
-            for association in type_product.HasAssociations:
-                if association.is_a(
-                    "IfcRelAssociatesMaterial"
-                ) and association.RelatingMaterial.is_a("IfcMaterialProfileSet"):
-                    profile_set = association.RelatingMaterial
-                    material_profiles = profile_set.MaterialProfiles
-
             # multiple linear elements on this Face
-            for cropped_edge in cropped_edges:
-                # create an element to host all extrusions
-                linear_element = run(
-                    "root.create_entity",
-                    self.file,
-                    ifc_class=self.ifc,
-                    name=self.name,
-                )
 
-                run(
-                    "type.assign_type",
-                    self.file,
-                    related_object=linear_element,
-                    relating_type=type_product,
-                )
+            for cropped_edge in cropped_edges:
 
                 start = cropped_edge.StartVertex().Coordinates()
                 direction = cropped_edge.NormalisedVector()
                 length = cropped_edge.Length()
 
-                # extrude each profile in the profile set
-                extrusion_list = []
-                for material_profile in material_profiles:
-                    extrusion = create_extruded_area_solid2(
-                        self.file, material_profile, start, direction, length
-                    )
-                    extrusion_list.append(extrusion)
+                # edges are drawn with traces
 
-                # stuff extrusions into a Shape Representation for the Element
-                shape_representation = self.file.createIfcShapeRepresentation(
-                    body_context,
-                    body_context.ContextIdentifier,
-                    "SweptSolid",
-                    extrusion_list,
-                )
-                # TODO Axis Representation
-                run(
-                    "geometry.assign_representation",
-                    self.file,
-                    product=linear_element,
-                    representation=shape_representation,
-                )
-                run(
-                    "material.assign_material",
-                    self.file,
-                    product=linear_element,
-                    material=profile_set,
-                )
-
-                run(
-                    "geometry.edit_object_placement",
-                    self.file,
-                    product=linear_element,
-                )
-
-                # stuff the element into the face aggregate
-                run(
-                    "aggregate.assign_object",
-                    self.file,
-                    product=linear_element,
-                    relating_object=face_aggregate,
-                )
-
-                # test
                 for condition in self.traces:
                     for name in myconfig["traces"]:
                         if name == condition:
