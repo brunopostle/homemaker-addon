@@ -45,6 +45,7 @@ from molior.ifc import (
 )
 import topologist.ushell as ushell
 import topologist.ugraph as ugraph
+import topologist.normals
 
 run = ifcopenshell.api.run
 
@@ -806,8 +807,11 @@ class Molior:
                     "building": self.building,
                     "structural_analysis_model": self.structural_analysis_model,
                     "name": name,
+                    "normals": topologist.normals.Normals(),
+                    "normal_set": "bottom",
                     "style": stylename,
                     "hull": hull,
+                    "style_assets": myconfig["assets"],
                     "style_object": Molior.style,
                 }
                 vals.update(config)

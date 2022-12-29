@@ -4,7 +4,7 @@ import numpy
 from topologist.helpers import string_to_coor, el
 from topologic import Face, Vertex
 from molior.baseclass import BaseClass
-from molior.geometry import map_to_2d, matrix_align
+from molior.geometry import map_to_2d, add_2d, scale_2d
 from molior.ifc import (
     add_face_topology_epsets,
     create_face_surface,
@@ -14,6 +14,8 @@ from molior.ifc import (
     get_context_by_name,
     get_type_object,
 )
+from molior.extrusion import Extrusion
+from molior.repeat import Repeat
 
 run = ifcopenshell.api.run
 
@@ -29,16 +31,23 @@ class Grillage(BaseClass):
         self.structural_material = "Concrete"
         self.spacing = 0.45
         self.angle = 90.0
-        self.inner = 0.0
+        self.traces = []
+        self.Extrusion = Extrusion
+        self.Repeat = Repeat
         for arg in args:
             self.__dict__[arg] = args[arg]
 
     def execute(self):
         """Generate some ifc"""
+
+        # contexts
+
         reference_context = get_context_by_name(
             self.file, context_identifier="Reference"
         )
         body_context = get_context_by_name(self.file, context_identifier="Body")
+
+        myconfig = self.style_object.get(self.style)
 
         aggregate = run(
             "root.create_entity",
@@ -87,7 +96,6 @@ class Grillage(BaseClass):
                 "geometry.edit_object_placement",
                 self.file,
                 product=face_aggregate,
-                matrix=matrix,
             )
 
             if face_aggregate.is_a("IfcVirtualElement"):
@@ -155,11 +163,6 @@ class Grillage(BaseClass):
             )
             cropped_faces, cropped_edges = topologic_face.ParallelSlice(
                 self.spacing, numpy.deg2rad(self.angle)
-            )
-
-            # shift down to inner face
-            matrix_inner = matrix @ matrix_align(
-                [0.0, 0.0, -self.inner], [1.0, 0.0, 0.0]
             )
 
             type_product = get_type_object(
@@ -230,12 +233,10 @@ class Grillage(BaseClass):
                     material=profile_set,
                 )
 
-                # apparently aggregated elements need to be placed independently of the aggregate
                 run(
                     "geometry.edit_object_placement",
                     self.file,
                     product=linear_element,
-                    matrix=matrix_inner,
                 )
 
                 # stuff the element into the face aggregate
@@ -245,6 +246,49 @@ class Grillage(BaseClass):
                     product=linear_element,
                     relating_object=face_aggregate,
                 )
+
+                # test
+                for condition in self.traces:
+                    for name in myconfig["traces"]:
+                        if name == condition:
+                            config = myconfig["traces"][name]
+                            vals = {
+                                "cellcomplex": self.cellcomplex,
+                                "closed": False,
+                                "path": [
+                                    list(start[0:2]),
+                                    add_2d(
+                                        start,
+                                        scale_2d(
+                                            direction,
+                                            length,
+                                        ),
+                                    ),
+                                ],
+                                "file": self.file,
+                                "name": name,
+                                "elevation": self.elevation,
+                                "normals": self.normals,
+                                "normal_set": self.normal_set,
+                                "parent_aggregate": face_aggregate,
+                                "style": self.style,
+                                "building": self.building,
+                                "structural_analysis_model": self.structural_analysis_model,
+                                "level": self.level,
+                                "style_assets": self.style_assets,
+                                "style_object": self.style_object,
+                            }
+                            vals.update(config)
+                            part = getattr(self, config["class"])(vals)
+                            part.execute()
+
+            run(
+                "geometry.edit_object_placement",
+                self.file,
+                product=face_aggregate,
+                matrix=matrix,
+                should_transform_children=True,
+            )
 
         level = 0
         if elevation in self.elevations:
