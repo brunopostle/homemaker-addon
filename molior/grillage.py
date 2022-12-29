@@ -14,6 +14,8 @@ from molior.ifc import (
 )
 from molior.extrusion import Extrusion
 from molior.repeat import Repeat
+from molior.shell import Shell
+import topologist.hulls
 
 run = ifcopenshell.api.run
 
@@ -29,8 +31,11 @@ class Grillage(BaseClass):
         self.spacing = 0.45
         self.angle = 90.0
         self.traces = []
+        self.hulls = []
         self.Extrusion = Extrusion
         self.Repeat = Repeat
+        self.Shell = Shell
+        self.Grillage = Grillage
         for arg in args:
             self.__dict__[arg] = args[arg]
 
@@ -161,6 +166,44 @@ class Grillage(BaseClass):
                 self.spacing, numpy.deg2rad(self.angle)
             )
 
+            # recursively process cropped faces
+
+            if self.hulls:
+                cropped_hulls = topologist.hulls.Hulls()
+                for cropped_face in cropped_faces:
+                    cropped_hulls.add_face(
+                        self.name,
+                        self.style,
+                        face=cropped_face,
+                        front_cell=None,
+                        back_cell=None,
+                    )
+                cropped_hulls.process()
+                myhull = cropped_hulls.hulls[self.name][self.style]
+
+                for condition in self.hulls:
+                    for name in myconfig["hulls"]:
+                        if name == condition:
+                            config = myconfig["hulls"][name]
+                            vals = {
+                                "cellcomplex": self.cellcomplex,
+                                "elevations": self.elevations,
+                                "file": self.file,
+                                "building": self.building,
+                                "structural_analysis_model": self.structural_analysis_model,
+                                "name": name,
+                                "normals": self.normals,
+                                "normal_set": self.normal_set,
+                                "parent_aggregate": face_aggregate,
+                                "style": self.style,
+                                "hull": myhull[0],
+                                "style_assets": self.style_assets,
+                                "style_object": self.style_object,
+                            }
+                            vals.update(config)
+                            part = getattr(self, config["class"])(vals)
+                            part.execute()
+
             # multiple linear elements on this Face
 
             for cropped_edge in cropped_edges:
@@ -216,4 +259,12 @@ class Grillage(BaseClass):
         level = 0
         if elevation in self.elevations:
             level = self.elevations[elevation]
-        assign_storey_byindex(self.file, aggregate, self.building, level)
+        if self.parent_aggregate != None:
+            run(
+                "aggregate.assign_object",
+                self.file,
+                product=aggregate,
+                relating_object=self.parent_aggregate,
+            )
+        else:
+            assign_storey_byindex(self.file, aggregate, self.building, level)

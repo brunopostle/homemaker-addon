@@ -280,4 +280,12 @@ class Shell(BaseClass):
         level = 0
         if elevation in self.elevations:
             level = self.elevations[elevation]
-        assign_storey_byindex(self.file, aggregate, self.building, level)
+        if self.parent_aggregate != None:
+            run(
+                "aggregate.assign_object",
+                self.file,
+                product=aggregate,
+                relating_object=self.parent_aggregate,
+            )
+        else:
+            assign_storey_byindex(self.file, aggregate, self.building, level)
