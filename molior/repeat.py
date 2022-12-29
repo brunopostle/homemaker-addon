@@ -221,7 +221,9 @@ class Repeat(TraceClass):
 
                     # structural stuff
 
-                    if entity.is_a("IfcColumn") or entity.is_a("IfcMember"):
+                    if (
+                        entity.is_a("IfcColumn") or entity.is_a("IfcMember")
+                    ) and hasattr(self, "chain"):
                         # TODO support IfcPile IfcFooting
                         # TODO skip unless Pset_MemberCommon.LoadBearing
                         start = [*location, self.elevation]
