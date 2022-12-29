@@ -251,7 +251,7 @@ class Extrusion(TraceClass):
                 linear_element.is_a("IfcBeam")
                 or linear_element.is_a("IfcFooting")
                 or linear_element.is_a("IfcMember")
-            ):
+            ) and hasattr(self, "chain"):
                 # TODO skip unless Pset_MemberCommon.LoadBearing
                 # generate structural edges
                 structural_member = run(
