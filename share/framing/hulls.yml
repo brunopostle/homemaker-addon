@@ -3,6 +3,10 @@ pitched-roof:
   class: Shell
   condition: roof
   ifc: IfcVirtualElement
+flat-roof:
+  class: Shell
+  condition: flat
+  ifc: IfcVirtualElement
 purlins:
   class: Grillage
   condition: roof
@@ -21,3 +25,16 @@ battens:
   angle: 0.0
   spacing: 0.20
   traces: [batten]
+flat-roof-joists:
+  class: Grillage
+  condition: flat
+  angle: 90.0
+  spacing: 0.3
+  traces: [joist]
+  hulls: [flat-roof-nogging]
+flat-roof-nogging:
+  class: Grillage
+  condition: noop
+  angle: 0.0
+  spacing: 1.2
+  traces: [joist]

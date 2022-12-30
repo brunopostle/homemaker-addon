@@ -60,7 +60,10 @@ def map_to_2d(vertices, normal_vector):
     normal = [[normal_vector[0]], [normal_vector[1]], [normal_vector[2]], [1.0]]
 
     # rotate around z axis
-    normal_z = normalise_2d([normal[0][0], normal[1][0]])
+    if normal_vector[2] > 0.99999:
+        normal_z = [0.0, -1.0]
+    else:
+        normal_z = normalise_2d([normal[0][0], normal[1][0]])
     z_rot_mat = numpy.array(
         [
             [0 - normal_z[1], 0 - normal_z[0], 0.0, 0.0],
