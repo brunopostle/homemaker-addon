@@ -807,7 +807,7 @@ class Molior:
                     "building": self.building,
                     "structural_analysis_model": self.structural_analysis_model,
                     "name": name,
-                    "normals": topologist.normals.Normals(),
+                    "normals": {},
                     "normal_set": "bottom",
                     "style": stylename,
                     "hull": hull,
