@@ -1,0 +1,18 @@
+---
+Cinema row:
+  class: Extrusion
+  ifc: IfcMember
+  condition: noop
+  outer: 0.0
+  extension: 0.05
+Cinema seats:
+  class: Repeat
+  ifc: IfcFurniture
+  asset: 'Cinema seat'
+  condition: noop
+  outer: 0.0
+  extension: 0.0
+  inset: 0.0
+  spacing: 0.6
+  alternate: 0
+  traces: []

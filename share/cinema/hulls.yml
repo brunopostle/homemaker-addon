@@ -1,0 +1,9 @@
+---
+ceiling-vault:
+  condition: noop
+Row of seats:
+  class: Grillage
+  condition: soffit
+  angle: 0.0
+  spacing: 1.006 
+  traces: [Cinema row, Cinema seats]
