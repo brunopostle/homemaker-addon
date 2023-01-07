@@ -45,7 +45,6 @@ from molior.ifc import (
 )
 import topologist.ushell as ushell
 import topologist.ugraph as ugraph
-import topologist.normals
 
 run = ifcopenshell.api.run
 
@@ -474,6 +473,7 @@ class Molior:
                     "style.add_surface_style",
                     self.file,
                     style=style,
+                    ifc_class="IfcSurfaceStyleShading",
                     attributes={
                         "SurfaceColour": {
                             "Name": None,
@@ -481,14 +481,7 @@ class Molior:
                             "Green": 0.5,
                             "Blue": 0.5,
                         },
-                        "DiffuseColour": {
-                            "Name": None,
-                            "Red": 0.5,
-                            "Green": 0.5,
-                            "Blue": 0.5,
-                        },
                         "Transparency": 0.5,
-                        "ReflectanceMethod": "PLASTIC",
                     },
                 )
                 run(
@@ -648,6 +641,7 @@ class Molior:
             "style.add_surface_style",
             self.file,
             style=style,
+            ifc_class="IfcSurfaceStyleShading",
             attributes={
                 "SurfaceColour": {
                     "Name": "Translucent Blue",
@@ -656,7 +650,6 @@ class Molior:
                     "Blue": 1.0,
                 },
                 "Transparency": 0.8,
-                "ReflectanceMethod": "PLASTIC",
             },
         )
 

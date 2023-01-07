@@ -23,6 +23,7 @@ class Tests(unittest.TestCase):
             "style.add_surface_style",
             self.file,
             style=style,
+            ifc_class="IfcSurfaceStyleShading",
             attributes={
                 "SurfaceColour": {
                     "Name": "Orange",
@@ -30,14 +31,7 @@ class Tests(unittest.TestCase):
                     "Green": 0.5,
                     "Blue": 0.0,
                 },
-                "DiffuseColour": {
-                    "Name": "White",
-                    "Red": 1.0,
-                    "Green": 1.0,
-                    "Blue": 1.0,
-                },
                 "Transparency": 0.9,
-                "ReflectanceMethod": "MATT",
             },
         )
 
@@ -78,7 +72,7 @@ class Tests(unittest.TestCase):
         style = styled_item.Styles[0]
         self.assertEqual(style.is_a(), "IfcSurfaceStyle")
         rendering = style.Styles[0]
-        self.assertEqual(rendering.is_a(), "IfcSurfaceStyleRendering")
+        self.assertEqual(rendering.is_a(), "IfcSurfaceStyleShading")
         self.assertEqual(rendering.SurfaceColour.Name, "Orange")
 
         self.file.write("_test.ifc")

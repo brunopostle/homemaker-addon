@@ -117,6 +117,7 @@ class Space(TraceClass):
                 "style.add_surface_style",
                 self.file,
                 style=style,
+                ifc_class="IfcSurfaceStyleShading",
                 attributes={
                     "SurfaceColour": {
                         "Name": None,
@@ -124,14 +125,7 @@ class Space(TraceClass):
                         "Green": green,
                         "Blue": blue,
                     },
-                    "DiffuseColour": {
-                        "Name": None,
-                        "Red": red,
-                        "Green": green,
-                        "Blue": blue,
-                    },
                     "Transparency": 0.5,
-                    "ReflectanceMethod": "PLASTIC",
                 },
             )
             # FIXME report 159 LIGHT ON TWO SIDES: custom psets? STDERR?
@@ -141,6 +135,7 @@ class Space(TraceClass):
                 "style.add_surface_style",
                 self.file,
                 style=style,
+                ifc_class="IfcSurfaceStyleShading",
                 attributes={
                     "SurfaceColour": {
                         "Name": None,
@@ -148,14 +143,7 @@ class Space(TraceClass):
                         "Green": 1.0,
                         "Blue": 1.0,
                     },
-                    "DiffuseColour": {
-                        "Name": None,
-                        "Red": 1.0,
-                        "Green": 1.0,
-                        "Blue": 1.0,
-                    },
                     "Transparency": 0.9,
-                    "ReflectanceMethod": "PLASTIC",
                 },
             )
         run(
