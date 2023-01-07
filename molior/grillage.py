@@ -216,8 +216,17 @@ class Grillage(BaseClass):
             for cropped_edge in cropped_edges:
 
                 start = cropped_edge.StartVertex().Coordinates()
+                end = cropped_edge.EndVertex().Coordinates()
                 direction = cropped_edge.NormalisedVector()
                 length = cropped_edge.Length()
+
+                # draw from left to right, bottom to top
+
+                if (abs(direction[0]) < 0.00001 and direction[1] < 0.0) or direction[
+                    0
+                ] < 0.0:
+                    start, end = end, start
+                    direction = [-direction[0], -direction[1], -direction[2]]
 
                 # edges are drawn with traces
 

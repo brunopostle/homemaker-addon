@@ -1,5 +1,5 @@
 ---
-ceiling-vault:
+ceiling-soffit:
   condition: noop
 Row of seats:
   class: Grillage
