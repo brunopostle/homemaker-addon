@@ -9,6 +9,7 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__) + "/libs/site/packages
 from topologic import Vertex, Face, CellComplex
 from molior import Molior
 import molior.ifc
+from molior.ifc import get_parent_building
 
 import logging
 from blenderbim.bim import import_ifc
@@ -32,6 +33,15 @@ class ObjectTopologise(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
+        ifc_element = tool.Ifc.get_entity(bpy.context.active_object)
+        if ifc_element:
+            cellcomplex = get_cellcomplex_from_ifc(ifc_element)
+            new_object = bpy.data.objects.new(
+                "BOGUS", mesh_from_cellcomplex(cellcomplex)
+            )
+            bpy.data.collections.items()[0][1].objects.link(new_object)
+            return {"FINISHED"}
+
         # FIXME this resets widget origins which looks ugly
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
@@ -279,6 +289,68 @@ def triangulate_nonplanar(blender_object):
         bpy.ops.object.material_slot_assign()
 
     bpy.ops.object.mode_set(mode="OBJECT")
+
+
+def get_cellcomplex_from_ifc(entity):
+    building = get_parent_building(entity)
+    if not building:
+        return None
+    for rel_contained in building.ContainsElements:
+        for element in rel_contained.RelatedElements:
+            if element.is_a("IfcVirtualElement" and element.Name == "CellComplex"):
+                for rel_aggregates in element.IsDecomposedBy:
+                    faces_ptr = []
+                    widgets = []
+                    for related_object in rel_aggregates.RelatedObjects:
+                        if related_object.is_a("IfcVirtualElement") and re.match(
+                            "^cell/", related_object.Name
+                        ):
+                            vertex = Vertex.ByCoordinates(
+                                *related_object.Representation.Representations[0]
+                                .Items[0]
+                                .Coordinates
+                            )
+                            for has_property in related_object.IsDefinedBy[
+                                0
+                            ].RelatingPropertyDefinition.HasProperties:
+                                vertex.Set(
+                                    has_property.Name,
+                                    has_property.NominalValue.wrappedValue,
+                                )
+                            widgets.append(vertex)
+                        elif related_object.is_a("IfcVirtualElement") and re.match(
+                            "^face/", related_object.Name
+                        ):
+                            vertices = []
+                            coordinates = (
+                                related_object.Representation.Representations[0]
+                                .Items[0]
+                                .Coordinates.CoordList
+                            )
+                            vertices = [Vertex.ByCoordinates(*v) for v in coordinates]
+                            indices = (
+                                related_object.Representation.Representations[0]
+                                .Items[0]
+                                .Faces[0]
+                                .CoordIndex
+                            )
+                            face_ptr = Face.ByVertices(
+                                [vertices[v - 1] for v in indices]
+                            )
+                            for has_property in related_object.IsDefinedBy[
+                                0
+                            ].RelatingPropertyDefinition.HasProperties:
+                                face_ptr.Set(
+                                    has_property.Name,
+                                    has_property.NominalValue.wrappedValue,
+                                )
+                                faces_ptr.append(face_ptr)
+                    cellcomplex = CellComplex.ByFaces(faces_ptr, 0.0001)
+                    cellcomplex.ApplyDictionary(faces_ptr)
+                    cellcomplex.AllocateCells(widgets)
+                    cellcomplex.Set("name", building.Name)
+                    return cellcomplex
+    return None
 
 
 def menu_func(self, context):
