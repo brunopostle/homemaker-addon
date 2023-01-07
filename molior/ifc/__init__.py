@@ -32,12 +32,12 @@ def init(name="Homemaker Project", file=None):
         name=name,
     )
 
-    unit_assignment = run(
-        "unit.assign_unit", file, length={"is_metric": True, "raw": "METERS"}
-    )
+    unit_assignment = run("unit.assign_unit", file)
     unit_assignment.Units = [
-        *unit_assignment.Units,
-        run("unit.add_si_unit", file, name="RADIAN", unit_type="PLANEANGLEUNIT"),
+        run("unit.add_si_unit", file, unit_type="LENGTHUNIT"),
+        run("unit.add_si_unit", file, unit_type="AREAUNIT"),
+        run("unit.add_si_unit", file, unit_type="VOLUMEUNIT"),
+        run("unit.add_si_unit", file, unit_type="PLANEANGLEUNIT"),
     ]
 
     create_default_contexts(file)
