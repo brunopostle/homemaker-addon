@@ -4,7 +4,7 @@ import numpy
 from topologist.helpers import string_to_coor, el
 from topologic import Face, Vertex
 from molior.baseclass import BaseClass
-from molior.geometry import map_to_2d, add_2d, scale_2d
+from molior.geometry import map_to_2d, add_2d, scale_2d, subtract_3d
 from molior.ifc import (
     add_face_topology_epsets,
     create_face_surface,
@@ -64,8 +64,15 @@ class Grillage(BaseClass):
 
         elevation = None
         for face in self.hull.faces:
+
+            # grillages are mapped from above
+            if face[1]["face"].IsUpward() or face[1]["face"].IsVertical():
+                normal = face[1]["face"].Normal()
+            else:
+                normal = subtract_3d([0.0, 0.0, 0.0], face[1]["face"].Normal())
+
             vertices = [[*string_to_coor(node_str)] for node_str in face[0]]
-            normal = face[1]["face"].Normal()
+
             # need this for boundaries
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
             # need this for structure
