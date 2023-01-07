@@ -5,7 +5,6 @@ A collection of code for commonly used IFC related tasks
 """
 
 import ifcopenshell.api
-import ifcopenshell.util.representation
 from molior.geometry import (
     matrix_align,
     add_2d,
@@ -135,7 +134,7 @@ def get_context_by_name(
     target_view=None,
 ):
     """Retrieve or create a Representation Context"""
-    mycontext = ifcopenshell.util.representation.get_context(
+    mycontext = get_context(
         self,
         parent_context_identifier,
         subcontext=context_identifier,
@@ -144,9 +143,7 @@ def get_context_by_name(
     if mycontext:
         return mycontext
     if context_identifier in ["Model", "Plan", "NotDefined"]:
-        mycontext = ifcopenshell.util.representation.get_context(
-            self, context_identifier
-        )
+        mycontext = get_context(self, context_identifier)
         if mycontext:
             return mycontext
         return run("context.add_context", self, context_type=context_identifier)
@@ -161,6 +158,24 @@ def get_context_by_name(
         parent=parent_context,
         target_view=target_view,
     )
+
+
+# pasted from ifcopenshell.util.representation due to blender dependency
+def get_context(ifc_file, context, subcontext=None, target_view=None):
+    if subcontext or target_view:
+        elements = ifc_file.by_type("IfcGeometricRepresentationSubContext")
+    else:
+        elements = ifc_file.by_type(
+            "IfcGeometricRepresentationContext", include_subtypes=False
+        )
+    for element in elements:
+        if context and element.ContextType != context:
+            continue
+        if subcontext and getattr(element, "ContextIdentifier") != subcontext:
+            continue
+        if target_view and getattr(element, "TargetView") != target_view:
+            continue
+        return element
 
 
 def get_site_by_name(self, parent, name):
