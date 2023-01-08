@@ -17,7 +17,7 @@ IfcOpenShell.
 
 import re
 import ifcopenshell.util
-from topologic import CellComplex, CellUtility
+from topologic import CellComplex, CellUtility, Vertex, Face
 from molior.extrusion import Extrusion
 from molior.floor import Floor
 from molior.shell import Shell
@@ -101,6 +101,73 @@ class Molior:
             cellcomplex=cellcomplex,
             share_dir=share_dir,
         )
+
+
+    @classmethod
+    def get_cellcomplex_from_ifc(cls, entity):
+        """Retrieve a CellComplex definition stored by the stash_topology() method"""
+        """Supply an IfcBuilding or any element or space within that building"""
+        """A Topologic CellComplex or None will be returned"""
+        building = get_parent_building(entity)
+        if not building:
+            return None
+        for rel_contained in building.ContainsElements:
+            for element in rel_contained.RelatedElements:
+                if element.is_a("IfcVirtualElement" and element.Name == "CellComplex"):
+                    for rel_aggregates in element.IsDecomposedBy:
+                        faces_ptr = []
+                        widgets = []
+                        for related_object in rel_aggregates.RelatedObjects:
+                            if related_object.is_a("IfcVirtualElement") and re.match(
+                                "^cell/", related_object.Name
+                            ):
+                                vertex = Vertex.ByCoordinates(
+                                    *related_object.Representation.Representations[0]
+                                    .Items[0]
+                                    .Coordinates
+                                )
+                                for has_property in related_object.IsDefinedBy[
+                                    0
+                                ].RelatingPropertyDefinition.HasProperties:
+                                    vertex.Set(
+                                        has_property.Name,
+                                        has_property.NominalValue.wrappedValue,
+                                    )
+                                widgets.append(vertex)
+                            elif related_object.is_a("IfcVirtualElement") and re.match(
+                                "^face/", related_object.Name
+                            ):
+                                vertices = []
+                                coordinates = (
+                                    related_object.Representation.Representations[0]
+                                    .Items[0]
+                                    .Coordinates.CoordList
+                                )
+                                vertices = [Vertex.ByCoordinates(*v) for v in coordinates]
+                                indices = (
+                                    related_object.Representation.Representations[0]
+                                    .Items[0]
+                                    .Faces[0]
+                                    .CoordIndex
+                                )
+                                face_ptr = Face.ByVertices(
+                                    [vertices[v - 1] for v in indices]
+                                )
+                                for has_property in related_object.IsDefinedBy[
+                                    0
+                                ].RelatingPropertyDefinition.HasProperties:
+                                    face_ptr.Set(
+                                        has_property.Name,
+                                        has_property.NominalValue.wrappedValue,
+                                    )
+                                    faces_ptr.append(face_ptr)
+                        cellcomplex = CellComplex.ByFaces(faces_ptr, 0.0001)
+                        cellcomplex.ApplyDictionary(faces_ptr)
+                        cellcomplex.AllocateCells(widgets)
+                        cellcomplex.Set("name", building.Name)
+                        return cellcomplex
+        return None
+
 
     def __init__(self, **args):
         self.file = None

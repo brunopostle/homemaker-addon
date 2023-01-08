@@ -35,11 +35,15 @@ class ObjectTopologise(bpy.types.Operator):
     def execute(self, context):
         ifc_element = tool.Ifc.get_entity(bpy.context.active_object)
         if ifc_element:
-            cellcomplex = get_cellcomplex_from_ifc(ifc_element)
-            new_object = bpy.data.objects.new(
-                "BOGUS", mesh_from_cellcomplex(cellcomplex)
-            )
-            bpy.data.collections.items()[0][1].objects.link(new_object)
+            cellcomplex = Molior.get_cellcomplex_from_ifc(ifc_element)
+            for new_mesh in meshes_from_cellcomplex(cellcomplex):
+                new_object = bpy.data.objects.new(
+                    new_mesh.name, new_mesh
+                )
+                bpy.data.collections.items()[0][1].objects.link(new_object)
+            # TODO delete blender ifc model
+            # Homemaker method regenerates building instead
+            # flush library objects?
             return {"FINISHED"}
 
         # FIXME this resets widget origins which looks ugly
@@ -57,10 +61,11 @@ class ObjectTopologise(bpy.types.Operator):
         # Generate a Topologic CellComplex
         cc = CellComplex.ByFaces(faces_ptr, 0.0001)
         cc.ApplyDictionary(faces_ptr)
-        new_object = bpy.data.objects.new(
-            blender_object.name, mesh_from_cellcomplex(cc)
-        )
-        bpy.data.collections.items()[0][1].objects.link(new_object)
+        for new_mesh in meshes_from_cellcomplex(cc):
+            new_object = bpy.data.objects.new(
+                new_mesh.name, new_mesh
+            )
+            bpy.data.collections.items()[0][1].objects.link(new_object)
 
         return {"FINISHED"}
 
@@ -150,7 +155,19 @@ def topologic_faces_from_blender_object(blender_object):
     return faces_ptr
 
 
-def mesh_from_cellcomplex(cc):
+def meshes_from_cellcomplex(cc):
+    meshes = []
+    cells_ptr = []
+    cc.Cells(cc, cells_ptr)
+    for cell_ptr in cells_ptr:
+        centroid = cell_ptr.Centroid()
+        cell_usage = cell_ptr.Get("usage")
+        if not cell_usage:
+            cell_usage = "living"
+        new_mesh = bpy.data.meshes.new(cell_usage)
+        new_mesh.from_pydata([centroid.Coordinates()], [], [])
+        meshes.append(new_mesh)
+
     faces_ptr = []
     cc.Faces(cc, faces_ptr)
     vertices = []
@@ -193,7 +210,12 @@ def mesh_from_cellcomplex(cc):
     bm.free()
 
     new_mesh.update()
-    return new_mesh
+    new_mesh_name = cc.Get("name")
+    if not new_mesh_name:
+        new_mesh_name = "CellComplex"
+    new_mesh.name = new_mesh_name
+    meshes.append(new_mesh)
+    return meshes
 
 
 def process_blender_objects(selected_objects):
@@ -289,68 +311,6 @@ def triangulate_nonplanar(blender_object):
         bpy.ops.object.material_slot_assign()
 
     bpy.ops.object.mode_set(mode="OBJECT")
-
-
-def get_cellcomplex_from_ifc(entity):
-    building = get_parent_building(entity)
-    if not building:
-        return None
-    for rel_contained in building.ContainsElements:
-        for element in rel_contained.RelatedElements:
-            if element.is_a("IfcVirtualElement" and element.Name == "CellComplex"):
-                for rel_aggregates in element.IsDecomposedBy:
-                    faces_ptr = []
-                    widgets = []
-                    for related_object in rel_aggregates.RelatedObjects:
-                        if related_object.is_a("IfcVirtualElement") and re.match(
-                            "^cell/", related_object.Name
-                        ):
-                            vertex = Vertex.ByCoordinates(
-                                *related_object.Representation.Representations[0]
-                                .Items[0]
-                                .Coordinates
-                            )
-                            for has_property in related_object.IsDefinedBy[
-                                0
-                            ].RelatingPropertyDefinition.HasProperties:
-                                vertex.Set(
-                                    has_property.Name,
-                                    has_property.NominalValue.wrappedValue,
-                                )
-                            widgets.append(vertex)
-                        elif related_object.is_a("IfcVirtualElement") and re.match(
-                            "^face/", related_object.Name
-                        ):
-                            vertices = []
-                            coordinates = (
-                                related_object.Representation.Representations[0]
-                                .Items[0]
-                                .Coordinates.CoordList
-                            )
-                            vertices = [Vertex.ByCoordinates(*v) for v in coordinates]
-                            indices = (
-                                related_object.Representation.Representations[0]
-                                .Items[0]
-                                .Faces[0]
-                                .CoordIndex
-                            )
-                            face_ptr = Face.ByVertices(
-                                [vertices[v - 1] for v in indices]
-                            )
-                            for has_property in related_object.IsDefinedBy[
-                                0
-                            ].RelatingPropertyDefinition.HasProperties:
-                                face_ptr.Set(
-                                    has_property.Name,
-                                    has_property.NominalValue.wrappedValue,
-                                )
-                                faces_ptr.append(face_ptr)
-                    cellcomplex = CellComplex.ByFaces(faces_ptr, 0.0001)
-                    cellcomplex.ApplyDictionary(faces_ptr)
-                    cellcomplex.AllocateCells(widgets)
-                    cellcomplex.Set("name", building.Name)
-                    return cellcomplex
-    return None
 
 
 def menu_func(self, context):
