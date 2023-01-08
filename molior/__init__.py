@@ -102,7 +102,6 @@ class Molior:
             share_dir=share_dir,
         )
 
-
     @classmethod
     def get_cellcomplex_from_ifc(cls, entity):
         """Retrieve a CellComplex definition stored by the stash_topology() method"""
@@ -143,7 +142,9 @@ class Molior:
                                     .Items[0]
                                     .Coordinates.CoordList
                                 )
-                                vertices = [Vertex.ByCoordinates(*v) for v in coordinates]
+                                vertices = [
+                                    Vertex.ByCoordinates(*v) for v in coordinates
+                                ]
                                 indices = (
                                     related_object.Representation.Representations[0]
                                     .Items[0]
@@ -167,7 +168,6 @@ class Molior:
                         cellcomplex.Set("name", building.Name)
                         return cellcomplex
         return None
-
 
     def __init__(self, **args):
         self.file = None

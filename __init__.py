@@ -37,9 +37,7 @@ class ObjectTopologise(bpy.types.Operator):
         if ifc_element:
             cellcomplex = Molior.get_cellcomplex_from_ifc(ifc_element)
             for new_mesh in meshes_from_cellcomplex(cellcomplex):
-                new_object = bpy.data.objects.new(
-                    new_mesh.name, new_mesh
-                )
+                new_object = bpy.data.objects.new(new_mesh.name, new_mesh)
                 bpy.data.collections.items()[0][1].objects.link(new_object)
             # TODO delete blender ifc model
             # Homemaker method regenerates building instead
@@ -62,9 +60,7 @@ class ObjectTopologise(bpy.types.Operator):
         cc = CellComplex.ByFaces(faces_ptr, 0.0001)
         cc.ApplyDictionary(faces_ptr)
         for new_mesh in meshes_from_cellcomplex(cc):
-            new_object = bpy.data.objects.new(
-                new_mesh.name, new_mesh
-            )
+            new_object = bpy.data.objects.new(new_mesh.name, new_mesh)
             bpy.data.collections.items()[0][1].objects.link(new_object)
 
         return {"FINISHED"}
