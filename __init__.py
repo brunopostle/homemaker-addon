@@ -38,15 +38,16 @@ class ObjectTopologise(bpy.types.Operator):
             cellcomplex = Molior.get_cellcomplex_from_ifc(ifc_element)
             for new_mesh in meshes_from_cellcomplex(cellcomplex):
                 new_object = bpy.data.objects.new(new_mesh.name, new_mesh)
-                bpy.data.collections.items()[0][1].objects.link(new_object)
-            # TODO delete blender ifc model
-            # Homemaker method regenerates building instead
-            # flush library objects?
+                bpy.context.scene.collection.objects.link(new_object)
+            # TODO delete the building containing this element
+            # TODO Homemaker method regenerates building instead
+            # TODO flush library objects?
             return {"FINISHED"}
 
         # FIXME this resets widget origins which looks ugly
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
+        selected_objects = context.selected_objects
         blender_objects, widgets = process_blender_objects(context.selected_objects)
 
         # remaining blender_objects become a single cellcomplex
@@ -54,14 +55,18 @@ class ObjectTopologise(bpy.types.Operator):
         for blender_object in blender_objects:
             triangulate_nonplanar(blender_object)
             faces_ptr.extend(topologic_faces_from_blender_object(blender_object))
-            blender_object.hide_viewport = True
 
         # Generate a Topologic CellComplex
         cc = CellComplex.ByFaces(faces_ptr, 0.0001)
         cc.ApplyDictionary(faces_ptr)
+        cc.Set("name", blender_objects[0].name)
+
+        for blender_object in selected_objects:
+            bpy.data.objects.remove(blender_object)
+
         for new_mesh in meshes_from_cellcomplex(cc):
             new_object = bpy.data.objects.new(new_mesh.name, new_mesh)
-            bpy.data.collections.items()[0][1].objects.link(new_object)
+            bpy.context.scene.collection.objects.link(new_object)
 
         return {"FINISHED"}
 
@@ -84,18 +89,21 @@ class ObjectHomemaker(bpy.types.Operator):
         # FIXME this resets widget origins which looks ugly
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
+        selected_objects = context.selected_objects
         blender_objects, widgets = process_blender_objects(context.selected_objects)
 
         # Each remaining blender_object becomes a separate building
         for blender_object in blender_objects:
             triangulate_nonplanar(blender_object)
-            blender_object.hide_viewport = True
 
         self.blender_objects = blender_objects
         self.widgets = widgets
 
         # runs _execute()
         IfcStore.execute_ifc_operator(self, context)
+
+        for blender_object in selected_objects:
+            bpy.data.objects.remove(blender_object)
 
         # delete any IfcProject/* collections, but leave IfcStore intact
         for collection in bpy.data.collections:
