@@ -12,6 +12,9 @@ import molior.ifc
 from molior.ifc import get_parent_building
 
 import logging
+import ifcopenshell.api
+import ifcopenshell.util.element
+import blenderbim.core.system
 from blenderbim.bim import import_ifc
 from blenderbim.bim.ifc import IfcStore
 import blenderbim.tool as tool
@@ -39,7 +42,15 @@ class ObjectTopologise(bpy.types.Operator):
             for new_mesh in meshes_from_cellcomplex(cellcomplex):
                 new_object = bpy.data.objects.new(new_mesh.name, new_mesh)
                 bpy.context.scene.collection.objects.link(new_object)
-            # TODO delete the building containing this element
+            # delete the building containing this element
+            ifc_building = get_parent_building(ifc_element)
+            for collection in bpy.data.collections:
+                if re.match("^IfcBuilding/", collection.name):
+                    for myobject in collection.objects:
+                        if tool.Ifc.get_entity(myobject) == ifc_building:
+                            # FIXME delete_recursive() crashes
+                            delete_recursive(collection)
+
             # TODO Homemaker method regenerates building instead
             # TODO flush library objects?
             return {"FINISHED"}
@@ -265,6 +276,83 @@ def delete_collection(blender_collection):
     for collection in bpy.data.collections:
         if not collection.users:
             bpy.data.collections.remove(collection)
+
+
+# copied from bim.module.geometry.operator
+def delete_recursive(item):
+    objects_to_delete = set()
+    collections_to_delete = set()
+    if item.bl_rna.identifier == "Collection":
+        collection = bpy.data.collections.get(item.name)
+        collection_data = get_collection_objects_and_children(collection)
+        objects_to_delete |= collection_data["objects"]
+        collections_to_delete |= collection_data["children"]
+        collections_to_delete.add(collection)
+    elif item.bl_rna.identifier == "Object":
+        objects_to_delete.add(bpy.data.objects.get(item.name))
+    for obj in objects_to_delete:
+        delete_ifc_object(obj)
+        bpy.data.objects.remove(obj)
+
+
+# copied from bim.module.geometry.operator
+def get_collection_objects_and_children(blender_collection):
+    objects = set()
+    children = set()
+    queue = [blender_collection]
+    while queue:
+        blender_collection = queue.pop()
+        for obj in blender_collection.objects:
+            objects.add(obj)
+        queue.extend(blender_collection.children)
+        children = children.union(blender_collection.children)
+    return {"objects": objects, "children": children}
+
+
+# copied from bim.module.geometry.operator
+def delete_ifc_object(obj):
+    element = tool.Ifc.get_entity(obj)
+    if not element:
+        return
+    IfcStore.delete_element(element)
+    if obj.users_collection and obj.users_collection[0].name == obj.name:
+        parent = ifcopenshell.util.element.get_aggregate(element)
+        if not parent:
+            parent = ifcopenshell.util.element.get_container(element)
+        if parent:
+            parent_obj = tool.Ifc.get_object(parent)
+            if parent_obj:
+                parent_collection = bpy.data.collections.get(parent_obj.name)
+                for child in obj.users_collection[0].children:
+                    parent_collection.children.link(child)
+        bpy.data.collections.remove(obj.users_collection[0])
+    if getattr(element, "FillsVoids", None):
+        remove_filling(element)
+    if element.is_a("IfcOpeningElement"):
+        if element.HasFillings:
+            for rel in element.HasFillings:
+                remove_filling(rel.RelatedBuildingElement)
+        else:
+            if element.VoidsElements:
+                delete_opening_element(element)
+    else:
+        if getattr(element, "HasOpenings", None):
+            for rel in element.HasOpenings:
+                delete_opening_element(rel.RelatedOpeningElement)
+        for port in ifcopenshell.util.system.get_ports(element):
+            remove_port(port)
+
+
+def delete_opening_element(element):
+    bpy.ops.bim.remove_opening(opening_id=element.id())
+
+
+def remove_filling(element):
+    bpy.ops.bim.remove_filling(filling=element.id())
+
+
+def remove_port(port):
+    blenderbim.core.system.remove_port(tool.Ifc, tool.System, port=port)
 
 
 def triangulate_nonplanar(blender_object):
