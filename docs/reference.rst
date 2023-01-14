@@ -77,7 +77,7 @@ Repeat
 ~~~~~~
 
 A row of evenly spaced identical objects. The gaps between these objects can be
-optionally defined by further *Grillage* or *Extrusion* elements, allowing
+optionally defined by further Grillage_ or Extrusion_ elements, allowing
 recursive build-up of complex construction systems.
 
 Stair
@@ -90,7 +90,7 @@ Hulls
 
 Hulls are 3D shells that define planar building elements, differentiated by
 style and orientation.  Typically these define roofs, soffits etc.. that can't
-be described by 'traces', and are drawn using a simple thickened plate or
+be described by Traces_, and are drawn using a simple thickened plate or
 grillage corresponding to the original Face.  All possible hulls are made
 available when the CellComplex defining the building is processed.
 
@@ -134,11 +134,11 @@ Grillage
 ~~~~~~~~
 
 A planar feature consisting of repeated linear elements. These linear elements
-are optionally defined by *Extrusion* and/or *Repeat* traces. The areas sliced
-by these linear elements can be optionally defined by *Shell* and/or *Grillage*
-hulls.
+are optionally defined by Extrusion_ and/or Repeat_ Traces_. The areas sliced
+by these linear elements can be optionally defined by Shell_ and/or Grillage_
+Hulls_.
 
-Since *Repeat* and *Grillage* elements are recursive, complex construction
+Since Repeat_ and Grillage_ elements are recursive, complex construction
 systems can be built up through layering.
 
 Styles

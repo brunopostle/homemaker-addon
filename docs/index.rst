@@ -13,6 +13,7 @@ taking the project towards construction.
    :maxdepth: 2
    :caption: Contents:
 
+   usage.rst
    reference.rst
    api.rst
 
