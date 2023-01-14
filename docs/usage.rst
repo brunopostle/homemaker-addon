@@ -76,8 +76,8 @@ Running the *Topologise* function on a mesh will generate these
 widgets/placeholders for you as a floating vertex, just rename them to whatever
 room type you need, select everything and run *Homemaker*.
 
-Styles
-~~~~~~
+Building Styles
+~~~~~~~~~~~~~~~
 
 The 'default' style is based on measurements of a previous home.
 
