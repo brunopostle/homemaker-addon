@@ -76,7 +76,9 @@ A floor filling a room or Space_
 Repeat
 ~~~~~~
 
-A row of evenly spaced identical objects
+A row of evenly spaced identical objects. The gaps between these objects can be
+optionally defined by further *Grillage* or *Extrusion* elements, allowing
+recursive build-up of complex construction systems.
 
 Stair
 ~~~~~
@@ -131,7 +133,13 @@ A pitched roof, planar surface or soffit
 Grillage
 ~~~~~~~~
 
-A planar feature consisting of repeated linear elements
+A planar feature consisting of repeated linear elements. These linear elements
+are optionally defined by *Extrusion* and/or *Repeat* traces. The areas sliced
+by these linear elements can be optionally defined by *Shell* and/or *Grillage*
+hulls.
+
+Since *Repeat* and *Grillage* elements are recursive, complex construction
+systems can be built up through layering.
 
 Styles
 ------
