@@ -1,6 +1,9 @@
 Usage
 =====
 
+Quickstart
+~~~~~~~~~~
+
 The Homemaker add-on puts two new functions in the Blender *Object* menu:
 *Topologise* and *Homemaker*.
 
