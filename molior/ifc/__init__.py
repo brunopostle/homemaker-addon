@@ -5,6 +5,7 @@ A collection of code for commonly used IFC related tasks
 """
 
 import ifcopenshell.api
+import ifcopenshell.util.system
 from molior.geometry import (
     matrix_align,
     add_2d,
@@ -595,3 +596,66 @@ def get_type_object(
         relating_context=get_library_by_name(self, stylename),
     )
     return definition
+
+
+def delete_ifc_product(self, product):
+    """Recursively delete a product and its children"""
+    if not product:
+        return
+    if getattr(product, "IsDecomposedBy", None):
+        for child in product.IsDecomposedBy:
+            for child_object in child.RelatedObjects:
+                delete_ifc_product(self, child_object)
+    if getattr(product, "IsGroupedBy", None):
+        for child in product.IsGroupedBy:
+            for child_object in child.RelatedObjects:
+                delete_ifc_product(self, child_object)
+    if getattr(product, "Nests", None):
+        for child in product.Nests:
+            for child_product in child.RelatedObjects:
+                delete_ifc_product(self, child_product)
+    if product.is_a("IfcSpatialElement"):
+        for child in product.ContainsElements:
+            for child_product in child.RelatedElements:
+                delete_ifc_product(self, child_product)
+    if getattr(product, "FillsVoids", None):
+        run("void.remove_filling", self, element=product)
+    if product.is_a("IfcOpeningElement"):
+        if product.HasFillings:
+            for rel in product.HasFillings:
+                run("void.remove_filling", self, element=rel.RelatedBuildingElement)
+        else:
+            if product.VoidsElements:
+                run("void.remove_filling", self, element=product)
+    else:
+        if getattr(product, "HasOpenings", None):
+            for rel in product.HasOpenings:
+                run("void.remove_filling", self, element=rel.RelatedOpeningElement)
+        for port in ifcopenshell.util.system.get_ports(product):
+            run("root.remove_product", self, product=port)
+    run("root.remove_product", self, product=product)
+
+
+def purge_unused(self):
+    """Delete some unused entities"""
+    for type_object in self.by_type("IfcTypeObject"):
+        if not type_object.ReferencedBy:
+            # need this or it segfaults IfcOpenShell/IfcOpenShell#2697
+            run("material.unassign_material", self, product=type_object)
+            delete_ifc_product(self, type_object)
+    # these are clearing up invalid results of root.remove_product
+    for rel in self.by_type("IfcRelConnectsStructuralMember"):
+        if not rel.RelatingStructuralMember:
+            self.remove(rel)
+    for rel in self.by_type("IfcRelAssignsToProduct"):
+        if not rel.RelatingProduct:
+            self.remove(rel)
+    for rel in self.by_type("IfcRelServicesBuildings"):
+        if not rel.RelatingSystem:
+            self.remove(rel)
+    for rel in self.by_type("IfcRelAssignsToGroup"):
+        if not rel.RelatingGroup:
+            self.remove(rel)
+    for rel in self.by_type("IfcRelDeclares"):
+        if not rel.RelatedDefinitions:
+            self.remove(rel)

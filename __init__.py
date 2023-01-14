@@ -9,7 +9,12 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__) + "/libs/site/packages
 from topologic import Vertex, Face, CellComplex
 from molior import Molior
 import molior.ifc
-from molior.ifc import get_parent_building
+from molior.ifc import (
+    get_parent_building,
+    get_structural_analysis_model_by_name,
+    delete_ifc_product,
+    purge_unused,
+)
 
 import logging
 from blenderbim.bim import import_ifc
@@ -39,9 +44,22 @@ class ObjectTopologise(bpy.types.Operator):
             for new_mesh in meshes_from_cellcomplex(cellcomplex):
                 new_object = bpy.data.objects.new(new_mesh.name, new_mesh)
                 bpy.context.scene.collection.objects.link(new_object)
-            # TODO delete the building containing this element
-            # TODO Homemaker method regenerates building instead
-            # TODO flush library objects?
+
+            # delete the building containing this element
+
+            self.ifc_building = get_parent_building(ifc_element)
+            self.structural_model = get_structural_analysis_model_by_name(
+                IfcStore.file, self.ifc_building, self.ifc_building.Name
+            )
+
+            for collection in bpy.data.collections:
+                if re.match("^IfcBuilding/", collection.name):
+                    for myobject in collection.objects:
+                        if tool.Ifc.get_entity(myobject) == self.ifc_building:
+                            # runs _execute()
+                            IfcStore.execute_ifc_operator(self, context)
+                            delete_collection(collection)
+
             return {"FINISHED"}
 
         # FIXME this resets widget origins which looks ugly
@@ -70,6 +88,11 @@ class ObjectTopologise(bpy.types.Operator):
 
         return {"FINISHED"}
 
+    def _execute(self, context):
+        delete_ifc_product(IfcStore.file, self.ifc_building)
+        delete_ifc_product(IfcStore.file, self.structural_model)
+        purge_unused(IfcStore.file)
+
 
 class ObjectHomemaker(bpy.types.Operator):
     """Object Homemaker"""
@@ -83,6 +106,7 @@ class ObjectHomemaker(bpy.types.Operator):
             # creates Project, Units, Representation Contexts etc..
             IfcStore.file = molior.ifc.init()
 
+        # TODO if an ifc object is selected, delete building and regenerate from stashed CellComplex
         # TODO styles are loaded from share_dir, allow blender user to set custom share_dir path
         self.share_dir = "share"
 
