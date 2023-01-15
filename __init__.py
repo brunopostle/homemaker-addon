@@ -106,28 +106,59 @@ class ObjectHomemaker(bpy.types.Operator):
             # creates Project, Units, Representation Contexts etc..
             IfcStore.file = molior.ifc.init()
 
-        # TODO if an ifc object is selected, delete building and regenerate from stashed CellComplex
         # TODO styles are loaded from share_dir, allow blender user to set custom share_dir path
         self.share_dir = "share"
 
-        # FIXME this resets widget origins which looks ugly
-        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        ifc_element = tool.Ifc.get_entity(bpy.context.active_object)
+        if ifc_element:
+            cellcomplex = Molior.get_cellcomplex_from_ifc(ifc_element)
+            for new_mesh in meshes_from_cellcomplex(cellcomplex):
+                new_object = bpy.data.objects.new(new_mesh.name, new_mesh)
+                bpy.context.scene.collection.objects.link(new_object)
 
-        selected_objects = context.selected_objects
-        blender_objects, widgets = process_blender_objects(context.selected_objects)
+            # delete and replace the building containing this element
 
-        # Each remaining blender_object becomes a separate building
-        for blender_object in blender_objects:
-            triangulate_nonplanar(blender_object)
+            self.ifc_building = get_parent_building(ifc_element)
+            self.structural_model = get_structural_analysis_model_by_name(
+                IfcStore.file, self.ifc_building, self.ifc_building.Name
+            )
+            building_name = self.ifc_building.Name
 
-        self.blender_objects = blender_objects
-        self.widgets = widgets
+            for collection in bpy.data.collections:
+                if re.match("^IfcBuilding/", collection.name):
+                    for myobject in collection.objects:
+                        if tool.Ifc.get_entity(myobject) == self.ifc_building:
+                            # this should be inside _execute()
+                            delete_ifc_product(IfcStore.file, self.ifc_building)
+                            delete_ifc_product(IfcStore.file, self.structural_model)
+                            purge_unused(IfcStore.file)
+                            # Molior objects build IFC buildings
+                            molior_object = Molior.from_cellcomplex(
+                                file=IfcStore.file,
+                                cellcomplex=cellcomplex,
+                                name=building_name,
+                                share_dir=self.share_dir,
+                            )
+                            molior_object.execute()
+        else:
+            # FIXME this resets widget origins which looks ugly
+            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
-        # runs _execute()
-        IfcStore.execute_ifc_operator(self, context)
+            selected_objects = context.selected_objects
+            blender_objects, widgets = process_blender_objects(context.selected_objects)
 
-        for blender_object in selected_objects:
-            bpy.data.objects.remove(blender_object)
+            # Each remaining blender_object becomes a separate building
+            for blender_object in blender_objects:
+                triangulate_nonplanar(blender_object)
+
+            self.blender_objects = blender_objects
+            self.widgets = widgets
+
+            # runs _execute()
+            IfcStore.execute_ifc_operator(self, context)
+
+            for blender_object in selected_objects:
+                bpy.data.objects.remove(blender_object)
 
         # delete any IfcProject/* collections, but leave IfcStore intact
         for collection in bpy.data.collections:
