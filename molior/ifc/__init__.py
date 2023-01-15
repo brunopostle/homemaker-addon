@@ -638,24 +638,92 @@ def delete_ifc_product(self, product):
 
 def purge_unused(self):
     """Delete some unused entities"""
-    for type_object in self.by_type("IfcTypeObject"):
-        if not type_object.ReferencedBy:
-            # need this or it segfaults IfcOpenShell/IfcOpenShell#2697
-            run("material.unassign_material", self, product=type_object)
-            delete_ifc_product(self, type_object)
-    # these are clearing up invalid results of root.remove_product
-    for rel in self.by_type("IfcRelConnectsStructuralMember"):
-        if not rel.RelatingStructuralMember:
-            self.remove(rel)
-    for rel in self.by_type("IfcRelAssignsToProduct"):
-        if not rel.RelatingProduct:
-            self.remove(rel)
-    for rel in self.by_type("IfcRelServicesBuildings"):
-        if not rel.RelatingSystem:
-            self.remove(rel)
-    for rel in self.by_type("IfcRelAssignsToGroup"):
-        if not rel.RelatingGroup:
-            self.remove(rel)
-    for rel in self.by_type("IfcRelDeclares"):
-        if not rel.RelatedDefinitions:
-            self.remove(rel)
+    todo = True
+    while todo:
+        todo = False
+        for type_object in self.by_type("IfcTypeObject"):
+            if not type_object.Types or not type_object.Types[0].RelatedObjects:
+                # need this or it segfaults IfcOpenShell/IfcOpenShell#2697
+                run("material.unassign_material", self, product=type_object)
+                delete_ifc_product(self, type_object)
+                todo = True
+        for pset in self.by_type("IfcPropertySet"):
+            if (
+                not pset.DefinesType
+                and not pset.IsDefinedBy
+                and not pset.DefinesOccurrence
+            ):
+                delete_ifc_product(self, pset)
+                todo = True
+        for rep in self.by_type("IfcMaterialDefinitionRepresentation"):
+            if not rep.RepresentedMaterial:
+                run("root.remove_product", self, product=rep)
+                todo = True
+        for ext in self.by_type("IfcExtendedProperties"):
+            if not ext.Properties:
+                run("root.remove_product", self, product=ext)
+                todo = True
+        for placement in self.by_type("IfcLocalPlacement"):
+            if not placement.PlacesObject and not placement.ReferencedByPlacements:
+                rel = placement.RelativePlacement
+                self.remove(rel.Location)
+                self.remove(rel.RefDirection)
+                if getattr(rel, "Axis", None):
+                    self.remove(rel.Axis)
+                self.remove(rel)
+                run("root.remove_product", self, product=placement)
+                todo = True
+        for entity in self.by_type("IfcConnectionGeometry"):
+            if not self.get_inverse(entity):
+                run("root.remove_product", self, product=entity)
+                todo = True
+        for entity in self.by_type("IfcBoundaryCondition"):
+            if not self.get_inverse(entity):
+                run("root.remove_product", self, product=entity)
+                todo = True
+        for entity in self.by_type("IfcPresentationItem"):
+            if not self.get_inverse(entity):
+                run("root.remove_product", self, product=entity)
+                todo = True
+        for entity in self.by_type("IfcProfileDef"):
+            if not self.get_inverse(entity):
+                run("root.remove_product", self, product=entity)
+                todo = True
+        for entity in self.by_type("IfcRepresentation"):
+            if not self.get_inverse(entity):
+                run("root.remove_product", self, product=entity)
+                todo = True
+        for entity in self.by_type("IfcGeometricRepresentationItem"):
+            if not self.get_inverse(entity):
+                run("root.remove_product", self, product=entity)
+                todo = True
+        for entity in self.by_type("IfcMaterialDefinition"):
+            if not self.get_inverse(entity):
+                run("root.remove_product", self, product=entity)
+                todo = True
+        for entity in self.by_type("IfcPresentationStyle"):
+            if not self.get_inverse(entity):
+                self.remove(entity)
+                todo = True
+
+        # these are clearing up invalid results of root.remove_product
+        for rel in self.by_type("IfcRelConnectsStructuralMember"):
+            if not rel.RelatingStructuralMember:
+                run("root.remove_product", self, product=rel)
+                todo = True
+        for rel in self.by_type("IfcRelAssignsToProduct"):
+            if not rel.RelatingProduct:
+                run("root.remove_product", self, product=rel)
+                todo = True
+        for rel in self.by_type("IfcRelServicesBuildings"):
+            if not rel.RelatingSystem:
+                run("root.remove_product", self, product=rel)
+                todo = True
+        for rel in self.by_type("IfcRelAssignsToGroup"):
+            if not rel.RelatingGroup:
+                run("root.remove_product", self, product=rel)
+                todo = True
+        for rel in self.by_type("IfcRelDeclares"):
+            if not rel.RelatedDefinitions:
+                run("root.remove_product", self, product=rel)
+                todo = True
