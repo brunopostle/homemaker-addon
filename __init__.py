@@ -58,6 +58,12 @@ class ObjectTopologise(bpy.types.Operator):
                         if tool.Ifc.get_entity(myobject) == self.ifc_building:
                             # runs _execute()
                             IfcStore.execute_ifc_operator(self, context)
+                            # FIXME no idea why this is necessary
+                            for ifc_definition_id in list(IfcStore.id_map.keys()):
+                                try:
+                                    IfcStore.file.by_id(ifc_definition_id)
+                                except:
+                                    del IfcStore.id_map[ifc_definition_id]
                             delete_collection(collection)
 
             return {"FINISHED"}
@@ -91,7 +97,7 @@ class ObjectTopologise(bpy.types.Operator):
     def _execute(self, context):
         delete_ifc_product(IfcStore.file, self.ifc_building)
         delete_ifc_product(IfcStore.file, self.structural_model)
-        purge_unused(IfcStore.file)
+        #purge_unused(IfcStore.file)
 
 
 class ObjectHomemaker(bpy.types.Operator):
@@ -132,6 +138,13 @@ class ObjectHomemaker(bpy.types.Operator):
                             delete_ifc_product(IfcStore.file, self.ifc_building)
                             delete_ifc_product(IfcStore.file, self.structural_model)
                             purge_unused(IfcStore.file)
+                            # FIXME no idea why this is necessary
+                            for ifc_definition_id in list(IfcStore.id_map.keys()):
+                                try:
+                                    IfcStore.file.by_id(ifc_definition_id)
+                                except:
+                                    del IfcStore.id_map[ifc_definition_id]
+
                             # Molior objects build IFC buildings
                             molior_object = Molior.from_cellcomplex(
                                 file=IfcStore.file,
