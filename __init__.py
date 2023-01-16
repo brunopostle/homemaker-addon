@@ -58,12 +58,6 @@ class ObjectTopologise(bpy.types.Operator):
                         if tool.Ifc.get_entity(myobject) == self.ifc_building:
                             # runs _execute()
                             IfcStore.execute_ifc_operator(self, context)
-                            # FIXME no idea why this is necessary
-                            for ifc_definition_id in list(IfcStore.id_map.keys()):
-                                try:
-                                    IfcStore.file.by_id(ifc_definition_id)
-                                except:
-                                    del IfcStore.id_map[ifc_definition_id]
                             delete_collection(collection)
 
             return {"FINISHED"}
@@ -98,6 +92,8 @@ class ObjectTopologise(bpy.types.Operator):
         delete_ifc_product(IfcStore.file, self.ifc_building)
         delete_ifc_product(IfcStore.file, self.structural_model)
         purge_unused(IfcStore.file)
+        # FIXME no idea why this is necessary
+        clean_id_map()
 
 
 class ObjectHomemaker(bpy.types.Operator):
@@ -117,10 +113,10 @@ class ObjectHomemaker(bpy.types.Operator):
 
         ifc_element = tool.Ifc.get_entity(bpy.context.active_object)
         if ifc_element:
-            cellcomplex = Molior.get_cellcomplex_from_ifc(ifc_element)
-            for new_mesh in meshes_from_cellcomplex(cellcomplex):
-                new_object = bpy.data.objects.new(new_mesh.name, new_mesh)
-                bpy.context.scene.collection.objects.link(new_object)
+            self.cellcomplex = Molior.get_cellcomplex_from_ifc(ifc_element)
+
+            if not self.cellcomplex:
+                return {"FINISHED"}
 
             # delete and replace the building containing this element
 
@@ -128,31 +124,14 @@ class ObjectHomemaker(bpy.types.Operator):
             self.structural_model = get_structural_analysis_model_by_name(
                 IfcStore.file, self.ifc_building, self.ifc_building.Name
             )
-            building_name = self.ifc_building.Name
+            self.building_name = self.ifc_building.Name
 
             for collection in bpy.data.collections:
                 if re.match("^IfcBuilding/", collection.name):
                     for myobject in collection.objects:
                         if tool.Ifc.get_entity(myobject) == self.ifc_building:
-                            # this should be inside _execute()
-                            delete_ifc_product(IfcStore.file, self.ifc_building)
-                            delete_ifc_product(IfcStore.file, self.structural_model)
-                            purge_unused(IfcStore.file)
-                            # FIXME no idea why this is necessary
-                            for ifc_definition_id in list(IfcStore.id_map.keys()):
-                                try:
-                                    IfcStore.file.by_id(ifc_definition_id)
-                                except:
-                                    del IfcStore.id_map[ifc_definition_id]
-
-                            # Molior objects build IFC buildings
-                            molior_object = Molior.from_cellcomplex(
-                                file=IfcStore.file,
-                                cellcomplex=cellcomplex,
-                                name=building_name,
-                                share_dir=self.share_dir,
-                            )
-                            molior_object.execute()
+                            self.action = "regenerate_ifc"
+                            IfcStore.execute_ifc_operator(self, context)
         else:
             # FIXME this resets widget origins which looks ugly
             bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
@@ -168,6 +147,7 @@ class ObjectHomemaker(bpy.types.Operator):
             self.widgets = widgets
 
             # runs _execute()
+            self.action = "generate_ifc"
             IfcStore.execute_ifc_operator(self, context)
 
             for blender_object in selected_objects:
@@ -195,16 +175,34 @@ class ObjectHomemaker(bpy.types.Operator):
         return {"FINISHED"}
 
     def _execute(self, context):
-        for blender_object in self.blender_objects:
+        if self.action == "regenerate_ifc":
+
+            # remove the old building
+            delete_ifc_product(IfcStore.file, self.ifc_building)
+            delete_ifc_product(IfcStore.file, self.structural_model)
+            purge_unused(IfcStore.file)
+            clean_id_map()
+
             # Molior objects build IFC buildings
-            molior_object = Molior.from_faces_and_widgets(
+            molior_object = Molior.from_cellcomplex(
                 file=IfcStore.file,
-                faces=topologic_faces_from_blender_object(blender_object),
-                widgets=self.widgets,
-                name=blender_object.name,
+                cellcomplex=self.cellcomplex,
+                name=self.building_name,
                 share_dir=self.share_dir,
             )
             molior_object.execute()
+        elif self.action == "generate_ifc":
+            for blender_object in self.blender_objects:
+
+                # Molior objects build IFC buildings
+                molior_object = Molior.from_faces_and_widgets(
+                    file=IfcStore.file,
+                    faces=topologic_faces_from_blender_object(blender_object),
+                    widgets=self.widgets,
+                    name=blender_object.name,
+                    share_dir=self.share_dir,
+                )
+                molior_object.execute()
 
 
 def topologic_faces_from_blender_object(blender_object):
@@ -333,6 +331,14 @@ def delete_collection(blender_collection):
     for collection in bpy.data.collections:
         if not collection.users:
             bpy.data.collections.remove(collection)
+
+
+def clean_id_map():
+    for ifc_definition_id in list(IfcStore.id_map.keys()):
+        try:
+            IfcStore.file.by_id(ifc_definition_id)
+        except:
+            del IfcStore.id_map[ifc_definition_id]
 
 
 def triangulate_nonplanar(blender_object):
