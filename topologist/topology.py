@@ -2,7 +2,7 @@
 
 from functools import lru_cache
 import topologic
-from topologic import StringAttribute, Vertex
+from topologic import StringAttribute, Vertex, FaceUtility
 from topologist.helpers import el
 
 
@@ -155,6 +155,20 @@ def VertexId(self, vertex):
         i += 1
 
 
+def ApplyDictionary(self, source_faces_ptr):
+    """Copy Dictionary items from a list of Faces onto this CellComplex"""
+    faces_ptr = []
+    self.Faces(None, faces_ptr)
+    for face in faces_ptr:
+        vertex = FaceUtility.InternalVertex(face, 0.001)
+        for source_face in source_faces_ptr:
+            if FaceUtility.IsInside(source_face, vertex, 0.001):
+                dictionary = source_face.GetDictionary()
+                for key in dictionary.Keys():
+                    face.Set(key, source_face.Get(key).split(".")[0])
+                break
+
+
 setattr(topologic.Topology, "Cells_Cached", Cells_Cached)
 setattr(topologic.Topology, "Faces_Cached", Faces_Cached)
 setattr(topologic.Topology, "FacesVertical", FacesVertical)
@@ -169,3 +183,4 @@ setattr(topologic.Topology, "Get", Get)
 setattr(topologic.Topology, "DumpDictionary", DumpDictionary)
 setattr(topologic.Topology, "GraphVertex", GraphVertex)
 setattr(topologic.Topology, "VertexId", VertexId)
+setattr(topologic.Topology, "ApplyDictionary", ApplyDictionary)

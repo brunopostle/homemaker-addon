@@ -1,7 +1,7 @@
 """Overloads domain-specific methods onto topologic.CellComplex"""
 
 import topologic
-from topologic import Graph, FaceUtility, CellUtility
+from topologic import Graph, CellUtility
 from topologist.helpers import el
 import topologist.traces
 import topologist.hulls
@@ -362,23 +362,8 @@ def GetHulls(self):
     return myhulls.hulls
 
 
-def ApplyDictionary(self, source_faces_ptr):
-    """Copy Dictionary items from a list of Faces onto this CellComplex"""
-    faces_ptr = []
-    self.Faces(None, faces_ptr)
-    for face in faces_ptr:
-        vertex = FaceUtility.InternalVertex(face, 0.001)
-        for source_face in source_faces_ptr:
-            if FaceUtility.IsInside(source_face, vertex, 0.001):
-                dictionary = source_face.GetDictionary()
-                for key in dictionary.Keys():
-                    face.Set(key, source_face.Get(key).split(".")[0])
-                break
-
-
 setattr(topologic.CellComplex, "IndexTopology", IndexTopology)
 setattr(topologic.CellComplex, "AllocateCells", AllocateCells)
 setattr(topologic.CellComplex, "Adjacency", Adjacency)
 setattr(topologic.CellComplex, "GetTraces", GetTraces)
 setattr(topologic.CellComplex, "GetHulls", GetHulls)
-setattr(topologic.CellComplex, "ApplyDictionary", ApplyDictionary)
