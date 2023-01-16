@@ -169,6 +169,26 @@ def ApplyDictionary(self, source_faces_ptr):
                 break
 
 
+def IndexTopology(self):
+    """Index all cells and faces starting at zero"""
+    # TODO should retain existing index numbers
+    cells_ptr = []
+    self.Cells(None, cells_ptr)
+    index = 0
+    for cell in cells_ptr:
+        cell.Set("index", str(index))
+        cell.Set("class", "Cell")
+        index += 1
+
+    faces_ptr = []
+    self.Faces(None, faces_ptr)
+    index = 0
+    for face in faces_ptr:
+        face.Set("index", str(index))
+        face.Set("class", "Face")
+        index += 1
+
+
 setattr(topologic.Topology, "Cells_Cached", Cells_Cached)
 setattr(topologic.Topology, "Faces_Cached", Faces_Cached)
 setattr(topologic.Topology, "FacesVertical", FacesVertical)
@@ -184,3 +204,4 @@ setattr(topologic.Topology, "DumpDictionary", DumpDictionary)
 setattr(topologic.Topology, "GraphVertex", GraphVertex)
 setattr(topologic.Topology, "VertexId", VertexId)
 setattr(topologic.Topology, "ApplyDictionary", ApplyDictionary)
+setattr(topologic.Topology, "IndexTopology", IndexTopology)

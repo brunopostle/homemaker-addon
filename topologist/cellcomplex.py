@@ -8,26 +8,6 @@ import topologist.hulls
 import topologist.normals
 
 
-def IndexTopology(self):
-    """Index all cells and faces starting at zero"""
-    # TODO should retain existing index numbers
-    cells_ptr = []
-    self.Cells(None, cells_ptr)
-    index = 0
-    for cell in cells_ptr:
-        cell.Set("index", str(index))
-        cell.Set("class", "Cell")
-        index += 1
-
-    faces_ptr = []
-    self.Faces(None, faces_ptr)
-    index = 0
-    for face in faces_ptr:
-        face.Set("index", str(index))
-        face.Set("class", "Face")
-        index += 1
-
-
 def AllocateCells(self, widgets):
     """Set Cell types using a list of widgets, or default to 'living' ('void' when no Perimeter).
     A widget is any topology (typically a Vertex) with 'usage' tagged"""
@@ -362,7 +342,6 @@ def GetHulls(self):
     return myhulls.hulls
 
 
-setattr(topologic.CellComplex, "IndexTopology", IndexTopology)
 setattr(topologic.CellComplex, "AllocateCells", AllocateCells)
 setattr(topologic.CellComplex, "Adjacency", Adjacency)
 setattr(topologic.CellComplex, "GetTraces", GetTraces)
