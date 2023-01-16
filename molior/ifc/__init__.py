@@ -701,10 +701,6 @@ def purge_unused(self):
             if not self.get_inverse(entity):
                 run("root.remove_product", self, product=entity)
                 todo = True
-        for entity in self.by_type("IfcPresentationStyle"):
-            if not self.get_inverse(entity):
-                self.remove(entity)
-                todo = True
 
         # these are clearing up invalid results of root.remove_product
         for rel in self.by_type("IfcRelConnectsStructuralMember"):

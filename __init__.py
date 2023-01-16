@@ -97,7 +97,7 @@ class ObjectTopologise(bpy.types.Operator):
     def _execute(self, context):
         delete_ifc_product(IfcStore.file, self.ifc_building)
         delete_ifc_product(IfcStore.file, self.structural_model)
-        #purge_unused(IfcStore.file)
+        purge_unused(IfcStore.file)
 
 
 class ObjectHomemaker(bpy.types.Operator):
