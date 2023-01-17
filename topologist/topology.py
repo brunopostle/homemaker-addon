@@ -4,6 +4,9 @@ from functools import lru_cache
 import topologic
 from topologic import StringAttribute, Vertex, FaceUtility
 from topologist.helpers import el
+import topologist.traces
+import topologist.hulls
+import topologist.normals
 
 
 @lru_cache(maxsize=256)
@@ -170,16 +173,8 @@ def ApplyDictionary(self, source_faces_ptr):
 
 
 def IndexTopology(self):
-    """Index all cells and faces starting at zero"""
+    """Index all faces starting at zero"""
     # TODO should retain existing index numbers
-    cells_ptr = []
-    self.Cells(None, cells_ptr)
-    index = 0
-    for cell in cells_ptr:
-        cell.Set("index", str(index))
-        cell.Set("class", "Cell")
-        index += 1
-
     faces_ptr = []
     self.Faces(None, faces_ptr)
     index = 0
@@ -187,6 +182,158 @@ def IndexTopology(self):
         face.Set("index", str(index))
         face.Set("class", "Face")
         index += 1
+
+
+def GetTraces(self):
+    """Returns 'traces', 'normals' and 'elevations' dictionaries.
+    Traces are 2D ugraph paths that define walls, extrusions and rooms.
+    Normals indicate horizontal mitre direction for corners.
+    Elevations indicate a 'level' id for each height in the model."""
+    mytraces = topologist.traces.Traces()
+    mynormals = topologist.normals.Normals()
+    elevations = {}
+
+    faces_ptr = []
+    self.Faces(None, faces_ptr)
+    for face in faces_ptr:
+        stylename = face.Get("stylename")
+        if not stylename:
+            stylename = "default"
+        if face.IsVertical():
+            elevation = face.Elevation()
+            height = face.Height()
+
+            axis = face.AxisOuter()
+            # wall face may be triangular and not have a bottom edge
+            if axis:
+                mytraces.add_axis(
+                    "external",
+                    elevation,
+                    height,
+                    stylename,
+                    start_vertex=axis[0],
+                    end_vertex=axis[1],
+                    face=face,
+                )
+                # build normal map
+                normal = face.Normal()
+                edges_ptr = []
+                face.EdgesTop(edges_ptr)
+                for edge in edges_ptr:
+                    axis = [edge.EndVertex(), edge.StartVertex()]
+                    if face.Get("badnormal"):
+                        axis.reverse()
+                    mynormals.add_vector("top", axis[0], normal)
+                    mynormals.add_vector("top", axis[1], normal)
+                edges_ptr = []
+                face.EdgesBottom(edges_ptr)
+                for edge in edges_ptr:
+                    axis = [edge.StartVertex(), edge.EndVertex()]
+                    if face.Get("badnormal"):
+                        axis.reverse()
+                    mynormals.add_vector("bottom", axis[0], normal)
+                    mynormals.add_vector("bottom", axis[1], normal)
+
+                elevations[elevation] = 0
+
+                normal = face.Normal()
+                for condition in face.TopLevelConditions(self):
+                    edge = condition[0]
+                    axis = [edge.EndVertex(), edge.StartVertex()]
+                    label = condition[1]
+                    mytraces.add_axis(
+                        label,
+                        el(elevation + height),
+                        0.0,
+                        stylename,
+                        start_vertex=axis[0],
+                        end_vertex=axis[1],
+                        face=face,
+                    )
+                    elevations[el(elevation + height)] = 0
+
+                for condition in face.BottomLevelConditions(self):
+                    edge = condition[0]
+                    axis = [edge.StartVertex(), edge.EndVertex()]
+                    label = condition[1]
+                    mytraces.add_axis(
+                        label,
+                        elevation,
+                        0.0,
+                        stylename,
+                        start_vertex=axis[0],
+                        end_vertex=axis[1],
+                        face=face,
+                    )
+
+    mytraces.process()
+    mynormals.process()
+    level = 0
+    keys = list(elevations.keys())
+    keys.sort()
+    for elevation in keys:
+        elevations[elevation] = level
+        level += 1
+    return (mytraces.traces, mynormals.normals, elevations)
+
+
+def GetHulls(self):
+    """Returns a 'hulls' dictionary. Hulls are 3D ushell surfaces that define roofs, soffits etc.."""
+    myhulls = topologist.hulls.Hulls()
+
+    faces_ptr = []
+    self.Faces(None, faces_ptr)
+    for face in faces_ptr:
+        stylename = face.Get("stylename")
+        if not stylename:
+            stylename = "default"
+
+        if face.IsVertical():
+            if face.AxisOuter():
+                # these hulls are duplicates of traces with the same names
+                myhulls.add_face(
+                    "external",
+                    stylename,
+                    face=face,
+                )
+            else:
+                # vertical face has no horizontal bottom edge, add to hull for wall panels
+                myhulls.add_face(
+                    "external-panel",
+                    stylename,
+                    face=face,
+                )
+        elif face.IsHorizontal():
+            # collect flat roof areas (not outside spaces)
+            if face.IsUpward():
+                myhulls.add_face(
+                    "flat",
+                    stylename,
+                    face=face,
+                )
+            else:
+                myhulls.add_face(
+                    "soffit",
+                    stylename,
+                    face=face,
+                )
+        else:
+            # collect roof, soffit, and vaulted ceiling faces as hulls
+            if face.IsUpward():
+                myhulls.add_face(
+                    "roof",
+                    stylename,
+                    face=face,
+                )
+            else:
+                myhulls.add_face(
+                    "soffit",
+                    stylename,
+                    face=face,
+                )
+
+    myhulls.process()
+    return myhulls.hulls
 
 
 setattr(topologic.Topology, "Cells_Cached", Cells_Cached)
@@ -205,3 +352,5 @@ setattr(topologic.Topology, "GraphVertex", GraphVertex)
 setattr(topologic.Topology, "VertexId", VertexId)
 setattr(topologic.Topology, "ApplyDictionary", ApplyDictionary)
 setattr(topologic.Topology, "IndexTopology", IndexTopology)
+setattr(topologic.Topology, "GetTraces", GetTraces)
+setattr(topologic.Topology, "GetHulls", GetHulls)

@@ -17,7 +17,7 @@ IfcOpenShell.
 
 import re
 import ifcopenshell.util
-from topologic import CellComplex, CellUtility, Vertex, Face
+from topologic import CellComplex, CellUtility, Vertex, Face, Topology
 from molior.extrusion import Extrusion
 from molior.floor import Floor
 from molior.shell import Shell
@@ -61,14 +61,28 @@ class Molior:
         """Widgets are Topologic Vertices with a 'usage' Dictionary attribute."""
         # Generate a Topologic CellComplex
         cellcomplex = CellComplex.ByFaces(faces, 0.0001)
-        # Copy styles from Faces to the CellComplex
-        cellcomplex.ApplyDictionary(faces)
-        # Assign Cell usages from widgets
-        cellcomplex.AllocateCells(widgets)
 
-        return cls.from_cellcomplex(
-            file=file, cellcomplex=cellcomplex, name=name, share_dir=share_dir
-        )
+        result = []
+        cellcomplex.Faces(None, result)
+        if result:
+            # Copy styles from Faces to the CellComplex
+            cellcomplex.ApplyDictionary(faces)
+            # Assign Cell usages from widgets
+            cellcomplex.AllocateCells(widgets)
+            return cls.from_cellcomplex(
+                file=file, cellcomplex=cellcomplex, name=name, share_dir=share_dir
+            )
+
+        topology = Topology.ByFaces(faces, 0.0001)
+
+        result = []
+        topology.Faces(None, result)
+        if result:
+            # Copy styles from Faces to the Topology
+            topology.ApplyDictionary(faces)
+            return cls.from_topology(
+                file=file, topology=topology, name=name, share_dir=share_dir
+            )
 
     @classmethod
     def from_cellcomplex(
@@ -99,6 +113,27 @@ class Molior:
             hulls=hulls,
             normals=normals,
             cellcomplex=cellcomplex,
+            share_dir=share_dir,
+        )
+
+    @classmethod
+    def from_topology(
+        cls, file=None, topology=None, name="My Building", share_dir="share"
+    ):
+        """Create a Molior object from a tagged Topology"""
+        """Faces in the CellComplex can have a 'style' Dictionary attribute."""
+        # Give every Cell and Face an index number
+        topology.IndexTopology()
+        traces, normals, elevations = topology.GetTraces()
+        hulls = topology.GetHulls()
+
+        return cls(
+            file=file,
+            traces=traces,
+            elevations=elevations,
+            name=name,
+            hulls=hulls,
+            normals=normals,
             share_dir=share_dir,
         )
 
