@@ -2,6 +2,7 @@
 exterior:
   class: Wall
   ifc: IfcWall
+  offset: -0.25
   condition: external
   party_wall: true
 column:
@@ -11,6 +12,7 @@ external beam:
 openwall:
   class: Wall
   ifc: IfcWall
+  offset: -0.25
   condition: open
   party_wall: true
 external-open:

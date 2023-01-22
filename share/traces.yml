@@ -3,6 +3,7 @@ exterior:
   class: Wall
   ifc: IfcWall
   condition: external
+  offset: -0.25
   do_populate_exterior_openings: 1
 ground beam:
   class: Extrusion
@@ -20,6 +21,7 @@ interior:
   class: Wall
   ifc: IfcWall
   condition: internal
+  offset: -0.08
   ceiling: 0.2
   floor: 0.02
   do_populate_interior_openings: 1
@@ -156,35 +158,44 @@ bedroom-floor:
   class: Floor
   condition: bedroom
   ifc: IfcCovering
+  offset: 0.0
 circulation-floor:
   class: Floor
   condition: circulation
   ifc: IfcCovering
+  offset: 0.0
 kitchen-floor:
   class: Floor
   condition: kitchen
   ifc: IfcCovering
+  offset: 0.0
 living-floor:
   class: Floor
   condition: living
   ifc: IfcCovering
+  offset: 0.0
 retail-floor:
   class: Floor
   condition: retail
   ifc: IfcCovering
+  offset: 0.0
 stair-floor:
   class: Floor
   condition: stair
   ifc: IfcCovering
+  offset: 0.0
 toilet-floor:
   class: Floor
   condition: toilet
   ifc: IfcCovering
+  offset: 0.0
 outside-floor:
   class: Floor
   condition: outside
   ifc: IfcCovering
+  offset: 0.0
 sahn-floor:
   class: Floor
   condition: sahn
   ifc: IfcCovering
+  offset: 0.0

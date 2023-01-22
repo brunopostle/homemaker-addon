@@ -305,19 +305,16 @@ def get_parent_building(entity):
     return get_parent_building(parent)
 
 
-def get_thickness_and_offset(self, product):
-    """Gets total thickness and offset for extruded products and types"""
+def get_thickness(self, product):
+    """Gets total thickness for extruded products and types"""
     thickness = 0.0
-    offset = 0.0
     for association in product.HasAssociations:
         if association.is_a("IfcRelAssociatesMaterial"):
             relating_material = association.RelatingMaterial
-            if relating_material.is_a("IfcMaterialLayerSetUsage"):
-                offset = relating_material.OffsetFromReferenceLine
             if relating_material.is_a("IfcMaterialLayerSet"):
                 for material_layer in relating_material.MaterialLayers:
                     thickness += material_layer.LayerThickness
-    return thickness, offset
+    return thickness
 
 
 def create_closed_profile_from_points(self, points):

@@ -10,7 +10,7 @@ from molior.ifc import (
     create_face_surface,
     assign_storey_byindex,
     get_type_object,
-    get_thickness_and_offset,
+    get_thickness,
     get_material_by_name,
     get_context_by_name,
 )
@@ -221,8 +221,8 @@ class Shell(BaseClass):
                 relating_type=product_type,
             )
 
-            thickness, offset = get_thickness_and_offset(self.file, product_type)
-            inner = thickness + offset
+            thickness = get_thickness(self.file, product_type)
+            inner = thickness + self.offset
 
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
 

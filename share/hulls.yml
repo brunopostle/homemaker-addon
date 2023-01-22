@@ -3,59 +3,74 @@ pitched-roof:
   class: Shell
   ifc: IfcRoof
   condition: roof
+  offset: -0.12
 ceiling-soffit:
   class: Shell
   ifc: IfcCovering
   condition: soffit
+  offset: -0.25
 wall-panel:
   class: Shell
   ifc: IfcWall
   condition: external-panel
+  offset: -0.25
 partition-panel:
   class: Shell
   ifc: IfcWall
   condition: internal-panel
+  offset: -0.08
 flat-roof:
   class: Shell
   ifc: IfcRoof
   condition: flat
+  offset: -0.02
 ceiling-vault:
   class: Shell
   ifc: IfcCovering
   condition: vault
+  offset: -0.08
 bedroom-floor:
   class: Shell
   ifc: IfcSlab
   condition: bedroom
+  offset: 0.0
 circulation-floor:
   class: Shell
   ifc: IfcSlab
   condition: circulation
+  offset: 0.0
 kitchen-floor:
   class: Shell
   ifc: IfcSlab
   condition: kitchen
+  offset: 0.0
 living-floor:
   class: Shell
   ifc: IfcSlab
   condition: living
+  offset: 0.0
 retail-floor:
   class: Shell
   ifc: IfcSlab
   condition: retail
+  offset: 0.0
 stair-floor:
   class: Shell
   ifc: IfcSlab
   condition: stair
+  offset: 0.0
 toilet-floor:
   class: Shell
   ifc: IfcSlab
   condition: toilet
+  offset: 0.0
 outside-floor:
   class: Shell
   ifc: IfcSlab
   condition: outside
+  offset: 0.0
 sahn-floor:
   class: Shell
   ifc: IfcSlab
   condition: sahn
+  offset: 0.0

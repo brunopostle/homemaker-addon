@@ -9,7 +9,7 @@ from molior.ifc import (
     add_cell_topology_epsets,
     create_closed_profile_from_points,
     assign_storey_byindex,
-    get_thickness_and_offset,
+    get_thickness,
     get_type_object,
     get_context_by_name,
 )
@@ -105,7 +105,7 @@ class Floor(TraceClass):
             relating_type=type_product,
         )
 
-        thickness, offset = get_thickness_and_offset(self.file, type_product)
+        thickness = get_thickness(self.file, type_product)
 
         shape_representation = run(
             "geometry.add_profile_representation",
@@ -127,5 +127,7 @@ class Floor(TraceClass):
             "geometry.edit_object_placement",
             self.file,
             product=element,
-            matrix=matrix_align([0.0, 0.0, self.elevation + offset], [1.0, 0.0, 0.0]),
+            matrix=matrix_align(
+                [0.0, 0.0, self.elevation + self.offset], [1.0, 0.0, 0.0]
+            ),
         )

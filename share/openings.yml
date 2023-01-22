@@ -87,7 +87,6 @@ living outside window:
   name: sash window
   type: window
   cill: 0.75
-  material: Wood
 circulation outside window:
   name: sash window
   type: window

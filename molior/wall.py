@@ -23,7 +23,7 @@ from molior.ifc import (
     get_type_object,
     get_material_by_name,
     get_context_by_name,
-    get_thickness_and_offset,
+    get_thickness,
     create_curve_bounded_plane,
 )
 
@@ -173,16 +173,15 @@ class Wall(TraceClass):
                 relating_type=product_type,
             )
 
-            thickness, offset = get_thickness_and_offset(self.file, product_type)
-            self.outer = -offset
-            self.inner = thickness - self.outer
+            thickness = get_thickness(self.file, product_type)
+            self.inner = thickness + self.offset
 
             # copy Usage from Type to Element
             for inverse in self.file.get_inverse(
                 ifcopenshell.util.element.get_material(product_type)
             ):
                 if inverse.is_a("IfcMaterialLayerSetUsage"):
-                    inverse.OffsetFromReferenceLine = -self.outer
+                    inverse.OffsetFromReferenceLine = self.offset
 
             # mapping from normalised X-axis to this rotated axis
             matrix_forward = matrix_align(
@@ -481,7 +480,7 @@ class Wall(TraceClass):
                 name = opening["file"]
 
                 l, r = self.opening_coor(id_segment, id_opening)
-                opening_offset = scale_2d(self.outer, self.normal_segment(id_segment))
+                opening_offset = scale_2d(-self.offset, self.normal_segment(id_segment))
                 left_2d = add_2d(l[0:2], opening_offset)
                 right_2d = add_2d(r[0:2], opening_offset)
 
@@ -968,7 +967,7 @@ class Wall(TraceClass):
                 angle_left += 360.0
             border_left = self.inner
             if angle_left > 135.0 and angle_left < 315.0:
-                border_left = self.outer
+                border_left = -self.offset
 
         # last segment in an open chain
         if not self.closed and id_segment == len(self.path) - 2:
@@ -984,7 +983,7 @@ class Wall(TraceClass):
                 angle_right += 360.0
             border_right = self.inner
             if angle_right > 135.0 and angle_right < 315.0:
-                border_right = self.outer
+                border_right = -self.offset
 
         return (border_left, border_right)
 

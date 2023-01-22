@@ -2,64 +2,80 @@
 exterior:
   class: Shell
   ifc: IfcWall
+  offset: -0.15
   condition: external
 interior:
   class: Shell
   ifc: IfcWall
+  offset: -0.15
   condition: internal
 pitched-roof:
   class: Shell
   ifc: IfcRoof
+  offset: -0.15
   condition: roof
 inclined-soffit:
   class: Shell
   ifc: IfcBuildingElementProxy
+  offset: -0.15
   condition: soffit
 wall-panel:
   class: Shell
   ifc: IfcWall
+  offset: -0.15
   condition: external-panel
 partition-panel:
   class: Shell
   ifc: IfcWall
+  offset: -0.15
   condition: internal-panel
 flat-roof:
   class: Shell
   ifc: IfcRoof
+  offset: -0.15
   condition: flat
 bedroom-floor:
   class: Shell
   ifc: IfcSlab
+  offset: -0.15
   condition: bedroom
 circulation-floor:
   class: Shell
   ifc: IfcSlab
+  offset: -0.15
   condition: circulation
 kitchen-floor:
   class: Shell
   ifc: IfcSlab
+  offset: -0.15
   condition: kitchen
 living-floor:
   class: Shell
   ifc: IfcSlab
+  offset: -0.15
   condition: living
 outside-floor:
   class: Shell
   ifc: IfcSlab
+  offset: -0.15
   condition: outside
 retail-floor:
   class: Shell
   ifc: IfcSlab
+  offset: -0.15
   condition: retail
 sahn-floor:
   class: Shell
   ifc: IfcSlab
+  offset: -0.15
   condition: sahn
 stair-floor:
   class: Shell
   ifc: IfcSlab
+  offset: -0.15
   condition: stair
 toilet-floor:
   class: Shell
   ifc: IfcSlab
+  offset: -0.15
   condition: toilet

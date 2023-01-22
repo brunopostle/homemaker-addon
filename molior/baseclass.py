@@ -30,7 +30,7 @@ class BaseClass:
         self.inner = 0.08
         self.level = 0
         self.name = "base-class"
-        self.outer = 0.25
+        self.offset = -0.25
         self.parent_aggregate = None
         self.plot = "my plot"
         self.psets = {}
@@ -139,11 +139,11 @@ class TraceClass(BaseClass):
 
     def corner_in(self, index):
         """offset inside corner"""
-        return self.corner_offset(index, 0 - self.inner)
+        return self.corner_offset(index, -self.inner)
 
     def corner_out(self, index):
         """offset outside corner"""
-        return self.corner_offset(index, self.outer)
+        return self.corner_offset(index, -self.offset)
 
     def extension_start(self):
         """extend the start of an open path"""

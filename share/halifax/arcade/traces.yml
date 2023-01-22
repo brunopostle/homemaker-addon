@@ -3,6 +3,7 @@ exterior:
   class: Wall
   ifc: IfcWall
   condition: external
+  offset: -0.305
   do_populate_exterior_openings: 1
 crown:
   class: Extrusion

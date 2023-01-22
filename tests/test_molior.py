@@ -19,14 +19,14 @@ class Tests(unittest.TestCase):
         wall.height = 3.0
         self.assertEqual(wall.height, 3.0)
 
-        self.assertEqual(wall.outer, 0.25)
-        wall.outer = 0.3
-        self.assertEqual(wall.outer, 0.3)
+        self.assertEqual(wall.offset, -0.25)
+        wall.offset = -0.3
+        self.assertEqual(wall.offset, -0.3)
 
     def test_wall2(self):
-        wall2 = Wall({"height": 2.7, "outer": 0.4})
+        wall2 = Wall({"height": 2.7, "offset": -0.4})
         self.assertEqual(wall2.height, 2.7)
-        self.assertEqual(wall2.outer, 0.4)
+        self.assertEqual(wall2.offset, -0.4)
 
     def test_wall3(self):
         wall3 = Wall(

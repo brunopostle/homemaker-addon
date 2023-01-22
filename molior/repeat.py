@@ -29,7 +29,7 @@ class Repeat(TraceClass):
         self.inset = 0.0
         self.xshift = 0.0
         self.yshift = 0.0
-        self.outer = 0.08
+        self.offset = -0.08
         self.structural_material = "Concrete"
         self.structural_profile = [
             "IfcRectangleProfileDef",
@@ -63,7 +63,7 @@ class Repeat(TraceClass):
             asset_name = "error"
 
         segments = self.segments()
-        self.outer += self.xshift
+        self.offset -= self.xshift
 
         # aggregate all segments in the path
 
