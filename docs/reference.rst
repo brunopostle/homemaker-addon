@@ -221,12 +221,12 @@ defined by a parent style is unwanted, this can be overridden by creating a
 trace definition with the same *Name*, but with an invalid ``condition`` (such as
 ``noop``).
 
-assets.yml
-~~~~~~~~~~
+families.yml
+~~~~~~~~~~~~
 
 3D assets are contained in ``library.ifc``, where each Type (a single size of
 window, door, column etc...) has Representations, Materials, Psets etc..  These
-assets are referenced by *Class* and *Name* in the ``assets.yml`` file.  This
+assets are referenced by *Class* and *Name* in the ``families.yml`` file.  This
 additional layer of reference allows a window, for example, to be defined by
 one or more sizes which are dynamically fitted to the available space.
 
@@ -234,6 +234,6 @@ openings.yml
 ~~~~~~~~~~~~
 
 Each item in ``openings.yml`` represents a series of hard-coded names that select
-window or door assets from the ``assets.yml`` file.
+window or door families from the ``families.yml`` file.
 
 Note, this file will change or be removed in the future.
