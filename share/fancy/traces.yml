@@ -2,7 +2,7 @@
 brackets:
   class: Repeat
   ifc: IfcRoof
-  asset: bracket
+  family: bracket
   condition: top-backward-up
   outer: 0.25
   xshift: 0.0
@@ -14,7 +14,7 @@ brackets:
 low-brackets:
   class: Repeat
   ifc: IfcRoof
-  asset: bracket
+  family: bracket
   condition: na
   outer: -0.05
   xshift: 0.0
@@ -26,7 +26,7 @@ low-brackets:
 monkey:
   class: Repeat
   ifc: IfcRoof
-  asset: monkey
+  family: monkey
   condition: na
   outer: 0.05
   xshift: 0.0

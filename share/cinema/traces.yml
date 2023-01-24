@@ -8,7 +8,7 @@ Cinema row:
 Cinema seats:
   class: Repeat
   ifc: IfcFurniture
-  asset: 'Cinema seat'
+  family: 'Cinema seat'
   condition: noop
   outer: 0.0
   extension: 0.0

@@ -2,7 +2,7 @@
 brackets:
   class: Repeat
   ifc: IfcRoof
-  asset: bracket
+  family: bracket
   condition: top-backward-up
   outer: 0.25
   xshift: 0.0

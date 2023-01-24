@@ -53,12 +53,12 @@ class Repeat(TraceClass):
         )
         style = molior.Molior.style
         myconfig = style.get(self.style)
-        if self.asset in self.style_assets:
-            for index in range(len(self.style_assets[self.asset])):
-                height = self.style_assets[self.asset][index]["height"]
+        if self.family in self.style_families:
+            for index in range(len(self.style_families[self.family])):
+                height = self.style_families[self.family][index]["height"]
                 if height >= self.height - self.ceiling:
                     break
-            asset_name = self.style_assets[self.asset][index]["file"]
+            asset_name = self.style_families[self.family][index]["file"]
         else:
             asset_name = "error"
 
@@ -172,7 +172,7 @@ class Repeat(TraceClass):
                                     "building": self.building,
                                     "structural_analysis_model": self.structural_analysis_model,
                                     "level": self.level,
-                                    "style_assets": self.style_assets,
+                                    "style_families": self.style_families,
                                     "style_object": self.style_object,
                                 }
                                 vals.update(config)

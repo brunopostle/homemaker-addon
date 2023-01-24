@@ -9,7 +9,7 @@ exterior:
 colonnade:
   class: Repeat
   ifc: IfcColumn
-  asset: column
+  family: column
   condition: open
   outer: 0.0
   inset: 0.0
@@ -43,7 +43,7 @@ handrail:
 balustrade_large:
   class: Repeat
   ifc: IfcRailing
-  asset: balustrade_large
+  family: balustrade_large
   condition: none
   outer: 0.0
   inset: 0.4

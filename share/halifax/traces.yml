@@ -1,7 +1,7 @@
 balustrade_small:
   class: Repeat
   ifc: IfcRailing
-  asset: balustrade_small
+  family: balustrade_small
   condition: none
   xshift: 0.0
   yshift: 0.12

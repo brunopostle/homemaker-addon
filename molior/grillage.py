@@ -204,7 +204,7 @@ class Grillage(BaseClass):
                                 "parent_aggregate": face_aggregate,
                                 "style": self.style,
                                 "hull": myhull[0],
-                                "style_assets": self.style_assets,
+                                "style_families": self.style_families,
                                 "style_object": self.style_object,
                             }
                             vals.update(config)
@@ -257,7 +257,7 @@ class Grillage(BaseClass):
                                 "building": self.building,
                                 "structural_analysis_model": self.structural_analysis_model,
                                 "level": self.level,
-                                "style_assets": self.style_assets,
+                                "style_families": self.style_families,
                                 "style_object": self.style_object,
                             }
                             vals.update(config)

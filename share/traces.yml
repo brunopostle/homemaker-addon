@@ -80,7 +80,7 @@ external beam:
 column:
   class: Repeat
   ifc: IfcColumn
-  asset: column
+  family: column
   ceiling: 0.3
   condition: open
   outer: 0.2

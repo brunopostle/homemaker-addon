@@ -869,7 +869,7 @@ class Molior:
                     "style": stylename,
                     "level": level,
                     "style_openings": myconfig["openings"],
-                    "style_assets": myconfig["assets"],
+                    "style_families": myconfig["families"],
                     "style_object": Molior.style,
                 }
                 vals.update(config)
@@ -906,7 +906,7 @@ class Molior:
                     "normal_set": "bottom",
                     "style": stylename,
                     "hull": hull,
-                    "style_assets": myconfig["assets"],
+                    "style_families": myconfig["families"],
                     "style_object": Molior.style,
                 }
                 vals.update(config)
