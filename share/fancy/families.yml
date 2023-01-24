@@ -1,9 +1,9 @@
 ---
 bracket:
   -
-    file: bracket
+    name: bracket
     height: 0.0
 monkey:
   -
-    file: monkey
+    name: monkey
     height: 0.0

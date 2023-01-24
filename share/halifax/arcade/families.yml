@@ -1,13 +1,13 @@
 ---
 arch:
   -
-    file: arch_194x300
+    name: arch_194x300
     height: 3.0
     width: 1.94
     side: 0.61
     end: 0.3
   -
-    file: arch_61x300
+    name: arch_61x300
     height: 3.0
     width: 0.61
     side: 0.61
