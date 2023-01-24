@@ -9,7 +9,7 @@ ground beam:
   class: Extrusion
   ifc: IfcFooting
   condition: bottom-backward-level
-  outer: 0.0
+  offset: 0.0
   extension: 0.25
   structural_material: Concrete
   structural_profile:
@@ -33,49 +33,49 @@ internal ground beam:
   class: Extrusion
   ifc: IfcFooting
   condition: internal-footing
-  outer: 0.0
+  offset: 0.0
   extension: 0.0
 eaves_corona:
   class: Extrusion
   ifc: IfcCovering
   condition: top-backward-up
-  outer: 0.25
+  offset: -0.25
   extension: 0.25
 eaves_gutter:
   class: Extrusion
   ifc: IfcPipeSegment
   condition: top-backward-up
-  outer: 0.25
+  offset: -0.25
   extension: 0.25
 eaves_tiles:
   class: Extrusion
   ifc: IfcCovering
   condition: top-backward-up
-  outer: 0.25
+  offset: -0.25
   extension: 0.25
 parapet:
   class: Extrusion
   ifc: IfcWall
   condition: top-backward-level
-  outer: 0.0
+  offset: 0.0
   extension: 0.25
 coping:
   class: Extrusion
   ifc: IfcCovering
   condition: top-backward-level
-  outer: 0.0
+  offset: 0.0
   extension: 0.25
 crown:
   class: Extrusion
   ifc: IfcCovering
   condition: top-backward-level
-  outer: 0.0
+  offset: 0.0
   extension: 0.25
 external beam:
   class: Extrusion
   ifc: IfcBeam
   condition: open
-  outer: 0.0
+  offset: 0.0
   extension: 0.0
 column:
   class: Repeat
@@ -83,7 +83,7 @@ column:
   family: column
   ceiling: 0.3
   condition: open
-  outer: 0.2
+  offset: -0.2
   inset: 0.0
   spacing: 2.0
 bedroom-space:

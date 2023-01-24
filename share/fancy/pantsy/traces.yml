@@ -4,7 +4,7 @@ brackets:
   ifc: IfcRoof
   family: bracket
   condition: top-backward-up
-  outer: 0.25
+  offset: -0.25
   xshift: 0.0
   yshift: -0.285
   inset: 0.1

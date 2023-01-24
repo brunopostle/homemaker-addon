@@ -11,5 +11,5 @@ crown:
   condition: external
   xshift: 0.305
   yshift: -0.24
-  outer: 0.0
+  offset: 0.0
   extension: 0.305

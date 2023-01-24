@@ -4,7 +4,7 @@ brackets:
   ifc: IfcRoof
   family: bracket
   condition: top-backward-up
-  outer: 0.25
+  offset: -0.25
   xshift: 0.0
   yshift: -0.285
   inset: 0.1
@@ -16,7 +16,7 @@ low-brackets:
   ifc: IfcRoof
   family: bracket
   condition: na
-  outer: -0.05
+  offset: 0.05
   xshift: 0.0
   yshift: -0.585
   inset: 0.1
@@ -28,7 +28,7 @@ monkey:
   ifc: IfcRoof
   family: monkey
   condition: na
-  outer: 0.05
+  offset: -0.05
   xshift: 0.0
   yshift: -0.535
   inset: 0.1

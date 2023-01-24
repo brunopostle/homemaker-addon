@@ -5,7 +5,7 @@ balustrade_small:
   condition: none
   xshift: 0.0
   yshift: 0.12
-  outer: 0.0
+  offset: 0.0
   inset: 0.125
   spacing: 0.12
 bar:

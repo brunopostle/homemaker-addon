@@ -3,17 +3,17 @@ joist:
   class: Extrusion
   ifc: IfcMember
   condition: noop
-  outer: 0.0
+  offset: 0.0
   extension: 0.05
 purlin:
   class: Extrusion
   ifc: IfcMember
   condition: noop
-  outer: 0.0
+  offset: 0.0
   extension: 0.0
 batten:
   class: Extrusion
   ifc: IfcBuildingElementProxy
   condition: noop
-  outer: 0.0
+  offset: 0.0
   extension: 0.0
