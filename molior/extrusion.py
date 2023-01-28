@@ -28,9 +28,9 @@ class Extrusion(TraceClass):
         super().__init__(args)
         self.ifc = "IfcBuildingElementProxy"
         self.extension = 0.0
-        self.scale = 1.0
         self.xshift = 0.0
         self.yshift = 0.0
+        self.ref_direction = None
         self.structural_material = "Concrete"
         self.structural_profile = [
             "IfcRectangleProfileDef",
@@ -208,6 +208,11 @@ class Extrusion(TraceClass):
                 depth=length + start_extension + end_extension,
                 clippings=clippings,
             )
+
+            # rotate extrusion profile on axis
+
+            if self.ref_direction:
+                shape_representation.Items[0].Position.RefDirection = self.file.createIfcDirection(self.ref_direction)
 
             run(
                 "geometry.assign_representation",

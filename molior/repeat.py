@@ -1,4 +1,5 @@
 import ifcopenshell.api
+import numpy
 
 import molior
 from molior.baseclass import TraceClass
@@ -37,6 +38,7 @@ class Repeat(TraceClass):
         ]
         self.path = []
         self.spacing = 1.0
+        self.ref_direction = None
         self.traces = []
         self.not_start = True
         self.not_end = True
@@ -158,6 +160,7 @@ class Repeat(TraceClass):
                                             ),
                                         ),
                                     ],
+                                    "ref_direction": self.ref_direction,
                                     "file": self.file,
                                     "name": name,
                                     "elevation": self.elevation,
@@ -331,17 +334,40 @@ class Repeat(TraceClass):
 
                     # place the entity in space
                     elevation = self.elevation + self.yshift
+                    placement_matrix = matrix_align(
+                        [*location, elevation],
+                        [
+                            *add_2d(location, self.direction_segment(id_segment)),
+                            elevation,
+                        ],
+                    )
+
+                    if self.ref_direction:
+                        vertical_matrix = numpy.array(
+                            [
+                                [1.0, 0.0, 0.0, 0.0],
+                                [
+                                    0.0,
+                                    self.ref_direction[0],
+                                    self.ref_direction[1],
+                                    0.0,
+                                ],
+                                [
+                                    0.0,
+                                    -self.ref_direction[1],
+                                    self.ref_direction[0],
+                                    0.0,
+                                ],
+                                [0.0, 0.0, 0.0, 1.0],
+                            ]
+                        )
+                        placement_matrix = placement_matrix @ vertical_matrix
+
                     run(
                         "geometry.edit_object_placement",
                         self.file,
                         product=entity,
-                        matrix=matrix_align(
-                            [*location, elevation],
-                            [
-                                *add_2d(location, self.direction_segment(id_segment)),
-                                elevation,
-                            ],
-                        ),
+                        matrix=placement_matrix,
                     )
 
         # segments done
