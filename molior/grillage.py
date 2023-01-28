@@ -30,6 +30,7 @@ class Grillage(BaseClass):
         self.structural_material = "Concrete"
         self.spacing = 0.45
         self.angle = 90.0
+        self.do_levelling = False
         self.traces = []
         self.hulls = []
         self.Extrusion = Extrusion
@@ -75,6 +76,12 @@ class Grillage(BaseClass):
 
             # need this for boundaries
             nodes_2d, matrix, normal_x = map_to_2d(vertices, normal)
+
+            # levelling
+            ref_direction = None
+            if self.do_levelling:
+                ref_direction = [float(normal_x[2]), -float(normal_x[1])]
+
             # need this for structure
             face_surface = create_face_surface(self.file, vertices, normal)
             for vertex in vertices:
@@ -247,6 +254,7 @@ class Grillage(BaseClass):
                                         ),
                                     ),
                                 ],
+                                "ref_direction": ref_direction,
                                 "file": self.file,
                                 "name": name,
                                 "elevation": self.elevation,

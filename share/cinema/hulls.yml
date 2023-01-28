@@ -6,4 +6,5 @@ Row of seats:
   condition: soffit
   angle: 0.0
   spacing: 1.006 
+  do_levelling: 1
   traces: [Cinema row, Cinema seats]
