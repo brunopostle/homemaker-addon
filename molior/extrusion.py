@@ -212,7 +212,11 @@ class Extrusion(TraceClass):
             # rotate extrusion profile on axis
 
             if self.ref_direction:
-                shape_representation.Items[0].Position.RefDirection = self.file.createIfcDirection(self.ref_direction)
+                shape_representation.Items[
+                    0
+                ].Position.RefDirection = self.file.createIfcDirection(
+                    self.ref_direction
+                )
 
             run(
                 "geometry.assign_representation",
