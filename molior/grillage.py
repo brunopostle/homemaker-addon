@@ -31,6 +31,7 @@ class Grillage(BaseClass):
         self.spacing = 0.45
         self.angle = 90.0
         self.do_levelling = False
+        self.ifc = "IfcElementAssembly"
         self.traces = []
         self.hulls = []
         self.Extrusion = Extrusion
@@ -54,7 +55,7 @@ class Grillage(BaseClass):
         aggregate = run(
             "root.create_entity",
             self.file,
-            ifc_class="IfcElementAssembly",
+            ifc_class=self.ifc,
             name=self.name,
         )
         run(
@@ -91,7 +92,7 @@ class Grillage(BaseClass):
             face_aggregate = run(
                 "root.create_entity",
                 self.file,
-                ifc_class="IfcElementAssembly",
+                ifc_class=self.ifc,
                 name=self.name,
             )
             run(

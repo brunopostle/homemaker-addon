@@ -10,30 +10,35 @@ flat-roof:
 purlins:
   class: Grillage
   condition: roof
+  ifc: IfcElementAssembly
   angle: 0.0
   spacing: 1.8
   traces: [purlin]
 joists:
   class: Grillage
   condition: roof
+  ifc: IfcElementAssembly
   angle: 90.0
   spacing: 0.45
   traces: [joist]
 battens:
   class: Grillage
   condition: roof
+  ifc: IfcElementAssembly
   angle: 0.0
   spacing: 0.20
   traces: [batten]
 flat-roof-joists:
   class: Grillage
   condition: flat
+  ifc: IfcElementAssembly
   angle: 90.0
   spacing: 0.3
   traces: [joist]
   hulls: [flat-roof-nogging]
 flat-roof-nogging:
   class: Grillage
+  ifc: IfcElementAssembly
   condition: noop
   angle: 0.0
   spacing: 1.2
