@@ -25,9 +25,43 @@ import bmesh
 
 bl_info = {
     "name": "Homemaker Topologise",
+    "author": "Bruno Postle",
+    "location": "Object > Homemaker",
+    "description": "Design buildings the pointy-clicky way",
+    "doc_url": "https://homemaker-addon.readthedocs.io/",
     "blender": (2, 80, 0),
+    "support": "COMMUNITY",
     "category": "Object",
 }
+
+
+class addHomemakerPreferences(bpy.types.AddonPreferences):
+    bl_idname = "homemaker"
+
+    share_dir: bpy.props.StringProperty(default="share")
+
+    def draw(self, context):
+        row = self.layout.row()
+        row.prop(self, "share_dir")
+        row.operator("homemaker.select_share_dir", icon="FILE_FOLDER", text="")
+
+
+class SelectShareDir(bpy.types.Operator):
+    bl_idname = "homemaker.select_share_dir"
+    bl_label = "Select Style Directory"
+    bl_options = {"REGISTER", "UNDO"}
+    bl_description = "Select the folder containing style definitions..."
+    filepath: bpy.props.StringProperty(subtype="FILE_PATH")
+
+    def execute(self, context):
+        bpy.context.preferences.addons[
+            "homemaker"
+        ].preferences.share_dir = os.path.dirname(self.filepath)
+        return {"FINISHED"}
+
+    def invoke(self, context, event):
+        context.window_manager.fileselect_add(self)
+        return {"RUNNING_MODAL"}
 
 
 class ObjectTopologise(bpy.types.Operator):
@@ -108,8 +142,12 @@ class ObjectHomemaker(bpy.types.Operator):
             # creates Project, Units, Representation Contexts etc..
             IfcStore.file = molior.ifc.init()
 
-        # TODO styles are loaded from share_dir, allow blender user to set custom share_dir path
-        self.share_dir = "share"
+        if "homemaker" in bpy.context.preferences.addons:
+            self.share_dir = bpy.context.preferences.addons[
+                "homemaker"
+            ].preferences.share_dir
+        else:
+            self.share_dir = "share"
 
         ifc_element = tool.Ifc.get_entity(bpy.context.active_object)
         if ifc_element:
@@ -397,12 +435,16 @@ def menu_func(self, context):
 
 
 def register():
+    bpy.utils.register_class(addHomemakerPreferences)
+    bpy.utils.register_class(SelectShareDir)
     bpy.utils.register_class(ObjectTopologise)
     bpy.utils.register_class(ObjectHomemaker)
     bpy.types.VIEW3D_MT_object.append(menu_func)
 
 
 def unregister():
+    bpy.utils.unregister_class(addHomemakerPreferences)
+    bpy.utils.unregister_class(SelectShareDir)
     bpy.utils.unregister_class(ObjectTopologise)
     bpy.utils.unregister_class(ObjectHomemaker)
     bpy.types.VIEW3D_MT_object.remove(menu_func)
