@@ -32,7 +32,7 @@ class Style:
         if args is None:
             args = {}
         self.share_dir = "share"
-        self.data = {}
+        self.data = {"default": {"ancestors": [], "traces": {}, "hulls": {}}}
         self.files = {}
         self.libraries = {}
         for arg in args:
