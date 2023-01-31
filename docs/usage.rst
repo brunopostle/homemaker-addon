@@ -19,7 +19,7 @@ edited in Native IFC software such as Blenderbim, saved as an IFC file and
 transferred to other IFC capable software.
 
 Press *Ctrl-Z* to undo, this returns the original cube, scale it a bit to a
-more reasonable size for room, ie. scale of 1.5 will make the cube three metres
+more reasonable size for a room, ie. scale of 1.5 will make the cube three metres
 across and three metres high.  Run Homemaker again and as expected the building
 is bigger, this time with taller walls and windows.
 
@@ -66,20 +66,21 @@ style constructs with a flat roof supported by perimeter posts.  'Sahn' is an
 outdoor space type that is treated as internal circulation - think of a private
 courtyard in a riad house.
 
-By default every space in your model has a 'living' type, so you get windows,
-doors between rooms, but no external doors.  You can manually assign types by
+By default every space in your model has a 'living' usage, so you get windows,
+doors between rooms, but no external doors.  You can manually assign usages by
 placing new blender objects (such as a new cube) in each of the spaces: give
 the new object the name 'retail' (or 'retail.001' etc..) and the space becomes
-a room with this type.  If you forget to name or mis-spell this placeholder you
-will get a very small cube-shaped building inside your main building :).
-Running the *Topologise* function on a mesh will generate these
-widgets/placeholders for you as a floating vertex, just rename them to whatever
-room type you need, select everything and run *Homemaker*.
+a room with this type when you run the *Homemaker* function.  If you forget to
+name, or mis-spell this placeholder you will get a very small cube-shaped
+building inside your main building :).  Running the *Topologise* function on a
+mesh will generate these widgets/placeholders for you as a floating vertex,
+just rename them to whatever room type you need, select everything and run
+*Homemaker*.
 
 Building Styles
 ~~~~~~~~~~~~~~~
 
-The 'default' style is based on measurements of a previous home.
+The 'default' style is based on measurements of an existing older building.
 
 You assign styles by assigning blender materials to faces in the blender
 object, the styles are massively configurable and use an inheritance system.
