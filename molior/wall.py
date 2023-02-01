@@ -551,55 +551,20 @@ class Wall(TraceClass):
 
                 if not myrepresentation:
 
-                    swept_solid = None
+                    # create a simple box shaped representation
 
-                    # look for an opening Profile representation in the Type
-
-                    for representation_map in element_type.RepresentationMaps:
-                        if (
-                            representation_map.MappedRepresentation.RepresentationIdentifier
-                            == "Profile"
-                        ):
-                            items = representation_map.MappedRepresentation.Items
-                            comp_profile = self.file.createIfcCompositeProfileDef(
-                                "AREA",
-                                None,
-                                [
-                                    self.file.createIfcArbitraryOpenProfileDef(
-                                        #"AREA", None, item
-                                        "CURVE", None, item
-                                    )
-                                    for item in items
-                                ],
-                                None,
-                            )
-                            swept_solid = self.file.createIfcExtrudedAreaSolid(
-                                comp_profile,
-                                self.file.createIfcAxis2Placement3D(
-                                    self.file.createIfcCartesianPoint((0.0, -0.02, 0.0)),
-                                    self.file.createIfcDirection((0.0, 0.0, 1.0)),
-                                    self.file.createIfcDirection((1.0, 0.0, 0.0)),
-                                ),
-                                self.file.createIfcDirection((0.0, 1.0, 0.0)),
-                                thickness + 0.04,
-                            )
-
-                    if not swept_solid:
-
-                        # create a simple box shaped representation
-
-                        inner = thickness + 0.02
-                        outer = -0.02
-                        swept_solid = create_extruded_area_solid(
-                            self.file,
-                            [
-                                [0.0, outer],
-                                [opening["width"], outer],
-                                [opening["width"], inner],
-                                [0.0, inner],
-                            ],
-                            opening["height"],
-                        )
+                    inner = thickness + 0.02
+                    outer = -0.02
+                    swept_solid = create_extruded_area_solid(
+                        self.file,
+                        [
+                            [0.0, outer],
+                            [opening["width"], outer],
+                            [opening["width"], inner],
+                            [0.0, inner],
+                        ],
+                        opening["height"],
+                    )
 
                     myrepresentation = self.file.createIfcShapeRepresentation(
                         body_context,
