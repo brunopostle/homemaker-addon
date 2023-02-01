@@ -531,69 +531,99 @@ class Wall(TraceClass):
                     relating_type=element_type,
                 )
 
-                # look for an opening geometry in the Type
-                myopening = None
+                # create an Opening to cut the wall
+
+                myrepresentation = None
+
+                # look for an opening Clearance representation in the Type
+
                 for representation_map in element_type.RepresentationMaps:
                     if (
                         representation_map.MappedRepresentation.RepresentationIdentifier
                         == "Clearance"
                     ):
-                        myopening = run(
-                            "root.create_entity",
-                            self.file,
-                            ifc_class="IfcOpeningElement",
-                            name=element_type.Name,
-                            predefined_type="OPENING",
-                        )
-                        run(
-                            "geometry.assign_representation",
-                            self.file,
-                            product=myopening,
-                            representation=self.file.createIfcShapeRepresentation(
-                                body_context,
-                                body_context.ContextIdentifier,
-                                representation_map.MappedRepresentation.RepresentationType,
-                                representation_map.MappedRepresentation.Items,
-                            ),
-                        )
-
-                if not myopening:
-                    # create a simple box shaped opening
-                    myopening = run(
-                        "root.create_entity",
-                        self.file,
-                        ifc_class="IfcOpeningElement",
-                        name="My Opening",
-                        predefined_type="OPENING",
-                    )
-
-                    # give the opening a Body representation
-                    inner = thickness + 0.02
-                    outer = -0.02
-                    run(
-                        "geometry.assign_representation",
-                        self.file,
-                        product=myopening,
-                        representation=self.file.createIfcShapeRepresentation(
+                        myrepresentation = self.file.createIfcShapeRepresentation(
                             body_context,
                             body_context.ContextIdentifier,
-                            "SweptSolid",
+                            representation_map.MappedRepresentation.RepresentationType,
+                            representation_map.MappedRepresentation.Items,
+                        )
+
+                if not myrepresentation:
+
+                    swept_solid = None
+
+                    # look for an opening Profile representation in the Type
+
+                    for representation_map in element_type.RepresentationMaps:
+                        if (
+                            representation_map.MappedRepresentation.RepresentationIdentifier
+                            == "Profile"
+                        ):
+                            items = representation_map.MappedRepresentation.Items
+                            comp_profile = self.file.createIfcCompositeProfileDef(
+                                "AREA",
+                                None,
+                                [
+                                    self.file.createIfcArbitraryOpenProfileDef(
+                                        #"AREA", None, item
+                                        "CURVE", None, item
+                                    )
+                                    for item in items
+                                ],
+                                None,
+                            )
+                            swept_solid = self.file.createIfcExtrudedAreaSolid(
+                                comp_profile,
+                                self.file.createIfcAxis2Placement3D(
+                                    self.file.createIfcCartesianPoint((0.0, -0.02, 0.0)),
+                                    self.file.createIfcDirection((0.0, 0.0, 1.0)),
+                                    self.file.createIfcDirection((1.0, 0.0, 0.0)),
+                                ),
+                                self.file.createIfcDirection((0.0, 1.0, 0.0)),
+                                thickness + 0.04,
+                            )
+
+                    if not swept_solid:
+
+                        # create a simple box shaped representation
+
+                        inner = thickness + 0.02
+                        outer = -0.02
+                        swept_solid = create_extruded_area_solid(
+                            self.file,
                             [
-                                create_extruded_area_solid(
-                                    self.file,
-                                    [
-                                        [0.0, outer],
-                                        [opening["width"], outer],
-                                        [opening["width"], inner],
-                                        [0.0, inner],
-                                    ],
-                                    opening["height"],
-                                )
+                                [0.0, outer],
+                                [opening["width"], outer],
+                                [opening["width"], inner],
+                                [0.0, inner],
                             ],
-                        ),
+                            opening["height"],
+                        )
+
+                    myrepresentation = self.file.createIfcShapeRepresentation(
+                        body_context,
+                        body_context.ContextIdentifier,
+                        "SweptSolid",
+                        [swept_solid],
                     )
 
+                myopening = run(
+                    "root.create_entity",
+                    self.file,
+                    ifc_class="IfcOpeningElement",
+                    name=element_type.Name,
+                    predefined_type="OPENING",
+                )
+                run(
+                    "geometry.assign_representation",
+                    self.file,
+                    product=myopening,
+                    representation=myrepresentation,
+                )
+
                 # place the opening where the wall is
+
                 run(
                     "geometry.edit_object_placement",
                     self.file,
