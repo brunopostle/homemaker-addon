@@ -1,7 +1,7 @@
 import ifcopenshell.api
 import numpy
 
-from topologic import Vertex, FaceUtility
+from topologic import Vertex, Edge, Face, FaceUtility
 from topologist.helpers import el
 from molior.baseclass import TraceClass
 from molior.geometry import (
@@ -25,6 +25,7 @@ from molior.ifc import (
     get_context_by_name,
     get_thickness,
     create_curve_bounded_plane,
+    create_closed_profile_from_points,
 )
 
 run = ifcopenshell.api.run
@@ -535,7 +536,7 @@ class Wall(TraceClass):
 
                 myrepresentation = None
 
-                # look for an opening Clearance representation in the Type
+                # look for a Clearance representation in the Type
 
                 for representation_map in element_type.RepresentationMaps:
                     if (
@@ -551,20 +552,77 @@ class Wall(TraceClass):
 
                 if not myrepresentation:
 
-                    # create a simple box shaped representation
+                    # look for a Profile representation in the Type
 
-                    inner = thickness + 0.02
-                    outer = -0.02
-                    swept_solid = create_extruded_area_solid(
-                        self.file,
-                        [
-                            [0.0, outer],
-                            [opening["width"], outer],
-                            [opening["width"], inner],
-                            [0.0, inner],
-                        ],
-                        opening["height"],
+                    swept_solid = None
+                    profile = ifcopenshell.util.representation.get_representation(
+                        element_type, "Model", "Profile", "ELEVATION_VIEW"
                     )
+
+                    # create a SweptSolid from this Profile
+
+                    if profile:
+                        settings = ifcopenshell.geom.settings()
+                        settings.set(settings.INCLUDE_CURVES, True)
+                        shape = ifcopenshell.geom.create_shape(settings, profile)
+                        verts = shape.verts
+                        edges = shape.edges
+                        grouped_verts = [
+                            [verts[i], verts[i + 1], verts[i + 2]]
+                            for i in range(0, len(verts), 3)
+                        ]
+                        grouped_edges = [
+                            [edges[i], edges[i + 1]] for i in range(0, len(edges), 2)
+                        ]
+
+                        edges_ptr = []
+                        for edge in grouped_edges:
+                            edges_ptr.append(
+                                Edge.ByStartVertexEndVertex(
+                                    Vertex.ByCoordinates(*grouped_verts[edge[0]]),
+                                    Vertex.ByCoordinates(*grouped_verts[edge[1]]),
+                                )
+                            )
+                        try:
+                            myvertices = []
+                            Face.ByEdges(edges_ptr).VerticesPerimeter(myvertices)
+                            points = [vertex.Coordinates() for vertex in myvertices]
+                            myprofile = create_closed_profile_from_points(
+                                self.file, [[p[0], p[2]] for p in points]
+                            )
+                            swept_solid = self.file.createIfcExtrudedAreaSolid(
+                                myprofile,
+                                self.file.createIfcAxis2Placement3D(
+                                    self.file.createIfcCartesianPoint(
+                                        (0.0, -0.02, 0.0)
+                                    ),
+                                    self.file.createIfcDirection((0.0, -1.0, 0.0)),
+                                    self.file.createIfcDirection((1.0, 0.0, 0.0)),
+                                ),
+                                self.file.createIfcDirection((0.0, 0.0, -1.0)),
+                                thickness + 0.04,
+                            )
+                        except:
+                            continue
+
+                    if not swept_solid:
+
+                        # create a SweptSolid from the window/door dimensions
+
+                        inner = thickness + 0.02
+                        outer = -0.02
+                        swept_solid = create_extruded_area_solid(
+                            self.file,
+                            [
+                                [0.0, outer],
+                                [opening["width"], outer],
+                                [opening["width"], inner],
+                                [0.0, inner],
+                            ],
+                            opening["height"],
+                        )
+
+                    # use SweptSolid Representation
 
                     myrepresentation = self.file.createIfcShapeRepresentation(
                         body_context,
