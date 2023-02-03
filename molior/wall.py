@@ -58,6 +58,9 @@ class Wall(TraceClass):
         )
         body_context = get_context_by_name(self.file, context_identifier="Body")
         axis_context = get_context_by_name(self.file, context_identifier="Axis")
+        clearance_context = get_context_by_name(
+            self.file, context_identifier="Clearance"
+        )
 
         self.init_openings()
 
@@ -629,6 +632,21 @@ class Wall(TraceClass):
                         body_context.ContextIdentifier,
                         "SweptSolid",
                         [swept_solid],
+                    )
+
+                    # stuff this SweptSolid into the Type for use next time
+
+                    clearance_representation = self.file.createIfcShapeRepresentation(
+                        clearance_context,
+                        clearance_context.ContextIdentifier,
+                        "SweptSolid",
+                        [swept_solid],
+                    )
+                    run(
+                        "geometry.assign_representation",
+                        self.file,
+                        product=element_type,
+                        representation=clearance_representation,
                     )
 
                 myopening = run(

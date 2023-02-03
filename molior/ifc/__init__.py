@@ -61,6 +61,12 @@ def create_default_contexts(self):
     )
     get_context_by_name(
         self,
+        context_identifier="Clearance",
+        parent_context_identifier="Model",
+        target_view="MODEL_VIEW",
+    )
+    get_context_by_name(
+        self,
         context_identifier="Surface",
         parent_context_identifier="Model",
         target_view="SKETCH_VIEW",
