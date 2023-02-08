@@ -289,7 +289,7 @@ def get_parent_building(entity):
             parent = decomposes[0].RelatingObject
         else:
             parent = parents[0].RelatingStructure
-    elif entity.is_a("IfcSpatialElement"):
+    elif entity.is_a("IfcSpatialElement") or entity.is_a("IfcSpatialStructureElement"):
         decomposes = entity.Decomposes
         if not decomposes:
             return None
