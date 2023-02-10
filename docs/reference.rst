@@ -169,6 +169,18 @@ allows inheritance to be defined entirely by rearrangement of the configuration
 data.  This also means that there may only be one folder called 'thin' in the
 folder tree, all others will be ignored.
 
+
+Custom style location
+~~~~~~~~~~~~~~~~~~~~~
+
+The addon ships with some example styles in the `share` folder installed with
+the software. You can edit or add styles there, or use *Select Style Directory*
+in the add-on preferences to indicate a different location to look for style
+definitions - either copy over some example styles and edit them here, or start
+with an empty folder and build a new style from scratch (note that an empty
+style definition will result in an empty IFC model without any Building
+Elements).
+
 library.ifc
 ~~~~~~~~~~~
 
