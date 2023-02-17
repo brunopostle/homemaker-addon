@@ -56,7 +56,7 @@ class Shell(BaseClass):
         for face in self.hull.faces:
             normal = face[1]["face"].Normal()
             inclines.append(normal[2])
-        if abs(max(inclines) - min(inclines)) < 0.01:
+        if len(inclines) > 1 and abs(max(inclines) - min(inclines)) < 0.01:
             uniform_pitch = True
 
         elevation = None
