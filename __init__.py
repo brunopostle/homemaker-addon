@@ -93,6 +93,7 @@ class ObjectTopologise(bpy.types.Operator):
                             # runs _execute()
                             IfcStore.execute_ifc_operator(self, context)
                             delete_collection(collection)
+            bpy.data.orphans_purge(do_recursive=True)
 
             return {"FINISHED"}
 
@@ -195,6 +196,7 @@ class ObjectHomemaker(bpy.types.Operator):
         for collection in bpy.data.collections:
             if re.match("^IfcProject/", collection.name):
                 delete_collection(collection)
+        bpy.data.orphans_purge(do_recursive=True)
 
         # (re)build blender collections and geometry from IfcStore
         ifc_import_settings = import_ifc.IfcImportSettings.factory(
