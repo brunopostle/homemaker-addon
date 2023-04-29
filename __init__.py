@@ -368,9 +368,6 @@ def delete_collection(blender_collection):
     for obj in blender_collection.objects:
         bpy.data.objects.remove(obj, do_unlink=True)
     bpy.data.collections.remove(blender_collection)
-    for collection in bpy.data.collections:
-        if not collection.users:
-            bpy.data.collections.remove(collection)
 
 
 def clean_id_map():
