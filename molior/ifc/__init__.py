@@ -365,6 +365,9 @@ def create_extruded_area_solid2(self, material_profile, start, direction, length
 
 def create_curve_bounded_plane(self, polygon, matrix):
     """Create a bounded shape in the Z=0 plane"""
+    if not polygon[-1] == polygon[0]:
+        polygon.append(polygon[0])
+
     return self.createIfcCurveBoundedPlane(
         self.createIfcPlane(
             self.createIfcAxis2Placement3D(
