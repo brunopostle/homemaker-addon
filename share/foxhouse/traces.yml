@@ -1,0 +1,11 @@
+---
+BRICK440:
+  class: Wall
+  ifc: IfcWall
+  condition: external
+  offset: -0.36
+  do_populate_exterior_openings: 1
+exterior:
+  class: Wall
+  ifc: IfcWall
+  condition: noop
