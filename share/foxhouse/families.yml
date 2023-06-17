@@ -6,3 +6,21 @@ mullioned window:
     width: 2.505
     side: 0.8
     end: 0.6
+  -
+    name: MULLION3
+    height: 1.985
+    width: 1.905
+    side: 0.8
+    end: 0.6
+  -
+    name: MULLION2
+    height: 1.985
+    width: 1.305
+    side: 0.8
+    end: 0.6
+  -
+    name: MULLION1
+    height: 1.985
+    width: 0.705
+    side: 0.8
+    end: 0.6
