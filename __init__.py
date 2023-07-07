@@ -196,7 +196,7 @@ class ObjectHomemaker(bpy.types.Operator):
         for collection in bpy.data.collections:
             if re.match("^IfcProject/", collection.name):
                 delete_collection(collection)
-        # delete any Ifc* objects not in IfcProject/ heirarchy
+        # delete any Ifc* objects not in IfcProject/ hierarchy
         for obj in bpy.data.objects:
             if re.match("^Ifc", obj.name):
                 bpy.data.objects.remove(obj, do_unlink=True)
