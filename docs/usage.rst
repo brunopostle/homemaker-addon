@@ -14,7 +14,7 @@ consists of one room two metres wide, with a two metre floor to ceiling height
 - this is because the default Blender cube is two metres across.  Note that the
 base of the cube has been turned into an IFC Floor, there is an IFC Footing
 around the perimeter of the base, the vertical faces have become IFC Walls with
-IFC Window openings, etc..  This is a complete IFC model that can be futher
+IFC Window openings, etc..  This is a complete IFC model that can be further
 edited in Native IFC software such as Blenderbim, saved as an IFC file and
 transferred to other IFC capable software.
 
@@ -36,7 +36,7 @@ produce exactly the building you need.
 
 This *CellComplex* is interesting in its own right, so there is an *Object >
 Topologise* function that, instead of creating an IFC model, discovers the
-*CellComplex* in the mesh and gives you this as a new mesh.  Runnning
+*CellComplex* in the mesh and gives you this as a new mesh.  Running
 *Topologise* on a cube will just give you a new identical cube, but it becomes
 useful for discovering *CellComplexes* inside more complex meshes where faces
 overlap but don't connect at vertices.
