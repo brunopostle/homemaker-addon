@@ -68,7 +68,7 @@ class graph:
             todo = True
             while todo == True:
                 chain.add_edge({vertex: self.graph[vertex]})
-                if self.graph[vertex][0] in self.graph:
+                if self.graph[vertex] and self.graph[vertex][0] in self.graph:
                     vertex_next = self.graph[vertex][0]
                     self.graph[vertex] = False
                     vertex = vertex_next
