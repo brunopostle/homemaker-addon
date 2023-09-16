@@ -164,12 +164,20 @@ def ApplyDictionary(self, source_faces_ptr):
     self.Faces(None, faces_ptr)
     for face in faces_ptr:
         vertex = FaceUtility.InternalVertex(face, 0.001)
+        normal = face.Normal()
         for source_face in source_faces_ptr:
+            if abs(dot_product_3d(normal, source_face.Normal())) < 0.99:
+                continue
+
             if FaceUtility.IsInside(source_face, vertex, 0.001):
                 dictionary = source_face.GetDictionary()
                 for key in dictionary.Keys():
                     face.Set(key, source_face.Get(key).split(".")[0])
                 break
+
+
+def dot_product_3d(A, B):
+    return (A[0] * B[0]) + (A[1] * B[1]) + (A[2] * B[2])
 
 
 def IndexTopology(self):
