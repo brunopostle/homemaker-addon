@@ -304,6 +304,37 @@ def Normal(self):
         return [normal_stl[0], normal_stl[1], normal_stl[2]]
 
 
+def Plane(self):
+    """Return A, B, C, D plane parameters"""
+    vertices = []
+    self.Vertices(None, vertices)
+    point = vertices[0].Coordinates()
+    A, B, C = self.Normal()
+    D = 0 - (A * point[0] + B * point[1] + C * point[2])
+    return [A, B, C, D]
+
+
+def IsCoplanar(self, face, k=0.01):
+    """Check if face is coplanar"""
+    plane = self.Plane()
+    other = face.Plane()
+    if (
+        abs(plane[0] - other[0]) < k
+        and abs(plane[1] - other[1]) < k
+        and abs(plane[2] - other[2]) < k
+        and abs(plane[3] - other[3]) < k
+    ):
+        return True
+    if (
+        abs(plane[0] + other[0]) < k
+        and abs(plane[1] + other[1]) < k
+        and abs(plane[2] + other[2]) < k
+        and abs(plane[3] + other[3]) < k
+    ):
+        return True
+    return False
+
+
 def TopLevelConditions(self, host_topology):
     """Assuming this is a vertical external wall, how do the top edges continue?"""
     # TODO traces where face above is open
@@ -486,6 +517,8 @@ setattr(topologic.Face, "CellAbove", CellAbove)
 setattr(topologic.Face, "CellBelow", CellBelow)
 setattr(topologic.Face, "HorizontalFacesSideways", HorizontalFacesSideways)
 setattr(topologic.Face, "Normal", Normal)
+setattr(topologic.Face, "Plane", Plane)
+setattr(topologic.Face, "IsCoplanar", IsCoplanar)
 setattr(topologic.Face, "TopLevelConditions", TopLevelConditions)
 setattr(topologic.Face, "BottomLevelConditions", BottomLevelConditions)
 setattr(topologic.Face, "EdgesTop", EdgesTop)

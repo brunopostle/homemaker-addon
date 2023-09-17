@@ -168,6 +168,8 @@ def ApplyDictionary(self, source_faces_ptr):
         for source_face in source_faces_ptr:
             if abs(dot_product_3d(normal, source_face.Normal())) < 0.99:
                 continue
+            if not source_face.IsCoplanar(face):
+                continue
 
             if FaceUtility.IsInside(source_face, vertex, 0.001):
                 dictionary = source_face.GetDictionary()
