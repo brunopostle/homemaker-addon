@@ -68,7 +68,13 @@ these need testing in a range of analysis software.
 - But not least, let's take architecture out of the hands of architects and put
 it back in the hands of people who need good ordinary buildings.
 
+## Installation
+
+Download an installer suitable for your system from the [Github Releases page](https://github.com/brunopostle/homemaker-addon/releases), these contain everything needed to run the add-on on a Blender/BlenderBIM installation.
+
 ## Requirements
+
+The following requirements are needed to run the add-on if you don't choose the installer option above:
 
 - [topologic](https://github.com/wassimj/Topologic) a pybind11 python interface to the TopologicCore library.
   - [TopologicCore](https://github.com/wassimj/Topologic). This is a C++ library which you build and install using the standard cmake build system. It requires the opencascade library and headers which should be available from your distribution.
