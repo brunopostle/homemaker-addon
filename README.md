@@ -35,6 +35,8 @@ share as you wish.
 There is some [Homemaker reference and API
 documentation](https://homemaker-addon.readthedocs.io)
 
+The [Github wiki](https://github.com/brunopostle/homemaker-addon/wiki) is a good place to add HOWTO documentation.
+
 ## Roadmap
 
 This is a big project that will take a lot of work to reach its full potential,

@@ -1,6 +1,11 @@
 User Reference
 ==============
 
+.. Note::
+
+    This page lists reference information, the `Github wiki <https://github.com/brunopostle/homemaker-addon/wiki>`__
+    is a good place to put HOWTO style documentation.
+
 Traces
 ------
 
