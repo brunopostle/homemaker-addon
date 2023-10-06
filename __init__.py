@@ -206,6 +206,7 @@ class ObjectHomemaker(bpy.types.Operator):
         ifc_import_settings = import_ifc.IfcImportSettings.factory(
             bpy.context, "", logging.getLogger("ImportIFC")
         )
+        ifc_import_settings.should_setup_viewport_camera = False
         ifc_importer = import_ifc.IfcImporter(ifc_import_settings)
         ifc_importer.execute()
 
