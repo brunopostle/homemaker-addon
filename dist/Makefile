@@ -16,7 +16,7 @@ dist:
 	cd working && wget https://github.com/brunopostle/Topologic/releases/download/2022-04-27/Topologic_2022-12-10_linux.zip
 	cd working && wget https://github.com/brunopostle/Topologic/releases/download/2022-01-31/Topologic_2022-02-03_darwin.zip
 	cd working && wget https://github.com/brunopostle/Topologic/releases/download/2022-04-27/Topologic_2022-04-10_win.zip
-	cd working && wget https://github.com/brunopostle/Topologic/releases/download/2022-04-27/Topologic_2022-05-05_darwin-arm.zip
+	cd working && wget https://github.com/brunopostle/Topologic/releases/download/2022-04-27/Topologic_2023-10-08_darwin-arm.zip
 
 	# YAML
 	cd working && unzip PyYAML-6.0-*.whl
