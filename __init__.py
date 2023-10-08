@@ -26,7 +26,7 @@ import bmesh
 bl_info = {
     "name": "Homemaker Topologise",
     "author": "Bruno Postle",
-    "location": "Object > Homemaker",
+    "location": "3D Viewport > Object Menu > Homemaker",
     "description": "Design buildings the pointy-clicky way",
     "doc_url": "https://homemaker-addon.readthedocs.io/",
     "blender": (2, 80, 0),
