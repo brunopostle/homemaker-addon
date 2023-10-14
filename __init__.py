@@ -209,6 +209,10 @@ class ObjectHomemaker(bpy.types.Operator):
         ifc_import_settings.should_setup_viewport_camera = False
         ifc_importer = import_ifc.IfcImporter(ifc_import_settings)
         ifc_importer.execute()
+        tool.Project.load_pset_templates()
+        tool.Project.load_default_thumbnails()
+        tool.Project.set_default_context()
+        tool.Project.set_default_modeling_dimensions()
 
         # Hide Structural objects
         bpy.data.collections.get("StructuralItems").hide_viewport = True
