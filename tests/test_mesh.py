@@ -82,7 +82,6 @@ class Tests(unittest.TestCase):
         self.assertTrue(faces[-1].IsVertical())
 
     def test_faces_cc(self):
-
         faces_ptr = []
         cc.Faces(None, faces_ptr)
         self.assertEqual(len(faces_ptr), 9)
@@ -104,7 +103,6 @@ class Tests(unittest.TestCase):
             self.assertTrue(face.IsHorizontal())
 
     def test_cells(self):
-
         centroid = cc.Centroid()
         self.assertEqual(centroid.X(), 5.0)
         self.assertEqual(centroid.Y(), 5.0)

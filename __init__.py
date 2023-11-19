@@ -225,7 +225,6 @@ class ObjectHomemaker(bpy.types.Operator):
 
     def _execute(self, context):
         if self.action == "regenerate_ifc":
-
             # remove the old building
             delete_ifc_product(IfcStore.file, self.ifc_building)
             delete_ifc_product(IfcStore.file, self.structural_model)
@@ -242,7 +241,6 @@ class ObjectHomemaker(bpy.types.Operator):
             molior_object.execute()
         elif self.action == "generate_ifc":
             for blender_object in self.blender_objects:
-
                 # Molior objects build IFC buildings
                 molior_object = Molior.from_faces_and_widgets(
                     file=IfcStore.file,

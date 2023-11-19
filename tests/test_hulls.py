@@ -19,7 +19,6 @@ class Tests(unittest.TestCase):
     """A house shape"""
 
     def setUp(self):
-
         vertices = [
             Vertex.ByCoordinates(*point)
             for point in [
@@ -61,7 +60,6 @@ class Tests(unittest.TestCase):
         self.cc = CellComplex.ByFaces(faces_ptr, 0.0001)
 
     def test_faces_cc(self):
-
         all_faces_ptr = []
         self.cc.Faces(None, all_faces_ptr)
         self.assertEqual(len(all_faces_ptr), 7)
@@ -85,7 +83,6 @@ class Tests(unittest.TestCase):
         self.assertEqual(len(inclined_faces_ptr), 2)
 
     def test_cells(self):
-
         centroid = self.cc.Centroid()
         self.assertEqual(centroid.X(), 5.0)
         self.assertEqual(centroid.Y(), 6.0)

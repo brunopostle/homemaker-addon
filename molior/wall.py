@@ -554,7 +554,6 @@ class Wall(TraceClass):
                         )
 
                 if not myrepresentation:
-
                     # look for a Profile representation in the Type
 
                     swept_solid = None
@@ -609,7 +608,6 @@ class Wall(TraceClass):
                             continue
 
                     if not swept_solid:
-
                         # create a SweptSolid from the window/door dimensions
 
                         inner = thickness + 0.02
@@ -1089,7 +1087,6 @@ class Wall(TraceClass):
         return length_openings
 
     def fix_segment(self, id_segment):
-
         openings = self.openings[id_segment]
         if len(openings) == 0:
             return

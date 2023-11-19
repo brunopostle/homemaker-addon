@@ -66,7 +66,6 @@ class Grillage(BaseClass):
 
         elevation = None
         for face in self.hull.faces:
-
             # grillages are mapped from above
             if face[1]["face"].IsUpward() or face[1]["face"].IsVertical():
                 normal = face[1]["face"].Normal()
@@ -222,7 +221,6 @@ class Grillage(BaseClass):
             # multiple linear elements on this Face
 
             for cropped_edge in cropped_edges:
-
                 start = cropped_edge.StartVertex().Coordinates()
                 end = cropped_edge.EndVertex().Coordinates()
                 direction = cropped_edge.NormalisedVector()

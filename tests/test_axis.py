@@ -57,7 +57,6 @@ class Tests(unittest.TestCase):
         self.cc = CellComplex.ByFaces(faces_ptr, 0.0001)
 
     def test_faces_cc(self):
-
         vertical_faces_ptr = []
         self.cc.FacesVertical(vertical_faces_ptr)
         self.assertEqual(len(vertical_faces_ptr), 4)

@@ -14,7 +14,6 @@ assert topologist.vertex
 
 class Tests(unittest.TestCase):
     def setUp(self):
-
         widgets_text = [
             ["Circulation", [9.42, -1.11, 0.33]],
             ["Circulation", [9.46, -0.82, 3.89]],

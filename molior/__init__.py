@@ -450,7 +450,6 @@ class Molior:
                             abs(start_coors[2] - connection_elevation) < 0.001
                             or abs(end_coors[2] - connection_elevation) < 0.001
                         ):
-
                             # start point of non-horizontal curve member coincides with this horizontal connection
                             if abs(start_coors[2] - connection_elevation) < 0.001:
                                 point_connection_name = "Column base connection"

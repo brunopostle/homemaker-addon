@@ -16,7 +16,6 @@ class Tests(unittest.TestCase):
     """14 faces and three cells formed by a cube sliced on the diagonal"""
 
     def setUp(self):
-
         points = [
             [0.0, 0.0, 0.0],
             [10.0, 0.0, 0.0],

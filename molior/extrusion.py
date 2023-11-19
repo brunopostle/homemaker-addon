@@ -83,7 +83,6 @@ class Extrusion(TraceClass):
             )
 
         for id_segment in range(segments):
-
             # create an element
 
             linear_element = run(

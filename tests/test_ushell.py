@@ -10,7 +10,6 @@ import topologist.ushell as ushell
 
 class Tests(unittest.TestCase):
     def setUp(self):
-
         self.shell = ushell.shell()
         self.assertEqual(len(self.shell.nodes_all()), 0)
         self.assertEqual(len(self.shell.faces_all()), 0)
