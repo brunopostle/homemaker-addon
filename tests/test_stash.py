@@ -7,6 +7,7 @@ from topologic import Vertex, Face, CellComplex
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import topologist.vertex
+import topologist.helpers
 
 assert topologist.vertex
 
@@ -979,6 +980,15 @@ class Tests(unittest.TestCase):
         molior.init_building()
         molior.stash_topology()
         molior.file.write("_test.ifc")
+
+    def test_footprint(self):
+        cellcomplex = self.cellcomplex
+        paths = cellcomplex.FootPrint()
+        for path in paths:
+            self.assertTrue(path.is_simple_cycle())
+            self.assertEqual(len(path.graph), 15)
+            for vertex in path.graph:
+                self.assertEqual(len(topologist.helpers.string_to_coor(vertex)), 3)
 
 
 if __name__ == "__main__":

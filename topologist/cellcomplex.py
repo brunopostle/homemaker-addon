@@ -362,8 +362,21 @@ def GetHulls(self):
     return myhulls.hulls
 
 
+def FootPrint(self):
+    """returns the outline(s) of the cellcomplex at the lowest level"""
+    try:
+        cell = self.ExternalBoundary()
+    except:
+        cells_ptr = []
+        self.Cells(None, cells_ptr)
+        cell = cells_ptr[0]
+    ugraph = cell.Perimeter(self)
+    return ugraph.find_paths()
+
+
 setattr(topologic.CellComplex, "IndexTopology", IndexTopology)
 setattr(topologic.CellComplex, "AllocateCells", AllocateCells)
 setattr(topologic.CellComplex, "Adjacency", Adjacency)
 setattr(topologic.CellComplex, "GetTraces", GetTraces)
 setattr(topologic.CellComplex, "GetHulls", GetHulls)
+setattr(topologic.CellComplex, "FootPrint", FootPrint)
