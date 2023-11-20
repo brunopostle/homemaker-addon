@@ -269,7 +269,7 @@ class Molior:
     def connect_structure(self):
         """Given Structural Member entities are tagged with Topologic indexes, connect them"""
         reference_context = get_context_by_name(
-            self.file, context_identifier="Reference"
+            self.file, context_identifier="Reference", target_view="GRAPH_VIEW"
         )
 
         structural_placement = self.file.createIfcLocalPlacement(

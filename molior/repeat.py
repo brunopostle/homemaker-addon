@@ -51,7 +51,7 @@ class Repeat(TraceClass):
     def execute(self):
         """Generate some ifc"""
         reference_context = get_context_by_name(
-            self.file, context_identifier="Reference"
+            self.file, context_identifier="Reference", target_view="GRAPH_VIEW"
         )
         style = molior.Molior.style
         myconfig = style.get(self.style)

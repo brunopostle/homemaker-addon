@@ -79,6 +79,18 @@ def create_default_contexts(self):
     )
     get_context_by_name(
         self,
+        context_identifier="FootPrint",
+        parent_context_identifier="Model",
+        target_view="PLAN_VIEW",
+    )
+    get_context_by_name(
+        self,
+        context_identifier="Reference",
+        parent_context_identifier="Model",
+        target_view="SKETCH_VIEW",
+    )
+    get_context_by_name(
+        self,
         context_identifier="Annotation",
         parent_context_identifier="Plan",
         target_view="PLAN_VIEW",

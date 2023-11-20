@@ -47,7 +47,7 @@ class Grillage(BaseClass):
         # contexts
 
         reference_context = get_context_by_name(
-            self.file, context_identifier="Reference"
+            self.file, context_identifier="Reference", target_view="GRAPH_VIEW"
         )
 
         myconfig = self.style_object.get(self.style)

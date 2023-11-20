@@ -87,10 +87,10 @@ class Tests(unittest.TestCase):
 
     def test_copy_material(self):
         self.assertEqual(
-            len(self.file.by_type("IfcGeometricRepresentationContext")), 11
+            len(self.file.by_type("IfcGeometricRepresentationContext")), 13
         )
         self.assertEqual(
-            len(self.another_file.by_type("IfcGeometricRepresentationContext")), 11
+            len(self.another_file.by_type("IfcGeometricRepresentationContext")), 13
         )
         for material in self.another_file.by_type("IfcMaterial"):
             if material.Name == "Cheese":
