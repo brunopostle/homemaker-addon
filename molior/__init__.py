@@ -281,6 +281,23 @@ class Molior:
             ),
         )
 
+        style = run("style.add_style", self.file, name="Structural Surface Member")
+        run(
+            "style.add_surface_style",
+            self.file,
+            style=style,
+            ifc_class="IfcSurfaceStyleShading",
+            attributes={
+                "SurfaceColour": {
+                    "Name": None,
+                    "Red": 0.5,
+                    "Green": 0.5,
+                    "Blue": 0.0,
+                },
+                "Transparency": 0.95,
+            },
+        )
+
         # lookup tables to connect members to face indices
         surface_lookup = {}
         curve_list = []
@@ -292,6 +309,11 @@ class Molior:
                 )
                 if pset_topology:
                     surface_lookup[pset_topology["FaceIndex"]] = member
+            self.file.createIfcStyledItem(
+                member.Representation.Representations[0].Items[0],
+                [style],
+                "Structural Surface Member",
+            )
         for member in self.file.by_type("IfcStructuralCurveMember"):
             if get_parent_building(member) == self.building:
                 member.ObjectPlacement = structural_placement
