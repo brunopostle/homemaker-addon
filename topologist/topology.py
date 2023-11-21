@@ -106,6 +106,27 @@ def Mesh(self):
     return vertices, faces
 
 
+def MeshSplit(self):
+    """Returns a list of Vertex coordinates, and indexed faces split by style"""
+    vertices_ptr = []
+    self.Vertices(None, vertices_ptr)
+    vertices = [vertex.Coordinates() for vertex in vertices_ptr]
+
+    faces_ptr = []
+    self.Faces(None, faces_ptr)
+    faces = {}
+    for face in faces_ptr:
+        stylename = face.Get("stylename")
+        if not stylename:
+            stylename = "default"
+        wire_vertices_ptr = []
+        face.ExternalBoundary().Vertices(None, wire_vertices_ptr)
+        if not stylename in faces:
+            faces[stylename] = []
+        faces[stylename].append([self.VertexId(vertex) for vertex in wire_vertices_ptr])
+    return vertices, faces
+
+
 def Set(self, key, value):
     """Simple string value dictionary access"""
     dictionary = self.GetDictionary()
@@ -355,6 +376,7 @@ setattr(topologic.Topology, "FacesWorld", FacesWorld)
 setattr(topologic.Topology, "Elevation", Elevation)
 setattr(topologic.Topology, "Height", Height)
 setattr(topologic.Topology, "Mesh", Mesh)
+setattr(topologic.Topology, "MeshSplit", MeshSplit)
 setattr(topologic.Topology, "Set", Set)
 setattr(topologic.Topology, "Get", Get)
 setattr(topologic.Topology, "DumpDictionary", DumpDictionary)

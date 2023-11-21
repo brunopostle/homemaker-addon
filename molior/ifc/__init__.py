@@ -441,6 +441,42 @@ def create_tessellation_from_mesh(self, vertices, faces):
     return self.createIfcPolygonalFaceSet(pointlist, None, indexedfaces, None)
 
 
+def create_tessellations_from_mesh_split(self, vertices, faces):
+    """Create a Tessellation from vertex coordinates and split faces"""
+    pointlist = self.createIfcCartesianPointList3D(vertices)
+    tessellations = []
+    index = 0
+    for stylename in faces:
+        indexedfaces = [
+            self.createIfcIndexedPolygonalFace([index + 1 for index in face])
+            for face in faces[stylename]
+        ]
+        tessellation = self.createIfcPolygonalFaceSet(
+            pointlist, None, indexedfaces, None
+        )
+        tessellations.append(tessellation)
+        style = run("style.add_style", self, name=stylename)
+        fac = (index % 5) / 5
+        run(
+            "style.add_surface_style",
+            self,
+            style=style,
+            ifc_class="IfcSurfaceStyleShading",
+            attributes={
+                "SurfaceColour": {
+                    "Name": stylename,
+                    "Red": fac,
+                    "Green": 1.0 - fac,
+                    "Blue": 0.0,
+                },
+                "Transparency": 0.8,
+            },
+        )
+        self.createIfcStyledItem(tessellation, [style], stylename)
+        index += 1
+    return tessellations
+
+
 def clip_solid(self, solid, start, end):
     """Clip a wall using a half-space solid"""
     vector = subtract_3d(end, start)
