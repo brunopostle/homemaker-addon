@@ -225,6 +225,11 @@ def get_building_by_name(self, parent, name):
         ):
             return building
     building = run("root.create_entity", self, ifc_class="IfcBuilding", name=name)
+    run(
+        "geometry.edit_object_placement",
+        self,
+        product=building,
+    )
     run("aggregate.assign_object", self, product=building, relating_object=parent)
     return building
 
