@@ -552,10 +552,6 @@ def add_face_topology_epsets(self, entity, face, back_cell, front_cell):
             )
 
 
-def add_topologic_epsets(self, entity, topology):
-    add_pset(self, entity, "EPset_Topologic_Dictionary", topology.DumpDictionary())
-
-
 def add_cell_topology_epsets(self, entity, cell):
     if cell:
         cell_index = cell.Get("index")

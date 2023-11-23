@@ -36,15 +36,16 @@ from molior.ifc import (
     get_structural_analysis_model_by_name,
     create_storeys,
     add_cell_topology_epsets,
-    add_topologic_epsets,
     assign_space_byindex,
     assign_storey_byindex,
     get_context_by_name,
     get_parent_building,
     create_tessellation_from_mesh,
+    create_tessellations_from_mesh_split,
 )
 import topologist.ushell as ushell
 import topologist.ugraph as ugraph
+from topologist.helpers import string_to_coor
 
 run = ifcopenshell.api.run
 
@@ -145,64 +146,56 @@ class Molior:
         building = get_parent_building(entity)
         if not building:
             return None
-        for rel_contained in building.ContainsElements:
-            for element in rel_contained.RelatedElements:
-                if element.is_a("IfcVirtualElement" and element.Name == "CellComplex"):
-                    for rel_aggregates in element.IsDecomposedBy:
-                        faces_ptr = []
-                        widgets = []
-                        for related_object in rel_aggregates.RelatedObjects:
-                            if related_object.is_a("IfcVirtualElement") and re.match(
-                                "^cell/", related_object.Name
-                            ):
-                                vertex = Vertex.ByCoordinates(
-                                    *related_object.Representation.Representations[0]
-                                    .Items[0]
-                                    .Coordinates
-                                )
-                                for has_property in related_object.IsDefinedBy[
-                                    0
-                                ].RelatingPropertyDefinition.HasProperties:
-                                    vertex.Set(
-                                        has_property.Name,
-                                        has_property.NominalValue.wrappedValue,
-                                    )
-                                widgets.append(vertex)
-                            elif related_object.is_a("IfcVirtualElement") and re.match(
-                                "^face/", related_object.Name
-                            ):
-                                vertices = []
-                                coordinates = (
-                                    related_object.Representation.Representations[0]
-                                    .Items[0]
-                                    .Coordinates.CoordList
-                                )
-                                vertices = [
-                                    Vertex.ByCoordinates(*v) for v in coordinates
-                                ]
-                                indices = (
-                                    related_object.Representation.Representations[0]
-                                    .Items[0]
-                                    .Faces[0]
-                                    .CoordIndex
-                                )
-                                face_ptr = Face.ByVertices(
-                                    [vertices[v - 1] for v in indices]
-                                )
-                                for has_property in related_object.IsDefinedBy[
-                                    0
-                                ].RelatingPropertyDefinition.HasProperties:
-                                    face_ptr.Set(
-                                        has_property.Name,
-                                        has_property.NominalValue.wrappedValue,
-                                    )
-                                    faces_ptr.append(face_ptr)
-                        cellcomplex = CellComplex.ByFaces(faces_ptr, 0.0001)
-                        cellcomplex.ApplyDictionary(faces_ptr)
-                        cellcomplex.AllocateCells(widgets)
-                        cellcomplex.Set("name", building.Name)
-                        return cellcomplex
-        return None
+
+        faces_ptr = []
+        widgets = []
+        for representation in building.Representation.Representations:
+            context = representation.ContextOfItems
+            if (
+                context.is_a("IfcGeometricRepresentationSubContext")
+                and context.ContextIdentifier == "Reference"
+                and context.ContextType == "Model"
+                and context.TargetView == "SKETCH_VIEW"
+            ):
+                for item in representation.Items:
+                    if item.is_a("IfcPolygonalFaceSet"):
+                        stylename = item.StyledByItem[0].Name
+                        coordinates = item.Coordinates.CoordList
+                        vertices = [Vertex.ByCoordinates(*v) for v in coordinates]
+                        for face in item.Faces:
+                            indices = face.CoordIndex
+                            face_ptr = Face.ByVertices(
+                                [vertices[v - 1] for v in indices]
+                            )
+                            face_ptr.Set(
+                                "stylename",
+                                stylename,
+                            )
+                            faces_ptr.append(face_ptr)
+
+        for rel in building.ContainsElements:
+            for element in rel.RelatedElements:
+                if element.is_a("IfcAnnotation") and element.ObjectType == "USAGE":
+                    matrix = ifcopenshell.util.placement.get_local_placement(
+                        element.ObjectPlacement
+                    )
+                    vertex = Vertex.ByCoordinates(
+                        matrix[0][3], matrix[1][3], matrix[2][3]
+                    )
+                    vertex.Set(
+                        "usage",
+                        element.Name,
+                    )
+                    widgets.append(vertex)
+
+        if not faces_ptr:
+            return None
+
+        cellcomplex = CellComplex.ByFaces(faces_ptr, 0.0001)
+        cellcomplex.ApplyDictionary(faces_ptr)
+        cellcomplex.AllocateCells(widgets)
+        cellcomplex.Set("name", building.Name)
+        return cellcomplex
 
     def __init__(self, **args):
         self.file = None
@@ -739,108 +732,82 @@ class Molior:
 
     def stash_topology(self):
         """Represent a Topologic model as IFC geometry"""
-        surface_context = get_context_by_name(self.file, context_identifier="Surface")
-
-        aggregate = run(
-            "root.create_entity",
+        # Cellcomplex stashed as Tessellation representation items
+        sketch_context = get_context_by_name(
             self.file,
-            ifc_class="IfcVirtualElement",
-            name="CellComplex",
+            parent_context_identifier="Model",
+            context_identifier="Reference",
+            target_view="SKETCH_VIEW",
         )
         run(
-            "spatial.assign_container",
+            "geometry.assign_representation",
             self.file,
-            product=aggregate,
-            relating_structure=self.building,
+            product=self.building,
+            representation=self.file.createIfcShapeRepresentation(
+                sketch_context,
+                sketch_context.ContextIdentifier,
+                "Tessellation",
+                create_tessellations_from_mesh_split(
+                    self.file, *self.cellcomplex.MeshSplit()
+                ),
+            ),
         )
-        run(
-            "geometry.edit_object_placement",
+        # A FootPrint representation will have visualisation priority
+        footprint_context = get_context_by_name(
             self.file,
-            product=aggregate,
+            parent_context_identifier="Model",
+            context_identifier="FootPrint",
+            target_view="PLAN_VIEW",
         )
-
-        style = run("style.add_style", self.file, name="CellComplex")
-        run(
-            "style.add_surface_style",
-            self.file,
-            style=style,
-            ifc_class="IfcSurfaceStyleShading",
-            attributes={
-                "SurfaceColour": {
-                    "Name": "Translucent Blue",
-                    "Red": 0.2,
-                    "Green": 0.2,
-                    "Blue": 1.0,
-                },
-                "Transparency": 0.8,
-            },
-        )
-
-        # Create a Virtual Element with a Shape Representation for each Face
-        faces = []
-        self.cellcomplex.Faces(None, faces)
-        for face in faces:
-            element = run(
-                "root.create_entity",
-                self.file,
-                ifc_class="IfcVirtualElement",
-                name="face/" + str(face.Get("index")),
-            )
-            run(
-                "aggregate.assign_object",
-                self.file,
-                product=element,
-                relating_object=aggregate,
-            )
+        paths = self.cellcomplex.FootPrint()
+        if paths:
+            polycurves = []
+            for path in paths:
+                vertices = [string_to_coor(vertex) for vertex in path.graph]
+                if path.is_simple_cycle():
+                    vertices.append(vertices[0])
+                point_list = self.file.createIfcCartesianPointList3D(vertices)
+                polycurves.append(
+                    self.file.createIfcIndexedPolyCurve(point_list, None, False)
+                )
             run(
                 "geometry.assign_representation",
                 self.file,
-                product=element,
+                product=self.building,
                 representation=self.file.createIfcShapeRepresentation(
-                    surface_context,
-                    surface_context.ContextIdentifier,
-                    "Tessellation",
-                    [create_tessellation_from_mesh(self.file, *face.Mesh())],
+                    footprint_context,
+                    footprint_context.ContextIdentifier,
+                    "Curve3D",
+                    polycurves,
                 ),
             )
-            run(
-                "style.assign_representation_styles",
-                self.file,
-                shape_representation=element.Representation.Representations[0],
-                styles=[style],
-            )
-            add_topologic_epsets(self.file, element, face)
 
         # Create a Virtual Element with a Point Representation for each Cell
         cells = []
         self.cellcomplex.Cells(None, cells)
         for cell in cells:
-            element = run(
+            vertex = CellUtility.InternalVertex(cell, 0.001)
+
+            # stash the space usage as an annotation
+            annotation = run(
                 "root.create_entity",
                 self.file,
-                ifc_class="IfcVirtualElement",
-                name="cell/" + str(cell.Get("index")),
+                ifc_class="IfcAnnotation",
+                predefined_type="USAGE",
+                name=cell.Get("usage"),
             )
             run(
-                "aggregate.assign_object",
+                "geometry.edit_object_placement",
                 self.file,
-                product=element,
-                relating_object=aggregate,
+                product=annotation,
+                matrix=matrix_align(vertex.Coordinates(), [1.0, 0.0, 0.0]),
             )
-            vertex = CellUtility.InternalVertex(cell, 0.001)
-            point = self.file.createIfcCartesianPoint(vertex.Coordinates())
             run(
-                "geometry.assign_representation",
+                "spatial.assign_container",
                 self.file,
-                product=element,
-                representation=self.file.createIfcShapeRepresentation(
-                    surface_context,
-                    surface_context.ContextIdentifier,
-                    "PointCloud",  # should be Point
-                    [point],
-                ),
+                product=annotation,
+                relating_structure=self.building,
             )
-            add_topologic_epsets(self.file, element, cell)
 
     def build_trace(
         self,
