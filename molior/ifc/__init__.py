@@ -409,19 +409,16 @@ def create_face_surface(self, polygon, normal):
             self.createIfcDirection(normalise_3d(subtract_3d(polygon[1], polygon[0]))),
         )
     )
+    vertices = []
+    for point in polygon:
+        vertices.append(self.createIfcVertexPoint(self.createIfcCartesianPoint(point)))
+
     face_bound = self.createIfcFaceBound(
         self.createIfcEdgeLoop(
             [
                 self.createIfcOrientedEdge(None, None, edge, True)
                 for edge in [
-                    self.createIfcEdge(
-                        self.createIfcVertexPoint(
-                            self.createIfcCartesianPoint(polygon[i - 1])
-                        ),
-                        self.createIfcVertexPoint(
-                            self.createIfcCartesianPoint(polygon[i])
-                        ),
-                    )
+                    self.createIfcEdge(vertices[i - 1], vertices[i])
                     for i in range(len(polygon))
                 ]
             ]
