@@ -496,7 +496,7 @@ def clip_solid(self, solid, start, end):
                 self.createIfcAxis2Placement3D(
                     self.createIfcCartesianPoint(start),
                     self.createIfcDirection(xprod),
-                    None,
+                    self.createIfcDirection(perp_plan),
                 )
             ),
             False,
