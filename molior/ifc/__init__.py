@@ -435,7 +435,7 @@ def create_tessellation_from_mesh(self, vertices, faces):
         self.createIfcIndexedPolygonalFace([index + 1 for index in face])
         for face in faces
     ]
-    return self.createIfcPolygonalFaceSet(pointlist, None, indexedfaces, None)
+    return self.createIfcPolygonalFaceSet(pointlist, True, indexedfaces, None)
 
 
 def create_tessellations_from_mesh_split(self, vertices, faces):
@@ -449,7 +449,7 @@ def create_tessellations_from_mesh_split(self, vertices, faces):
             for face in faces[stylename]
         ]
         tessellation = self.createIfcPolygonalFaceSet(
-            pointlist, None, indexedfaces, None
+            pointlist, False, indexedfaces, None
         )
         tessellations.append(tessellation)
         style = run("style.add_style", self, name=stylename)
