@@ -1,4 +1,5 @@
 import ifcopenshell.api
+import ifcopenshell.geom
 import numpy
 
 from topologic import Vertex, Edge, Face, FaceUtility
