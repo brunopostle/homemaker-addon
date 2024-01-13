@@ -170,7 +170,7 @@ class Tests(unittest.TestCase):
 
         self.assertFalse(graph.IsConnected())
         dot = graph.Dot(self.cc)
-        self.assertTrue(type(dot) == str)
+        self.assertTrue(isinstance(dot, str))
 
     def test_shortest_path(self):
         graph = self.cc.Adjacency()

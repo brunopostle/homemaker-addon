@@ -483,10 +483,10 @@ class Wall(TraceClass):
                 opening = db["list"][segment[id_opening]["size"]]
                 name = opening["name"]
 
-                l, r = self.opening_coor(id_segment, id_opening)
+                left, right = self.opening_coor(id_segment, id_opening)
                 opening_offset = scale_2d(-self.offset, self.normal_segment(id_segment))
-                left_2d = add_2d(l[0:2], opening_offset)
-                right_2d = add_2d(r[0:2], opening_offset)
+                left_2d = add_2d(left[0:2], opening_offset)
+                right_2d = add_2d(right[0:2], opening_offset)
 
                 if db["type"] == "window":
                     ifc_class = "IfcWindow"
@@ -689,10 +689,10 @@ class Wall(TraceClass):
                 cill = self.elevation + db["cill"]
                 soffit = cill + opening["height"]
                 vertices = [
-                    [*l[0:2], cill],
-                    [*r[0:2], cill],
-                    [*r[0:2], soffit],
-                    [*l[0:2], soffit],
+                    [*left[0:2], cill],
+                    [*right[0:2], cill],
+                    [*right[0:2], soffit],
+                    [*left[0:2], soffit],
                 ]
                 cell_id = 0
                 for cell in cells_ordered:

@@ -183,7 +183,7 @@ def points_2line(A, B):
 
 
 def scale_2d(A, B):
-    if type(A) == list:
+    if isinstance(A, list):
         return [A[0] * B, A[1] * B]
     return [B[0] * A, B[1] * A]
 
@@ -215,7 +215,7 @@ def magnitude_3d(A):
 
 
 def scale_3d(A, B):
-    if type(A) == list:
+    if isinstance(A, list):
         return [A[0] * B, A[1] * B, A[2] * B]
     return [B[0] * A, B[1] * A, B[2] * A]
 

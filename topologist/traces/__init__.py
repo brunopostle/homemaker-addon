@@ -96,7 +96,9 @@ class Traces:
             for elevation in traces[label]:
                 for height in traces[label][elevation]:
                     for stylename in traces[label][elevation][height]:
-                        if type(traces[label][elevation][height][stylename]) == list:
+                        if isinstance(
+                            traces[label][elevation][height][stylename], list
+                        ):
                             continue
                         graphs = traces[label][elevation][height][
                             stylename

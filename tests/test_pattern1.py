@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
-import unittest, sys, os
+import unittest
+import sys
+import os
 
 from topologic import Vertex, Face, CellComplex
 

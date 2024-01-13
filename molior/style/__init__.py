@@ -17,7 +17,10 @@ folder tree, all others will be ignored.
 
 """
 
-import os, yaml, copy, json
+import os
+import yaml
+import copy
+import json
 import ifcopenshell
 
 

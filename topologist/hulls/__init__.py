@@ -28,5 +28,5 @@ class Hulls:
         hulls = self.hulls
         for label in hulls:
             for stylename in hulls[label]:
-                if not type(hulls[label][stylename]) == list:
+                if not isinstance(hulls[label][stylename], list):
                     hulls[label][stylename] = hulls[label][stylename].decompose()

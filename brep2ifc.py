@@ -9,7 +9,9 @@ Usage:
     brep2ifc.py mygeometry.brep mybuilding.ifc
 
 """
-import sys, os, datetime
+import sys
+import os
+import datetime
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
