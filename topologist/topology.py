@@ -121,7 +121,7 @@ def MeshSplit(self):
             stylename = "default"
         wire_vertices_ptr = []
         face.ExternalBoundary().Vertices(None, wire_vertices_ptr)
-        if not stylename in faces:
+        if stylename not in faces:
             faces[stylename] = []
         faces[stylename].append([self.VertexId(vertex) for vertex in wire_vertices_ptr])
     return vertices, faces
@@ -160,7 +160,7 @@ def GraphVertex(self, graph):
     """What Vertex in a given Graph corresponds with this Topology"""
     index = self.Get("index")
     myclass = type(self).__name__
-    if not index == None:
+    if index is not None:
         vertices_ptr = []
         graph.Vertices(vertices_ptr)
         for vertex in vertices_ptr:

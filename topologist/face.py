@@ -65,7 +65,7 @@ def BadNormal(self, cellcomplex):
     if the Face doesn't face 'out'"""
     if not self.IsWorld(cellcomplex):
         cells = self.CellsOrdered(cellcomplex)
-        if cells[0] == None or cells[1] == None:
+        if cells[0] is None or cells[1] is None:
             self.Set("badnormal", True)
             return True
         if cells[1].IsOutside() and not cells[0].IsOutside():

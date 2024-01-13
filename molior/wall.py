@@ -111,7 +111,7 @@ class Wall(TraceClass):
             boundaries = []
             cells_ordered = face.CellsOrdered(self.cellcomplex)
             for cell in cells_ordered:
-                if cell == None:
+                if cell is None:
                     boundaries.append(None)
                     continue
                 boundary = run(
@@ -146,11 +146,11 @@ class Wall(TraceClass):
                     self.file.createIfcConnectionSurfaceGeometry(curve_bounded_plane)
                 )
                 cell_index = cell.Get("index")
-                if not cell_index == None:
+                if cell_index is not None:
                     # can't assign psets to an IfcRelationship, use Description instead
                     boundary.Description = "CellIndex " + str(cell_index)
                 face_index = face.Get("index")
-                if face_index != None:
+                if face_index is not None:
                     boundary.Name = "FaceIndex " + face_index
                 boundaries.append(boundary)
 
@@ -213,7 +213,7 @@ class Wall(TraceClass):
 
             # FIXME use geometry.connect_path
             # Rel Connects Path Elements
-            if previous_wall == None:
+            if previous_wall is None:
                 first_wall = mywall
             else:
                 rel_connects = run(
@@ -698,7 +698,7 @@ class Wall(TraceClass):
                 for cell in cells_ordered:
                     parent_boundary = boundaries[cell_id]
                     cell_id += 1
-                    if cell == None:
+                    if cell is None:
                         continue
                     boundary = run(
                         "root.create_entity",

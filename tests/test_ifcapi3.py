@@ -29,15 +29,14 @@ class Tests(unittest.TestCase):
         building = get_building_by_name(ifc, site, "My Building")
         create_storeys(ifc, building, {0.0: 0})
 
-        element = run(
+        run(
             "root.create_entity",
             ifc,
             ifc_class="IfcBuildingElementProxy",
             name="My Extrusion",
         )
-        directrix = [[-5.0, 1.0], [-1.0, 1.0], [-1.0, 5.0], [-5.0, 5.0], [-5.0, 1.0]]
 
-        transform = ifc.createIfcCartesianTransformationOperator2D(
+        ifc.createIfcCartesianTransformationOperator2D(
             None,
             None,
             ifc.createIfcCartesianPoint([0.0, 0.0]),

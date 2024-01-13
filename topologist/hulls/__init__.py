@@ -10,9 +10,9 @@ class Hulls:
     def add_face(self, label, stylename, face=None, front_cell=None, back_cell=None):
         """Add a Topologic Face object, will split to contiguous shells later"""
         hulls = self.hulls
-        if not label in hulls:
+        if label not in hulls:
             hulls[label] = {}
-        if not stylename in hulls[label]:
+        if stylename not in hulls[label]:
             hulls[label][stylename] = ushell.shell()
 
         vertices_ptr = []

@@ -321,7 +321,7 @@ def GetHulls(self):
                             front_cell=front_cell,
                             back_cell=back_cell,
                         )
-                elif cell_above.Usage() != None:
+                elif cell_above.Usage() is not None:
                     # these hulls are duplicates of traces with the same names
                     myhulls.add_face(
                         cell_above.Usage(),

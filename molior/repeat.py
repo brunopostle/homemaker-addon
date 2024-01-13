@@ -127,7 +127,7 @@ class Repeat(TraceClass):
                 ),
             )
 
-            if self.parent_aggregate != None:
+            if self.parent_aggregate is not None:
                 run(
                     "aggregate.assign_object",
                     self.file,
@@ -376,7 +376,7 @@ class Repeat(TraceClass):
             top_object = path_aggregate
         else:
             top_object = aggregate
-        if self.parent_aggregate != None:
+        if self.parent_aggregate is not None:
             run(
                 "aggregate.assign_object",
                 self.file,

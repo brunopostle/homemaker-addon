@@ -20,7 +20,7 @@ run = ifcopenshell.api.run
 
 def init(name="Homemaker Project", file=None):
     """Creates and sets up an ifc 'file' object"""
-    if file == None:
+    if file is None:
         file = run("project.create_file")
     # TODO skip each of these if already existing
     run("owner.add_person", file)
@@ -524,14 +524,14 @@ def add_pset(self, product, name, properties):
 def add_face_topology_epsets(self, entity, face, back_cell, front_cell):
     if face:
         face_index = face.Get("index")
-        if not face_index == None:
+        if face_index is not None:
             add_pset(self, entity, "EPset_Topology", {"FaceIndex": str(face_index)})
         face_stylename = face.Get("stylename")
-        if not face_stylename == None:
+        if face_stylename is not None:
             add_pset(self, entity, "EPset_Topology", {"StyleName": str(face_stylename)})
     if front_cell:
         front_cell_index = front_cell.Get("index")
-        if not front_cell_index == None:
+        if front_cell_index is not None:
             add_pset(
                 self,
                 entity,
@@ -540,7 +540,7 @@ def add_face_topology_epsets(self, entity, face, back_cell, front_cell):
             )
     if back_cell:
         back_cell_index = back_cell.Get("index")
-        if not back_cell_index == None:
+        if back_cell_index is not None:
             add_pset(
                 self,
                 entity,
@@ -552,10 +552,10 @@ def add_face_topology_epsets(self, entity, face, back_cell, front_cell):
 def add_cell_topology_epsets(self, entity, cell):
     if cell:
         cell_index = cell.Get("index")
-        if cell_index != None:
+        if cell_index is not None:
             add_pset(self, entity, "EPset_Topology", {"CellIndex": cell_index})
         cell_usage = cell.Get("usage")
-        if cell_usage != None:
+        if cell_usage is not None:
             add_pset(self, entity, "EPset_Topology", {"Usage": cell_usage})
 
 
@@ -592,7 +592,7 @@ def assign_space_byindex(self, entity, building, index):
             )
             if pset_topology:
                 spaces[pset_topology["CellIndex"]] = space
-    if not str(index) in spaces:
+    if str(index) not in spaces:
         return
     if entity.is_a("IfcSpatialElement"):
         run(

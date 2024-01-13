@@ -215,7 +215,7 @@ class Molior:
 
     def init_building(self):
         """Create and relate Site, Building and Storey Spatial Element products, set as current building"""
-        if self.file == None:
+        if self.file is None:
             self.file = molior.ifc.init()
         else:
             molior.ifc.create_default_contexts(self.file)
@@ -380,7 +380,7 @@ class Molior:
             for face in faces_ptr:
                 index = face.Get("index")
                 # connect this surface member to this curve connection
-                if not index == None and index in surface_lookup:
+                if index is not None and index in surface_lookup:
                     surface_member = surface_lookup[index]
                     run(
                         "structural.add_structural_member_connection",
@@ -556,7 +556,7 @@ class Molior:
         self.cellcomplex.Cells(None, cells_ptr)
         for cell in cells_ptr:
             topology_index = cell.Get("index")
-            if not topology_index == None and topology_index in space_lookup:
+            if topology_index is not None and topology_index in space_lookup:
                 continue
             else:
                 element = run(
@@ -565,7 +565,7 @@ class Molior:
                     ifc_class="IfcSpace",
                     name="void-space/" + str(topology_index),
                 )
-                if not topology_index == None:
+                if topology_index is not None:
                     space_lookup[topology_index] = element
                     add_cell_topology_epsets(self.file, element, cell)
                 elevation = cell.Elevation()
@@ -687,7 +687,7 @@ class Molior:
                     "EPset_Topology"
                 )
                 if pset_topology:
-                    if not "FrontCellIndex" in pset_topology or (
+                    if "FrontCellIndex" not in pset_topology or (
                         "FrontCellIndex" in pset_topology
                         and cell_lookup[pset_topology["FrontCellIndex"]].IsOutside()
                     ):

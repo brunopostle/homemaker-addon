@@ -139,7 +139,7 @@ class ObjectHomemaker(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
-        if tool.Ifc.get() == None:
+        if tool.Ifc.get() is None:
             # creates Project, Units, Representation Contexts etc..
             IfcStore.file = molior.ifc.init()
 
@@ -307,9 +307,9 @@ def meshes_from_cellcomplex(cc):
 
     # populate material slots for this new mesh
     for material_name in materials:
-        if not material_name in bpy.data.materials:
+        if material_name not in bpy.data.materials:
             bpy.data.materials.new(material_name)
-        if not material_name in new_mesh.materials:
+        if material_name not in new_mesh.materials:
             material = bpy.data.materials[material_name]
             new_mesh.materials.append(material)
     # get names/index for each material slot

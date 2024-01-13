@@ -21,13 +21,13 @@ class Traces:
     ):
         """add an edge defined by two vertices to graph, will split into distinct graphs later"""
         traces = self.traces
-        if not label in traces:
+        if label not in traces:
             traces[label] = {}
-        if not elevation in traces[label]:
+        if elevation not in traces[label]:
             traces[label][elevation] = {}
-        if not height in traces[label][elevation]:
+        if height not in traces[label][elevation]:
             traces[label][elevation][height] = {}
-        if not stylename in traces[label][elevation][height]:
+        if stylename not in traces[label][elevation][height]:
             traces[label][elevation][height][stylename] = ugraph.graph()
 
         traces[label][elevation][height][stylename].add_edge(
@@ -78,13 +78,13 @@ class Traces:
     def add_trace(self, label, elevation, height, stylename, graph=ugraph.graph()):
         """graph is already assembled, append"""
         traces = self.traces
-        if not label in traces:
+        if label not in traces:
             traces[label] = {}
-        if not elevation in traces[label]:
+        if elevation not in traces[label]:
             traces[label][elevation] = {}
-        if not height in traces[label][elevation]:
+        if height not in traces[label][elevation]:
             traces[label][elevation][height] = {}
-        if not stylename in traces[label][elevation][height]:
+        if stylename not in traces[label][elevation][height]:
             traces[label][elevation][height][stylename] = []
 
         traces[label][elevation][height][stylename].append(graph)

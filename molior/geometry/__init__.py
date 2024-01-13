@@ -46,7 +46,7 @@ def map_to_2d(vertices, normal_vector):
     # First node should have lowest Z
     elevation_local = None
     for vertex_id in range(len(vertices)):
-        if elevation_local == None or vertices[vertex_id][2] < elevation_local:
+        if elevation_local is None or vertices[vertex_id][2] < elevation_local:
             elevation_local = vertices[vertex_id][2]
             id_lowest = vertex_id
     vertices = [

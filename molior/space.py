@@ -54,7 +54,7 @@ class Space(TraceClass):
             is_external = False
             crinkliness = 1.0
         separation = cell.Get("separation")
-        if separation != None:
+        if separation is not None:
             separation = float(separation)
 
         add_pset(

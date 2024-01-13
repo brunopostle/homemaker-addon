@@ -56,11 +56,11 @@ class Style:
                 if stylename == ".":
                     stylename = "default"
 
-                if not stylename in self.data:
+                if stylename not in self.data:
                     self.data[stylename] = {}
-                if not stylename in self.files:
+                if stylename not in self.files:
                     self.files[stylename] = {}
-                if not stylename in self.libraries:
+                if stylename not in self.libraries:
                     self.libraries[stylename] = {}
                 if ext == ".yml":
                     fh = open(os.path.join(root, name), "rb")
@@ -86,7 +86,7 @@ class Style:
     def get(self, stylename):
         """retrieves a flattened style definition with ancestors filling in the gaps"""
         # FIXME this results in duplicated assets when an ancestor style is also in use
-        if not stylename in self.data:
+        if stylename not in self.data:
             return self.get("default")
         mydata = copy.deepcopy(self.data[stylename])
         if len(mydata["ancestors"]) == 0:
@@ -100,14 +100,14 @@ class Style:
 
     def get_from_library(self, stylename, ifc_class, name):
         """retrieves from Project Libraries in stylename folder or ancestors as necessary"""
-        if not stylename in self.libraries:
+        if stylename not in self.libraries:
             return self.get_from_library("default", ifc_class, name)
 
         # look in all IFC files in this folder
         for prefix in self.libraries[stylename]:
             library = self.libraries[stylename][prefix]
             # load and cache ifc libraries if not loaded
-            if library["file"] == None:
+            if library["file"] is None:
                 library["file"] = ifcopenshell.open(library["path"])
             for item in library["file"].by_type(ifc_class):
                 if item.Name == name:

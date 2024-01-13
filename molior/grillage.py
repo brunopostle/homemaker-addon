@@ -85,7 +85,7 @@ class Grillage(BaseClass):
             # need this for structure
             face_surface = create_face_surface(self.file, vertices, normal)
             for vertex in vertices:
-                if elevation == None or vertex[2] < elevation:
+                if elevation is None or vertex[2] < elevation:
                     elevation = el(vertex[2])
 
             face_aggregate = run(
@@ -282,7 +282,7 @@ class Grillage(BaseClass):
         level = 0
         if elevation in self.elevations:
             level = self.elevations[elevation]
-        if self.parent_aggregate != None:
+        if self.parent_aggregate is not None:
             run(
                 "aggregate.assign_object",
                 self.file,

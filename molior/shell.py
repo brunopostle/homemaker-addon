@@ -66,7 +66,7 @@ class Shell(BaseClass):
             # need this for structure
             face_surface = create_face_surface(self.file, vertices, normal)
             for vertex in vertices:
-                if elevation == None or vertex[2] < elevation:
+                if elevation is None or vertex[2] < elevation:
                     elevation = el(vertex[2])
 
             # skip if this is within a stair core
@@ -141,11 +141,11 @@ class Shell(BaseClass):
                     boundary.RelatedBuildingElement = element
 
                     cell_index = mycell.Get("index")
-                    if cell_index != None:
+                    if cell_index is not None:
                         # can't assign psets to an IfcRelationship, use Description instead
                         boundary.Description = "CellIndex " + str(cell_index)
                     face_index = face[1]["face"].Get("index")
-                    if face_index != None:
+                    if face_index is not None:
                         boundary.Name = "FaceIndex " + face_index
 
             if element.is_a("IfcVirtualElement"):
@@ -280,7 +280,7 @@ class Shell(BaseClass):
         level = 0
         if elevation in self.elevations:
             level = self.elevations[elevation]
-        if self.parent_aggregate != None:
+        if self.parent_aggregate is not None:
             run(
                 "aggregate.assign_object",
                 self.file,

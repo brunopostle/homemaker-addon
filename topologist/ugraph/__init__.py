@@ -54,7 +54,7 @@ class graph:
         start_list = self.starts()
         end_list = self.ends()
         for start in start_list:
-            if not start in end_list:
+            if start not in end_list:
                 result.append(start)
         return result
 
@@ -66,7 +66,7 @@ class graph:
         for vertex in source_list:
             chain = graph()
             todo = True
-            while todo == True:
+            while todo is True:
                 chain.add_edge({vertex: self.graph[vertex]})
                 if self.graph[vertex] and self.graph[vertex][0] in self.graph:
                     vertex_next = self.graph[vertex][0]
@@ -88,7 +88,7 @@ class graph:
                 continue
             cycle = graph()
             todo = True
-            while todo == True:
+            while todo is True:
                 if self.graph[vertex] and self.graph[vertex][0] in self.graph:
                     cycle.add_edge({vertex: self.graph[vertex]})
                     vertex_next = self.graph[vertex][0]

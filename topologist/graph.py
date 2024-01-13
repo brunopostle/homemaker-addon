@@ -13,7 +13,7 @@ def Circulation(self, cellcomplex):
         if face.IsVertical():
             # wall
             axis = face.AxisOuter()
-            if axis == None or VertexUtility.Distance(axis[0], axis[1]) < 1.0:
+            if axis is None or VertexUtility.Distance(axis[0], axis[1]) < 1.0:
                 # is too narrow for a door
                 vertices_ptr.append(vertex)
             else:
@@ -96,9 +96,9 @@ def ShortestPathTable(self):
                     length += edge.Length()
                 i_index = vertices_list[i].Get("index")
                 j_index = vertices_list[j].Get("index")
-                if not i_index in result:
+                if i_index not in result:
                     result[i_index] = {}
-                if not j_index in result:
+                if j_index not in result:
                     result[j_index] = {}
                 result[i_index][j_index] = length
                 result[j_index][i_index] = length

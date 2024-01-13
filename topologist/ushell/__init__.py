@@ -21,7 +21,7 @@ class shell:
         my_face = [nodes_str, data, None]
         self.faces.append(my_face)
         for index in range(len(node_coors)):
-            if not nodes_str[index] in self.nodes:
+            if nodes_str[index] not in self.nodes:
                 self.nodes[nodes_str[index]] = []
             self.nodes[nodes_str[index]].append(my_face)
 
@@ -41,19 +41,19 @@ class shell:
 
     def segment(self):
         """Utility to allocate index numbers to faces by contiguous region"""
-        if self.faces[0][2] == None:
+        if self.faces[0][2] is None:
             # put first face in group 0
             self.faces[0][2] = 0
         indices_in_use = {}
         dirty = True
-        while dirty == True:
+        while dirty is True:
             dirty = False
             for face in self.faces:
-                if face[2] == None:
+                if face[2] is None:
                     for node_str in face[0]:
                         node = self.nodes[node_str]
                         for face_ref in node:
-                            if not face_ref[2] == None:
+                            if face_ref[2] is not None:
                                 face[2] = face_ref[2]
                                 dirty = True
                                 continue
@@ -61,7 +61,7 @@ class shell:
                     indices_in_use[face[2]] = True
         index = len(list(indices_in_use))
         for face in self.faces:
-            if face[2] == None:
+            if face[2] is None:
                 face[2] = index
                 self.segment()
 
@@ -71,7 +71,7 @@ class shell:
         results = {}
         for face in self.faces:
             group = face[2]
-            if not group in results:
+            if group not in results:
                 results[group] = shell()
             results[group].add_facet(
                 [string_to_coor(node_str) for node_str in face[0]], face[1]

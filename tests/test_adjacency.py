@@ -76,9 +76,9 @@ class Tests(unittest.TestCase):
         self.assertEqual(len(vertices_ptr), 6)
         for vertex in vertices_ptr:
             if vertex.Get("class") == "Face":
-                self.assertFalse(vertex.Get("index") == None)
+                self.assertFalse(vertex.Get("index") is None)
             elif vertex.Get("class") == "Cell":
-                self.assertFalse(vertex.Get("index") == None)
+                self.assertFalse(vertex.Get("index") is None)
             else:
                 self.assertTrue(False)
 
@@ -130,7 +130,7 @@ class Tests(unittest.TestCase):
             # vertex is the node in the Graph that corresponds to this Face
             vertex = face.GraphVertex(graph)
             # the Graph may not have a node for this Face (e.g. purged, external wall)
-            if vertex == None:
+            if vertex is None:
                 continue
             # it should be a Vertex, representing a Face
             self.assertEqual(type(vertex), Vertex)

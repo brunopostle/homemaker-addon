@@ -11,7 +11,7 @@ class Normals:
 
     def add_vector(self, label, vertex, vector):
         """Add a 3D vector to the location defined by a Topologic Vertex"""
-        if not label in self.normals:
+        if label not in self.normals:
             self.normals[label] = {}
 
         if vertex.__class__ == [].__class__:

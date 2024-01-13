@@ -69,7 +69,7 @@ class Floor(TraceClass):
             bottom_faces_ptr = []
             cell.FacesBottom(bottom_faces_ptr)
 
-            if cell.Get("index") != None:
+            if cell.Get("index") is not None:
                 add_cell_topology_epsets(self.file, element, cell)
                 add_pset(
                     self.file,
