@@ -381,7 +381,7 @@ def clean_id_map():
     for ifc_definition_id in list(IfcStore.id_map.keys()):
         try:
             IfcStore.file.by_id(ifc_definition_id)
-        except:
+        except RuntimeError:
             del IfcStore.id_map[ifc_definition_id]
 
 
@@ -410,7 +410,7 @@ def triangulate_nonplanar(blender_object):
             bpy.ops.object.material_slot_add()
             try:
                 other_material = bpy.data.materials["default"]
-            except:
+            except KeyError:
                 other_material = bpy.data.materials.new(name="default")
             blender_object.active_material = other_material
 
@@ -421,7 +421,7 @@ def triangulate_nonplanar(blender_object):
             try:
                 nonplanar_material = bpy.data.materials["nonplanar"]
                 blender_object.active_material = nonplanar_material
-            except:
+            except KeyError:
                 nonplanar_material = bpy.data.materials.new(name="nonplanar")
                 nonplanar_material.use_nodes = True
                 bpy.context.object.active_material = nonplanar_material

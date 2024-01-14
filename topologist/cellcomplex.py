@@ -366,7 +366,7 @@ def FootPrint(self):
     """returns the outline(s) of the cellcomplex at the lowest level"""
     try:
         cell = self.ExternalBoundary()
-    except:
+    except RuntimeError:
         cells_ptr = []
         self.Cells(None, cells_ptr)
         cell = cells_ptr[0]

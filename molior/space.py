@@ -50,7 +50,10 @@ class Space(TraceClass):
         try:
             is_external = cell.IsOutside()
             crinkliness = int(cell.Crinkliness(self.cellcomplex) * 10) / 10
-        except:
+        except AttributeError:
+            is_external = False
+            crinkliness = 1.0
+        except RuntimeError:
             is_external = False
             crinkliness = 1.0
         separation = cell.Get("separation")

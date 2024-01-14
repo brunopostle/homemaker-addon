@@ -9,7 +9,7 @@ lint :
 	pyflakes *.py {tests,topologist,molior}/*.py {topologist,molior}/*/*.py || true
 
 todo :
-	egrep 'FIXME|TODO' *.py {tests,topologist,molior}/*.py {topologist,molior}/*/*.py || true
+	grep -E 'FIXME|TODO' *.py {tests,topologist,molior}/*.py {topologist,molior}/*/*.py || true
 
 black :
 	black --diff *.py {tests,topologist,molior}/

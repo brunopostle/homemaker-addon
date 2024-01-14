@@ -137,7 +137,7 @@ def Perimeter(self, host_topology):
         return graph
     try:
         floor = Face.ByEdges(edges_ptr)
-    except:
+    except RuntimeError:
         return graph
 
     normal = floor.Normal()

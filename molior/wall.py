@@ -605,7 +605,7 @@ class Wall(TraceClass):
                                 self.file.createIfcDirection((0.0, 0.0, -1.0)),
                                 thickness + 0.04,
                             )
-                        except:
+                        except RuntimeError:
                             continue
 
                     if not swept_solid:
@@ -744,11 +744,11 @@ class Wall(TraceClass):
                 edge = self.chain.graph[edges[id_segment][0]]
                 try:
                     interior_type = edge[1]["back_cell"].Usage()
-                except:
+                except AttributeError:
                     interior_type = "living"
                 try:
                     exterior_type = edge[1]["front_cell"].Usage()
-                except:
+                except AttributeError:
                     exterior_type = None
                 access = 0
                 if exterior_type == "outside":
