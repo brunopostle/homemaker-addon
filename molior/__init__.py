@@ -220,7 +220,7 @@ class Molior:
         else:
             molior.ifc.create_default_contexts(self.file)
         self.project = self.file.by_type("IfcProject")[0]
-        site = get_site_by_name(self.file, self.project, "Site " + self.name)
+        site = get_site_by_name(self.file, self.project, self.name)
         self.building = get_building_by_name(self.file, site, self.name)
         self.structural_analysis_model = get_structural_analysis_model_by_name(
             self.file, self.building, self.name
