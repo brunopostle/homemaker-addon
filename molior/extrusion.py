@@ -107,9 +107,9 @@ class Extrusion(TraceClass):
 
             # axis and matrix stuff
 
-            start = [*self.corner_coor(id_segment), self.elevation + self.height]
-            end = [*self.corner_coor(id_segment + 1), self.elevation + self.height]
-            vector = subtract_3d(end, start)
+            start_world = [*self.corner_offset(id_segment, self.xshift), self.elevation + self.height]
+            end_world = [*self.corner_offset(id_segment + 1, self.xshift), self.elevation + self.height]
+            vector = subtract_3d(end_world, start_world)
             direction = normalise_3d(vector)
             length = magnitude_3d(vector)
 
@@ -130,7 +130,7 @@ class Extrusion(TraceClass):
                 [0.0, 1.0, 0.0, 0.0],
                 [0.0, 0.0, 0.0, 1.0],
             ]
-            placement = a2p(start, [0.0, 0.0, 1.0], direction)
+            placement = a2p(start_world, [0.0, 0.0, 1.0], direction)
             matrix = placement @ to_x_axis
             inverse = numpy.linalg.inv(matrix)
 
@@ -240,7 +240,7 @@ class Extrusion(TraceClass):
             # location
 
             shift_matrix = [
-                [1.0, 0.0, 0.0, self.xshift],
+                [1.0, 0.0, 0.0, 0.0],
                 [0.0, 1.0, 0.0, self.yshift],
                 [0.0, 0.0, 1.0, 0.0],
                 [0.0, 0.0, 0.0, 1.0],
@@ -300,10 +300,10 @@ class Extrusion(TraceClass):
                         [
                             self.file.createIfcEdge(
                                 self.file.createIfcVertexPoint(
-                                    self.file.createIfcCartesianPoint(start)
+                                    self.file.createIfcCartesianPoint(start_world)
                                 ),
                                 self.file.createIfcVertexPoint(
-                                    self.file.createIfcCartesianPoint(end)
+                                    self.file.createIfcCartesianPoint(end_world)
                                 ),
                             )
                         ],
