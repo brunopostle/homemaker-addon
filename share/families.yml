@@ -153,6 +153,12 @@ sash window:
     width: 0.91
     side: 0.8
     end: 0.3
+  -
+    name: sash_tall_arched
+    height: 2.65
+    width: 0.91
+    side: 0.8
+    end: 0.3
 fancy sash window:
   -
     name: sash_big_fancy
