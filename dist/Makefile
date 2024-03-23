@@ -13,7 +13,7 @@ dist:
 	mkdir -p working
 
 	cd working && wget https://files.pythonhosted.org/packages/12/fc/a4d5a7554e0067677823f7265cb3ae22aed8a238560b5133b58cda252dad/PyYAML-6.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl
-	cd working && wget https://github.com/brunopostle/Topologic/releases/download/2022-04-27/Topologic_2022-12-10_linux.zip
+	cd working && wget https://github.com/brunopostle/Topologic/releases/download/2022-04-27/Topologic_2024-03-23_linux.zip
 	cd working && wget https://github.com/brunopostle/Topologic/releases/download/2022-01-31/Topologic_2022-02-03_darwin.zip
 	cd working && wget https://github.com/brunopostle/Topologic/releases/download/2022-04-27/Topologic_2022-04-10_win.zip
 	cd working && wget https://github.com/brunopostle/Topologic/releases/download/2022-04-27/Topologic_2023-10-08_darwin-arm.zip
