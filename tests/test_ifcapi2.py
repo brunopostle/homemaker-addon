@@ -68,7 +68,7 @@ class Tests(unittest.TestCase):
         run(
             "type.assign_type",
             ifc,
-            related_object=myproduct,
+            related_objects=[myproduct],
             relating_type=product_type,
         )
 
@@ -175,7 +175,7 @@ class Tests(unittest.TestCase):
         run(
             "type.assign_type",
             ifc,
-            related_object=myproduct,
+            related_objects=[myproduct],
             relating_type=product_type,
         )
 

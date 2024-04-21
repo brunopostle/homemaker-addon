@@ -88,7 +88,7 @@ class Shell(BaseClass):
             run(
                 "aggregate.assign_object",
                 self.file,
-                product=element,
+                products=[element],
                 relating_object=aggregate,
             )
             add_face_topology_epsets(
@@ -190,7 +190,7 @@ class Shell(BaseClass):
             run(
                 "material.assign_material",
                 self.file,
-                product=structural_surface,
+                products=[structural_surface],
                 material=get_material_by_name(
                     self.file,
                     self.style_object,
@@ -217,7 +217,7 @@ class Shell(BaseClass):
             run(
                 "type.assign_type",
                 self.file,
-                related_object=element,
+                related_objects=[element],
                 relating_type=product_type,
             )
 
@@ -284,7 +284,7 @@ class Shell(BaseClass):
             run(
                 "aggregate.assign_object",
                 self.file,
-                product=aggregate,
+                products=[aggregate],
                 relating_object=self.parent_aggregate,
             )
         else:

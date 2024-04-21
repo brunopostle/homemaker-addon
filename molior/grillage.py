@@ -97,7 +97,7 @@ class Grillage(BaseClass):
             run(
                 "aggregate.assign_object",
                 self.file,
-                product=face_aggregate,
+                products=[face_aggregate],
                 relating_object=aggregate,
             )
             add_face_topology_epsets(
@@ -155,7 +155,7 @@ class Grillage(BaseClass):
             run(
                 "material.assign_material",
                 self.file,
-                product=structural_surface,
+                products=[structural_surface],
                 material=get_material_by_name(
                     self.file,
                     self.style_object,
@@ -286,7 +286,7 @@ class Grillage(BaseClass):
             run(
                 "aggregate.assign_object",
                 self.file,
-                product=aggregate,
+                products=[aggregate],
                 relating_object=self.parent_aggregate,
             )
         else:

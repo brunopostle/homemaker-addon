@@ -37,7 +37,7 @@ class Tests(unittest.TestCase):
         run(
             "type.assign_type",
             self.file,
-            related_object=mycolumn,
+            related_objects=[mycolumn],
             relating_type=column_type,
         )
 

@@ -96,7 +96,7 @@ class Wall(TraceClass):
             run(
                 "aggregate.assign_object",
                 self.file,
-                product=mywall,
+                products=[mywall],
                 relating_object=aggregate,
             )
 
@@ -173,7 +173,7 @@ class Wall(TraceClass):
             run(
                 "type.assign_type",
                 self.file,
-                related_object=mywall,
+                related_objects=[mywall],
                 relating_type=product_type,
             )
 
@@ -332,7 +332,7 @@ class Wall(TraceClass):
             run(
                 "material.assign_material",
                 self.file,
-                product=structural_surface,
+                products=[structural_surface],
                 material=get_material_by_name(
                     self.file,
                     self.style_object,
@@ -532,7 +532,7 @@ class Wall(TraceClass):
                 run(
                     "type.assign_type",
                     self.file,
-                    related_object=entity,
+                    related_objects=[entity],
                     relating_type=element_type,
                 )
 

@@ -94,14 +94,14 @@ class Extrusion(TraceClass):
             run(
                 "type.assign_type",
                 self.file,
-                related_object=linear_element,
+                related_objects=[linear_element],
                 relating_type=type_product,
             )
             if segments > 1:
                 run(
                     "aggregate.assign_object",
                     self.file,
-                    product=linear_element,
+                    products=[linear_element],
                     relating_object=path_aggregate,
                 )
 
@@ -316,7 +316,7 @@ class Extrusion(TraceClass):
                 rel = run(
                     "material.assign_material",
                     self.file,
-                    product=structural_member,
+                    products=[structural_member],
                     type="IfcMaterialProfileSet",
                 )
                 profile_set = rel.RelatingMaterial
@@ -348,7 +348,7 @@ class Extrusion(TraceClass):
             run(
                 "aggregate.assign_object",
                 self.file,
-                product=top_object,
+                products=[top_object],
                 relating_object=self.parent_aggregate,
             )
         else:

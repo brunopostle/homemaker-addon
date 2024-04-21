@@ -98,7 +98,7 @@ class Tests(unittest.TestCase):
         run(
             "type.assign_type",
             ifc,
-            related_object=door,
+            related_objects=[door],
             relating_type=type_product,
         )
         # place it in space and assign to storey
@@ -126,7 +126,7 @@ class Tests(unittest.TestCase):
         run(
             "type.assign_type",
             ifc,
-            related_object=door2,
+            related_objects=[door2],
             relating_type=type_product,
         )
         # place it in space and assign to storey

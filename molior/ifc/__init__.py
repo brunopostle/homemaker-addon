@@ -137,7 +137,7 @@ def create_storeys(self, parent, elevations):
         mystorey.Description = "Storey " + mystorey.Name
         mystorey.LongName = mystorey.Description
         mystorey.CompositionType = "ELEMENT"
-        run("aggregate.assign_object", self, product=mystorey, relating_object=parent)
+        run("aggregate.assign_object", self, products=[mystorey], relating_object=parent)
         run(
             "geometry.edit_object_placement",
             self,
@@ -211,7 +211,7 @@ def get_site_by_name(self, parent, name):
     site.RefLatitude = [53, 23, 0]
     site.RefLongitude = [1, 28, 0]
     site.RefElevation = 75.0
-    run("aggregate.assign_object", self, product=site, relating_object=parent)
+    run("aggregate.assign_object", self, products=[site], relating_object=parent)
     return site
 
 
@@ -230,7 +230,7 @@ def get_building_by_name(self, parent, name):
         self,
         product=building,
     )
-    run("aggregate.assign_object", self, product=building, relating_object=parent)
+    run("aggregate.assign_object", self, products=[building], relating_object=parent)
     return building
 
 
@@ -569,14 +569,14 @@ def assign_storey_byindex(self, entity, building, index):
         run(
             "aggregate.assign_object",
             self,
-            product=entity,
+            products=[entity],
             relating_object=storeys[str(index)],
         )
     else:
         run(
             "spatial.assign_container",
             self,
-            product=entity,
+            products=[entity],
             relating_structure=storeys[str(index)],
         )
     return storeys[str(index)]
@@ -598,14 +598,14 @@ def assign_space_byindex(self, entity, building, index):
         run(
             "aggregate.assign_object",
             self,
-            product=entity,
+            products=[entity],
             relating_object=spaces[str(index)],
         )
     else:
         run(
             "spatial.assign_container",
             self,
-            product=entity,
+            products=[entity],
             relating_structure=spaces[str(index)],
         )
 

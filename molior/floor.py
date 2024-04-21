@@ -101,7 +101,7 @@ class Floor(TraceClass):
         run(
             "type.assign_type",
             self.file,
-            related_object=element,
+            related_objects=[element],
             relating_type=type_product,
         )
 

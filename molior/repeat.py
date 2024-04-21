@@ -114,7 +114,7 @@ class Repeat(TraceClass):
                 run(
                     "aggregate.assign_object",
                     self.file,
-                    product=aggregate,
+                    products=[aggregate],
                     relating_object=path_aggregate,
                 )
             run(
@@ -131,7 +131,7 @@ class Repeat(TraceClass):
                 run(
                     "aggregate.assign_object",
                     self.file,
-                    product=aggregate,
+                    products=[aggregate],
                     relating_object=self.parent_aggregate,
                 )
 
@@ -218,7 +218,7 @@ class Repeat(TraceClass):
                     run(
                         "aggregate.assign_object",
                         self.file,
-                        product=entity,
+                        products=[entity],
                         relating_object=aggregate,
                     )
 
@@ -288,7 +288,7 @@ class Repeat(TraceClass):
                         rel = run(
                             "material.assign_material",
                             self.file,
-                            product=structural_member,
+                            products=[structural_member],
                             type="IfcMaterialProfileSet",
                         )
                         profile_set = rel.RelatingMaterial
@@ -327,7 +327,7 @@ class Repeat(TraceClass):
                     run(
                         "type.assign_type",
                         self.file,
-                        related_object=entity,
+                        related_objects=[entity],
                         relating_type=type_product,
                     )
                     # TODO Axis Representation
@@ -380,7 +380,7 @@ class Repeat(TraceClass):
             run(
                 "aggregate.assign_object",
                 self.file,
-                product=top_object,
+                products=[top_object],
                 relating_object=self.parent_aggregate,
             )
         else:

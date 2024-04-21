@@ -805,7 +805,7 @@ class Molior:
             run(
                 "spatial.assign_container",
                 self.file,
-                product=annotation,
+                products=[annotation],
                 relating_structure=self.building,
             )
 
