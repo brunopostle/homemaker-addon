@@ -267,7 +267,7 @@ def get_library_by_name(self, library_name):
     run(
         "project.assign_declaration",
         self,
-        definition=library,
+        definitions=[library],
         relating_context=self.by_type("IfcProject")[0],
     )
     return library
@@ -644,7 +644,7 @@ def get_type_object(
     run(
         "project.assign_declaration",
         self,
-        definition=definition,
+        definitions=[definition],
         relating_context=get_library_by_name(self, stylename),
     )
     return definition

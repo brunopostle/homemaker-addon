@@ -72,7 +72,7 @@ class Tests(unittest.TestCase):
         run(
             "project.assign_declaration",
             self.file,
-            definition=local_element,
+            definitions=[local_element],
             relating_context=library,
         )
 
