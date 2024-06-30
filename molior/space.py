@@ -1,5 +1,6 @@
-import ifcopenshell.api
 import numpy
+import ifcopenshell.api.root
+import ifcopenshell.api.style
 
 from molior.baseclass import TraceClass
 from molior.geometry import matrix_align
@@ -39,8 +40,7 @@ class Space(TraceClass):
         # the cell is the first cell attached to any edge in the chain
         cell = self.chain.graph[next(iter(self.chain.graph))][1]["back_cell"]
 
-        element = api.run(
-            "root.create_entity",
+        element = api.root.create_entity(
             self.file,
             ifc_class=self.ifc,
             predefined_type=self.predefined_type,
@@ -113,11 +113,9 @@ class Space(TraceClass):
             red = numpy.clip(1.0 - crinkliness, 0.0, 1.0)
             green = numpy.clip(crinkliness, 0.0, 1.0)
             blue = numpy.clip(crinkliness - 1.0, 0.0, 1.0)
-            style = api.run(
-                "style.add_style", self.file, name="Crinkliness " + str(crinkliness)
+            style = api.style.add_style(self.file, name="Crinkliness " + str(crinkliness)
             )
-            api.run(
-                "style.add_surface_style",
+            api.style.add_surface_style(
                 self.file,
                 style=style,
                 ifc_class="IfcSurfaceStyleShading",
@@ -133,9 +131,8 @@ class Space(TraceClass):
             )
             # FIXME report 159 LIGHT ON TWO SIDES: custom psets? STDERR?
         else:
-            style = api.run("style.add_style", self.file, name="Outside Space")
-            api.run(
-                "style.add_surface_style",
+            style = api.style.add_style(self.file, name="Outside Space")
+            api.style.add_surface_style(
                 self.file,
                 style=style,
                 ifc_class="IfcSurfaceStyleShading",
@@ -149,21 +146,18 @@ class Space(TraceClass):
                     "Transparency": 0.9,
                 },
             )
-        api.run(
-            "style.assign_representation_styles",
+        api.style.assign_representation_styles(
             self.file,
             shape_representation=shape,
             styles=[style],
         )
 
-        api.run(
-            "geometry.assign_representation",
+        api.geometry.assign_representation(
             self.file,
             product=element,
             representation=shape,
         )
-        api.run(
-            "geometry.edit_object_placement",
+        api.geometry.edit_object_placement(
             self.file,
             product=element,
             matrix=matrix_align(

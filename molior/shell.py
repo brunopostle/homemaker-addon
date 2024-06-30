@@ -1,5 +1,9 @@
-import ifcopenshell.api
-
+import ifcopenshell.api.aggregate
+import ifcopenshell.api.geometry
+import ifcopenshell.api.material
+import ifcopenshell.api.root
+import ifcopenshell.api.structural
+import ifcopenshell.api.type
 from topologist.helpers import string_to_coor, el
 from molior.baseclass import BaseClass
 from molior.geometry import map_to_2d, map_to_2d_simple, matrix_align
@@ -39,14 +43,12 @@ class Shell(BaseClass):
         )
         body_context = get_context_by_name(self.file, context_identifier="Body")
 
-        aggregate = api.run(
-            "root.create_entity",
+        aggregate = api.root.create_entity(
             self.file,
             ifc_class="IfcElementAssembly",
             name=self.name,
         )
-        api.run(
-            "geometry.edit_object_placement",
+        api.geometry.edit_object_placement(
             self.file,
             product=aggregate,
         )
@@ -79,14 +81,12 @@ class Shell(BaseClass):
             ):
                 self.ifc = "IfcVirtualElement"
 
-            element = api.run(
-                "root.create_entity",
+            element = api.root.create_entity(
                 self.file,
                 ifc_class=self.ifc,
                 name=self.name,
             )
-            api.run(
-                "aggregate.assign_object",
+            api.aggregate.assign_object(
                 self.file,
                 products=[element],
                 relating_object=aggregate,
@@ -102,8 +102,7 @@ class Shell(BaseClass):
             # generate space boundar(y|ies)
             for mycell in face[1]["back_cell"], face[1]["front_cell"]:
                 if mycell:
-                    boundary = api.run(
-                        "root.create_entity",
+                    boundary = api.root.create_entity(
                         self.file,
                         ifc_class="IfcRelSpaceBoundary2ndLevel",
                     )
@@ -155,8 +154,7 @@ class Shell(BaseClass):
 
             # TODO skip unless Pset_*Common.LoadBearing
             # generate structural surfaces
-            structural_surface = api.run(
-                "root.create_entity",
+            structural_surface = api.root.create_entity(
                 self.file,
                 ifc_class="IfcStructuralSurfaceMember",
                 name=self.style + "/" + self.name,
@@ -170,14 +168,12 @@ class Shell(BaseClass):
                 face[1]["front_cell"],
             )
             structural_surface.Thickness = self.structural_thickness
-            api.run(
-                "structural.assign_structural_analysis_model",
+            api.structural.assign_structural_analysis_model(
                 self.file,
                 product=structural_surface,
                 structural_analysis_model=self.structural_analysis_model,
             )
-            api.run(
-                "geometry.assign_representation",
+            api.geometry.assign_representation(
                 self.file,
                 product=structural_surface,
                 representation=self.file.createIfcTopologyRepresentation(
@@ -187,8 +183,7 @@ class Shell(BaseClass):
                     [face_surface],
                 ),
             )
-            api.run(
-                "material.assign_material",
+            api.material.assign_material(
                 self.file,
                 products=[structural_surface],
                 material=get_material_by_name(
@@ -199,8 +194,7 @@ class Shell(BaseClass):
                 ),
             )
 
-            assignment = api.run(
-                "root.create_entity", self.file, ifc_class="IfcRelAssignsToProduct"
+            assignment = api.root.create_entity(self.file, ifc_class="IfcRelAssignsToProduct"
             )
             assignment.RelatingProduct = structural_surface
             assignment.RelatedObjects = [element]
@@ -214,8 +208,7 @@ class Shell(BaseClass):
                 stylename=self.style,
                 name=self.name,
             )
-            api.run(
-                "type.assign_type",
+            api.type.assign_type(
                 self.file,
                 related_objects=[element],
                 relating_type=product_type,
@@ -265,14 +258,12 @@ class Shell(BaseClass):
                     )
                 ],
             )
-            api.run(
-                "geometry.assign_representation",
+            api.geometry.assign_representation(
                 self.file,
                 product=element,
                 representation=shape,
             )
-            api.run(
-                "geometry.edit_object_placement",
+            api.geometry.edit_object_placement(
                 self.file,
                 product=element,
                 matrix=matrix,
@@ -281,8 +272,7 @@ class Shell(BaseClass):
         if elevation in self.elevations:
             level = self.elevations[elevation]
         if self.parent_aggregate is not None:
-            api.run(
-                "aggregate.assign_object",
+            api.aggregate.assign_object(
                 self.file,
                 products=[aggregate],
                 relating_object=self.parent_aggregate,

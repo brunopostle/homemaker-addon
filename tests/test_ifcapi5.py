@@ -3,7 +3,9 @@
 import os
 import sys
 import unittest
-import ifcopenshell.api
+import ifcopenshell.api.geometry
+import ifcopenshell.api.project
+import ifcopenshell.api.root
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior.ifc
@@ -61,16 +63,14 @@ class Tests(unittest.TestCase):
             "courtyard", "IfcMaterial", "Screed"
         )
         # add to current project
-        local_element = api.run(
-            "project.append_asset", self.file, library=library_file, element=element
+        local_element = api.project.append_asset(self.file, library=library_file, element=element
         )
 
         # create a library in this project
         library = get_library_by_name(self.file, stylename)
         # this doesn't work because an IFC Material isn't an Object Definition
         # so it doesn't HasContext and can't fit in a Project Library :(
-        api.run(
-            "project.assign_declaration",
+        api.project.assign_declaration(
             self.file,
             definitions=[local_element],
             relating_context=library,
@@ -88,23 +88,20 @@ class Tests(unittest.TestCase):
             "arcade", "IfcWIndowType", "arch_194x300"
         )
         # add to current project
-        local_element = api.run(
-            "project.append_asset", self.file, library=library_file, element=element
+        local_element = api.project.append_asset(self.file, library=library_file, element=element
         )
         for representation_map in local_element.RepresentationMaps:
             if (
                 representation_map.MappedRepresentation.RepresentationIdentifier
                 == "Clearance"
             ):
-                myopening = api.run(
-                    "root.create_entity",
+                myopening = api.root.create_entity(
                     self.file,
                     ifc_class="IfcOpeningElement",
                     name=local_element.Name,
                     predefined_type="OPENING",
                 )
-                api.run(
-                    "geometry.assign_representation",
+                api.geometry.assign_representation(
                     self.file,
                     product=myopening,
                     representation=self.file.createIfcShapeRepresentation(

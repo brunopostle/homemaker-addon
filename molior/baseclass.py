@@ -1,5 +1,4 @@
 from math import pi
-import ifcopenshell.api
 
 from molior.geometry import (
     add_2d,
@@ -12,8 +11,6 @@ from molior.geometry import (
     line_intersection,
 )
 from molior.ifc import add_pset
-
-api = ifcopenshell.api
 
 
 class BaseClass:

@@ -4,7 +4,16 @@ A collection of code for commonly used IFC related tasks
 
 """
 
-import ifcopenshell.api
+import ifcopenshell.api.aggregate
+import ifcopenshell.api.context
+import ifcopenshell.api.geometry
+import ifcopenshell.api.owner
+import ifcopenshell.api.project
+import ifcopenshell.api.pset
+import ifcopenshell.api.root
+import ifcopenshell.api.structural
+import ifcopenshell.api.style
+import ifcopenshell.api.unit
 import ifcopenshell.util.system
 from molior.geometry import (
     matrix_align,
@@ -21,24 +30,23 @@ api = ifcopenshell.api
 def init(name="Homemaker Project", file=None):
     """Creates and sets up an ifc 'file' object"""
     if file is None:
-        file = api.run("project.create_file")
+        file = api.project.create_file()
     # TODO skip each of these if already existing
-    api.run("owner.add_person", file)
-    api.run("owner.add_organisation", file)
+    api.owner.add_person(file)
+    api.owner.add_organisation(file)
 
-    api.run(
-        "root.create_entity",
+    api.root.create_entity(
         file,
         ifc_class="IfcProject",
         name=name,
     )
 
-    unit_assignment = api.run("unit.assign_unit", file)
+    unit_assignment = api.unit.assign_unit(file)
     unit_assignment.Units = [
-        api.run("unit.add_si_unit", file, unit_type="LENGTHUNIT"),
-        api.run("unit.add_si_unit", file, unit_type="AREAUNIT"),
-        api.run("unit.add_si_unit", file, unit_type="VOLUMEUNIT"),
-        api.run("unit.add_si_unit", file, unit_type="PLANEANGLEUNIT"),
+        api.unit.add_si_unit(file, unit_type="LENGTHUNIT"),
+        api.unit.add_si_unit(file, unit_type="AREAUNIT"),
+        api.unit.add_si_unit(file, unit_type="VOLUMEUNIT"),
+        api.unit.add_si_unit(file, unit_type="PLANEANGLEUNIT"),
     ]
 
     create_default_contexts(file)
@@ -127,8 +135,7 @@ def create_storeys(self, parent, elevations):
                 and storey.Decomposes[0].RelatingObject == parent
             ):
                 continue
-        mystorey = api.run(
-            "root.create_entity",
+        mystorey = api.root.create_entity(
             self,
             ifc_class="IfcBuildingStorey",
             name=str(elevations[elevation]),
@@ -137,9 +144,8 @@ def create_storeys(self, parent, elevations):
         mystorey.Description = "Storey " + mystorey.Name
         mystorey.LongName = mystorey.Description
         mystorey.CompositionType = "ELEMENT"
-        api.run("aggregate.assign_object", self, products=[mystorey], relating_object=parent)
-        api.run(
-            "geometry.edit_object_placement",
+        api.aggregate.assign_object(self, products=[mystorey], relating_object=parent)
+        api.geometry.edit_object_placement(
             self,
             product=mystorey,
             matrix=matrix_align([0.0, 0.0, elevation], [1.0, 0.0, 0.0]),
@@ -165,12 +171,11 @@ def get_context_by_name(
         mycontext = get_context(self, context_identifier)
         if mycontext:
             return mycontext
-        return api.run("context.add_context", self, context_type=context_identifier)
+        return api.context.add_context(self, context_type=context_identifier)
     parent_context = get_context_by_name(
         self, context_identifier=parent_context_identifier
     )
-    return api.run(
-        "context.add_context",
+    return api.context.add_context(
         self,
         context_identifier=context_identifier,
         context_type=parent_context.ContextType,
@@ -206,12 +211,12 @@ def get_site_by_name(self, parent, name):
             and site.Decomposes[0].RelatingObject == parent
         ):
             return site
-    site = api.run("root.create_entity", self, ifc_class="IfcSite", name=name)
+    site = api.root.create_entity(self, ifc_class="IfcSite", name=name)
     # TODO allow setting location
     site.RefLatitude = [53, 23, 0]
     site.RefLongitude = [1, 28, 0]
     site.RefElevation = 75.0
-    api.run("aggregate.assign_object", self, products=[site], relating_object=parent)
+    api.aggregate.assign_object(self, products=[site], relating_object=parent)
     return site
 
 
@@ -224,13 +229,12 @@ def get_building_by_name(self, parent, name):
             and building.Decomposes[0].RelatingObject == parent
         ):
             return building
-    building = api.run("root.create_entity", self, ifc_class="IfcBuilding", name=name)
-    api.run(
-        "geometry.edit_object_placement",
+    building = api.root.create_entity(self, ifc_class="IfcBuilding", name=name)
+    api.geometry.edit_object_placement(
         self,
         product=building,
     )
-    api.run("aggregate.assign_object", self, products=[building], relating_object=parent)
+    api.aggregate.assign_object(self, products=[building], relating_object=parent)
     return building
 
 
@@ -243,10 +247,9 @@ def get_structural_analysis_model_by_name(self, spatial_element, name):
             and spatial_element in model.ServicesBuildings[0].RelatedBuildings
         ):
             return model
-    model = api.run("structural.add_structural_analysis_model", self)
+    model = api.structural.add_structural_analysis_model(self)
     model.Name = "Structure/" + name
-    rel = api.run(
-        "root.create_entity",
+    rel = api.root.create_entity(
         self,
         ifc_class="IfcRelServicesBuildings",
         name=model.Name,
@@ -261,11 +264,9 @@ def get_library_by_name(self, library_name):
     for library in self.by_type("IfcProjectLibrary"):
         if library.Name == library_name:
             return library
-    library = api.run(
-        "root.create_entity", self, ifc_class="IfcProjectLibrary", name=library_name
+    library = api.root.create_entity(self, ifc_class="IfcProjectLibrary", name=library_name
     )
-    api.run(
-        "project.assign_declaration",
+    api.project.assign_declaration(
         self,
         definitions=[library],
         relating_context=self.by_type("IfcProject")[0],
@@ -286,12 +287,11 @@ def get_material_by_name(self, style_object, stylename="default", name="Error"):
         )
         if element:
             # add to current project from library file
-            mymaterial = api.run(
-                "project.append_asset", self, library=library_file, element=element
+            mymaterial = api.project.append_asset(self, library=library_file, element=element
             )
         else:
             # we need to create a new material
-            mymaterial = api.run("material.add_material", self, name=name)
+            mymaterial = api.material.add_material(self, name=name)
     return mymaterial
 
 
@@ -452,10 +452,9 @@ def create_tessellations_from_mesh_split(self, vertices, faces):
             pointlist, False, indexedfaces, None
         )
         tessellations.append(tessellation)
-        style = api.run("style.add_style", self, name=stylename)
+        style = api.style.add_style(self, name=stylename)
         fac = (index % 5) / 5
-        api.run(
-            "style.add_surface_style",
+        api.style.add_surface_style(
             self,
             style=style,
             ifc_class="IfcSurfaceStyleShading",
@@ -512,9 +511,8 @@ def clip_solid(self, solid, start, end):
 
 def add_pset(self, product, name, properties):
     """Helper method to add an Ifc Pset"""
-    pset = api.run("pset.add_pset", self, product=product, name=name)
-    api.run(
-        "pset.edit_pset",
+    pset = api.pset.add_pset(self, product=product, name=name)
+    api.pset.edit_pset(
         self,
         pset=pset,
         properties=properties,
@@ -566,15 +564,13 @@ def assign_storey_byindex(self, entity, building, index):
         if get_parent_building(storey) == building:
             storeys[storey.Name] = storey
     if entity.is_a("IfcSpatialElement"):
-        api.run(
-            "aggregate.assign_object",
+        api.aggregate.assign_object(
             self,
             products=[entity],
             relating_object=storeys[str(index)],
         )
     else:
-        api.run(
-            "spatial.assign_container",
+        api.spatial.assign_container(
             self,
             products=[entity],
             relating_structure=storeys[str(index)],
@@ -595,15 +591,13 @@ def assign_space_byindex(self, entity, building, index):
     if str(index) not in spaces:
         return
     if entity.is_a("IfcSpatialElement"):
-        api.run(
-            "aggregate.assign_object",
+        api.aggregate.assign_object(
             self,
             products=[entity],
             relating_object=spaces[str(index)],
         )
     else:
-        api.run(
-            "spatial.assign_container",
+        api.spatial.assign_container(
             self,
             products=[entity],
             relating_structure=spaces[str(index)],
@@ -630,19 +624,16 @@ def get_type_object(
     )
     if element:
         # add to current project from library file
-        definition = api.run(
-            "project.append_asset", self, library=library_file, element=element
+        definition = api.project.append_asset(self, library=library_file, element=element
         )
     else:
-        definition = api.run(
-            "root.create_entity",
+        definition = api.root.create_entity(
             self,
             ifc_class=ifc_type,
             name=name,
         )
     # add to internal library
-    api.run(
-        "project.assign_declaration",
+    api.project.assign_declaration(
         self,
         definitions=[definition],
         relating_context=get_library_by_name(self, stylename),
@@ -671,21 +662,21 @@ def delete_ifc_product(self, product):
             for child_product in child.RelatedElements:
                 delete_ifc_product(self, child_product)
     if getattr(product, "FillsVoids", None):
-        api.run("void.remove_filling", self, element=product)
+        api.void.remove_filling(self, element=product)
     if product.is_a("IfcOpeningElement"):
         if product.HasFillings:
             for rel in product.HasFillings:
-                api.run("void.remove_filling", self, element=rel.RelatedBuildingElement)
+                api.void.remove_filling(self, element=rel.RelatedBuildingElement)
         else:
             if product.VoidsElements:
-                api.run("void.remove_filling", self, element=product)
+                api.void.remove_filling(self, element=product)
     else:
         if getattr(product, "HasOpenings", None):
             for rel in product.HasOpenings:
-                api.run("void.remove_filling", self, element=rel.RelatedOpeningElement)
+                api.void.remove_filling(self, element=rel.RelatedOpeningElement)
         for port in ifcopenshell.util.system.get_ports(product):
-            api.run("root.remove_product", self, product=port)
-    api.run("root.remove_product", self, product=product)
+            api.root.remove_product(self, product=port)
+    api.root.remove_product(self, product=product)
 
 
 def purge_unused(self):
@@ -696,7 +687,7 @@ def purge_unused(self):
         for type_object in self.by_type("IfcTypeObject"):
             if not type_object.Types or not type_object.Types[0].RelatedObjects:
                 # need this or it segfaults IfcOpenShell/IfcOpenShell#2697
-                api.run("material.unassign_material", self, product=type_object)
+                api.material.unassign_material(self, product=type_object)
                 delete_ifc_product(self, type_object)
                 todo = True
         for pset in self.by_type("IfcPropertySet"):
@@ -709,11 +700,11 @@ def purge_unused(self):
                 todo = True
         for rep in self.by_type("IfcMaterialDefinitionRepresentation"):
             if not rep.RepresentedMaterial:
-                api.run("root.remove_product", self, product=rep)
+                api.root.remove_product(self, product=rep)
                 todo = True
         for ext in self.by_type("IfcExtendedProperties"):
             if not ext.Properties:
-                api.run("root.remove_product", self, product=ext)
+                api.root.remove_product(self, product=ext)
                 todo = True
         for placement in self.by_type("IfcLocalPlacement"):
             if not placement.PlacesObject and not placement.ReferencedByPlacements:
@@ -723,55 +714,55 @@ def purge_unused(self):
                 if getattr(rel, "Axis", None):
                     self.remove(rel.Axis)
                 self.remove(rel)
-                api.run("root.remove_product", self, product=placement)
+                api.root.remove_product(self, product=placement)
                 todo = True
         for entity in self.by_type("IfcConnectionGeometry"):
             if not self.get_inverse(entity):
-                api.run("root.remove_product", self, product=entity)
+                api.root.remove_product(self, product=entity)
                 todo = True
         for entity in self.by_type("IfcBoundaryCondition"):
             if not self.get_inverse(entity):
-                api.run("root.remove_product", self, product=entity)
+                api.root.remove_product(self, product=entity)
                 todo = True
         for entity in self.by_type("IfcPresentationItem"):
             if not self.get_inverse(entity):
-                api.run("root.remove_product", self, product=entity)
+                api.root.remove_product(self, product=entity)
                 todo = True
         for entity in self.by_type("IfcProfileDef"):
             if not self.get_inverse(entity):
-                api.run("root.remove_product", self, product=entity)
+                api.root.remove_product(self, product=entity)
                 todo = True
         for entity in self.by_type("IfcRepresentation"):
             if not self.get_inverse(entity):
-                api.run("root.remove_product", self, product=entity)
+                api.root.remove_product(self, product=entity)
                 todo = True
         for entity in self.by_type("IfcGeometricRepresentationItem"):
             if not self.get_inverse(entity):
-                api.run("root.remove_product", self, product=entity)
+                api.root.remove_product(self, product=entity)
                 todo = True
         for entity in self.by_type("IfcMaterialDefinition"):
             if not self.get_inverse(entity):
-                api.run("root.remove_product", self, product=entity)
+                api.root.remove_product(self, product=entity)
                 todo = True
 
         # these are clearing up invalid results of root.remove_product
         for rel in self.by_type("IfcRelConnectsStructuralMember"):
             if not rel.RelatingStructuralMember:
-                api.run("root.remove_product", self, product=rel)
+                api.root.remove_product(self, product=rel)
                 todo = True
         for rel in self.by_type("IfcRelAssignsToProduct"):
             if not rel.RelatingProduct:
-                api.run("root.remove_product", self, product=rel)
+                api.root.remove_product(self, product=rel)
                 todo = True
         for rel in self.by_type("IfcRelServicesBuildings"):
             if not rel.RelatingSystem:
-                api.run("root.remove_product", self, product=rel)
+                api.root.remove_product(self, product=rel)
                 todo = True
         for rel in self.by_type("IfcRelAssignsToGroup"):
             if not rel.RelatingGroup:
-                api.run("root.remove_product", self, product=rel)
+                api.root.remove_product(self, product=rel)
                 todo = True
         for rel in self.by_type("IfcRelDeclares"):
             if not rel.RelatedDefinitions:
-                api.run("root.remove_product", self, product=rel)
+                api.root.remove_product(self, product=rel)
                 todo = True

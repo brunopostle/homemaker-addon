@@ -274,9 +274,8 @@ class Molior:
             ),
         )
 
-        style = api.run("style.add_style", self.file, name="Structural Surface Member")
-        api.run(
-            "style.add_surface_style",
+        style = api.style.add_style(self.file, name="Structural Surface Member")
+        api.style.add_surface_style(
             self.file,
             style=style,
             ifc_class="IfcSurfaceStyleShading",
@@ -327,15 +326,13 @@ class Molior:
             end = v_end.Coordinates()
 
             # create an ifc curve connection for this topologic edge
-            curve_connection = api.run(
-                "root.create_entity",
+            curve_connection = api.root.create_entity(
                 self.file,
                 ifc_class="IfcStructuralCurveConnection",
                 name="My Connection",
             )
             curve_connection.ObjectPlacement = structural_placement
-            api.run(
-                "structural.assign_structural_analysis_model",
+            api.structural.assign_structural_analysis_model(
                 self.file,
                 product=curve_connection,
                 structural_analysis_model=self.structural_analysis_model,
@@ -353,8 +350,7 @@ class Molior:
                     x_product_3d(vec_1, vec_2)
                 )
                 curve_connection.Name = "Inclined connection"
-            api.run(
-                "geometry.assign_representation",
+            api.geometry.assign_representation(
                 self.file,
                 product=curve_connection,
                 representation=self.file.createIfcTopologyRepresentation(
@@ -382,8 +378,7 @@ class Molior:
                 # connect this surface member to this curve connection
                 if index is not None and index in surface_lookup:
                     surface_member = surface_lookup[index]
-                    api.run(
-                        "structural.add_structural_member_connection",
+                    api.structural.add_structural_member_connection(
                         self.file,
                         relating_structural_member=surface_member,
                         related_structural_connection=curve_connection,
@@ -408,8 +403,7 @@ class Molior:
                             abs(start_coors[2] - connection_elevation) < 0.001
                             and abs(end_coors[2] - connection_elevation) < 0.001
                         ):
-                            api.run(
-                                "structural.add_structural_member_connection",
+                            api.structural.add_structural_member_connection(
                                 self.file,
                                 relating_structural_member=curve_member,
                                 related_structural_connection=curve_connection,
@@ -421,14 +415,12 @@ class Molior:
                                     if related_object.is_a("IfcFooting"):
                                         is_footing = True
                             if is_footing:
-                                api.run(
-                                    "structural.add_structural_boundary_condition",
+                                api.structural.add_structural_boundary_condition(
                                     self.file,
                                     name="foundation",
                                     connection=curve_connection,
                                 )
-                                api.run(
-                                    "structural.edit_structural_boundary_condition",
+                                api.structural.edit_structural_boundary_condition(
                                     self.file,
                                     condition=curve_connection.AppliedCondition,
                                     attributes={
@@ -475,15 +467,13 @@ class Molior:
                                 point_connection_name = "Column head connection"
                                 point_coordinates = end_coors
 
-                            point_connection = api.run(
-                                "root.create_entity",
+                            point_connection = api.root.create_entity(
                                 self.file,
                                 ifc_class="IfcStructuralPointConnection",
                                 name=point_connection_name,
                             )
                             point_connection.ObjectPlacement = structural_placement
-                            api.run(
-                                "geometry.assign_representation",
+                            api.geometry.assign_representation(
                                 self.file,
                                 product=point_connection,
                                 representation=self.file.createIfcTopologyRepresentation(
@@ -499,14 +489,12 @@ class Molior:
                                     ],
                                 ),
                             )
-                            api.run(
-                                "structural.assign_structural_analysis_model",
+                            api.structural.assign_structural_analysis_model(
                                 self.file,
                                 product=point_connection,
                                 structural_analysis_model=self.structural_analysis_model,
                             )
-                            api.run(
-                                "structural.add_structural_member_connection",
+                            api.structural.add_structural_member_connection(
                                 self.file,
                                 relating_structural_member=curve_member,
                                 related_structural_connection=point_connection,
@@ -520,8 +508,7 @@ class Molior:
             connection_curve = item[1]
             for rel in connection_curve.ConnectsStructuralMembers:
                 member = rel.RelatingStructuralMember
-                api.run(
-                    "structural.add_structural_member_connection",
+                api.structural.add_structural_member_connection(
                     self.file,
                     relating_structural_member=member,
                     related_structural_connection=connection_point,
@@ -531,12 +518,11 @@ class Molior:
         for curve_connection in self.file.by_type("IfcStructuralCurveConnection"):
             if len(curve_connection.ConnectsStructuralMembers) < 2:
                 for relation in curve_connection.ConnectsStructuralMembers:
-                    api.run(
-                        "structural.remove_structural_connection_condition",
+                    api.structural.remove_structural_connection_condition(
                         self.file,
                         relation=relation,
                     )
-                api.run("root.remove_product", self.file, product=curve_connection)
+                api.root.remove_product(self.file, product=curve_connection)
 
     def connect_spaces(self):
         """Given objects and boundaries are tagged with Topologic indexes, assign them to correct spaces"""
@@ -559,8 +545,7 @@ class Molior:
             if topology_index is not None and topology_index in space_lookup:
                 continue
             else:
-                element = api.run(
-                    "root.create_entity",
+                element = api.root.create_entity(
                     self.file,
                     ifc_class="IfcSpace",
                     name="void-space/" + str(topology_index),
@@ -584,9 +569,8 @@ class Molior:
                     "Tessellation",
                     [create_tessellation_from_mesh(self.file, vertices_shifted, faces)],
                 )
-                style = api.run("style.add_style", self.file, name="Void Space")
-                api.run(
-                    "style.add_surface_style",
+                style = api.style.add_style(self.file, name="Void Space")
+                api.style.add_surface_style(
                     self.file,
                     style=style,
                     ifc_class="IfcSurfaceStyleShading",
@@ -600,20 +584,17 @@ class Molior:
                         "Transparency": 0.5,
                     },
                 )
-                api.run(
-                    "style.assign_representation_styles",
+                api.style.assign_representation_styles(
                     self.file,
                     shape_representation=shape,
                     styles=[style],
                 )
-                api.run(
-                    "geometry.assign_representation",
+                api.geometry.assign_representation(
                     self.file,
                     product=element,
                     representation=shape,
                 )
-                api.run(
-                    "geometry.edit_object_placement",
+                api.geometry.edit_object_placement(
                     self.file,
                     product=element,
                     matrix=matrix_align([0.0, 0.0, storey.Elevation], [1.0, 0.0, 0.0]),
@@ -739,8 +720,7 @@ class Molior:
             context_identifier="Reference",
             target_view="SKETCH_VIEW",
         )
-        api.run(
-            "geometry.assign_representation",
+        api.geometry.assign_representation(
             self.file,
             product=self.building,
             representation=self.file.createIfcShapeRepresentation(
@@ -770,8 +750,7 @@ class Molior:
                 polycurves.append(
                     self.file.createIfcIndexedPolyCurve(point_list, None, False)
                 )
-            api.run(
-                "geometry.assign_representation",
+            api.geometry.assign_representation(
                 self.file,
                 product=self.building,
                 representation=self.file.createIfcShapeRepresentation(
@@ -789,21 +768,18 @@ class Molior:
             vertex = CellUtility.InternalVertex(cell, 0.001)
 
             # stash the space usage as an annotation
-            annotation = api.run(
-                "root.create_entity",
+            annotation = api.root.create_entity(
                 self.file,
                 ifc_class="IfcAnnotation",
                 predefined_type="USAGE",
                 name=cell.Get("usage"),
             )
-            api.run(
-                "geometry.edit_object_placement",
+            api.geometry.edit_object_placement(
                 self.file,
                 product=annotation,
                 matrix=matrix_align(vertex.Coordinates(), [1.0, 0.0, 0.0]),
             )
-            api.run(
-                "spatial.assign_container",
+            api.spatial.assign_container(
                 self.file,
                 products=[annotation],
                 relating_structure=self.building,

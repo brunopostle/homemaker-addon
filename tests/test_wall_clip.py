@@ -3,7 +3,7 @@
 import os
 import sys
 import unittest
-import ifcopenshell.api
+import ifcopenshell.api.root
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior.ifc
@@ -114,16 +114,14 @@ class Tests(unittest.TestCase):
         )
 
         # use clipped geometry as a wall
-        mywall = api.run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
-        api.run(
-            "geometry.assign_representation",
+        mywall = api.root.create_entity(ifc, ifc_class="IfcWall", name="My Wall")
+        api.geometry.assign_representation(
             ifc,
             product=mywall,
             representation=clipped_representation,
         )
         assign_storey_byindex(ifc, mywall, building, 2)
-        api.run(
-            "geometry.edit_object_placement",
+        api.geometry.edit_object_placement(
             ifc,
             product=mywall,
             matrix=matrix_align([0.0, 0.0, 0.0], [1.0, 0.0, 0.0]),

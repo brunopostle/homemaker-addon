@@ -1,5 +1,7 @@
-import ifcopenshell.api
 import numpy
+import ifcopenshell.api.attribute
+import ifcopenshell.api.geometry
+import ifcopenshell.api.root
 
 from topologist.helpers import string_to_coor, el
 from topologic import Face, Vertex
@@ -52,14 +54,12 @@ class Grillage(BaseClass):
 
         myconfig = self.style_object.get(self.style)
 
-        aggregate = api.run(
-            "root.create_entity",
+        aggregate = api.root.create_entity(
             self.file,
             ifc_class=self.ifc,
             name=self.name,
         )
-        api.run(
-            "geometry.edit_object_placement",
+        api.geometry.edit_object_placement(
             self.file,
             product=aggregate,
         )
@@ -88,14 +88,12 @@ class Grillage(BaseClass):
                 if elevation is None or vertex[2] < elevation:
                     elevation = el(vertex[2])
 
-            face_aggregate = api.run(
-                "root.create_entity",
+            face_aggregate = api.root.create_entity(
                 self.file,
                 ifc_class=self.ifc,
                 name=self.name,
             )
-            api.run(
-                "aggregate.assign_object",
+            api.aggregate.assign_object(
                 self.file,
                 products=[face_aggregate],
                 relating_object=aggregate,
@@ -107,8 +105,7 @@ class Grillage(BaseClass):
                 face[1]["back_cell"],
                 face[1]["front_cell"],
             )
-            api.run(
-                "geometry.edit_object_placement",
+            api.geometry.edit_object_placement(
                 self.file,
                 product=face_aggregate,
             )
@@ -120,8 +117,7 @@ class Grillage(BaseClass):
 
             # FIXME should generate Structural Curve Member for each extrusion
             # generate structural surfaces
-            structural_surface = api.run(
-                "root.create_entity",
+            structural_surface = api.root.create_entity(
                 self.file,
                 ifc_class="IfcStructuralSurfaceMember",
                 name=self.style + self.name,
@@ -135,14 +131,12 @@ class Grillage(BaseClass):
                 face[1]["front_cell"],
             )
             structural_surface.Thickness = 0.2
-            api.run(
-                "structural.assign_structural_analysis_model",
+            api.structural.assign_structural_analysis_model(
                 self.file,
                 product=structural_surface,
                 structural_analysis_model=self.structural_analysis_model,
             )
-            api.run(
-                "geometry.assign_representation",
+            api.geometry.assign_representation(
                 self.file,
                 product=structural_surface,
                 representation=self.file.createIfcTopologyRepresentation(
@@ -152,8 +146,7 @@ class Grillage(BaseClass):
                     [face_surface],
                 ),
             )
-            api.run(
-                "material.assign_material",
+            api.material.assign_material(
                 self.file,
                 products=[structural_surface],
                 material=get_material_by_name(
@@ -164,8 +157,7 @@ class Grillage(BaseClass):
                 ),
             )
 
-            assignment = api.run(
-                "root.create_entity", self.file, ifc_class="IfcRelAssignsToProduct"
+            assignment = api.root.create_entity(self.file, ifc_class="IfcRelAssignsToProduct"
             )
             assignment.RelatingProduct = structural_surface
             assignment.RelatedObjects = [face_aggregate]
@@ -271,8 +263,7 @@ class Grillage(BaseClass):
                             part = getattr(self, config["class"])(vals)
                             part.execute()
 
-            api.run(
-                "geometry.edit_object_placement",
+            api.geometry.edit_object_placement(
                 self.file,
                 product=face_aggregate,
                 matrix=matrix,
@@ -283,8 +274,7 @@ class Grillage(BaseClass):
         if elevation in self.elevations:
             level = self.elevations[elevation]
         if self.parent_aggregate is not None:
-            api.run(
-                "aggregate.assign_object",
+            api.aggregate.assign_object(
                 self.file,
                 products=[aggregate],
                 relating_object=self.parent_aggregate,

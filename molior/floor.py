@@ -1,6 +1,5 @@
-import ifcopenshell.api
-
 from topologic import Cell, CellComplex
+import ifcopenshell.api.root
 
 from molior.baseclass import TraceClass
 from molior.geometry import matrix_align
@@ -53,8 +52,7 @@ class Floor(TraceClass):
 
         # create an element
 
-        element = api.run(
-            "root.create_entity",
+        element = api.root.create_entity(
             self.file,
             ifc_class=self.ifc,
             name=self.name + "/" + str(cell.Get("index")),
@@ -98,8 +96,7 @@ class Floor(TraceClass):
             stylename=self.style,
             name=self.name,
         )
-        api.run(
-            "type.assign_type",
+        api.type.assign_type(
             self.file,
             related_objects=[element],
             relating_type=type_product,
@@ -107,8 +104,7 @@ class Floor(TraceClass):
 
         thickness = get_thickness(self.file, type_product)
 
-        shape_representation = api.run(
-            "geometry.add_profile_representation",
+        shape_representation = api.geometry.add_profile_representation(
             self.file,
             context=body_context,
             profile=create_closed_profile_from_points(
@@ -117,14 +113,12 @@ class Floor(TraceClass):
             depth=thickness,
         )
 
-        api.run(
-            "geometry.assign_representation",
+        api.geometry.assign_representation(
             self.file,
             product=element,
             representation=shape_representation,
         )
-        api.run(
-            "geometry.edit_object_placement",
+        api.geometry.edit_object_placement(
             self.file,
             product=element,
             matrix=matrix_align(

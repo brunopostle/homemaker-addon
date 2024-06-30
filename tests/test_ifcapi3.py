@@ -3,7 +3,7 @@
 import os
 import sys
 import unittest
-import ifcopenshell.api
+import ifcopenshell.api.root
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import molior.ifc
@@ -29,8 +29,7 @@ class Tests(unittest.TestCase):
         building = get_building_by_name(ifc, site, "My Building")
         create_storeys(ifc, building, {0.0: 0})
 
-        api.run(
-            "root.create_entity",
+        api.root.create_entity(
             ifc,
             ifc_class="IfcBuildingElementProxy",
             name="My Extrusion",

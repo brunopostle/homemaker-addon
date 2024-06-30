@@ -18,9 +18,8 @@ class Tests(unittest.TestCase):
         self.body_context = get_context_by_name(self.file, context_identifier="Body")
 
     def test_add_surface_style(self):
-        style = api.run("style.add_style", self.file, name="Outdoor wall")
-        api.run(
-            "style.add_surface_style",
+        style = api.style.add_style(self.file, name="Outdoor wall")
+        api.style.add_surface_style(
             self.file,
             style=style,
             ifc_class="IfcSurfaceStyleShading",
@@ -46,16 +45,14 @@ class Tests(unittest.TestCase):
             ],
         )
 
-        api.run(
-            "style.assign_representation_styles",
+        api.style.assign_representation_styles(
             self.file,
             shape_representation=shape,
             styles=[style],
         )
 
-        slab = api.run("root.create_entity", self.file, ifc_class="IfcSlab", name="My Slab")
-        api.run(
-            "geometry.assign_representation",
+        slab = api.root.create_entity(self.file, ifc_class="IfcSlab", name="My Slab")
+        api.geometry.assign_representation(
             self.file,
             product=slab,
             representation=shape,

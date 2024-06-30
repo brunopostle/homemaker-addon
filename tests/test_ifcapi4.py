@@ -3,7 +3,7 @@
 import os
 import sys
 import unittest
-import ifcopenshell.api
+import ifcopenshell.api.root
 import ifcopenshell.util.element
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -31,11 +31,9 @@ class Tests(unittest.TestCase):
             name="purlin",
         )
 
-        mycolumn = api.run(
-            "root.create_entity", self.file, ifc_class="IfcColumn", name="My Column"
+        mycolumn = api.root.create_entity(self.file, ifc_class="IfcColumn", name="My Column"
         )
-        api.run(
-            "type.assign_type",
+        api.type.assign_type(
             self.file,
             related_objects=[mycolumn],
             relating_type=column_type,
@@ -47,8 +45,7 @@ class Tests(unittest.TestCase):
         # test copying materials
         self.another_file = molior.ifc.init(name="My Other Project")
         for entity in self.file.by_type("IfcMaterial"):
-            api.run(
-                "project.append_asset",
+            api.project.append_asset(
                 self.another_file,
                 library=self.file,
                 element=entity,
@@ -75,8 +72,7 @@ class Tests(unittest.TestCase):
                 ].RelatingMaterial.MaterialProfiles
             ],
         )
-        api.run(
-            "geometry.assign_representation",
+        api.geometry.assign_representation(
             self.file,
             product=mycolumn,
             representation=shape,
