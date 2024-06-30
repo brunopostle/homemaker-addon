@@ -25,7 +25,7 @@ class Tests(unittest.TestCase):
         molior_builder = Molior(
             file=self.ifc,
             name="My House",
-            elevations={6.15: "Upper Level"}
+            elevations={6.15: "Upper Level"},
             # cellcomplex=my_cellcomplex,
         )
 

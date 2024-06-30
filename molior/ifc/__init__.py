@@ -264,7 +264,8 @@ def get_library_by_name(self, library_name):
     for library in self.by_type("IfcProjectLibrary"):
         if library.Name == library_name:
             return library
-    library = api.root.create_entity(self, ifc_class="IfcProjectLibrary", name=library_name
+    library = api.root.create_entity(
+        self, ifc_class="IfcProjectLibrary", name=library_name
     )
     api.project.assign_declaration(
         self,
@@ -287,7 +288,8 @@ def get_material_by_name(self, style_object, stylename="default", name="Error"):
         )
         if element:
             # add to current project from library file
-            mymaterial = api.project.append_asset(self, library=library_file, element=element
+            mymaterial = api.project.append_asset(
+                self, library=library_file, element=element
             )
         else:
             # we need to create a new material
@@ -624,7 +626,8 @@ def get_type_object(
     )
     if element:
         # add to current project from library file
-        definition = api.project.append_asset(self, library=library_file, element=element
+        definition = api.project.append_asset(
+            self, library=library_file, element=element
         )
     else:
         definition = api.root.create_entity(

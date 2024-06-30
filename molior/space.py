@@ -113,7 +113,8 @@ class Space(TraceClass):
             red = numpy.clip(1.0 - crinkliness, 0.0, 1.0)
             green = numpy.clip(crinkliness, 0.0, 1.0)
             blue = numpy.clip(crinkliness - 1.0, 0.0, 1.0)
-            style = api.style.add_style(self.file, name="Crinkliness " + str(crinkliness)
+            style = api.style.add_style(
+                self.file, name="Crinkliness " + str(crinkliness)
             )
             api.style.add_surface_style(
                 self.file,

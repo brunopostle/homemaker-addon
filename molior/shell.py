@@ -194,7 +194,8 @@ class Shell(BaseClass):
                 ),
             )
 
-            assignment = api.root.create_entity(self.file, ifc_class="IfcRelAssignsToProduct"
+            assignment = api.root.create_entity(
+                self.file, ifc_class="IfcRelAssignsToProduct"
             )
             assignment.RelatingProduct = structural_surface
             assignment.RelatedObjects = [element]

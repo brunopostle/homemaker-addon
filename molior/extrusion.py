@@ -102,8 +102,14 @@ class Extrusion(TraceClass):
 
             # axis and matrix stuff
 
-            start_world = [*self.corner_offset(id_segment, self.xshift), self.elevation + self.height]
-            end_world = [*self.corner_offset(id_segment + 1, self.xshift), self.elevation + self.height]
+            start_world = [
+                *self.corner_offset(id_segment, self.xshift),
+                self.elevation + self.height,
+            ]
+            end_world = [
+                *self.corner_offset(id_segment + 1, self.xshift),
+                self.elevation + self.height,
+            ]
             vector = subtract_3d(end_world, start_world)
             direction = normalise_3d(vector)
             length = magnitude_3d(vector)
@@ -203,10 +209,8 @@ class Extrusion(TraceClass):
             # rotate extrusion profile on axis
 
             if self.ref_direction:
-                shape_representation.Items[
-                    0
-                ].Position.RefDirection = self.file.createIfcDirection(
-                    self.ref_direction
+                shape_representation.Items[0].Position.RefDirection = (
+                    self.file.createIfcDirection(self.ref_direction)
                 )
 
             api.geometry.assign_representation(
@@ -256,7 +260,8 @@ class Extrusion(TraceClass):
                     name=self.style + "/" + self.name,
                     predefined_type="RIGID_JOINED_MEMBER",
                 )
-                assignment = api.root.create_entity(self.file, ifc_class="IfcRelAssignsToProduct"
+                assignment = api.root.create_entity(
+                    self.file, ifc_class="IfcRelAssignsToProduct"
                 )
                 assignment.RelatingProduct = structural_member
                 assignment.RelatedObjects = [linear_element]

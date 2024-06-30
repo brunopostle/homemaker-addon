@@ -200,7 +200,8 @@ class Tests(unittest.TestCase):
         assign_storey_byindex(ifc, mywall, self.building, 0)
 
         # create an opening
-        myopening = api.root.create_entity(ifc, ifc_class="IfcOpeningElement", name="My Opening"
+        myopening = api.root.create_entity(
+            ifc, ifc_class="IfcOpeningElement", name="My Opening"
         )
         api.attribute.edit_attributes(
             ifc,

@@ -63,7 +63,8 @@ class Tests(unittest.TestCase):
             "courtyard", "IfcMaterial", "Screed"
         )
         # add to current project
-        local_element = api.project.append_asset(self.file, library=library_file, element=element
+        local_element = api.project.append_asset(
+            self.file, library=library_file, element=element
         )
 
         # create a library in this project
@@ -88,7 +89,8 @@ class Tests(unittest.TestCase):
             "arcade", "IfcWIndowType", "arch_194x300"
         )
         # add to current project
-        local_element = api.project.append_asset(self.file, library=library_file, element=element
+        local_element = api.project.append_asset(
+            self.file, library=library_file, element=element
         )
         for representation_map in local_element.RepresentationMaps:
             if (

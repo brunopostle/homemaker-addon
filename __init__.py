@@ -54,9 +54,9 @@ class SelectShareDir(bpy.types.Operator):
     filepath: bpy.props.StringProperty(subtype="FILE_PATH")
 
     def execute(self, context):
-        bpy.context.preferences.addons[
-            "homemaker"
-        ].preferences.share_dir = os.path.dirname(self.filepath)
+        bpy.context.preferences.addons["homemaker"].preferences.share_dir = (
+            os.path.dirname(self.filepath)
+        )
         return {"FINISHED"}
 
     def invoke(self, context, event):

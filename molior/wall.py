@@ -295,7 +295,8 @@ class Wall(TraceClass):
                 name=self.style + "/" + self.name,
                 predefined_type="SHELL",
             )
-            assignment = api.root.create_entity(self.file, ifc_class="IfcRelAssignsToProduct"
+            assignment = api.root.create_entity(
+                self.file, ifc_class="IfcRelAssignsToProduct"
             )
             assignment.RelatingProduct = structural_surface
             assignment.RelatedObjects = [mywall]
@@ -547,7 +548,10 @@ class Wall(TraceClass):
 
                     if profile:
                         settings = ifcopenshell.geom.settings()
-                        settings.set("dimensionality", ifcopenshell.ifcopenshell_wrapper.CURVES_SURFACES_AND_SOLIDS)
+                        settings.set(
+                            "dimensionality",
+                            ifcopenshell.ifcopenshell_wrapper.CURVES_SURFACES_AND_SOLIDS,
+                        )
                         shape = ifcopenshell.geom.create_shape(settings, profile)
                         verts = shape.verts
                         edges = shape.edges

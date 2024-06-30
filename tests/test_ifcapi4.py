@@ -31,7 +31,8 @@ class Tests(unittest.TestCase):
             name="purlin",
         )
 
-        mycolumn = api.root.create_entity(self.file, ifc_class="IfcColumn", name="My Column"
+        mycolumn = api.root.create_entity(
+            self.file, ifc_class="IfcColumn", name="My Column"
         )
         api.type.assign_type(
             self.file,
