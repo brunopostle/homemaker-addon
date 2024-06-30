@@ -19,7 +19,7 @@ from molior.ifc import (
 from molior.style import Style
 from molior.geometry import matrix_transform, matrix_align
 
-run = ifcopenshell.api.run
+api = ifcopenshell.api
 
 
 class Tests(unittest.TestCase):
@@ -49,8 +49,8 @@ class Tests(unittest.TestCase):
             ],
         )
 
-        wall = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
-        run("geometry.assign_representation", ifc, product=wall, representation=poly)
+        wall = api.run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
+        api.run("geometry.assign_representation", ifc, product=wall, representation=poly)
         assign_storey_byindex(ifc, wall, self.building, 0)
 
         # a vertically extruded solid
@@ -64,9 +64,9 @@ class Tests(unittest.TestCase):
                 )
             ],
         )
-        slab = run("root.create_entity", ifc, ifc_class="IfcSlab", name="My Slab")
-        run("geometry.assign_representation", ifc, product=slab, representation=shape)
-        run(
+        slab = api.run("root.create_entity", ifc, ifc_class="IfcSlab", name="My Slab")
+        api.run("geometry.assign_representation", ifc, product=slab, representation=shape)
+        api.run(
             "geometry.edit_object_placement",
             ifc,
             product=slab,
@@ -83,26 +83,26 @@ class Tests(unittest.TestCase):
         )
 
         # create a door using the mapped item
-        door = run(
+        door = api.run(
             "root.create_entity",
             ifc,
             ifc_class="IfcDoor",
             name="My Door",
         )
-        run(
+        api.run(
             "attribute.edit_attributes",
             ifc,
             product=door,
             attributes={"OverallHeight": 2.545, "OverallWidth": 5.0},
         )
-        run(
+        api.run(
             "type.assign_type",
             ifc,
             related_objects=[door],
             relating_type=type_product,
         )
         # place it in space and assign to storey
-        run(
+        api.run(
             "geometry.edit_object_placement",
             ifc,
             product=door,
@@ -111,26 +111,26 @@ class Tests(unittest.TestCase):
         assign_storey_byindex(ifc, door, self.building, 0)
 
         # create another door using the mapped item
-        door2 = run(
+        door2 = api.run(
             "root.create_entity",
             ifc,
             ifc_class="IfcDoor",
             name="My Door",
         )
-        run(
+        api.run(
             "attribute.edit_attributes",
             ifc,
             product=door2,
             attributes={"OverallHeight": 2.545, "OverallWidth": 5.0},
         )
-        run(
+        api.run(
             "type.assign_type",
             ifc,
             related_objects=[door2],
             relating_type=type_product,
         )
         # place it in space and assign to storey
-        run(
+        api.run(
             "geometry.edit_object_placement",
             ifc,
             product=door2,
@@ -149,21 +149,21 @@ class Tests(unittest.TestCase):
             lookup[typeproduct.Name] = typeproduct
 
         # create a door
-        myproduct = run(
+        myproduct = api.run(
             "root.create_entity",
             ifc,
             ifc_class="IfcDoor",
             name="My Door",
         )
         # door needs some attributes
-        run(
+        api.run(
             "attribute.edit_attributes",
             ifc,
             product=myproduct,
             attributes={"OverallHeight": 2.545, "OverallWidth": 5.0},
         )
         # place the door in space
-        run(
+        api.run(
             "geometry.edit_object_placement",
             ifc,
             product=myproduct,
@@ -175,11 +175,11 @@ class Tests(unittest.TestCase):
         # The TypeProduct knows what MappedRepresentations to use
         typeproduct = lookup["shopfront"]
         for representationmap in typeproduct.RepresentationMaps:
-            run(
+            api.run(
                 "geometry.assign_representation",
                 ifc,
                 product=myproduct,
-                representation=run(
+                representation=api.run(
                     "geometry.map_representation",
                     ifc,
                     representation=representationmap.MappedRepresentation,
@@ -187,9 +187,9 @@ class Tests(unittest.TestCase):
             )
 
         # create a wall
-        mywall = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
+        mywall = api.run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
         # give the wall a Body representation
-        run(
+        api.run(
             "geometry.assign_representation",
             ifc,
             product=mywall,
@@ -206,7 +206,7 @@ class Tests(unittest.TestCase):
         )
 
         # place the wall in space
-        run(
+        api.run(
             "geometry.edit_object_placement",
             ifc,
             product=mywall,
@@ -216,17 +216,17 @@ class Tests(unittest.TestCase):
         assign_storey_byindex(ifc, mywall, self.building, 0)
 
         # create an opening
-        myopening = run(
+        myopening = api.run(
             "root.create_entity", ifc, ifc_class="IfcOpeningElement", name="My Opening"
         )
-        run(
+        api.run(
             "attribute.edit_attributes",
             ifc,
             product=myopening,
             attributes={"PredefinedType": "OPENING"},
         )
         # give the opening a Body representation
-        run(
+        api.run(
             "geometry.assign_representation",
             ifc,
             product=myopening,
@@ -242,16 +242,16 @@ class Tests(unittest.TestCase):
             ),
         )
         # place the opening where the wall is
-        run(
+        api.run(
             "geometry.edit_object_placement",
             ifc,
             product=myopening,
             matrix=matrix_align([11.0, -0.5, 3.0], [11.0, 2.0, 0.0]),
         )
         # use the opening to cut the wall, no need to assign a storey
-        run("void.add_opening", ifc, opening=myopening, element=mywall)
+        api.run("void.add_opening", ifc, opening=myopening, element=mywall)
         # associate the opening with our door
-        run("void.add_filling", ifc, opening=myopening, element=myproduct)
+        api.run("void.add_filling", ifc, opening=myopening, element=myproduct)
 
         ifc.write("_test.ifc")
 

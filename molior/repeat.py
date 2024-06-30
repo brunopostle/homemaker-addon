@@ -13,7 +13,7 @@ from molior.ifc import (
 )
 from molior.extrusion import Extrusion
 
-run = ifcopenshell.api.run
+api = ifcopenshell.api
 
 
 class Repeat(TraceClass):
@@ -70,13 +70,13 @@ class Repeat(TraceClass):
         # aggregate all segments in the path
 
         if segments > 1:
-            path_aggregate = run(
+            path_aggregate = api.run(
                 "root.create_entity",
                 self.file,
                 ifc_class="IfcElementAssembly",
                 name=self.name,
             )
-            run(
+            api.run(
                 "geometry.edit_object_placement",
                 self.file,
                 product=path_aggregate,
@@ -104,20 +104,20 @@ class Repeat(TraceClass):
                     v_out_a, scale_2d(self.direction_segment(id_segment), spacing / 2)
                 )
 
-            aggregate = run(
+            aggregate = api.run(
                 "root.create_entity",
                 self.file,
                 ifc_class="IfcElementAssembly",
                 name=self.name,
             )
             if segments > 1:
-                run(
+                api.run(
                     "aggregate.assign_object",
                     self.file,
                     products=[aggregate],
                     relating_object=path_aggregate,
                 )
-            run(
+            api.run(
                 "geometry.edit_object_placement",
                 self.file,
                 product=aggregate,
@@ -128,7 +128,7 @@ class Repeat(TraceClass):
             )
 
             if self.parent_aggregate is not None:
-                run(
+                api.run(
                     "aggregate.assign_object",
                     self.file,
                     products=[aggregate],
@@ -208,14 +208,14 @@ class Repeat(TraceClass):
                             ):
                                 continue
 
-                    entity = run(
+                    entity = api.run(
                         "root.create_entity",
                         self.file,
                         ifc_class=self.ifc,
                         name=self.name,
                     )
                     # assign the entity to the aggregate
-                    run(
+                    api.run(
                         "aggregate.assign_object",
                         self.file,
                         products=[entity],
@@ -231,13 +231,13 @@ class Repeat(TraceClass):
                         # TODO skip unless Pset_MemberCommon.LoadBearing
                         start = [*location, self.elevation]
                         end = [*location, self.elevation + self.height]
-                        structural_member = run(
+                        structural_member = api.run(
                             "root.create_entity",
                             self.file,
                             ifc_class="IfcStructuralCurveMember",
                             name=self.style + "/" + self.name,
                         )
-                        assignment = run(
+                        assignment = api.run(
                             "root.create_entity",
                             self.file,
                             ifc_class="IfcRelAssignsToProduct",
@@ -255,13 +255,13 @@ class Repeat(TraceClass):
                         structural_member.Axis = self.file.createIfcDirection(
                             [*self.normal_segment(id_segment), 0.0]
                         )
-                        run(
+                        api.run(
                             "structural.assign_structural_analysis_model",
                             self.file,
                             product=structural_member,
                             structural_analysis_model=self.structural_analysis_model,
                         )
-                        run(
+                        api.run(
                             "geometry.assign_representation",
                             self.file,
                             product=structural_member,
@@ -285,14 +285,14 @@ class Repeat(TraceClass):
                         profile = self.file.create_entity(
                             self.structural_profile[0], **self.structural_profile[1]
                         )
-                        rel = run(
+                        rel = api.run(
                             "material.assign_material",
                             self.file,
                             products=[structural_member],
                             type="IfcMaterialProfileSet",
                         )
                         profile_set = rel.RelatingMaterial
-                        material_profile = run(
+                        material_profile = api.run(
                             "material.add_profile",
                             self.file,
                             profile_set=profile_set,
@@ -303,7 +303,7 @@ class Repeat(TraceClass):
                                 stylename=self.style,
                             ),
                         )
-                        run(
+                        api.run(
                             "material.assign_profile",
                             self.file,
                             material_profile=material_profile,
@@ -324,7 +324,7 @@ class Repeat(TraceClass):
                         stylename=self.style,
                         name=asset_name,
                     )
-                    run(
+                    api.run(
                         "type.assign_type",
                         self.file,
                         related_objects=[entity],
@@ -363,7 +363,7 @@ class Repeat(TraceClass):
                         )
                         placement_matrix = placement_matrix @ vertical_matrix
 
-                    run(
+                    api.run(
                         "geometry.edit_object_placement",
                         self.file,
                         product=entity,
@@ -377,7 +377,7 @@ class Repeat(TraceClass):
         else:
             top_object = aggregate
         if self.parent_aggregate is not None:
-            run(
+            api.run(
                 "aggregate.assign_object",
                 self.file,
                 products=[top_object],

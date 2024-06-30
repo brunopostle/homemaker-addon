@@ -14,7 +14,7 @@ from molior.ifc import (
     get_context_by_name,
 )
 
-run = ifcopenshell.api.run
+api = ifcopenshell.api
 
 
 class Floor(TraceClass):
@@ -53,7 +53,7 @@ class Floor(TraceClass):
 
         # create an element
 
-        element = run(
+        element = api.run(
             "root.create_entity",
             self.file,
             ifc_class=self.ifc,
@@ -98,7 +98,7 @@ class Floor(TraceClass):
             stylename=self.style,
             name=self.name,
         )
-        run(
+        api.run(
             "type.assign_type",
             self.file,
             related_objects=[element],
@@ -107,7 +107,7 @@ class Floor(TraceClass):
 
         thickness = get_thickness(self.file, type_product)
 
-        shape_representation = run(
+        shape_representation = api.run(
             "geometry.add_profile_representation",
             self.file,
             context=body_context,
@@ -117,13 +117,13 @@ class Floor(TraceClass):
             depth=thickness,
         )
 
-        run(
+        api.run(
             "geometry.assign_representation",
             self.file,
             product=element,
             representation=shape_representation,
         )
-        run(
+        api.run(
             "geometry.edit_object_placement",
             self.file,
             product=element,

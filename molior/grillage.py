@@ -17,7 +17,7 @@ from molior.repeat import Repeat
 from molior.shell import Shell
 import topologist.hulls
 
-run = ifcopenshell.api.run
+api = ifcopenshell.api
 
 
 class Grillage(BaseClass):
@@ -52,13 +52,13 @@ class Grillage(BaseClass):
 
         myconfig = self.style_object.get(self.style)
 
-        aggregate = run(
+        aggregate = api.run(
             "root.create_entity",
             self.file,
             ifc_class=self.ifc,
             name=self.name,
         )
-        run(
+        api.run(
             "geometry.edit_object_placement",
             self.file,
             product=aggregate,
@@ -88,13 +88,13 @@ class Grillage(BaseClass):
                 if elevation is None or vertex[2] < elevation:
                     elevation = el(vertex[2])
 
-            face_aggregate = run(
+            face_aggregate = api.run(
                 "root.create_entity",
                 self.file,
                 ifc_class=self.ifc,
                 name=self.name,
             )
-            run(
+            api.run(
                 "aggregate.assign_object",
                 self.file,
                 products=[face_aggregate],
@@ -107,7 +107,7 @@ class Grillage(BaseClass):
                 face[1]["back_cell"],
                 face[1]["front_cell"],
             )
-            run(
+            api.run(
                 "geometry.edit_object_placement",
                 self.file,
                 product=face_aggregate,
@@ -120,7 +120,7 @@ class Grillage(BaseClass):
 
             # FIXME should generate Structural Curve Member for each extrusion
             # generate structural surfaces
-            structural_surface = run(
+            structural_surface = api.run(
                 "root.create_entity",
                 self.file,
                 ifc_class="IfcStructuralSurfaceMember",
@@ -135,13 +135,13 @@ class Grillage(BaseClass):
                 face[1]["front_cell"],
             )
             structural_surface.Thickness = 0.2
-            run(
+            api.run(
                 "structural.assign_structural_analysis_model",
                 self.file,
                 product=structural_surface,
                 structural_analysis_model=self.structural_analysis_model,
             )
-            run(
+            api.run(
                 "geometry.assign_representation",
                 self.file,
                 product=structural_surface,
@@ -152,7 +152,7 @@ class Grillage(BaseClass):
                     [face_surface],
                 ),
             )
-            run(
+            api.run(
                 "material.assign_material",
                 self.file,
                 products=[structural_surface],
@@ -164,7 +164,7 @@ class Grillage(BaseClass):
                 ),
             )
 
-            assignment = run(
+            assignment = api.run(
                 "root.create_entity", self.file, ifc_class="IfcRelAssignsToProduct"
             )
             assignment.RelatingProduct = structural_surface
@@ -271,7 +271,7 @@ class Grillage(BaseClass):
                             part = getattr(self, config["class"])(vals)
                             part.execute()
 
-            run(
+            api.run(
                 "geometry.edit_object_placement",
                 self.file,
                 product=face_aggregate,
@@ -283,7 +283,7 @@ class Grillage(BaseClass):
         if elevation in self.elevations:
             level = self.elevations[elevation]
         if self.parent_aggregate is not None:
-            run(
+            api.run(
                 "aggregate.assign_object",
                 self.file,
                 products=[aggregate],

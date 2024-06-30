@@ -18,7 +18,7 @@ from molior.ifc import (
 )
 from molior.style import Style
 
-run = ifcopenshell.api.run
+api = ifcopenshell.api
 
 
 class Tests(unittest.TestCase):
@@ -61,7 +61,7 @@ class Tests(unittest.TestCase):
             "courtyard", "IfcMaterial", "Screed"
         )
         # add to current project
-        local_element = run(
+        local_element = api.run(
             "project.append_asset", self.file, library=library_file, element=element
         )
 
@@ -69,7 +69,7 @@ class Tests(unittest.TestCase):
         library = get_library_by_name(self.file, stylename)
         # this doesn't work because an IFC Material isn't an Object Definition
         # so it doesn't HasContext and can't fit in a Project Library :(
-        run(
+        api.run(
             "project.assign_declaration",
             self.file,
             definitions=[local_element],
@@ -88,7 +88,7 @@ class Tests(unittest.TestCase):
             "arcade", "IfcWIndowType", "arch_194x300"
         )
         # add to current project
-        local_element = run(
+        local_element = api.run(
             "project.append_asset", self.file, library=library_file, element=element
         )
         for representation_map in local_element.RepresentationMaps:
@@ -96,14 +96,14 @@ class Tests(unittest.TestCase):
                 representation_map.MappedRepresentation.RepresentationIdentifier
                 == "Clearance"
             ):
-                myopening = run(
+                myopening = api.run(
                     "root.create_entity",
                     self.file,
                     ifc_class="IfcOpeningElement",
                     name=local_element.Name,
                     predefined_type="OPENING",
                 )
-                run(
+                api.run(
                     "geometry.assign_representation",
                     self.file,
                     product=myopening,

@@ -16,7 +16,7 @@ from molior.ifc import (
 )
 from molior.geometry import matrix_align
 
-run = ifcopenshell.api.run
+api = ifcopenshell.api
 
 
 class Tests(unittest.TestCase):
@@ -114,15 +114,15 @@ class Tests(unittest.TestCase):
         )
 
         # use clipped geometry as a wall
-        mywall = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
-        run(
+        mywall = api.run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
+        api.run(
             "geometry.assign_representation",
             ifc,
             product=mywall,
             representation=clipped_representation,
         )
         assign_storey_byindex(ifc, mywall, building, 2)
-        run(
+        api.run(
             "geometry.edit_object_placement",
             ifc,
             product=mywall,

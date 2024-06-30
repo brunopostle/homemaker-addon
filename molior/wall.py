@@ -29,7 +29,7 @@ from molior.ifc import (
     create_closed_profile_from_points,
 )
 
-run = ifcopenshell.api.run
+api = ifcopenshell.api
 
 
 class Wall(TraceClass):
@@ -66,13 +66,13 @@ class Wall(TraceClass):
         self.init_openings()
 
         # traces have one or more segments, aggregate them
-        aggregate = run(
+        aggregate = api.run(
             "root.create_entity",
             self.file,
             ifc_class="IfcElementAssembly",
             name=self.name,
         )
-        run(
+        api.run(
             "geometry.edit_object_placement",
             self.file,
             product=aggregate,
@@ -86,14 +86,14 @@ class Wall(TraceClass):
         previous_wall = None
         segments = self.segments()
         for id_segment in range(segments):
-            mywall = run(
+            mywall = api.run(
                 "root.create_entity",
                 self.file,
                 ifc_class=self.ifc,
                 name=self.name,
             )
 
-            run(
+            api.run(
                 "aggregate.assign_object",
                 self.file,
                 products=[mywall],
@@ -114,7 +114,7 @@ class Wall(TraceClass):
                 if cell is None:
                     boundaries.append(None)
                     continue
-                boundary = run(
+                boundary = api.run(
                     "root.create_entity",
                     self.file,
                     ifc_class="IfcRelSpaceBoundary2ndLevel",
@@ -170,7 +170,7 @@ class Wall(TraceClass):
                 stylename=self.style,
                 name=self.name,
             )
-            run(
+            api.run(
                 "type.assign_type",
                 self.file,
                 related_objects=[mywall],
@@ -216,7 +216,7 @@ class Wall(TraceClass):
             if previous_wall is None:
                 first_wall = mywall
             else:
-                rel_connects = run(
+                rel_connects = api.run(
                     "root.create_entity",
                     self.file,
                     ifc_class="IfcRelConnectsPathElements",
@@ -245,7 +245,7 @@ class Wall(TraceClass):
                 rel_connects.RelatedPriorities = []
                 rel_connects.Description = "MITRE"
             if self.closed and id_segment == len(self.path) - 1:
-                rel_connects = run(
+                rel_connects = api.run(
                     "root.create_entity",
                     self.file,
                     ifc_class="IfcRelConnectsPathElements",
@@ -296,14 +296,14 @@ class Wall(TraceClass):
             # structure
             face_surface = create_face_surface(self.file, vertices, normal)
             # generate structural surfaces
-            structural_surface = run(
+            structural_surface = api.run(
                 "root.create_entity",
                 self.file,
                 ifc_class="IfcStructuralSurfaceMember",
                 name=self.style + "/" + self.name,
                 predefined_type="SHELL",
             )
-            assignment = run(
+            assignment = api.run(
                 "root.create_entity", self.file, ifc_class="IfcRelAssignsToProduct"
             )
             assignment.RelatingProduct = structural_surface
@@ -312,13 +312,13 @@ class Wall(TraceClass):
                 self.file, structural_surface, face, back_cell, front_cell
             )
             structural_surface.Thickness = self.structural_thickness
-            run(
+            api.run(
                 "structural.assign_structural_analysis_model",
                 self.file,
                 product=structural_surface,
                 structural_analysis_model=self.structural_analysis_model,
             )
-            run(
+            api.run(
                 "geometry.assign_representation",
                 self.file,
                 product=structural_surface,
@@ -329,7 +329,7 @@ class Wall(TraceClass):
                     [face_surface],
                 ),
             )
-            run(
+            api.run(
                 "material.assign_material",
                 self.file,
                 products=[structural_surface],
@@ -450,7 +450,7 @@ class Wall(TraceClass):
                 representationtype,
                 [solid],
             )
-            run(
+            api.run(
                 "geometry.assign_representation",
                 self.file,
                 product=mywall,
@@ -463,13 +463,13 @@ class Wall(TraceClass):
                 "Curve2D",
                 [axis],
             )
-            run(
+            api.run(
                 "geometry.assign_representation",
                 self.file,
                 product=mywall,
                 representation=shape,
             )
-            run(
+            api.run(
                 "geometry.edit_object_placement",
                 self.file,
                 product=mywall,
@@ -492,7 +492,7 @@ class Wall(TraceClass):
                     ifc_class = "IfcWindow"
                 else:
                     ifc_class = "IfcDoor"
-                entity = run(
+                entity = api.run(
                     "root.create_entity",
                     self.file,
                     ifc_class=ifc_class,
@@ -500,7 +500,7 @@ class Wall(TraceClass):
                 )
                 add_face_topology_epsets(self.file, entity, face, back_cell, front_cell)
                 # window/door width and height attributes can't be set in Type
-                run(
+                api.run(
                     "attribute.edit_attributes",
                     self.file,
                     product=entity,
@@ -510,7 +510,7 @@ class Wall(TraceClass):
                     },
                 )
                 # place the entity in space
-                run(
+                api.run(
                     "geometry.edit_object_placement",
                     self.file,
                     product=entity,
@@ -529,7 +529,7 @@ class Wall(TraceClass):
                     stylename=self.style,
                     name=name,
                 )
-                run(
+                api.run(
                     "type.assign_type",
                     self.file,
                     related_objects=[entity],
@@ -641,21 +641,21 @@ class Wall(TraceClass):
                         "SweptSolid",
                         [swept_solid],
                     )
-                    run(
+                    api.run(
                         "geometry.assign_representation",
                         self.file,
                         product=element_type,
                         representation=clearance_representation,
                     )
 
-                myopening = run(
+                myopening = api.run(
                     "root.create_entity",
                     self.file,
                     ifc_class="IfcOpeningElement",
                     name=element_type.Name,
                     predefined_type="OPENING",
                 )
-                run(
+                api.run(
                     "geometry.assign_representation",
                     self.file,
                     product=myopening,
@@ -664,7 +664,7 @@ class Wall(TraceClass):
 
                 # place the opening where the wall is
 
-                run(
+                api.run(
                     "geometry.edit_object_placement",
                     self.file,
                     product=myopening,
@@ -674,16 +674,16 @@ class Wall(TraceClass):
                     ),
                 )
                 # use the opening to cut the wall, no need to assign a storey
-                run("void.add_opening", self.file, opening=myopening, element=mywall)
+                api.run("void.add_opening", self.file, opening=myopening, element=mywall)
                 # # using the opening to cut the structural model isn't allowed
-                # run(
+                # api.run(
                 #     "void.add_opening",
                 #     self.file,
                 #     opening=myopening,
                 #     element=structural_surface,
                 # )
                 # associate the opening with our window
-                run("void.add_filling", self.file, opening=myopening, element=entity)
+                api.run("void.add_filling", self.file, opening=myopening, element=entity)
 
                 # openings are also space boundaries
                 cill = self.elevation + db["cill"]
@@ -700,7 +700,7 @@ class Wall(TraceClass):
                     cell_id += 1
                     if cell is None:
                         continue
-                    boundary = run(
+                    boundary = api.run(
                         "root.create_entity",
                         self.file,
                         ifc_class="IfcRelSpaceBoundary2ndLevel",

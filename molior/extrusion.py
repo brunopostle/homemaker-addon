@@ -16,7 +16,7 @@ from molior.ifc import (
     get_type_object,
 )
 
-run = ifcopenshell.api.run
+api = ifcopenshell.api
 
 
 class Extrusion(TraceClass):
@@ -70,13 +70,13 @@ class Extrusion(TraceClass):
         # aggregate all segments in the path
 
         if segments > 1:
-            path_aggregate = run(
+            path_aggregate = api.run(
                 "root.create_entity",
                 self.file,
                 ifc_class="IfcElementAssembly",
                 name=self.name,
             )
-            run(
+            api.run(
                 "geometry.edit_object_placement",
                 self.file,
                 product=path_aggregate,
@@ -85,20 +85,20 @@ class Extrusion(TraceClass):
         for id_segment in range(segments):
             # create an element
 
-            linear_element = run(
+            linear_element = api.run(
                 "root.create_entity",
                 self.file,
                 ifc_class=self.ifc,
                 name=self.name,
             )
-            run(
+            api.run(
                 "type.assign_type",
                 self.file,
                 related_objects=[linear_element],
                 relating_type=type_product,
             )
             if segments > 1:
-                run(
+                api.run(
                     "aggregate.assign_object",
                     self.file,
                     products=[linear_element],
@@ -163,7 +163,7 @@ class Extrusion(TraceClass):
             # connect ends
 
             if previous_element:
-                run(
+                api.run(
                     "geometry.connect_path",
                     self.file,
                     relating_element=linear_element,
@@ -178,7 +178,7 @@ class Extrusion(TraceClass):
             previous_element = linear_element
 
             if self.closed and id_segment == segments - 1:
-                run(
+                api.run(
                     "geometry.connect_path",
                     self.file,
                     relating_element=first_element,
@@ -199,7 +199,7 @@ class Extrusion(TraceClass):
                     profile_set = association.RelatingMaterial
                     material_profiles = association.RelatingMaterial.MaterialProfiles
 
-            shape_representation = run(
+            shape_representation = api.run(
                 "geometry.add_profile_representation",
                 self.file,
                 context=body_context,
@@ -217,20 +217,20 @@ class Extrusion(TraceClass):
                     self.ref_direction
                 )
 
-            run(
+            api.run(
                 "geometry.assign_representation",
                 self.file,
                 product=linear_element,
                 representation=shape_representation,
             )
 
-            axis_representation = run(
+            axis_representation = api.run(
                 "geometry.add_axis_representation",
                 self.file,
                 context=axis_context,
                 axis=[[0.0, 0.0, 0.0], [0.0, 0.0, length]],
             )
-            run(
+            api.run(
                 "geometry.assign_representation",
                 self.file,
                 product=linear_element,
@@ -246,7 +246,7 @@ class Extrusion(TraceClass):
                 [0.0, 0.0, 0.0, 1.0],
             ]
 
-            run(
+            api.run(
                 "geometry.edit_object_placement",
                 self.file,
                 product=linear_element,
@@ -262,14 +262,14 @@ class Extrusion(TraceClass):
             ) and hasattr(self, "chain"):
                 # TODO skip unless Pset_MemberCommon.LoadBearing
                 # generate structural edges
-                structural_member = run(
+                structural_member = api.run(
                     "root.create_entity",
                     self.file,
                     ifc_class="IfcStructuralCurveMember",
                     name=self.style + "/" + self.name,
                     predefined_type="RIGID_JOINED_MEMBER",
                 )
-                assignment = run(
+                assignment = api.run(
                     "root.create_entity", self.file, ifc_class="IfcRelAssignsToProduct"
                 )
                 assignment.RelatingProduct = structural_member
@@ -283,13 +283,13 @@ class Extrusion(TraceClass):
                     self.file, structural_member, face, back_cell, front_cell
                 )
                 structural_member.Axis = self.file.createIfcDirection([0.0, 0.0, 1.0])
-                run(
+                api.run(
                     "structural.assign_structural_analysis_model",
                     self.file,
                     product=structural_member,
                     structural_analysis_model=self.structural_analysis_model,
                 )
-                run(
+                api.run(
                     "geometry.assign_representation",
                     self.file,
                     product=structural_member,
@@ -313,14 +313,14 @@ class Extrusion(TraceClass):
                 profile = self.file.create_entity(
                     self.structural_profile[0], **self.structural_profile[1]
                 )
-                rel = run(
+                rel = api.run(
                     "material.assign_material",
                     self.file,
                     products=[structural_member],
                     type="IfcMaterialProfileSet",
                 )
                 profile_set = rel.RelatingMaterial
-                material_profile = run(
+                material_profile = api.run(
                     "material.add_profile",
                     self.file,
                     profile_set=profile_set,
@@ -331,7 +331,7 @@ class Extrusion(TraceClass):
                         stylename=self.style,
                     ),
                 )
-                run(
+                api.run(
                     "material.assign_profile",
                     self.file,
                     material_profile=material_profile,
@@ -345,7 +345,7 @@ class Extrusion(TraceClass):
         else:
             top_object = linear_element
         if self.parent_aggregate is not None:
-            run(
+            api.run(
                 "aggregate.assign_object",
                 self.file,
                 products=[top_object],

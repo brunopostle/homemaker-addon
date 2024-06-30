@@ -12,7 +12,7 @@ from molior.ifc import (
     get_context_by_name,
 )
 
-run = ifcopenshell.api.run
+api = ifcopenshell.api
 
 
 class Space(TraceClass):
@@ -39,7 +39,7 @@ class Space(TraceClass):
         # the cell is the first cell attached to any edge in the chain
         cell = self.chain.graph[next(iter(self.chain.graph))][1]["back_cell"]
 
-        element = run(
+        element = api.run(
             "root.create_entity",
             self.file,
             ifc_class=self.ifc,
@@ -113,10 +113,10 @@ class Space(TraceClass):
             red = numpy.clip(1.0 - crinkliness, 0.0, 1.0)
             green = numpy.clip(crinkliness, 0.0, 1.0)
             blue = numpy.clip(crinkliness - 1.0, 0.0, 1.0)
-            style = run(
+            style = api.run(
                 "style.add_style", self.file, name="Crinkliness " + str(crinkliness)
             )
-            run(
+            api.run(
                 "style.add_surface_style",
                 self.file,
                 style=style,
@@ -133,8 +133,8 @@ class Space(TraceClass):
             )
             # FIXME report 159 LIGHT ON TWO SIDES: custom psets? STDERR?
         else:
-            style = run("style.add_style", self.file, name="Outside Space")
-            run(
+            style = api.run("style.add_style", self.file, name="Outside Space")
+            api.run(
                 "style.add_surface_style",
                 self.file,
                 style=style,
@@ -149,20 +149,20 @@ class Space(TraceClass):
                     "Transparency": 0.9,
                 },
             )
-        run(
+        api.run(
             "style.assign_representation_styles",
             self.file,
             shape_representation=shape,
             styles=[style],
         )
 
-        run(
+        api.run(
             "geometry.assign_representation",
             self.file,
             product=element,
             representation=shape,
         )
-        run(
+        api.run(
             "geometry.edit_object_placement",
             self.file,
             product=element,

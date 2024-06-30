@@ -15,7 +15,7 @@ from molior.ifc import (
 )
 from molior.style import Style
 
-run = ifcopenshell.api.run
+api = ifcopenshell.api
 
 
 class Tests(unittest.TestCase):
@@ -31,10 +31,10 @@ class Tests(unittest.TestCase):
             name="purlin",
         )
 
-        mycolumn = run(
+        mycolumn = api.run(
             "root.create_entity", self.file, ifc_class="IfcColumn", name="My Column"
         )
-        run(
+        api.run(
             "type.assign_type",
             self.file,
             related_objects=[mycolumn],
@@ -47,7 +47,7 @@ class Tests(unittest.TestCase):
         # test copying materials
         self.another_file = molior.ifc.init(name="My Other Project")
         for entity in self.file.by_type("IfcMaterial"):
-            run(
+            api.run(
                 "project.append_asset",
                 self.another_file,
                 library=self.file,
@@ -75,7 +75,7 @@ class Tests(unittest.TestCase):
                 ].RelatingMaterial.MaterialProfiles
             ],
         )
-        run(
+        api.run(
             "geometry.assign_representation",
             self.file,
             product=mycolumn,

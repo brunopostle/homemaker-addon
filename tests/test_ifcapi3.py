@@ -15,7 +15,7 @@ from molior.ifc import (
 )
 from molior.style import Style
 
-run = ifcopenshell.api.run
+api = ifcopenshell.api
 
 
 class Tests(unittest.TestCase):
@@ -29,7 +29,7 @@ class Tests(unittest.TestCase):
         building = get_building_by_name(ifc, site, "My Building")
         create_storeys(ifc, building, {0.0: 0})
 
-        run(
+        api.run(
             "root.create_entity",
             ifc,
             ifc_class="IfcBuildingElementProxy",

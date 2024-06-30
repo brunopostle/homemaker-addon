@@ -15,7 +15,7 @@ from molior.ifc import (
     get_context_by_name,
 )
 
-run = ifcopenshell.api.run
+api = ifcopenshell.api
 
 
 class Shell(BaseClass):
@@ -39,13 +39,13 @@ class Shell(BaseClass):
         )
         body_context = get_context_by_name(self.file, context_identifier="Body")
 
-        aggregate = run(
+        aggregate = api.run(
             "root.create_entity",
             self.file,
             ifc_class="IfcElementAssembly",
             name=self.name,
         )
-        run(
+        api.run(
             "geometry.edit_object_placement",
             self.file,
             product=aggregate,
@@ -79,13 +79,13 @@ class Shell(BaseClass):
             ):
                 self.ifc = "IfcVirtualElement"
 
-            element = run(
+            element = api.run(
                 "root.create_entity",
                 self.file,
                 ifc_class=self.ifc,
                 name=self.name,
             )
-            run(
+            api.run(
                 "aggregate.assign_object",
                 self.file,
                 products=[element],
@@ -102,7 +102,7 @@ class Shell(BaseClass):
             # generate space boundar(y|ies)
             for mycell in face[1]["back_cell"], face[1]["front_cell"]:
                 if mycell:
-                    boundary = run(
+                    boundary = api.run(
                         "root.create_entity",
                         self.file,
                         ifc_class="IfcRelSpaceBoundary2ndLevel",
@@ -155,7 +155,7 @@ class Shell(BaseClass):
 
             # TODO skip unless Pset_*Common.LoadBearing
             # generate structural surfaces
-            structural_surface = run(
+            structural_surface = api.run(
                 "root.create_entity",
                 self.file,
                 ifc_class="IfcStructuralSurfaceMember",
@@ -170,13 +170,13 @@ class Shell(BaseClass):
                 face[1]["front_cell"],
             )
             structural_surface.Thickness = self.structural_thickness
-            run(
+            api.run(
                 "structural.assign_structural_analysis_model",
                 self.file,
                 product=structural_surface,
                 structural_analysis_model=self.structural_analysis_model,
             )
-            run(
+            api.run(
                 "geometry.assign_representation",
                 self.file,
                 product=structural_surface,
@@ -187,7 +187,7 @@ class Shell(BaseClass):
                     [face_surface],
                 ),
             )
-            run(
+            api.run(
                 "material.assign_material",
                 self.file,
                 products=[structural_surface],
@@ -199,7 +199,7 @@ class Shell(BaseClass):
                 ),
             )
 
-            assignment = run(
+            assignment = api.run(
                 "root.create_entity", self.file, ifc_class="IfcRelAssignsToProduct"
             )
             assignment.RelatingProduct = structural_surface
@@ -214,7 +214,7 @@ class Shell(BaseClass):
                 stylename=self.style,
                 name=self.name,
             )
-            run(
+            api.run(
                 "type.assign_type",
                 self.file,
                 related_objects=[element],
@@ -265,13 +265,13 @@ class Shell(BaseClass):
                     )
                 ],
             )
-            run(
+            api.run(
                 "geometry.assign_representation",
                 self.file,
                 product=element,
                 representation=shape,
             )
-            run(
+            api.run(
                 "geometry.edit_object_placement",
                 self.file,
                 product=element,
@@ -281,7 +281,7 @@ class Shell(BaseClass):
         if elevation in self.elevations:
             level = self.elevations[elevation]
         if self.parent_aggregate is not None:
-            run(
+            api.run(
                 "aggregate.assign_object",
                 self.file,
                 products=[aggregate],

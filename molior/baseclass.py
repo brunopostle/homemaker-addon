@@ -13,7 +13,7 @@ from molior.geometry import (
 )
 from molior.ifc import add_pset
 
-run = ifcopenshell.api.run
+api = ifcopenshell.api
 
 
 class BaseClass:

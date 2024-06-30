@@ -9,7 +9,7 @@ import ifcopenshell
 import molior.ifc
 from molior.ifc import create_extruded_area_solid, get_context_by_name
 
-run = ifcopenshell.api.run
+api = ifcopenshell.api
 
 
 class Tests(unittest.TestCase):
@@ -18,8 +18,8 @@ class Tests(unittest.TestCase):
         self.body_context = get_context_by_name(self.file, context_identifier="Body")
 
     def test_add_surface_style(self):
-        style = run("style.add_style", self.file, name="Outdoor wall")
-        run(
+        style = api.run("style.add_style", self.file, name="Outdoor wall")
+        api.run(
             "style.add_surface_style",
             self.file,
             style=style,
@@ -46,15 +46,15 @@ class Tests(unittest.TestCase):
             ],
         )
 
-        run(
+        api.run(
             "style.assign_representation_styles",
             self.file,
             shape_representation=shape,
             styles=[style],
         )
 
-        slab = run("root.create_entity", self.file, ifc_class="IfcSlab", name="My Slab")
-        run(
+        slab = api.run("root.create_entity", self.file, ifc_class="IfcSlab", name="My Slab")
+        api.run(
             "geometry.assign_representation",
             self.file,
             product=slab,

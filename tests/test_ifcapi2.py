@@ -19,7 +19,7 @@ from molior.ifc import (
 from molior.style import Style
 from molior.geometry import matrix_align
 
-run = ifcopenshell.api.run
+api = ifcopenshell.api
 
 
 class Tests(unittest.TestCase):
@@ -34,21 +34,21 @@ class Tests(unittest.TestCase):
         create_storeys(ifc, building, {0.0: 0})
 
         # create a window
-        myproduct = run(
+        myproduct = api.run(
             "root.create_entity",
             ifc,
             ifc_class="IfcWindow",
             name="My Window",
         )
         # window needs some attributes
-        run(
+        api.run(
             "attribute.edit_attributes",
             ifc,
             product=myproduct,
             attributes={"OverallHeight": 2.545, "OverallWidth": 5.0},
         )
         # place the window in space
-        run(
+        api.run(
             "geometry.edit_object_placement",
             ifc,
             product=myproduct,
@@ -65,7 +65,7 @@ class Tests(unittest.TestCase):
             stylename="default",
             name="shopfront",
         )
-        run(
+        api.run(
             "type.assign_type",
             ifc,
             related_objects=[myproduct],
@@ -73,9 +73,9 @@ class Tests(unittest.TestCase):
         )
 
         # create a wall
-        mywall = run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
+        mywall = api.run("root.create_entity", ifc, ifc_class="IfcWall", name="My Wall")
         # give the wall a Body representation
-        run(
+        api.run(
             "geometry.assign_representation",
             ifc,
             product=mywall,
@@ -93,7 +93,7 @@ class Tests(unittest.TestCase):
             ),
         )
         # place the wall in space
-        run(
+        api.run(
             "geometry.edit_object_placement",
             ifc,
             product=mywall,
@@ -103,17 +103,17 @@ class Tests(unittest.TestCase):
         assign_storey_byindex(ifc, mywall, building, 0)
 
         # create an opening
-        myopening = run(
+        myopening = api.run(
             "root.create_entity", ifc, ifc_class="IfcOpeningElement", name="My Opening"
         )
-        run(
+        api.run(
             "attribute.edit_attributes",
             ifc,
             product=myopening,
             attributes={"PredefinedType": "OPENING"},
         )
         # give the opening a Body representation
-        run(
+        api.run(
             "geometry.assign_representation",
             ifc,
             product=myopening,
@@ -129,33 +129,33 @@ class Tests(unittest.TestCase):
             ),
         )
         # place the opening where the wall is
-        run(
+        api.run(
             "geometry.edit_object_placement",
             ifc,
             product=myopening,
             matrix=matrix_align([11.0, -0.5, 3.0], [11.0, 2.0, 0.0]),
         )
         # use the opening to cut the wall, no need to assign a storey
-        run("void.add_opening", ifc, opening=myopening, element=mywall)
+        api.run("void.add_opening", ifc, opening=myopening, element=mywall)
         # associate the opening with our window
-        run("void.add_filling", ifc, opening=myopening, element=myproduct)
+        api.run("void.add_filling", ifc, opening=myopening, element=myproduct)
 
         # create another window
-        myproduct = run(
+        myproduct = api.run(
             "root.create_entity",
             ifc,
             ifc_class="IfcWindow",
             name="Another Window",
         )
         # window needs some attributes
-        run(
+        api.run(
             "attribute.edit_attributes",
             ifc,
             product=myproduct,
             attributes={"OverallHeight": 2.545, "OverallWidth": 5.0},
         )
         # place the window in space
-        run(
+        api.run(
             "geometry.edit_object_placement",
             ifc,
             product=myproduct,
@@ -172,7 +172,7 @@ class Tests(unittest.TestCase):
             stylename="default",
             name="shopfront",
         )
-        run(
+        api.run(
             "type.assign_type",
             ifc,
             related_objects=[myproduct],
@@ -180,20 +180,20 @@ class Tests(unittest.TestCase):
         )
 
         # create an opening
-        myopening = run(
+        myopening = api.run(
             "root.create_entity",
             ifc,
             ifc_class="IfcOpeningElement",
             name="Another Opening",
         )
-        run(
+        api.run(
             "attribute.edit_attributes",
             ifc,
             product=myopening,
             attributes={"PredefinedType": "OPENING"},
         )
         # give the opening a Body representation
-        run(
+        api.run(
             "geometry.assign_representation",
             ifc,
             product=myopening,
@@ -209,16 +209,16 @@ class Tests(unittest.TestCase):
             ),
         )
         # place the opening where the wall is
-        run(
+        api.run(
             "geometry.edit_object_placement",
             ifc,
             product=myopening,
             matrix=matrix_align([11.0, 5.5, 3.0], [11.0, 9.0, 0.0]),
         )
         # use the opening to cut the wall, no need to assign a storey
-        run("void.add_opening", ifc, opening=myopening, element=mywall)
+        api.run("void.add_opening", ifc, opening=myopening, element=mywall)
         # associate the opening with our window
-        run("void.add_filling", ifc, opening=myopening, element=myproduct)
+        api.run("void.add_filling", ifc, opening=myopening, element=myproduct)
 
         ifc.write("_test.ifc")
 
