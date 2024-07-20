@@ -751,21 +751,22 @@ def purge_unused(self):
         # these are clearing up invalid results of root.remove_product
         for rel in self.by_type("IfcRelConnectsStructuralMember"):
             if not rel.RelatingStructuralMember:
-                api.root.remove_product(self, product=rel)
+                self.remove(rel)
                 todo = True
-        for rel in self.by_type("IfcRelAssignsToProduct"):
-            if not rel.RelatingProduct:
-                api.root.remove_product(self, product=rel)
-                todo = True
-        for rel in self.by_type("IfcRelServicesBuildings"):
-            if not rel.RelatingSystem:
-                api.root.remove_product(self, product=rel)
-                todo = True
-        for rel in self.by_type("IfcRelAssignsToGroup"):
-            if not rel.RelatingGroup:
-                api.root.remove_product(self, product=rel)
-                todo = True
-        for rel in self.by_type("IfcRelDeclares"):
-            if not rel.RelatedDefinitions:
-                api.root.remove_product(self, product=rel)
-                todo = True
+# FIXME these segfault
+#         for rel in self.by_type("IfcRelAssignsToProduct"):
+#             if not rel.RelatingProduct:
+#                 self.remove(rel)
+#                 todo = True
+#         for rel in self.by_type("IfcRelServicesBuildings"):
+#             if not rel.RelatingSystem:
+#                 self.remove(rel)
+#                 todo = True
+#         for rel in self.by_type("IfcRelAssignsToGroup"):
+#             if not rel.RelatingGroup:
+#                 self.remove(rel)
+#                 todo = True
+#         for rel in self.by_type("IfcRelDeclares"):
+#             if not rel.RelatedDefinitions:
+#                 self.remove(rel)
+#                 todo = True
