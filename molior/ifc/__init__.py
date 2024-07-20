@@ -690,7 +690,7 @@ def purge_unused(self):
         for type_object in self.by_type("IfcTypeObject"):
             if not type_object.Types or not type_object.Types[0].RelatedObjects:
                 # need this or it segfaults IfcOpenShell/IfcOpenShell#2697
-                api.material.unassign_material(self, product=type_object)
+                api.material.unassign_material(self, products=[type_object])
                 delete_ifc_product(self, type_object)
                 todo = True
         for pset in self.by_type("IfcPropertySet"):
@@ -717,35 +717,35 @@ def purge_unused(self):
                 if getattr(rel, "Axis", None):
                     self.remove(rel.Axis)
                 self.remove(rel)
-                api.root.remove_product(self, product=placement)
+                self.remove(placement)
                 todo = True
         for entity in self.by_type("IfcConnectionGeometry"):
             if not self.get_inverse(entity):
-                api.root.remove_product(self, product=entity)
+                self.remove(entity)
                 todo = True
         for entity in self.by_type("IfcBoundaryCondition"):
             if not self.get_inverse(entity):
-                api.root.remove_product(self, product=entity)
+                self.remove(entity)
                 todo = True
         for entity in self.by_type("IfcPresentationItem"):
             if not self.get_inverse(entity):
-                api.root.remove_product(self, product=entity)
+                self.remove(entity)
                 todo = True
         for entity in self.by_type("IfcProfileDef"):
             if not self.get_inverse(entity):
-                api.root.remove_product(self, product=entity)
+                self.remove(entity)
                 todo = True
         for entity in self.by_type("IfcRepresentation"):
             if not self.get_inverse(entity):
-                api.root.remove_product(self, product=entity)
+                self.remove(entity)
                 todo = True
         for entity in self.by_type("IfcGeometricRepresentationItem"):
             if not self.get_inverse(entity):
-                api.root.remove_product(self, product=entity)
+                self.remove(entity)
                 todo = True
         for entity in self.by_type("IfcMaterialDefinition"):
             if not self.get_inverse(entity):
-                api.root.remove_product(self, product=entity)
+                self.remove(entity)
                 todo = True
 
         # these are clearing up invalid results of root.remove_product
