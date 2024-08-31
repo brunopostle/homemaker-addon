@@ -72,7 +72,7 @@ it back in the hands of people who need good ordinary buildings.
 
 ## Installation
 
-Download an installer suitable for your system from the [Github Releases page](https://github.com/brunopostle/homemaker-addon/releases), these contain everything needed to run the add-on on a Blender/BlenderBIM installation.
+Download an installer suitable for your system from the [Github Releases page](https://github.com/brunopostle/homemaker-addon/releases), these contain everything needed to run the add-on on a Blender/Bonsai BIM installation.
 
 ## Requirements
 
@@ -80,16 +80,16 @@ The following requirements are needed to run the add-on if you don't choose the 
 
 - [topologic](https://github.com/wassimj/Topologic) a pybind11 python interface to the TopologicCore library.
   - [TopologicCore](https://github.com/wassimj/Topologic). This is a C++ library which you build and install using the standard cmake build system. It requires the opencascade library and headers which should be available from your distribution.
-- [blenderbim](https://blenderbim.org/) blender add-on, just download the ZIP and install from the blender preferences menu.
+- [Bonsai](https://bonsaibim.org/) BIM blender add-on.
 - [pyyaml](https://pyyaml.org/) python module.
 
 ## About
 
 This software would not be possible without leaning heavily on other software,
-in particular Topologic, Blenderbim and IfcOpenShell.
+in particular Topologic, Bonsai BIM and IfcOpenShell.
 
 The homemaker-addon is a python port of the Homemaker [Topologise blender add-on](https://bitbucket.org/brunopostle/urb/src/master/blender/topologise.py).
 
-Copyright 2022, Bruno Postle <bruno@postle.net>
+Copyright 2022-24, Bruno Postle <bruno@postle.net>
 License: GPLv3.
 3D and 2D asset and style files bundled with this software are additionally licensed 'CC BY 4.0'

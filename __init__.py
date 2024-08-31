@@ -17,9 +17,9 @@ from molior.ifc import (
 )
 
 import logging
-from blenderbim.bim import import_ifc
-from blenderbim.bim.ifc import IfcStore
-import blenderbim.tool as tool
+from bonsai.bim import import_ifc
+from bonsai.bim.ifc import IfcStore
+import bonsai.tool as tool
 import bpy
 import bmesh
 

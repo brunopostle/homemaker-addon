@@ -755,7 +755,7 @@ def purge_unused(self):
                 todo = True
 # FIXME these segfault
 #         for rel in self.by_type("IfcRelAssignsToProduct"):
-#             if not rel.RelatingProduct:
+#             if not rel.RelatingProduct and not self.get_inverse(rel):
 #                 self.remove(rel)
 #                 todo = True
 #         for rel in self.by_type("IfcRelServicesBuildings"):
@@ -767,6 +767,6 @@ def purge_unused(self):
 #                 self.remove(rel)
 #                 todo = True
 #         for rel in self.by_type("IfcRelDeclares"):
-#             if not rel.RelatedDefinitions:
+#             if not rel.RelatedDefinitions and not self.get_inverse(rel):
 #                 self.remove(rel)
 #                 todo = True

@@ -9,13 +9,13 @@ The Homemaker add-on puts two new functions in the Blender *Object* menu:
 
 To see the add-on in action, select the default Blender scene cube and run
 *Object > Homemaker*.  After a couple of seconds, the cube has been replaced by
-a Blenderbim IFC project with a single building.  This building is tiny, it
+a Bonsai IFC project with a single building.  This building is tiny, it
 consists of one room two metres wide, with a two metre floor to ceiling height
 - this is because the default Blender cube is two metres across.  Note that the
 base of the cube has been turned into an IFC Floor, there is an IFC Footing
 around the perimeter of the base, the vertical faces have become IFC Walls with
 IFC Window openings, etc..  This is a complete IFC model that can be further
-edited in Native IFC software such as Blenderbim, saved as an IFC file and
+edited in Native IFC software such as Bonsai BIM, saved as an IFC file and
 transferred to other IFC capable software.
 
 Press *Ctrl-Z* to undo, this returns the original cube, scale it a bit to a
