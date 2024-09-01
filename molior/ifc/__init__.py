@@ -15,7 +15,7 @@ import ifcopenshell.api.structural
 import ifcopenshell.api.style
 import ifcopenshell.api.unit
 import ifcopenshell.util.system
-from molior.geometry import (
+from ..geometry import (
     matrix_align,
     add_2d,
     subtract_2d,

@@ -1,5 +1,5 @@
 import numpy
-from topologist.helpers import el
+from ..helpers import el
 
 
 class Normals:

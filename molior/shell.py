@@ -5,9 +5,9 @@ import ifcopenshell.api.root
 import ifcopenshell.api.structural
 import ifcopenshell.api.type
 from topologist.helpers import string_to_coor, el
-from molior.baseclass import BaseClass
-from molior.geometry import map_to_2d, map_to_2d_simple, matrix_align
-from molior.ifc import (
+from .baseclass import BaseClass
+from .geometry import map_to_2d, map_to_2d_simple, matrix_align
+from .ifc import (
     add_face_topology_epsets,
     create_extruded_area_solid,
     create_curve_bounded_plane,

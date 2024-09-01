@@ -2,8 +2,8 @@
 
 import topologic
 from topologic import Edge, Face, FaceUtility
-from topologist.helpers import el
-import topologist.ugraph as ugraph
+from .helpers import el
+from . import ugraph
 
 
 def FacesTop(self, result_faces_ptr):

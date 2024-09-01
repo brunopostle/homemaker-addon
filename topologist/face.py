@@ -4,8 +4,8 @@ from functools import lru_cache
 import math
 import topologic
 from topologic import Vertex, Edge, Face, Cluster, FaceUtility, CellUtility
-from topologist.helpers import el
-import topologist.ugraph as ugraph
+from .helpers import el
+from . import ugraph
 
 
 def ByVertices(vertices):

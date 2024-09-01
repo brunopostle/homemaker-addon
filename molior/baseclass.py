@@ -1,6 +1,6 @@
 from math import pi
 
-from molior.geometry import (
+from .geometry import (
     add_2d,
     angle_2d,
     distance_2d,
@@ -10,7 +10,7 @@ from molior.geometry import (
     subtract_2d,
     line_intersection,
 )
-from molior.ifc import add_pset
+from .ifc import add_pset
 
 
 class BaseClass:

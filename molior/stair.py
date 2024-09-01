@@ -1,4 +1,4 @@
-from molior.baseclass import TraceClass
+from .baseclass import TraceClass
 
 
 class Stair(TraceClass):

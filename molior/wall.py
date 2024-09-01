@@ -5,8 +5,8 @@ import numpy
 
 from topologic import Vertex, Edge, Face, FaceUtility
 from topologist.helpers import el
-from molior.baseclass import TraceClass
-from molior.geometry import (
+from .baseclass import TraceClass
+from .geometry import (
     matrix_align,
     add_2d,
     scale_2d,
@@ -16,7 +16,7 @@ from molior.geometry import (
     transform,
     map_to_2d_simple,
 )
-from molior.ifc import (
+from .ifc import (
     add_face_topology_epsets,
     create_extruded_area_solid,
     clip_solid,

@@ -3,10 +3,10 @@
 from functools import lru_cache
 import topologic
 from topologic import StringAttribute, Vertex, FaceUtility
-from topologist.helpers import el
-import topologist.traces
-import topologist.hulls
-import topologist.normals
+from .helpers import el
+from . import traces
+from . import hulls
+from . import normals
 
 
 @lru_cache(maxsize=256)
@@ -220,8 +220,8 @@ def GetTraces(self):
     Traces are 2D ugraph paths that define walls, extrusions and rooms.
     Normals indicate horizontal mitre direction for corners.
     Elevations indicate a 'level' id for each height in the model."""
-    mytraces = topologist.traces.Traces()
-    mynormals = topologist.normals.Normals()
+    mytraces = traces.Traces()
+    mynormals = normals.Normals()
     elevations = {}
 
     faces_ptr = []
@@ -310,7 +310,7 @@ def GetTraces(self):
 
 def GetHulls(self):
     """Returns a 'hulls' dictionary. Hulls are 3D ushell surfaces that define roofs, soffits etc.."""
-    myhulls = topologist.hulls.Hulls()
+    myhulls = hulls.Hulls()
 
     faces_ptr = []
     self.Faces(None, faces_ptr)

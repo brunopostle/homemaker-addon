@@ -36,12 +36,12 @@ solid to build.
 
 """
 
-import topologist.topology
-import topologist.vertex
-import topologist.edge
-import topologist.face
-import topologist.cell
-import topologist.cellcomplex
-import topologist.graph
+from . import topology
+from . import vertex
+from . import edge
+from . import face
+from . import cell
+from . import cellcomplex
+from . import graph
 
-assert topologist.graph
+assert graph

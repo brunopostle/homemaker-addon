@@ -2,13 +2,13 @@ import numpy
 import ifcopenshell.api.root
 from ifcopenshell.util.placement import a2p
 
-from molior.baseclass import TraceClass
-from molior.geometry import (
+from .baseclass import TraceClass
+from .geometry import (
     normalise_3d,
     subtract_3d,
     magnitude_3d,
 )
-from molior.ifc import (
+from .ifc import (
     add_face_topology_epsets,
     assign_storey_byindex,
     get_material_by_name,

@@ -2,9 +2,9 @@ import numpy
 import ifcopenshell.api.root
 import ifcopenshell.api.style
 
-from molior.baseclass import TraceClass
-from molior.geometry import matrix_align
-from molior.ifc import (
+from .baseclass import TraceClass
+from .geometry import matrix_align
+from .ifc import (
     add_pset,
     add_cell_topology_epsets,
     create_extruded_area_solid,

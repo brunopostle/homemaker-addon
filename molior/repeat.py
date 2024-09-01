@@ -3,17 +3,16 @@ import ifcopenshell.api.attribute
 import ifcopenshell.api.geometry
 import ifcopenshell.api.root
 
-import molior
-from molior.baseclass import TraceClass
-from molior.geometry import add_2d, subtract_2d, scale_2d, distance_2d, matrix_align
-from molior.ifc import (
+from .baseclass import TraceClass
+from .geometry import add_2d, subtract_2d, scale_2d, distance_2d, matrix_align
+from .ifc import (
     add_face_topology_epsets,
     assign_storey_byindex,
     get_type_object,
     get_material_by_name,
     get_context_by_name,
 )
-from molior.extrusion import Extrusion
+from .extrusion import Extrusion
 
 api = ifcopenshell.api
 
@@ -55,7 +54,8 @@ class Repeat(TraceClass):
         reference_context = get_context_by_name(
             self.file, context_identifier="Reference", target_view="GRAPH_VIEW"
         )
-        style = molior.Molior.style
+        from . import Molior
+        style = Molior.style
         myconfig = style.get(self.style)
         if self.family in self.style_families:
             for index in range(len(self.style_families[self.family])):

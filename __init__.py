@@ -8,8 +8,8 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__) + "/libs/site/packages
 
 from topologic import Vertex, Face, CellComplex
 from molior import Molior
-import molior.ifc
 from molior.ifc import (
+    init,
     get_parent_building,
     get_structural_analysis_model_by_name,
     delete_ifc_product,
@@ -29,7 +29,7 @@ bl_info = {
     "location": "3D Viewport > Object Menu > Homemaker",
     "description": "Design buildings the pointy-clicky way",
     "doc_url": "https://homemaker-addon.readthedocs.io/",
-    "blender": (2, 80, 0),
+    "blender": (4, 2, 0),
     "support": "COMMUNITY",
     "category": "Object",
 }
@@ -141,7 +141,7 @@ class ObjectHomemaker(bpy.types.Operator):
     def execute(self, context):
         if tool.Ifc.get() is None:
             # creates Project, Units, Representation Contexts etc..
-            IfcStore.file = molior.ifc.init()
+            IfcStore.file = init()
 
         if "homemaker" in bpy.context.preferences.addons:
             self.share_dir = bpy.context.preferences.addons[

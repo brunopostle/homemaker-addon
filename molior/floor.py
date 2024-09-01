@@ -1,9 +1,9 @@
 from topologic import Cell, CellComplex
 import ifcopenshell.api.root
 
-from molior.baseclass import TraceClass
-from molior.geometry import matrix_align
-from molior.ifc import (
+from .baseclass import TraceClass
+from .geometry import matrix_align
+from .ifc import (
     add_pset,
     add_cell_topology_epsets,
     create_closed_profile_from_points,

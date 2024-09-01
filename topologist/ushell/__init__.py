@@ -1,4 +1,4 @@
-from topologist.helpers import string_to_coor
+from ..helpers import string_to_coor
 
 
 class shell:

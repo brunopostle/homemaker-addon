@@ -2,10 +2,10 @@
 
 Which traces and hulls are used, and how they are used, are defined by files in
 the 'share' folder and subfolders.  Access to these style
-definitions is handled by the molior.style module.
+definitions is handled by the .style module.
 
 Molior uses IfcOpenShell to generate IFC models of buildings, with
-some extra helper methods defined in the molior.ifc module.  Different
+some extra helper methods defined in the .ifc module.  Different
 building parts need to be constructed differently, so walls, floors,
 extrusions etc. are each handled by dedicated modules.
 
@@ -18,22 +18,23 @@ IfcOpenShell.
 import re
 import ifcopenshell.util
 from topologic import CellComplex, CellUtility, Vertex, Face, Topology
-from molior.extrusion import Extrusion
-from molior.floor import Floor
-from molior.shell import Shell
-from molior.space import Space
-from molior.stair import Stair
-from molior.wall import Wall
-from molior.repeat import Repeat
-from molior.grillage import Grillage
+from .extrusion import Extrusion
+from .floor import Floor
+from .shell import Shell
+from .space import Space
+from .stair import Stair
+from .wall import Wall
+from .repeat import Repeat
+from .grillage import Grillage
 
-from molior.style import Style
-from molior.geometry import subtract_3d, x_product_3d, matrix_align
-import molior.ifc
-from molior.ifc import (
+from .style import Style
+from .geometry import subtract_3d, x_product_3d, matrix_align
+from .ifc import (
+    init,
     get_site_by_name,
     get_building_by_name,
     get_structural_analysis_model_by_name,
+    create_default_contexts,
     create_storeys,
     add_cell_topology_epsets,
     assign_space_byindex,
@@ -216,9 +217,9 @@ class Molior:
     def init_building(self):
         """Create and relate Site, Building and Storey Spatial Element products, set as current building"""
         if self.file is None:
-            self.file = molior.ifc.init()
+            self.file = init()
         else:
-            molior.ifc.create_default_contexts(self.file)
+            create_default_contexts(self.file)
         self.project = self.file.by_type("IfcProject")[0]
         site = get_site_by_name(self.file, self.project, self.name)
         self.building = get_building_by_name(self.file, site, self.name)
@@ -630,7 +631,7 @@ class Molior:
                     ):
                         boundary.CorrespondingBoundary = element_boundary
 
-        # molior.floor attaches elements directly to Storey, re-attach to relevant Space
+        # .floor attaches elements directly to Storey, re-attach to relevant Space
         for element in self.file.by_type("IfcBuildingElement"):
             if get_parent_building(element) == self.building:
                 pset_topology = ifcopenshell.util.element.get_psets(element).get(

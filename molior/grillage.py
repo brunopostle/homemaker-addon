@@ -5,18 +5,18 @@ import ifcopenshell.api.root
 
 from topologist.helpers import string_to_coor, el
 from topologic import Face, Vertex
-from molior.baseclass import BaseClass
-from molior.geometry import map_to_2d, add_2d, scale_2d, subtract_3d
-from molior.ifc import (
+from .baseclass import BaseClass
+from .geometry import map_to_2d, add_2d, scale_2d, subtract_3d
+from .ifc import (
     add_face_topology_epsets,
     create_face_surface,
     assign_storey_byindex,
     get_material_by_name,
     get_context_by_name,
 )
-from molior.extrusion import Extrusion
-from molior.repeat import Repeat
-from molior.shell import Shell
+from .extrusion import Extrusion
+from .repeat import Repeat
+from .shell import Shell
 import topologist.hulls
 
 api = ifcopenshell.api

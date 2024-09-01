@@ -1,4 +1,4 @@
-import topologist.ugraph as ugraph
+from .. import ugraph
 
 
 class Traces:

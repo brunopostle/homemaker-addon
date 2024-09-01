@@ -1,4 +1,4 @@
-import topologist.ushell as ushell
+from .. import ushell
 
 
 class Hulls:
