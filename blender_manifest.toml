@@ -8,5 +8,6 @@ type = "add-on"
 permissions = ["files"]
 website = "https://github.com/brunopostle/homemaker-addon/"
 tags = ["Object"]
-blender_version_min = "3.5.0"
+platforms = ["windows-amd64", "macos-arm64", "linux-x86_64"]
+blender_version_min = "4.2.0"
 license = ["SPDX:GPL-3.0-or-later"]

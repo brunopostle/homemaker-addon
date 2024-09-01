@@ -5,7 +5,8 @@ dist:
 	rm -rf homemaker_tmp
 	rm -rf working
 	mkdir -p homemaker_tmp/libs/site/packages
-	cp -r ../molior/ ../topologist/ ../__init__.py ../widgets.blend ../README.md ../LICENSE ../blender_manifest.toml ../share/ homemaker_tmp/
+	cp -r ../molior/ ../topologist/ ../__init__.py ../widgets.blend ../README.md ../LICENSE ../share/ homemaker_tmp/
+	# cp ../blender_manifest.toml homemaker_tmp/
 	rm -rf homemaker_tmp/*/__pycache__
 	rm -rf homemaker_tmp/*/*/__pycache__
 	rm -f homemaker_tmp/*/*.{orig,rej}
