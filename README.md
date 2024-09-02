@@ -91,5 +91,5 @@ in particular Topologic, Bonsai BIM and IfcOpenShell.
 The homemaker-addon is a python port of the Homemaker [Topologise blender add-on](https://bitbucket.org/brunopostle/urb/src/master/blender/topologise.py).
 
 Copyright 2022-24, Bruno Postle <bruno@postle.net>
-License: GPLv3.
-3D and 2D asset and style files bundled with this software are additionally licensed 'CC BY 4.0'
+License: GPL-3-or-later
+3D and 2D asset and style files bundled with this software are additionally licensed CC0-1.0
