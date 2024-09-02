@@ -1,8 +1,8 @@
-"""Extensions to topologic for ordinary buildings
+"""Extensions to topologic_core for ordinary buildings
 
-The Topologic library and its topologic python interface models
+The Topologic library and its topologic_core python interface models
 generic non-manifold mesh 3D geometry.  This 'topologist' module
-overloads additional functionality onto the topologic module that is
+overloads additional functionality onto the topologic_core module that is
 specific to ordinary buildings.  In particular: horizontal and vertical
 faces are considered to be floors and walls; rooms are spaces with
 vertical walls on all sides; non-horizontal faces form roofs and/or

@@ -1,6 +1,6 @@
-"""Overloads domain-specific methods onto topologic.Vertex"""
+"""Overloads domain-specific methods onto topologic_core.Vertex"""
 
-import topologic
+import topologic_core
 
 
 def CoorAsString(self):
@@ -8,4 +8,4 @@ def CoorAsString(self):
     return "__".join(str(item) for item in self.Coordinates())
 
 
-setattr(topologic.Vertex, "CoorAsString", CoorAsString)
+setattr(topologic_core.Vertex, "CoorAsString", CoorAsString)

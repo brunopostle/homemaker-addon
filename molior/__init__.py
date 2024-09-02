@@ -17,7 +17,7 @@ IfcOpenShell.
 
 import re
 import ifcopenshell.util
-from topologic import CellComplex, CellUtility, Vertex, Face, Topology
+from topologic_core import CellComplex, CellUtility, Vertex, Face, Topology
 from .extrusion import Extrusion
 from .floor import Floor
 from .shell import Shell
@@ -254,7 +254,7 @@ class Molior:
                         hull=hull,
                     )
 
-        # use the topologic model to connect stuff
+        # use the topologic_core model to connect stuff
         if self.cellcomplex:
             self.connect_structure()
             self.connect_spaces()
@@ -316,7 +316,7 @@ class Molior:
                 if pset_topology:
                     curve_list.append([pset_topology["FaceIndex"], member])
 
-        # iterate all the edges in the topologic model
+        # iterate all the edges in the topologic_core model
         edges_ptr = []
         self.cellcomplex.Edges(None, edges_ptr)
         point_list = []
@@ -326,7 +326,7 @@ class Molior:
             start = v_start.Coordinates()
             end = v_end.Coordinates()
 
-            # create an ifc curve connection for this topologic edge
+            # create an ifc curve connection for this topologic_core edge
             curve_connection = api.root.create_entity(
                 self.file,
                 ifc_class="IfcStructuralCurveConnection",

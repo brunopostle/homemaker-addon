@@ -3,7 +3,7 @@
 import os
 import sys
 import unittest
-from topologic import Vertex, Face, Graph
+from topologic_core import Vertex, Face, Graph
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import topologist.ugraph

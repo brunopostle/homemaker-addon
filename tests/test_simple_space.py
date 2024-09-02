@@ -3,7 +3,7 @@
 import os
 import sys
 import unittest
-from topologic import Vertex, Face, Cell
+from topologic_core import Vertex, Face, Cell
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from molior import Molior

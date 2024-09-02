@@ -4,7 +4,7 @@ import os
 import sys
 import unittest
 
-from topologic import (
+from topologic_core import (
     Vertex,
     Face,
     CellComplex,

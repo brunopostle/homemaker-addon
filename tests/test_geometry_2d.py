@@ -21,7 +21,7 @@ from molior.geometry import (
 import topologist
 
 assert topologist
-from topologic import Face, Vertex
+from topologic_core import Face, Vertex
 
 
 class Tests(unittest.TestCase):

@@ -1,7 +1,7 @@
-"""Overloads domain-specific methods onto topologic.CellComplex"""
+"""Overloads domain-specific methods onto topologic_core.CellComplex"""
 
-import topologic
-from topologic import Graph, CellUtility
+import topologic_core
+from topologic_core import Graph, CellUtility
 from .helpers import el
 from . import traces
 from . import hulls
@@ -374,9 +374,9 @@ def FootPrint(self):
     return ugraph.find_paths()
 
 
-setattr(topologic.CellComplex, "IndexTopology", IndexTopology)
-setattr(topologic.CellComplex, "AllocateCells", AllocateCells)
-setattr(topologic.CellComplex, "Adjacency", Adjacency)
-setattr(topologic.CellComplex, "GetTraces", GetTraces)
-setattr(topologic.CellComplex, "GetHulls", GetHulls)
-setattr(topologic.CellComplex, "FootPrint", FootPrint)
+setattr(topologic_core.CellComplex, "IndexTopology", IndexTopology)
+setattr(topologic_core.CellComplex, "AllocateCells", AllocateCells)
+setattr(topologic_core.CellComplex, "Adjacency", Adjacency)
+setattr(topologic_core.CellComplex, "GetTraces", GetTraces)
+setattr(topologic_core.CellComplex, "GetHulls", GetHulls)
+setattr(topologic_core.CellComplex, "FootPrint", FootPrint)

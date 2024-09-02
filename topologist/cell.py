@@ -1,7 +1,7 @@
-"""Overloads domain-specific methods onto topologic.Cell"""
+"""Overloads domain-specific methods onto topologic_core.Cell"""
 
-import topologic
-from topologic import Edge, Face, FaceUtility
+import topologic_core
+from topologic_core import Edge, Face, FaceUtility
 from .helpers import el
 from . import ugraph
 
@@ -182,14 +182,14 @@ def Perimeter(self, host_topology):
     return graph.find_paths()[0]
 
 
-setattr(topologic.Cell, "FacesTop", FacesTop)
-setattr(topologic.Cell, "FacesBottom", FacesBottom)
-setattr(topologic.Cell, "FacesVerticalExternal", FacesVerticalExternal)
-setattr(topologic.Cell, "CellsAbove", CellsAbove)
-setattr(topologic.Cell, "CellsBelow", CellsBelow)
-setattr(topologic.Cell, "Usage", Usage)
-setattr(topologic.Cell, "IsOutside", IsOutside)
-setattr(topologic.Cell, "PlanArea", PlanArea)
-setattr(topologic.Cell, "ExternalWallArea", ExternalWallArea)
-setattr(topologic.Cell, "Crinkliness", Crinkliness)
-setattr(topologic.Cell, "Perimeter", Perimeter)
+setattr(topologic_core.Cell, "FacesTop", FacesTop)
+setattr(topologic_core.Cell, "FacesBottom", FacesBottom)
+setattr(topologic_core.Cell, "FacesVerticalExternal", FacesVerticalExternal)
+setattr(topologic_core.Cell, "CellsAbove", CellsAbove)
+setattr(topologic_core.Cell, "CellsBelow", CellsBelow)
+setattr(topologic_core.Cell, "Usage", Usage)
+setattr(topologic_core.Cell, "IsOutside", IsOutside)
+setattr(topologic_core.Cell, "PlanArea", PlanArea)
+setattr(topologic_core.Cell, "ExternalWallArea", ExternalWallArea)
+setattr(topologic_core.Cell, "Crinkliness", Crinkliness)
+setattr(topologic_core.Cell, "Perimeter", Perimeter)

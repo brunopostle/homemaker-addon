@@ -4,7 +4,7 @@ import os
 import sys
 import unittest
 
-from topologic import Vertex, Edge, Wire, Cluster
+from topologic_core import Vertex, Edge, Wire, Cluster
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from topologist.helpers import el

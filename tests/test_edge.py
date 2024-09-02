@@ -3,7 +3,7 @@
 import os
 import sys
 import unittest
-from topologic import Vertex, Edge, Face, Cell, CellUtility
+from topologic_core import Vertex, Edge, Face, Cell, CellUtility
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import topologist.edge

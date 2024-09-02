@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append("/home/bruno/src/homemaker-addon")
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + "/libs/site/packages"))
 
-from topologic import Vertex, Face, CellComplex
+from topologic_core import Vertex, Face, CellComplex
 from molior import Molior
 from molior.ifc import (
     init,

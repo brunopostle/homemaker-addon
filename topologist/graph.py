@@ -1,7 +1,7 @@
-"""Overloads domain-specific methods onto topologic.Graph"""
+"""Overloads domain-specific methods onto topologic_core.Graph"""
 
-import topologic
-from topologic import VertexUtility
+import topologic_core
+from topologic_core import VertexUtility
 
 
 def Circulation(self, cellcomplex):
@@ -185,11 +185,11 @@ def Dot(self, cellcomplex):
     return string
 
 
-setattr(topologic.Graph, "Circulation", Circulation)
-setattr(topologic.Graph, "IsConnected", IsConnected)
-setattr(topologic.Graph, "ShortestPathTable", ShortestPathTable)
-setattr(topologic.Graph, "Separation", Separation)
-setattr(topologic.Graph, "Faces", Faces)
-setattr(topologic.Graph, "Cells", Cells)
-setattr(topologic.Graph, "GetEntity", GetEntity)
-setattr(topologic.Graph, "Dot", Dot)
+setattr(topologic_core.Graph, "Circulation", Circulation)
+setattr(topologic_core.Graph, "IsConnected", IsConnected)
+setattr(topologic_core.Graph, "ShortestPathTable", ShortestPathTable)
+setattr(topologic_core.Graph, "Separation", Separation)
+setattr(topologic_core.Graph, "Faces", Faces)
+setattr(topologic_core.Graph, "Cells", Cells)
+setattr(topologic_core.Graph, "GetEntity", GetEntity)
+setattr(topologic_core.Graph, "Dot", Dot)

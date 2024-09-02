@@ -2,7 +2,7 @@
 
 import unittest
 
-from topologic import Vertex, CellUtility
+from topologic_core import Vertex, CellUtility
 
 
 class Tests(unittest.TestCase):

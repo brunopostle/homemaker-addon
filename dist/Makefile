@@ -30,20 +30,20 @@ dist:
 
 	# LINUX
 	cp -a homemaker_tmp homemaker
-	cp -a working/topologic-linux/topologic_core/ homemaker/libs/site/packages/topologic
-	cp -a working/topologic-linux/topologic_core.libs homemaker/libs/site/packages/topologic_core.libs
+	cp -a working/topologic-linux/topologic_core/ homemaker/libs/site/packages/
+	cp -a working/topologic-linux/topologic_core.libs/ homemaker/libs/site/packages/
 	zip -r blender-homemaker-$(VERSION)-linux-x86_64.zip ./homemaker
 	rm -rf homemaker
 
 	# WINDOWS
 	cp -a homemaker_tmp homemaker
-	cp -a working/topologic-win/topologic_core/ homemaker/libs/site/packages/topologic
+	cp -a working/topologic-win/topologic_core/ homemaker/libs/site/packages/
 	zip -r blender-homemaker-$(VERSION)-win.zip ./homemaker
 	rm -rf homemaker
 
 	# MAC ARM
 	cp -a homemaker_tmp homemaker
-	cp -a working/topologic-darwin-arm/topologic_core/ homemaker/libs/site/packages/topologic
+	cp -a working/topologic-darwin-arm/topologic_core/ homemaker/libs/site/packages/
 	zip -r blender-homemaker-$(VERSION)-darwin-arm.zip ./homemaker
 	rm -rf homemaker
 

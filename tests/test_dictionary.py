@@ -6,7 +6,7 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from topologic import Vertex, StringAttribute
+from topologic_core import Vertex, StringAttribute
 import topologist.vertex
 
 assert topologist.vertex

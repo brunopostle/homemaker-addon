@@ -1,7 +1,7 @@
-"""Overloads domain-specific methods onto topologic.Edge"""
+"""Overloads domain-specific methods onto topologic_core.Edge"""
 
-import topologic
-from topologic import VertexUtility
+import topologic_core
+from topologic_core import VertexUtility
 from .helpers import el
 
 
@@ -73,10 +73,10 @@ def NormalisedVector(self):
     ]
 
 
-setattr(topologic.Edge, "IsHorizontal", IsHorizontal)
-setattr(topologic.Edge, "IsVertical", IsVertical)
-setattr(topologic.Edge, "FaceAbove", FaceAbove)
-setattr(topologic.Edge, "FacesBelow", FacesBelow)
-setattr(topologic.Edge, "CellsBelow", CellsBelow)
-setattr(topologic.Edge, "Length", Length)
-setattr(topologic.Edge, "NormalisedVector", NormalisedVector)
+setattr(topologic_core.Edge, "IsHorizontal", IsHorizontal)
+setattr(topologic_core.Edge, "IsVertical", IsVertical)
+setattr(topologic_core.Edge, "FaceAbove", FaceAbove)
+setattr(topologic_core.Edge, "FacesBelow", FacesBelow)
+setattr(topologic_core.Edge, "CellsBelow", CellsBelow)
+setattr(topologic_core.Edge, "Length", Length)
+setattr(topologic_core.Edge, "NormalisedVector", NormalisedVector)

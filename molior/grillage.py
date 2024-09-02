@@ -4,7 +4,7 @@ import ifcopenshell.api.geometry
 import ifcopenshell.api.root
 
 from topologist.helpers import string_to_coor, el
-from topologic import Face, Vertex
+from topologic_core import Face, Vertex
 from .baseclass import BaseClass
 from .geometry import map_to_2d, add_2d, scale_2d, subtract_3d
 from .ifc import (

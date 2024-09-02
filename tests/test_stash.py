@@ -4,7 +4,7 @@ import unittest
 import sys
 import os
 
-from topologic import Vertex, Face, CellComplex
+from topologic_core import Vertex, Face, CellComplex
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 

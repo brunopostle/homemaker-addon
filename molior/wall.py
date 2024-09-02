@@ -3,7 +3,7 @@ import ifcopenshell.api.void
 import ifcopenshell.geom
 import numpy
 
-from topologic import Vertex, Edge, Face, FaceUtility
+from topologic_core import Vertex, Edge, Face, FaceUtility
 from topologist.helpers import el
 from .baseclass import TraceClass
 from .geometry import (

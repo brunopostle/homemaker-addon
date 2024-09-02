@@ -1,4 +1,4 @@
-from topologic import Cell, CellComplex
+from topologic_core import Cell, CellComplex
 import ifcopenshell.api.root
 
 from .baseclass import TraceClass
@@ -61,7 +61,7 @@ class Floor(TraceClass):
         # Will be re-assigned to Space later
         assign_storey_byindex(self.file, element, self.building, self.level)
 
-        # topologic stuff
+        # topologic_core stuff
 
         if type(cell) == Cell:
             bottom_faces_ptr = []

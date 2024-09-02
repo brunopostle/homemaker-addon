@@ -23,7 +23,7 @@ Lower patterns:
 - 238 FILTERED LIGHT *
 """
 
-from topologic import FaceUtility
+from topologic_core import FaceUtility
 
 
 class Assessor:

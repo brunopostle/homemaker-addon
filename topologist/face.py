@@ -1,9 +1,9 @@
-"""Overloads domain-specific methods onto topologic.Face"""
+"""Overloads domain-specific methods onto topologic_core.Face"""
 
 from functools import lru_cache
 import math
-import topologic
-from topologic import Vertex, Edge, Face, Cluster, FaceUtility, CellUtility
+import topologic_core
+from topologic_core import Vertex, Edge, Face, Cluster, FaceUtility, CellUtility
 from .helpers import el
 from . import ugraph
 
@@ -24,7 +24,7 @@ def ByVertices(vertices):
     return Face.ByEdges(edges_ptr)
 
 
-setattr(topologic.Face, "ByVertices", ByVertices)
+setattr(topologic_core.Face, "ByVertices", ByVertices)
 
 
 @lru_cache(maxsize=256)
@@ -498,30 +498,30 @@ def ParallelSlice(self, inc=0.45, radians=0.0, origin=[0.0, 0.0]):
     return topologic_faces, cropped_edges
 
 
-setattr(topologic.Face, "CellsOrdered", CellsOrdered)
-setattr(topologic.Face, "VerticesPerimeter", VerticesPerimeter)
-setattr(topologic.Face, "BadNormal", BadNormal)
-setattr(topologic.Face, "IsVertical", IsVertical)
-setattr(topologic.Face, "IsHorizontal", IsHorizontal)
-setattr(topologic.Face, "IsUpward", IsUpward)
-setattr(topologic.Face, "AxisOuter", AxisOuter)
-setattr(topologic.Face, "AxisOuterTop", AxisOuterTop)
-setattr(topologic.Face, "IsInternal", IsInternal)
-setattr(topologic.Face, "IsExternal", IsExternal)
-setattr(topologic.Face, "IsWorld", IsWorld)
-setattr(topologic.Face, "IsOpen", IsOpen)
-setattr(topologic.Face, "FaceAbove", FaceAbove)
-setattr(topologic.Face, "FacesBelow", FacesBelow)
-setattr(topologic.Face, "CellsBelow", CellsBelow)
-setattr(topologic.Face, "CellAbove", CellAbove)
-setattr(topologic.Face, "CellBelow", CellBelow)
-setattr(topologic.Face, "HorizontalFacesSideways", HorizontalFacesSideways)
-setattr(topologic.Face, "Normal", Normal)
-setattr(topologic.Face, "Plane", Plane)
-setattr(topologic.Face, "IsCoplanar", IsCoplanar)
-setattr(topologic.Face, "TopLevelConditions", TopLevelConditions)
-setattr(topologic.Face, "BottomLevelConditions", BottomLevelConditions)
-setattr(topologic.Face, "EdgesTop", EdgesTop)
-setattr(topologic.Face, "EdgesBottom", EdgesBottom)
-setattr(topologic.Face, "EdgesCrop", EdgesCrop)
-setattr(topologic.Face, "ParallelSlice", ParallelSlice)
+setattr(topologic_core.Face, "CellsOrdered", CellsOrdered)
+setattr(topologic_core.Face, "VerticesPerimeter", VerticesPerimeter)
+setattr(topologic_core.Face, "BadNormal", BadNormal)
+setattr(topologic_core.Face, "IsVertical", IsVertical)
+setattr(topologic_core.Face, "IsHorizontal", IsHorizontal)
+setattr(topologic_core.Face, "IsUpward", IsUpward)
+setattr(topologic_core.Face, "AxisOuter", AxisOuter)
+setattr(topologic_core.Face, "AxisOuterTop", AxisOuterTop)
+setattr(topologic_core.Face, "IsInternal", IsInternal)
+setattr(topologic_core.Face, "IsExternal", IsExternal)
+setattr(topologic_core.Face, "IsWorld", IsWorld)
+setattr(topologic_core.Face, "IsOpen", IsOpen)
+setattr(topologic_core.Face, "FaceAbove", FaceAbove)
+setattr(topologic_core.Face, "FacesBelow", FacesBelow)
+setattr(topologic_core.Face, "CellsBelow", CellsBelow)
+setattr(topologic_core.Face, "CellAbove", CellAbove)
+setattr(topologic_core.Face, "CellBelow", CellBelow)
+setattr(topologic_core.Face, "HorizontalFacesSideways", HorizontalFacesSideways)
+setattr(topologic_core.Face, "Normal", Normal)
+setattr(topologic_core.Face, "Plane", Plane)
+setattr(topologic_core.Face, "IsCoplanar", IsCoplanar)
+setattr(topologic_core.Face, "TopLevelConditions", TopLevelConditions)
+setattr(topologic_core.Face, "BottomLevelConditions", BottomLevelConditions)
+setattr(topologic_core.Face, "EdgesTop", EdgesTop)
+setattr(topologic_core.Face, "EdgesBottom", EdgesBottom)
+setattr(topologic_core.Face, "EdgesCrop", EdgesCrop)
+setattr(topologic_core.Face, "ParallelSlice", ParallelSlice)

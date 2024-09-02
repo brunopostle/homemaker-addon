@@ -1,8 +1,8 @@
-"""Overloads domain-specific methods onto topologic.Topology"""
+"""Overloads domain-specific methods onto topologic_core.Topology"""
 
 from functools import lru_cache
-import topologic
-from topologic import StringAttribute, Vertex, FaceUtility
+import topologic_core
+from topologic_core import StringAttribute, Vertex, FaceUtility
 from .helpers import el
 from . import traces
 from . import hulls
@@ -367,22 +367,22 @@ def GetHulls(self):
     return myhulls.hulls
 
 
-setattr(topologic.Topology, "Cells_Cached", Cells_Cached)
-setattr(topologic.Topology, "Faces_Cached", Faces_Cached)
-setattr(topologic.Topology, "FacesVertical", FacesVertical)
-setattr(topologic.Topology, "FacesHorizontal", FacesHorizontal)
-setattr(topologic.Topology, "FacesInclined", FacesInclined)
-setattr(topologic.Topology, "FacesWorld", FacesWorld)
-setattr(topologic.Topology, "Elevation", Elevation)
-setattr(topologic.Topology, "Height", Height)
-setattr(topologic.Topology, "Mesh", Mesh)
-setattr(topologic.Topology, "MeshSplit", MeshSplit)
-setattr(topologic.Topology, "Set", Set)
-setattr(topologic.Topology, "Get", Get)
-setattr(topologic.Topology, "DumpDictionary", DumpDictionary)
-setattr(topologic.Topology, "GraphVertex", GraphVertex)
-setattr(topologic.Topology, "VertexId", VertexId)
-setattr(topologic.Topology, "ApplyDictionary", ApplyDictionary)
-setattr(topologic.Topology, "IndexTopology", IndexTopology)
-setattr(topologic.Topology, "GetTraces", GetTraces)
-setattr(topologic.Topology, "GetHulls", GetHulls)
+setattr(topologic_core.Topology, "Cells_Cached", Cells_Cached)
+setattr(topologic_core.Topology, "Faces_Cached", Faces_Cached)
+setattr(topologic_core.Topology, "FacesVertical", FacesVertical)
+setattr(topologic_core.Topology, "FacesHorizontal", FacesHorizontal)
+setattr(topologic_core.Topology, "FacesInclined", FacesInclined)
+setattr(topologic_core.Topology, "FacesWorld", FacesWorld)
+setattr(topologic_core.Topology, "Elevation", Elevation)
+setattr(topologic_core.Topology, "Height", Height)
+setattr(topologic_core.Topology, "Mesh", Mesh)
+setattr(topologic_core.Topology, "MeshSplit", MeshSplit)
+setattr(topologic_core.Topology, "Set", Set)
+setattr(topologic_core.Topology, "Get", Get)
+setattr(topologic_core.Topology, "DumpDictionary", DumpDictionary)
+setattr(topologic_core.Topology, "GraphVertex", GraphVertex)
+setattr(topologic_core.Topology, "VertexId", VertexId)
+setattr(topologic_core.Topology, "ApplyDictionary", ApplyDictionary)
+setattr(topologic_core.Topology, "IndexTopology", IndexTopology)
+setattr(topologic_core.Topology, "GetTraces", GetTraces)
+setattr(topologic_core.Topology, "GetHulls", GetHulls)
