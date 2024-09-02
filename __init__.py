@@ -36,7 +36,10 @@ bl_info = {
 
 
 class addHomemakerPreferences(bpy.types.AddonPreferences):
-    bl_idname = "homemaker"
+    if __package__:
+        bl_idname = __package__
+    else:
+        bl_idname = "homemaker"
 
     share_dir: bpy.props.StringProperty(default="share")
 
