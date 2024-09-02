@@ -11,22 +11,49 @@ dist:
 	rm -rf homemaker_tmp/*/*/__pycache__
 	rm -f homemaker_tmp/*/*.{orig,rej}
 	rm -f homemaker_tmp/*/*/*.{orig,rej}
-	mkdir -p working
+	mkdir -p working/wheels
 
-	cd working && wget https://files.pythonhosted.org/packages/12/fc/a4d5a7554e0067677823f7265cb3ae22aed8a238560b5133b58cda252dad/PyYAML-6.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl
-	cd working && wget https://github.com/wassimj/Topologic/releases/download/v6.0.3/topologic_core-6.0.3-cp311-cp311-linux_x86_64.whl
-	cd working && wget https://github.com/wassimj/Topologic/releases/download/v6.0.3/topologic_core-6.0.3-cp311-cp311-win_amd64.whl
-	cd working && wget https://github.com/wassimj/Topologic/releases/download/v6.0.3/topologic_core-6.0.3-cp311-cp311-macosx_11_0_arm64.whl
+	cd working/wheels && wget https://files.pythonhosted.org/packages/12/fc/a4d5a7554e0067677823f7265cb3ae22aed8a238560b5133b58cda252dad/PyYAML-6.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl
+	cd working/wheels && wget https://github.com/wassimj/Topologic/releases/download/v6.0.3/topologic_core-6.0.3-cp311-cp311-linux_x86_64.whl
+	cd working/wheels && wget https://github.com/wassimj/Topologic/releases/download/v6.0.3/topologic_core-6.0.3-cp311-cp311-win_amd64.whl
+	cd working/wheels && wget https://github.com/wassimj/Topologic/releases/download/v6.0.3/topologic_core-6.0.3-cp311-cp311-macosx_11_0_arm64.whl
+
+	# MOLIOR WHEEL
+	rm -rf ../build/
+	cd .. && python -c "from setuptools import setup; \
+	setup( \
+		name='molior', \
+		version='0.0.1', \
+		author='Bruno Postle', \
+		author_email='bruno@postle.net', \
+		packages=['molior', 'molior.ifc', 'molior.style', 'molior.geometry'], \
+		install_requires=['topologic_core', 'topologist', 'yaml', 'numpy', 'ifcopenshell'], \
+	)" bdist_wheel
+	mv molior-*-none-any.whl working/wheels/
+
+	# TOPOLOGIST WHEEL
+	rm -rf ../build/
+	cd .. && python -c "from setuptools import setup; \
+	setup( \
+		name='topologist', \
+		version='0.0.1', \
+		author='Bruno Postle', \
+		author_email='bruno@postle.net', \
+		packages=['topologist', 'topologist.ushell', 'topologist.hulls', 'topologist.normals', \
+		'topologist.ugraph', 'topologist.fitness', 'topologist.traces'], \
+		install_requires=['topologic_core', 'numpy'], \
+	)" bdist_wheel
+	mv topologist-*-none-any.whl working/wheels/
 
 	# YAML
-	cd working && unzip PyYAML-6.0-*.whl
+	cd working && unzip wheels/PyYAML-6.0-*.whl
 	cp -r working/yaml homemaker_tmp/libs/site/packages/
 	rm homemaker_tmp/libs/site/packages/yaml/*.so
 
 	# TOPOLOGIC
-	cd working && unzip topologic_core-*-linux_x86_64.whl -d topologic-linux
-	cd working && unzip topologic_core-*-win_amd64.whl -d topologic-win
-	cd working && unzip topologic_core-*-macosx_11_0_arm64.whl -d topologic-darwin-arm
+	cd working && unzip wheels/topologic_core-*-linux_x86_64.whl -d topologic-linux
+	cd working && unzip wheels/topologic_core-*-win_amd64.whl -d topologic-win
+	cd working && unzip wheels/topologic_core-*-macosx_11_0_arm64.whl -d topologic-darwin-arm
 
 	# LINUX
 	cp -a homemaker_tmp homemaker
