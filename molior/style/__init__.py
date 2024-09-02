@@ -18,9 +18,11 @@ folder tree, all others will be ignored.
 """
 
 import os
+import re
 import yaml
 import copy
 import json
+import inspect
 import ifcopenshell
 
 
@@ -42,9 +44,17 @@ class Style:
             self.__dict__[arg] = args[arg]
 
         if not os.path.isabs(self.share_dir):
-            self.share_dir = os.path.abspath(
-                os.path.join(os.path.dirname(__file__), "..", "..", self.share_dir)
-            )
+            path_caller = inspect.stack()[1].filename
+            # called by the homemaker add-on
+            if re.match("__init__.py$", path_caller):
+                self.share_dir = os.path.abspath(
+                    os.path.join(os.path.dirname(path_caller), self.share_dir)
+                )
+            # called by test script
+            else:
+                self.share_dir = os.path.abspath(
+                    os.path.join(os.path.dirname(path_caller), "..", self.share_dir)
+                )
         self.share_dir = os.path.normpath(self.share_dir)
         # share_dir should now be an absolute path
         # slurp all the yaml data under share_dir
