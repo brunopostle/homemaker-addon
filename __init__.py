@@ -215,7 +215,9 @@ class ObjectHomemaker(bpy.types.Operator):
         tool.Project.set_default_modeling_dimensions()
 
         # Hide Structural objects
-        bpy.data.collections.get("IfcStructuralItem").hide_viewport = True
+        structural_collection = bpy.data.collections.get("IfcStructuralItem")
+        if structural_collection:
+            structural_collection.hide_viewport = True
         # Hide stashed CellComplex
         for collection in bpy.data.collections:
             if re.match("^IfcVirtualElement/CellComplex", collection.name):
