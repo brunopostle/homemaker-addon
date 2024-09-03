@@ -13,7 +13,9 @@ dist:
 	rm -f homemaker_tmp/*/*/*.{orig,rej}
 	mkdir -p working/wheels
 
-	cd working/wheels && wget https://files.pythonhosted.org/packages/12/fc/a4d5a7554e0067677823f7265cb3ae22aed8a238560b5133b58cda252dad/PyYAML-6.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl
+	cd working/wheels && wget https://files.pythonhosted.org/packages/ed/23/8da0bbe2ab9dcdd11f4f4557ccaf95c10b9811b13ecced089d43ce59c3c8/PyYAML-6.0.2-cp311-cp311-win_amd64.whl
+	cd working/wheels && wget https://files.pythonhosted.org/packages/75/e4/2c27590dfc9992f73aabbeb9241ae20220bd9452df27483b6e56d3975cc5/PyYAML-6.0.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+	cd working/wheels && wget https://files.pythonhosted.org/packages/8b/62/b9faa998fd185f65c1371643678e4d58254add437edb764a08c5a98fb986/PyYAML-6.0.2-cp311-cp311-macosx_11_0_arm64.whl
 	cd working/wheels && wget https://github.com/wassimj/Topologic/releases/download/v6.0.3/topologic_core-6.0.3-cp311-cp311-linux_x86_64.whl
 	cd working/wheels && wget https://github.com/wassimj/Topologic/releases/download/v6.0.3/topologic_core-6.0.3-cp311-cp311-win_amd64.whl
 	cd working/wheels && wget https://github.com/wassimj/Topologic/releases/download/v6.0.3/topologic_core-6.0.3-cp311-cp311-macosx_11_0_arm64.whl
@@ -46,7 +48,7 @@ dist:
 	mv topologist-*-none-any.whl working/wheels/
 
 	# YAML
-	cd working && unzip wheels/PyYAML-6.0-*.whl
+	cd working && unzip wheels/PyYAML-6.0.2-*.manylinux2014_x86_64.whl
 	cp -r working/yaml homemaker_tmp/libs/site/packages/
 	rm homemaker_tmp/libs/site/packages/yaml/*.so
 
