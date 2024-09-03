@@ -1,14 +1,13 @@
 schema_version = "1.0.0"
 id = "homemaker"
 version = "0.0.1"
-name = "Homemaker Topologise"
-tagline = "Design buildings the pointy-clicky way."
+name = "Homemaker"
+tagline = "Design buildings the pointy-clicky way"
 maintainer = "Bruno Postle <bruno@postle.net>"
 type = "add-on"
-permissions = ["files"]
 website = "https://github.com/brunopostle/homemaker-addon/"
 tags = ["Object"]
-platforms = ["windows-amd64", "macos-arm64", "linux-x86_64"]
+platforms = ["windows-x64", "macos-arm64", "linux-x64"]
 blender_version_min = "4.2.0"
 license = ["SPDX:GPL-3.0-or-later"]
 wheels = [
@@ -21,3 +20,5 @@ wheels = [
   "./wheels/molior-0.0.1-py3-none-any.whl",
   "./wheels/topologist-0.0.1-py3-none-any.whl",
 ]
+[permissions]
+files = "Read asset and style files from disk"
