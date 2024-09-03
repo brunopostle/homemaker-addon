@@ -146,8 +146,11 @@ class ObjectHomemaker(bpy.types.Operator):
         if tool.Ifc.get() is None:
             # creates Project, Units, Representation Contexts etc..
             IfcStore.file = init()
-
-        if "homemaker" in bpy.context.preferences.addons:
+        if __package__ and __package__ in bpy.context.preferences.addons:
+            self.share_dir = bpy.context.preferences.addons[
+                __package__
+            ].preferences.share_dir
+        elif "homemaker" in bpy.context.preferences.addons:
             self.share_dir = bpy.context.preferences.addons[
                 "homemaker"
             ].preferences.share_dir
