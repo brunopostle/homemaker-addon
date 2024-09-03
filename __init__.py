@@ -42,7 +42,12 @@ class addHomemakerPreferences(bpy.types.AddonPreferences):
     else:
         bl_idname = "homemaker"
 
-    share_dir: bpy.props.StringProperty(default="share")
+    if os.path.isabs(__file__):
+        share_dir_default = os.path.join(os.path.dirname(__file__), "share")
+    else:
+        share_dir_default = "share"
+
+    share_dir: bpy.props.StringProperty(default=share_dir_default)
 
     def draw(self, context):
         row = self.layout.row()
