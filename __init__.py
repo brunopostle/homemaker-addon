@@ -1,10 +1,11 @@
 import sys
 import os
 import re
+from pathlib import Path
 
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-sys.path.append("/home/bruno/src/homemaker-addon")
-sys.path.append(os.path.abspath(os.path.dirname(__file__) + "/libs/site/packages"))
+if __file__ == "/__init__.py":
+    # running in the blender text editor
+    sys.path.append(os.path.join(Path.home(), "src", "homemaker-addon"))
 
 from topologic_core import Vertex, Face, CellComplex
 from molior import Molior
