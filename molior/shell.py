@@ -4,7 +4,6 @@ import ifcopenshell.api.material
 import ifcopenshell.api.root
 import ifcopenshell.api.structural
 import ifcopenshell.api.type
-from topologist.helpers import string_to_coor, el
 from .baseclass import BaseClass
 from .geometry import map_to_2d, map_to_2d_simple, matrix_align
 from .ifc import (
@@ -18,6 +17,11 @@ from .ifc import (
     get_material_by_name,
     get_context_by_name,
 )
+
+try:
+    from topologist.helpers import string_to_coor, el
+except ImportError:
+    from ..topologist.helpers import string_to_coor, el
 
 api = ifcopenshell.api
 

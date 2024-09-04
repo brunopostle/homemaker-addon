@@ -8,14 +8,25 @@ if __file__ == "/__init__.py":
     sys.path.append(os.path.join(Path.home(), "src", "homemaker-addon"))
 
 from topologic_core import Vertex, Face, CellComplex
-from molior import Molior
-from molior.ifc import (
-    init,
-    get_parent_building,
-    get_structural_analysis_model_by_name,
-    delete_ifc_product,
-    purge_unused,
-)
+
+try:
+    from molior import Molior
+    from molior.ifc import (
+        init,
+        get_parent_building,
+        get_structural_analysis_model_by_name,
+        delete_ifc_product,
+        purge_unused,
+    )
+except ImportError:
+    from .molior import Molior
+    from .molior.ifc import (
+        init,
+        get_parent_building,
+        get_structural_analysis_model_by_name,
+        delete_ifc_product,
+        purge_unused,
+    )
 
 import logging
 from bonsai.bim import import_ifc

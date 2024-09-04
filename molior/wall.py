@@ -4,7 +4,6 @@ import ifcopenshell.geom
 import numpy
 
 from topologic_core import Vertex, Edge, Face, FaceUtility
-from topologist.helpers import el
 from .baseclass import TraceClass
 from .geometry import (
     matrix_align,
@@ -29,6 +28,11 @@ from .ifc import (
     create_curve_bounded_plane,
     create_closed_profile_from_points,
 )
+
+try:
+    from topologist.helpers import el
+except ImportError:
+    from ..topologist.helpers import el
 
 api = ifcopenshell.api
 

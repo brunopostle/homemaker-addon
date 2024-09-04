@@ -3,7 +3,6 @@ import ifcopenshell.api.attribute
 import ifcopenshell.api.geometry
 import ifcopenshell.api.root
 
-from topologist.helpers import string_to_coor, el
 from topologic_core import Face, Vertex
 from .baseclass import BaseClass
 from .geometry import map_to_2d, add_2d, scale_2d, subtract_3d
@@ -17,7 +16,13 @@ from .ifc import (
 from .extrusion import Extrusion
 from .repeat import Repeat
 from .shell import Shell
-import topologist.hulls
+
+try:
+    from topologist import hulls
+    from topologist.helpers import string_to_coor, el
+except ImportError:
+    from ..topologist import hulls
+    from ..topologist.helpers import string_to_coor, el
 
 api = ifcopenshell.api
 
@@ -176,7 +181,7 @@ class Grillage(BaseClass):
             # recursively process cropped faces
 
             if self.hulls:
-                cropped_hulls = topologist.hulls.Hulls()
+                cropped_hulls = hulls.Hulls()
                 for cropped_face in cropped_faces:
                     cropped_hulls.add_face(
                         self.name,

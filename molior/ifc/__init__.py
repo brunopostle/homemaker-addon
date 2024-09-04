@@ -753,6 +753,8 @@ def purge_unused(self):
             if not rel.RelatingStructuralMember:
                 self.remove(rel)
                 todo = True
+
+
 # FIXME these segfault
 #         for rel in self.by_type("IfcRelAssignsToProduct"):
 #             if not rel.RelatingProduct and not self.get_inverse(rel):

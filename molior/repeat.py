@@ -55,6 +55,7 @@ class Repeat(TraceClass):
             self.file, context_identifier="Reference", target_view="GRAPH_VIEW"
         )
         from . import Molior
+
         style = Molior.style
         myconfig = style.get(self.style)
         if self.family in self.style_families:

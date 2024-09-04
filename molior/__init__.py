@@ -44,9 +44,15 @@ from .ifc import (
     create_tessellation_from_mesh,
     create_tessellations_from_mesh_split,
 )
-import topologist.ushell as ushell
-import topologist.ugraph as ugraph
-from topologist.helpers import string_to_coor
+
+try:
+    from topologist import ushell
+    from topologist import ugraph
+    from topologist.helpers import string_to_coor
+except ImportError:
+    from ..topologist import ushell
+    from ..topologist import ugraph
+    from ..topologist.helpers import string_to_coor
 
 api = ifcopenshell.api
 
