@@ -17,8 +17,6 @@ wheels = [
   "./wheels/topologic_core-6.0.3-cp311-cp311-linux_x86_64.whl",
   "./wheels/topologic_core-6.0.3-cp311-cp311-win_amd64.whl",
   "./wheels/topologic_core-6.0.3-cp311-cp311-macosx_11_0_arm64.whl",
-  "./wheels/molior-0.0.1-py3-none-any.whl",
-  "./wheels/topologist-0.0.1-py3-none-any.whl",
 ]
 [permissions]
 files = "Read asset and style files from disk"
