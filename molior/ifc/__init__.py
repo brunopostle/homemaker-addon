@@ -731,6 +731,10 @@ def purge_unused(self):
             if not self.get_inverse(entity):
                 self.remove(entity)
                 todo = True
+        for entity in self.by_type("IfcPresentationStyle"):
+            if not self.get_inverse(entity):
+                self.remove(entity)
+                todo = True
         for entity in self.by_type("IfcProfileDef"):
             if not self.get_inverse(entity):
                 self.remove(entity)
@@ -753,22 +757,19 @@ def purge_unused(self):
             if not rel.RelatingStructuralMember:
                 self.remove(rel)
                 todo = True
-
-
-# FIXME these segfault
-#         for rel in self.by_type("IfcRelAssignsToProduct"):
-#             if not rel.RelatingProduct and not self.get_inverse(rel):
-#                 self.remove(rel)
-#                 todo = True
-#         for rel in self.by_type("IfcRelServicesBuildings"):
-#             if not rel.RelatingSystem:
-#                 self.remove(rel)
-#                 todo = True
-#         for rel in self.by_type("IfcRelAssignsToGroup"):
-#             if not rel.RelatingGroup:
-#                 self.remove(rel)
-#                 todo = True
-#         for rel in self.by_type("IfcRelDeclares"):
-#             if not rel.RelatedDefinitions and not self.get_inverse(rel):
-#                 self.remove(rel)
-#                 todo = True
+        for rel in self.by_type("IfcRelAssignsToProduct"):
+            if not rel.RelatingProduct and not self.get_inverse(rel):
+                self.remove(rel)
+                todo = True
+        for rel in self.by_type("IfcRelServicesBuildings"):
+            if not rel.RelatingSystem:
+                self.remove(rel)
+                todo = True
+        for rel in self.by_type("IfcRelAssignsToGroup"):
+            if not rel.RelatingGroup:
+                self.remove(rel)
+                todo = True
+        for rel in self.by_type("IfcRelDeclares"):
+            if not rel.RelatedDefinitions and not self.get_inverse(rel):
+                self.remove(rel)
+                todo = True
