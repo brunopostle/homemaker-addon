@@ -106,14 +106,8 @@ class ObjectTopologise(bpy.types.Operator):
                 IfcStore.file, self.ifc_building, self.ifc_building.Name
             )
 
-            for collection in bpy.data.collections:
-                if re.match("^IfcBuilding/", collection.name):
-                    for myobject in collection.objects:
-                        if tool.Ifc.get_entity(myobject) == self.ifc_building:
-                            # runs _execute()
-                            IfcStore.execute_ifc_operator(self, context)
-                            delete_collection(collection)
-            bpy.data.orphans_purge(do_recursive=True)
+            IfcStore.execute_ifc_operator(self, context)
+            tool.IfcGit.load_project()
 
             return {"FINISHED"}
 
@@ -147,8 +141,6 @@ class ObjectTopologise(bpy.types.Operator):
         delete_ifc_product(IfcStore.file, self.ifc_building)
         delete_ifc_product(IfcStore.file, self.structural_model)
         purge_unused(IfcStore.file)
-        # FIXME no idea why this is necessary
-        clean_id_map()
 
 
 class ObjectHomemaker(bpy.types.Operator):
@@ -188,12 +180,10 @@ class ObjectHomemaker(bpy.types.Operator):
             )
             self.building_name = self.ifc_building.Name
 
-            for collection in bpy.data.collections:
-                if re.match("^IfcBuilding/", collection.name):
-                    for myobject in collection.objects:
-                        if tool.Ifc.get_entity(myobject) == self.ifc_building:
-                            self.action = "regenerate_ifc"
-                            IfcStore.execute_ifc_operator(self, context)
+            self.action = "regenerate_ifc"
+            IfcStore.execute_ifc_operator(self, context)
+            tool.IfcGit.load_project()
+
         else:
             # FIXME this resets widget origins which looks ugly
             bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
@@ -211,31 +201,10 @@ class ObjectHomemaker(bpy.types.Operator):
             # runs _execute()
             self.action = "generate_ifc"
             IfcStore.execute_ifc_operator(self, context)
+            tool.IfcGit.load_project()
 
-            for blender_object in selected_objects:
+            for blender_object in blender_objects:
                 bpy.data.objects.remove(blender_object)
-
-        # delete any IfcProject/* collections, but leave IfcStore intact
-        for collection in bpy.data.collections:
-            if re.match("^IfcProject/", collection.name):
-                delete_collection(collection)
-        # delete any Ifc* objects not in IfcProject/ hierarchy
-        for obj in bpy.data.objects:
-            if re.match("^Ifc", obj.name):
-                bpy.data.objects.remove(obj, do_unlink=True)
-        bpy.data.orphans_purge(do_recursive=True)
-
-        # (re)build blender collections and geometry from IfcStore
-        ifc_import_settings = import_ifc.IfcImportSettings.factory(
-            bpy.context, "", logging.getLogger("ImportIFC")
-        )
-        ifc_import_settings.should_setup_viewport_camera = False
-        ifc_importer = import_ifc.IfcImporter(ifc_import_settings)
-        ifc_importer.execute()
-        tool.Project.load_pset_templates()
-        tool.Project.load_default_thumbnails()
-        tool.Project.set_default_context()
-        tool.Project.set_default_modeling_dimensions()
 
         # Hide Structural objects
         structural_collection = bpy.data.collections.get("IfcStructuralItem")
@@ -254,7 +223,6 @@ class ObjectHomemaker(bpy.types.Operator):
             delete_ifc_product(IfcStore.file, self.ifc_building)
             delete_ifc_product(IfcStore.file, self.structural_model)
             purge_unused(IfcStore.file)
-            clean_id_map()
 
             # Molior objects build IFC buildings
             molior_object = Molior.from_cellcomplex(
@@ -394,20 +362,6 @@ def process_blender_objects(selected_objects):
             blender_objects.append(blender_object)
 
     return blender_objects, widgets
-
-
-def delete_collection(blender_collection):
-    for obj in blender_collection.objects:
-        bpy.data.objects.remove(obj, do_unlink=True)
-    bpy.data.collections.remove(blender_collection)
-
-
-def clean_id_map():
-    for ifc_definition_id in list(IfcStore.id_map.keys()):
-        try:
-            IfcStore.file.by_id(ifc_definition_id)
-        except RuntimeError:
-            del IfcStore.id_map[ifc_definition_id]
 
 
 def triangulate_nonplanar(blender_object):
