@@ -316,6 +316,7 @@ def meshes_from_cellcomplex(cc):
     for face in bm.faces:
         face.material_index = lookup[materials[index]]
         index += 1
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0001)
     bm.to_mesh(new_mesh)
     bm.free()
 
