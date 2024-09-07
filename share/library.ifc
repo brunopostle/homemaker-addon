@@ -49,7 +49,7 @@ DATA;
 #42=IFCDIRECTION((1.,0.,0.));
 #43=IFCAXIS2PLACEMENT3D(#40,#41,#42);
 #44=IFCLOCALPLACEMENT(#38,#43);
-#45=IFCMATERIAL('Concrete','My concrete material','concrete');
+#45=IFCMATERIAL('Concrete',$,$);
 #46=IFCPROPERTYSINGLEVALUE('MassDensity',$,IFCMASSDENSITYMEASURE(2800.),$);
 #47=IFCMATERIALPROPERTIES('Pset_MaterialCommon',$,(#46),#45);
 #48=IFCPROPERTYSINGLEVALUE('ThermalConductivityTemperatureDerivative',$,IFCREAL(0.07),$);
