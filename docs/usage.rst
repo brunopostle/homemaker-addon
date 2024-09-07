@@ -93,3 +93,32 @@ bit limited, they are named: 'default', 'courtyard', 'framing', 'cinema',
 Editing and creating styles is documented in :doc:`user reference <reference>`,
 you can probably also figure it out by looking at existing styles in the
 ``share`` folder.
+
+Workflow
+~~~~~~~~
+
+The simplest workflow is to run *Homemaker* on your mesh to get an IFC model,
+decide to change something, *Ctrl-Z* to undo to go back to the mesh, make some
+changes to the geometry or styles, and run *Homemaker* again - repeat until you
+are happy with your design.
+
+This works fine, but it doesn't help you design multiple buildings in the same
+scene or work on the design at a later date.  So *Homemaker* stashes the
+*CellComplex* mesh in the IFC Building to be retrieved at any time: select any
+part of your building (a wall or window etc...), run *Topologise* and the
+building will go back to the original mesh, then make some changes to the
+geometry or material styles, and run *Homemaker* again.
+
+.. Warning::
+
+    *Homemaker* takes the Name of the building from the name of the mesh, this
+    means that if you want multiple buildings you need to give them different
+    names.  If you create a building called 'Cube', and then try to create
+    another building called 'Cube', the new elements will be added to the
+    existing 'Cube' building - Potentially very useful, but not necessarily
+    what you want.
+
+Another feature is that if you run *Homemaker* on a generated building, it will
+be regenerated from the stashed *CellComplex* (so any changes you may have made
+in Bonsai will be lost).  This allows you to make changes to style definitions
+or library assets and see how they effect a building design.
