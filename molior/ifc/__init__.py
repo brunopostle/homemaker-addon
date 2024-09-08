@@ -687,12 +687,6 @@ def purge_unused(self):
     todo = True
     while todo:
         todo = False
-        for type_object in self.by_type("IfcTypeObject"):
-            if not type_object.Types or not type_object.Types[0].RelatedObjects:
-                # need this or it segfaults IfcOpenShell/IfcOpenShell#2697
-                api.material.unassign_material(self, products=[type_object])
-                delete_ifc_product(self, type_object)
-                todo = True
         for pset in self.by_type("IfcPropertySet"):
             if (
                 not pset.DefinesType
