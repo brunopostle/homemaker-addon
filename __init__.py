@@ -204,7 +204,8 @@ class ObjectHomemaker(bpy.types.Operator):
             tool.IfcGit.load_project()
 
             for blender_object in blender_objects:
-                bpy.data.objects.remove(blender_object)
+                if str(blender_object) in bpy.data.objects:
+                    bpy.data.objects.remove(blender_object)
 
         # Hide Structural objects
         structural_collection = bpy.data.collections.get("IfcStructuralItem")
