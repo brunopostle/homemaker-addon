@@ -28,8 +28,6 @@ except ImportError:
         purge_unused,
     )
 
-import logging
-from bonsai.bim import import_ifc
 from bonsai.bim.ifc import IfcStore
 import bonsai.tool as tool
 import bpy
@@ -129,7 +127,10 @@ class ObjectTopologise(bpy.types.Operator):
         cc.Set("name", blender_objects[0].name)
 
         for blender_object in selected_objects:
-            bpy.data.objects.remove(blender_object)
+                try:
+                    bpy.data.objects.remove(blender_object)
+                except ReferenceError:
+                    continue
 
         for new_mesh in meshes_from_cellcomplex(cc):
             new_object = bpy.data.objects.new(new_mesh.name, new_mesh)
@@ -203,8 +204,11 @@ class ObjectHomemaker(bpy.types.Operator):
             IfcStore.execute_ifc_operator(self, context)
             tool.IfcGit.load_project()
 
-            for blender_object in blender_objects:
-                bpy.data.objects.remove(blender_object)
+            for blender_object in selected_objects:
+                try:
+                    bpy.data.objects.remove(blender_object)
+                except ReferenceError:
+                    continue
 
         # Hide Structural objects
         structural_collection = bpy.data.collections.get("IfcStructuralItem")
