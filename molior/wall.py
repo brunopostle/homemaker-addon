@@ -179,13 +179,6 @@ class Wall(TraceClass):
             thickness = get_thickness(self.file, product_type)
             self.inner = thickness + self.offset
 
-            # copy Usage from Type to Element
-            for inverse in self.file.get_inverse(
-                ifcopenshell.util.element.get_material(product_type)
-            ):
-                if inverse.is_a("IfcMaterialLayerSetUsage"):
-                    inverse.OffsetFromReferenceLine = self.offset
-
             # mapping from normalised X-axis to this rotated axis
             matrix_forward = matrix_align(
                 [*self.corner_coor(id_segment), 0.0],
@@ -437,17 +430,18 @@ class Wall(TraceClass):
             else:
                 representationtype = "Clipping"
 
-            shape = self.file.createIfcShapeRepresentation(
-                body_context,
-                body_context.ContextIdentifier,
-                representationtype,
-                [solid],
-            )
-            api.geometry.assign_representation(
-                self.file,
-                product=mywall,
-                representation=shape,
-            )
+            if thickness > 0:
+                shape = self.file.createIfcShapeRepresentation(
+                    body_context,
+                    body_context.ContextIdentifier,
+                    representationtype,
+                    [solid],
+                )
+                api.geometry.assign_representation(
+                    self.file,
+                    product=mywall,
+                    representation=shape,
+                )
 
             shape = self.file.createIfcShapeRepresentation(
                 axis_context,
