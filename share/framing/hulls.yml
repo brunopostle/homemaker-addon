@@ -42,4 +42,24 @@ flat-roof-nogging:
   condition: noop
   angle: 0.0
   spacing: 1.2
-  traces: [joist]
+  traces: [nogging-flat-roof]
+external-studs:
+  class: Grillage
+  condition: external
+  ifc: IfcElementAssembly
+  spacing: 0.45
+  traces: [stud-external]
+  hulls: [external-nogging]
+external-nogging:
+  class: Grillage
+  ifc: IfcElementAssembly
+  condition: noop
+  angle: 0.0
+  spacing: 1.2
+  traces: [nogging-external]
+  hulls: [batten-insulation]
+batten-insulation:
+  class: Shell
+  ifc: IfcSlab
+  condition: noop
+  offset: -0.06

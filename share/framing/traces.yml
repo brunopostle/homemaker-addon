@@ -17,3 +17,29 @@ batten:
   condition: noop
   offset: 0.0
   extension: 0.0
+nogging-flat-roof:
+  class: Extrusion
+  ifc: IfcMember
+  condition: noop
+  offset: 0.0
+  extension: -0.019
+stud-external:
+  class: Extrusion
+  ifc: IfcMember
+  condition: noop
+  offset: 0.0
+  extension: -0.038
+exterior:
+  condition: noop
+exterior-empty:
+  class: Wall
+  ifc: IfcWall
+  condition: external
+  offset: -0.1
+  do_populate_exterior_openings: 1
+nogging-external:
+  class: Extrusion
+  ifc: IfcMember
+  condition: noop
+  offset: 0.0
+  extension: -0.019
