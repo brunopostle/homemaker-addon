@@ -1,4 +1,12 @@
 ---
+# This is a simple family that consists of a single 3200mm (10' 6") high Tuscan
+# order column
+#
+# This column would be difficult to stretch vertically to provide a range of
+# heights. One possibility would be to add a plinth at the bottom to make it
+# taller. Another possibility would be to use a taller order that suits
+# the same entablature, such as Ionic.
+
 column:
   -
     name: column_tuscan_320

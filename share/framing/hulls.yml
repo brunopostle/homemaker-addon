@@ -38,6 +38,7 @@ purlins:
   angle: 0.0
   spacing: 1.8
   traces: [purlin]
+  inset: -0.06
 joists:
   class: Grillage
   condition: roof
@@ -45,6 +46,7 @@ joists:
   angle: 90.0
   spacing: 0.45
   traces: [joist]
+  inset: -0.04
 battens:
   class: Grillage
   condition: roof
@@ -52,6 +54,7 @@ battens:
   angle: 0.0
   spacing: 0.20
   traces: [batten]
+  inset: -0.06
 
 # The 'flat' hull is sliced for joists and nogging between
 
@@ -61,6 +64,7 @@ flat-roof-joists:
   ifc: IfcElementAssembly
   angle: 90.0
   spacing: 0.3
+  inset: 0.13
   traces: [joist]
   hulls: [flat-roof-nogging]
 
@@ -93,3 +97,4 @@ batten-insulation:
   ifc: IfcSlab
   condition: noop
   offset: -0.06
+  inset: 0.02

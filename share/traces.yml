@@ -1,10 +1,54 @@
 ---
+# Traces are linear items
+#
+# 'exterior' and 'interior' draw solid walls along the 'external' and
+# 'internal' traces. They use correspondingly named Wall Types defined in the
+# IFC library.
+
 exterior:
   class: Wall
   ifc: IfcWall
   condition: external
   offset: -0.25
   do_populate_exterior_openings: 1
+interior:
+  class: Wall
+  ifc: IfcWall
+  condition: internal
+  offset: -0.08
+  ceiling: 0.2
+  floor: 0.02
+  do_populate_interior_openings: 1
+
+# we don't want a Wall Element in the 'open' trace, as it needs to be open.
+# Place a Virtual Element here to attach space boundaries etc.. draw columns
+# and beams along the 'open' trace.
+
+external-open:
+  class: Wall
+  ifc: IfcVirtualElement
+  condition: open
+external beam:
+  class: Extrusion
+  ifc: IfcBeam
+  condition: open
+  offset: 0.0
+  extension: 0.0
+column:
+  class: Repeat
+  ifc: IfcColumn
+  family: column
+  ceiling: 0.3
+  condition: open
+  offset: -0.2
+  inset: 0.0
+  spacing: 2.0
+
+# The 'bottom-backward-level' trace follows the base of the outer wall, ie.
+# where a strip foundation would be found, and 'internal-footing' does the same
+# for internal walls. By default Elements are given accompanying Structural
+# Elements, but these defaults can be overidden as shown.
+
 ground beam:
   class: Extrusion
   ifc: IfcFooting
@@ -17,24 +61,15 @@ ground beam:
     - ProfileType: AREA
       XDim: 0.4
       YDim: 0.4
-interior:
-  class: Wall
-  ifc: IfcWall
-  condition: internal
-  offset: -0.08
-  ceiling: 0.2
-  floor: 0.02
-  do_populate_interior_openings: 1
-external-open:
-  class: Wall
-  ifc: IfcVirtualElement
-  condition: open
 internal ground beam:
   class: Extrusion
   ifc: IfcFooting
   condition: internal-footing
   offset: 0.0
   extension: 0.0
+
+# Dress a subsection of traces with extruded Elements.
+
 eaves_corona:
   class: Extrusion
   ifc: IfcCovering
@@ -71,21 +106,12 @@ crown:
   condition: top-backward-level
   offset: 0.0
   extension: 0.25
-external beam:
-  class: Extrusion
-  ifc: IfcBeam
-  condition: open
-  offset: 0.0
-  extension: 0.0
-column:
-  class: Repeat
-  ifc: IfcColumn
-  family: column
-  ceiling: 0.3
-  condition: open
-  offset: -0.2
-  inset: 0.0
-  spacing: 2.0
+
+# spaces have perimeter traces
+#
+# FIXME these should get predefined type and psets from Space Types in the
+# library
+
 bedroom-space:
   class: Space
   condition: bedroom
@@ -151,9 +177,11 @@ toilet-space:
   psets:
       Pset_SpaceCommon:
           IsExternal: false
-stair:
-  class: Stair
-  condition: stair
+
+# draw some floor coverings in each space, these are in addition to any slabs
+# defined by hulls. Note these traces could also be used to draw internal
+# skirtings and coving
+
 bedroom-floor:
   class: Floor
   condition: bedroom
@@ -199,3 +227,9 @@ sahn-floor:
   condition: sahn
   ifc: IfcCovering
   offset: 0.0
+
+# FIXME stairs are not implemented yet
+
+stair:
+  class: Stair
+  condition: stair

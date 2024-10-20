@@ -1,4 +1,6 @@
 ---
+# two simple families with a single size each, a fat and a thin balustrade
+
 balustrade_large:
   -
     name: balustrade_102

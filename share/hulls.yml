@@ -1,4 +1,10 @@
 ---
+# Hulls are planar items
+#
+# There are hulls for all the faces in the CellComplex. Draw slabs for most of
+# them (but not 'external' and 'internal' as we are drawing walls for these
+# using their equivalent traces).
+
 pitched-roof:
   class: Shell
   ifc: IfcRoof

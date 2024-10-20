@@ -3,10 +3,19 @@
 #
 # The following Traces without a pre-defined condition are not drawn unless
 # they are called by another trace or hull
+#
+# A Repeat adds regularly spaced elements along a linear trace. Note that
+# additional traces can be added in the gaps between elements.
 
-# A Repeat adds regularly spaced elements along a linear trace. Note that a
-# family is used to select different elements depending on the available space
-
+balustrade_large:
+  class: Repeat
+  ifc: IfcRailing
+  family: balustrade_large
+  condition: none
+  offset: 0.0
+  inset: 0.4
+  spacing: 1.2
+  traces: [balustrade_small, bar]
 balustrade_small:
   class: Repeat
   ifc: IfcRailing
@@ -21,6 +30,14 @@ balustrade_small:
 # An Extrusion extrudes a Type (with a Profile Set) along the length of the
 # trace
 
+handrail:
+  class: Extrusion
+  ifc: IfcRailing
+  height: 0.0
+  condition: none
+  xshift: 0.0
+  yshift: 1.02
+  extension: -0.35
 bar:
   class: Extrusion
   ifc: IfcRailing

@@ -1,4 +1,11 @@
 ---
+# 'families' are each a list of different sized variations on the same item
+#
+# 'name' refers to the Type Name in the library
+#
+# doors and windows have width and height. side and end dimensions indicate the
+# minimum amount of wall between items and between items and wall edges
+
 entrance door:
   -
     name: door_panelled_tall
@@ -166,6 +173,10 @@ fancy sash window:
     width: 0.91
     side: 0.8
     end: 0.3
+
+# the 'column' family is used to draw colonnades along 'open' traces. The
+# 'post' family suits something lighter weight such as pergolas.
+
 column:
   -
     name: column_210

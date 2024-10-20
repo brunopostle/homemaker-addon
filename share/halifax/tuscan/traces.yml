@@ -1,12 +1,27 @@
 ---
+# Traces are linear items
+#
+# 'exterior' wall is redefined from the parent style, the Wall Type is thicker
+# so it has a different offset from the axis.
+
 exterior:
   class: Wall
   ifc: IfcWall
   condition: external
   offset: -0.254
   do_populate_exterior_openings: 1
+
+# 'column' is inherited from the default style. Redefining it with an empty
+# trace removes it.
+
 column:
   condition: noop
+
+# two new items that both follow the 'open' trace. 'colonnade' places a series
+# of columns, and then places 'handrail' and 'balustrade_large' traces in the
+# gaps between columns. 'external beam' places a Tuscan style entablature at
+# the height of the storey.
+
 colonnade:
   class: Repeat
   ifc: IfcColumn
@@ -23,6 +38,10 @@ external beam:
   xshift: 0.0
   yshift: -0.675
   extension: 0.0
+
+# these are redefined from the parent style. The columns are a bit narrower, so
+# only the inset/extension needs to be changed to made these wider to fit better
+
 handrail:
   class: Extrusion
   ifc: IfcRailing

@@ -1,4 +1,10 @@
 ---
+# This is a simple family that consists of a single 2900mm (9' 6") high column
+#
+# Since this column has rustication at 381mm vertical intervals, it would be
+# easy to extend this family with shorter and taller versions (ie. 2.519m and
+# 3.281m).
+
 column:
   -
     name: column_rustic_290
