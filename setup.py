@@ -14,5 +14,5 @@ setup(
     packages=find_packages(
         include=["topologist", "topologist.*", "molior", "molior.*"]
     ),
-    install_requires=["topologic_core", "pyaml", "numpy", "ifcopenshell"],
+    install_requires=["topologic_core", "pyaml", "numpy", "ifcopenshell", "shapely"],
 )
