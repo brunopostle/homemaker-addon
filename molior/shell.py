@@ -259,7 +259,8 @@ class Shell(BaseClass):
                         self.file,
                         nodes_2d,
                         extrude_height,
-                        extrude_direction,
+                        direction=extrude_direction,
+                        inset=self.inset,
                     )
                 ],
             )

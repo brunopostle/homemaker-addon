@@ -5,7 +5,7 @@ import ifcopenshell.api.root
 
 from topologic_core import Face, Vertex
 from .baseclass import BaseClass
-from .geometry import map_to_2d, add_2d, scale_2d, subtract_3d
+from .geometry import map_to_2d, add_2d, scale_2d, subtract_3d, inset_path
 from .ifc import (
     add_face_topology_epsets,
     create_face_surface,
@@ -172,7 +172,10 @@ class Grillage(BaseClass):
 
             # create a Topologic Face for slicing
             topologic_face = Face.ByVertices(
-                [Vertex.ByCoordinates(*node, 0.0) for node in nodes_2d]
+                [
+                    Vertex.ByCoordinates(*node, 0.0)
+                    for node in inset_path(nodes_2d, inset=self.inset)
+                ]
             )
             cropped_faces, cropped_edges = topologic_face.ParallelSlice(
                 self.spacing, numpy.deg2rad(self.angle)

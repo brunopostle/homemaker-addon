@@ -25,6 +25,7 @@ class BaseClass:
         self.guid = "my building"
         self.height = 0.0
         self.inner = 0.08
+        self.inset = 0.0
         self.level = 0
         self.name = "base-class"
         self.offset = -0.25

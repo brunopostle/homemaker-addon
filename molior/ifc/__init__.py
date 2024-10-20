@@ -22,6 +22,7 @@ from ..geometry import (
     x_product_3d,
     subtract_3d,
     normalise_3d,
+    inset_path,
 )
 
 api = ifcopenshell.api
@@ -357,8 +358,11 @@ def create_closed_profile_from_points(self, points):
     )
 
 
-def create_extruded_area_solid(self, points, height, direction=[0.0, 0.0, 1.0]):
+def create_extruded_area_solid(
+    self, points, height, direction=[0.0, 0.0, 1.0], inset=0.0
+):
     """A simple vertically extruded profile"""
+    points = inset_path(points, inset=inset)
     return self.createIfcExtrudedAreaSolid(
         create_closed_profile_from_points(self, points),
         self.createIfcAxis2Placement3D(

@@ -1,5 +1,6 @@
 from math import sqrt, pi, atan, cos, sin
 import numpy
+import shapely
 from ifcopenshell.util.placement import a2p
 
 
@@ -134,6 +135,14 @@ def normal_by_perimeter(vertices):
         vector_b = normalise_3d(subtract_3d(vertices[index], vertices[index - 1]))
         if dot_product_3d(vector_a, vector_b) < 0.99:
             return x_product_3d(vector_a, vector_b)
+
+
+def inset_path(vertices, inset=0.0):
+    """insets an anticlockwise path"""
+    if inset:
+        polygon = shapely.Polygon(vertices)
+        return list(polygon.buffer(-inset, join_style="mitre").exterior.coords)[:-1]
+    return vertices
 
 
 # FIXME replace these with appropriate numpy functions
