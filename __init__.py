@@ -127,10 +127,10 @@ class ObjectTopologise(bpy.types.Operator):
         cc.Set("name", blender_objects[0].name)
 
         for blender_object in selected_objects:
-                try:
-                    bpy.data.objects.remove(blender_object)
-                except ReferenceError:
-                    continue
+            try:
+                bpy.data.objects.remove(blender_object)
+            except ReferenceError:
+                continue
 
         for new_mesh in meshes_from_cellcomplex(cc):
             new_object = bpy.data.objects.new(new_mesh.name, new_mesh)
