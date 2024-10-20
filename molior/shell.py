@@ -5,7 +5,7 @@ import ifcopenshell.api.root
 import ifcopenshell.api.structural
 import ifcopenshell.api.type
 from .baseclass import BaseClass
-from .geometry import map_to_2d, map_to_2d_simple, matrix_align
+from .geometry import map_to_2d, map_to_2d_simple, matrix_align, inset_path
 from .ifc import (
     add_face_topology_epsets,
     create_extruded_area_solid,
@@ -257,10 +257,9 @@ class Shell(BaseClass):
                 [
                     create_extruded_area_solid(
                         self.file,
-                        nodes_2d,
+                        inset_path(nodes_2d, self.inset),
                         extrude_height,
                         direction=extrude_direction,
-                        inset=self.inset,
                     )
                 ],
             )

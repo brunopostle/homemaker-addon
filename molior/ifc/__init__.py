@@ -22,7 +22,6 @@ from ..geometry import (
     x_product_3d,
     subtract_3d,
     normalise_3d,
-    inset_path,
 )
 
 api = ifcopenshell.api
@@ -346,7 +345,7 @@ def get_thickness(self, product):
 def create_closed_profile_from_points(self, points):
     """Creates a closed 2D profile from list of 2D points"""
     # a closed polyline has first and last points coincident
-    if not points[-1] == points[0]:
+    if not points[len(points) - 1] == points[0]:
         points.append(points[0])
 
     return self.createIfcArbitraryClosedProfileDef(
@@ -358,11 +357,8 @@ def create_closed_profile_from_points(self, points):
     )
 
 
-def create_extruded_area_solid(
-    self, points, height, direction=[0.0, 0.0, 1.0], inset=0.0
-):
+def create_extruded_area_solid(self, points, height, direction=[0.0, 0.0, 1.0]):
     """A simple vertically extruded profile"""
-    points = inset_path(points, inset=inset)
     return self.createIfcExtrudedAreaSolid(
         create_closed_profile_from_points(self, points),
         self.createIfcAxis2Placement3D(
