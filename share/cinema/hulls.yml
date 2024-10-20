@@ -1,6 +1,15 @@
 ---
+# Hulls are planar items
+#
+# 'ceiling-soffit' is defined in the parent style where it is drawn as a solid
+# slab on the 'soffit' hull. Redefining it here causes it not to be drawn.
+
 ceiling-soffit:
   condition: noop
+
+# slice up the 'soffit' hull at 1m spacing and fill the slices with rows of
+# seats
+
 Row of seats:
   class: Grillage
   condition: soffit

@@ -1,4 +1,11 @@
 ---
+# Hulls are planar items
+#
+# 'pitched-roof' and 'flat-roof' are defined in the parent style (where solid
+# slabs are drawn in the 'roof' and 'flat' hulls). Redefining them as
+# IfcVirtualElement creates all the space boundaries etc.. but no geometry is
+# drawn
+
 pitched-roof:
   class: Shell
   condition: roof
@@ -7,6 +14,23 @@ flat-roof:
   class: Shell
   condition: flat
   ifc: IfcVirtualElement
+
+# 'external-studs' is the 'external' wall hull sliced as a 'Grillage', the
+# lines in the grillage are drawn with traces and the areas between the lines
+# are drawn with hulls
+
+external-studs:
+  class: Grillage
+  condition: external
+  ifc: IfcElementAssembly
+  spacing: 0.45
+  traces: [stud-external]
+  hulls: [external-nogging]
+
+# Here the 'roof' hull is sliced three different ways, joists are perpendicular
+# to purlins and battens, each has a different spacing and the lines are drawn
+# with different traces
+
 purlins:
   class: Grillage
   condition: roof
@@ -28,6 +52,9 @@ battens:
   angle: 0.0
   spacing: 0.20
   traces: [batten]
+
+# The 'flat' hull is sliced for joists and nogging between
+
 flat-roof-joists:
   class: Grillage
   condition: flat
@@ -36,6 +63,13 @@ flat-roof-joists:
   spacing: 0.3
   traces: [joist]
   hulls: [flat-roof-nogging]
+
+# The following Hulls without a pre-defined condition are not drawn unless they
+# are called by another hull sliced with a grillage
+#
+# Noggings are short stiffeners spanning between joists, they are drawn with
+# traces and the area between can be drawn with hulls
+
 flat-roof-nogging:
   class: Grillage
   ifc: IfcElementAssembly
@@ -43,13 +77,6 @@ flat-roof-nogging:
   angle: 0.0
   spacing: 1.2
   traces: [nogging-flat-roof]
-external-studs:
-  class: Grillage
-  condition: external
-  ifc: IfcElementAssembly
-  spacing: 0.45
-  traces: [stud-external]
-  hulls: [external-nogging]
 external-nogging:
   class: Grillage
   ifc: IfcElementAssembly
@@ -58,6 +85,9 @@ external-nogging:
   spacing: 1.2
   traces: [nogging-external]
   hulls: [batten-insulation]
+
+# Insulation filling a hull
+
 batten-insulation:
   class: Shell
   ifc: IfcSlab

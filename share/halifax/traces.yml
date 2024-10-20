@@ -1,3 +1,12 @@
+---
+# Traces are linear items
+#
+# The following Traces without a pre-defined condition are not drawn unless
+# they are called by another trace or hull
+
+# A Repeat adds regularly spaced elements along a linear trace. Note that a
+# family is used to select different elements depending on the available space
+
 balustrade_small:
   class: Repeat
   ifc: IfcRailing
@@ -8,6 +17,10 @@ balustrade_small:
   offset: 0.0
   inset: 0.125
   spacing: 0.12
+
+# An Extrusion extrudes a Type (with a Profile Set) along the length of the
+# trace
+
 bar:
   class: Extrusion
   ifc: IfcRailing
@@ -16,6 +29,11 @@ bar:
   xshift: 0.0
   yshift: 0.1
   extension: -0.025
+
+# 'parapet', 'coping' and 'crown' are defined in the parent style where they
+# are drawn as extrusions.  Redefining them as empty traces removes them from
+# this child style
+
 parapet:
   condition: noop
 coping:

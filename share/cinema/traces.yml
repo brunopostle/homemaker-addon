@@ -1,10 +1,20 @@
 ---
+# Traces are linear items
+#
+# The following Traces without a pre-defined condition are not drawn unless
+# they are called by another trace or hull
+#
+# 'Cinema row' is a 1m wide profile representing a tiered seat floor
+
 Cinema row:
   class: Extrusion
   ifc: IfcMember
   condition: noop
   offset: 0.0
   extension: 0.05
+
+# 'Cinema seats' is a repeat of the 'Cinema seat' family at 600mm spacing
+
 Cinema seats:
   class: Repeat
   ifc: IfcFurniture

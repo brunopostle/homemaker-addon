@@ -37,7 +37,7 @@ DATA;
 #195=IFCMATERIALDEFINITIONREPRESENTATION($,$,(#194),#189);
 #197=IFCRELASSOCIATESMATERIAL('0vV7lFY$X8ghcPbv__i9OL',$,$,$,(#202,#203,#204,#205,#206,#207,#208,#209),#200);
 #199=IFCMATERIALLAYER(#189,0.16,$,'Nonplanar error',$,$,$);
-#200=IFCMATERIALLAYERSET((#199),'nonplanar/pitched-roof',$);
+#200=IFCMATERIALLAYERSET((#199),'nonplanar',$);
 #202=IFCROOFTYPE('3$sB2sds9Fn9Og8Iwx1oNq',$,'pitched-roof',$,$,$,$,$,$,.FREEFORM.);
 #203=IFCBUILDINGELEMENTPROXYTYPE('3egrgregern9Og8Iwx1oNq',$,'inclined-soffit',$,$,$,$,$,$,.NOTDEFINED.);
 #204=IFCWALLTYPE('3ere2sdebberberber1oNf',$,'wall-panel',$,$,$,$,$,$,.NOTDEFINED.);

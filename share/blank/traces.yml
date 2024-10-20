@@ -1,19 +1,33 @@
 ---
+# Traces are linear items
+#
+# 'exterior' is defined in the parent style (where it draws a solid wall with
+# windows and doors along the 'external' trace). Redefining it and setting
+# party_wall triggers behaviour suitable for a party wall.
+
 exterior:
   class: Wall
   ifc: IfcWall
   offset: -0.25
   condition: external
   party_wall: true
+
+# 'column', 'external-beam' and 'external-open' are defined in the parent
+# style. We don't want any of this as they make no sense on a party-wall trace.
+
 column:
   condition: noop
 external beam:
   condition: noop
+external-open:
+  condition: noop
+
+# An outdoor space won't normally be given a wall, here we draw a solid party
+# wall.
+
 openwall:
   class: Wall
   ifc: IfcWall
   offset: -0.25
   condition: open
   party_wall: true
-external-open:
-  condition: noop

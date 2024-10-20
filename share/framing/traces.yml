@@ -1,45 +1,72 @@
 ---
-joist:
-  class: Extrusion
-  ifc: IfcMember
-  condition: noop
-  offset: 0.0
-  extension: 0.05
-purlin:
-  class: Extrusion
-  ifc: IfcMember
-  condition: noop
-  offset: 0.0
-  extension: 0.0
-batten:
-  class: Extrusion
-  ifc: IfcBuildingElementProxy
-  condition: noop
-  offset: 0.0
-  extension: 0.0
-nogging-flat-roof:
-  class: Extrusion
-  ifc: IfcMember
-  condition: noop
-  offset: 0.0
-  extension: -0.019
-stud-external:
-  class: Extrusion
-  ifc: IfcMember
-  condition: noop
-  offset: 0.0
-  extension: -0.038
+# Traces are linear items
+#
+# 'exterior' is defined in the parent style (where it draws a solid wall along
+# the 'external' trace). Redefining it as an empty trace removes it from this
+# child style
+
 exterior:
   condition: noop
+
+# 'exterior-empty' is an IfcWallType without any Representation, Layer Set or
+# Profile Set. So there will be no geometry, but the trace can have Windows and
+# Doors.
+
 exterior-empty:
   class: Wall
   ifc: IfcWall
   condition: external
   offset: -0.1
   do_populate_exterior_openings: 1
+
+# The following Traces without a pre-defined condition are not drawn unless
+# they are called by another trace or hull
+
+joist:
+  class: Extrusion
+  ifc: IfcMember
+  condition: noop
+  offset: 0.0
+  extension: 0.05
+  xshift: 0.0
+  yshift: -0.04
+purlin:
+  class: Extrusion
+  ifc: IfcMember
+  condition: noop
+  offset: 0.0
+  extension: 0.0
+  xshift: 0.0
+  yshift: -0.258
+batten:
+  class: Extrusion
+  ifc: IfcBuildingElementProxy
+  condition: noop
+  offset: 0.0
+  extension: 0.0
+  xshift: 0.0
+  yshift: 0.091
+nogging-flat-roof:
+  class: Extrusion
+  ifc: IfcMember
+  condition: noop
+  offset: 0.0
+  extension: -0.019
+  xshift: 0.0
+  yshift: -0.04
+stud-external:
+  class: Extrusion
+  ifc: IfcMember
+  condition: noop
+  offset: 0.0
+  extension: -0.038
+  xshift: 0.0
+  yshift: -0.01
 nogging-external:
   class: Extrusion
   ifc: IfcMember
   condition: noop
   offset: 0.0
   extension: -0.019
+  xshift: 0.0
+  yshift: -0.01
