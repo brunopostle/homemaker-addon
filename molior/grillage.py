@@ -170,12 +170,13 @@ class Grillage(BaseClass):
 
             # generate repeating grillage elements
 
+            points = inset_path(nodes_2d, inset=self.inset)
+            if len(points) < 3:
+                continue
+
             # create a Topologic Face for slicing
             topologic_face = Face.ByVertices(
-                [
-                    Vertex.ByCoordinates(*node, 0.0)
-                    for node in inset_path(nodes_2d, inset=self.inset)
-                ]
+                [Vertex.ByCoordinates(*node, 0.0) for node in points]
             )
             cropped_faces, cropped_edges = topologic_face.ParallelSlice(
                 self.spacing, numpy.deg2rad(self.angle)

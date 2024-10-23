@@ -249,6 +249,10 @@ class Shell(BaseClass):
                     [1.0, inner * float(normal_x[1]), 0.0],
                 )
 
+            points = inset_path(nodes_2d, inset=self.inset)
+            if len(points) < 3:
+                continue
+
             # TODO use geometry.add_slab_representation
             shape = self.file.createIfcShapeRepresentation(
                 body_context,
@@ -257,7 +261,7 @@ class Shell(BaseClass):
                 [
                     create_extruded_area_solid(
                         self.file,
-                        inset_path(nodes_2d, self.inset),
+                        points,
                         extrude_height,
                         direction=extrude_direction,
                     )
