@@ -8,6 +8,23 @@
 exterior:
   condition: noop
 
+# disable various extruded items from the parent style
+
+ground beam:
+  condition: noop
+internal ground beam:
+  condition: noop
+eaves_corona:
+  condition: noop
+eaves_gutter:
+  condition: noop
+eaves_tiles:
+  condition: noop
+parapet:
+  condition: noop
+coping:
+  condition: noop
+
 # 'exterior-empty' is an IfcWallType without any Representation, Layer Set or
 # Profile Set. So there will be no geometry, but the trace can have Windows and
 # Doors.
