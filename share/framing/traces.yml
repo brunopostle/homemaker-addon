@@ -24,6 +24,8 @@ parapet:
   condition: noop
 coping:
   condition: noop
+crown:
+  condition: noop
 
 # 'exterior-empty' is an IfcWallType without any Representation, Layer Set or
 # Profile Set. So there will be no geometry, but the trace can have Windows and
