@@ -718,6 +718,34 @@ class Molior:
                                 pset_topology["BackCellIndex"],
                             )
 
+        # Collect Wall aggregates (without representations)
+        wall_aggregates = {}
+        for element in self.file.by_type("IfcWall"):
+            if not element.Representation:
+                pset_topology = ifcopenshell.util.element.get_psets(element).get(
+                    "EPset_Topology"
+                )
+                if pset_topology:
+                    if "FaceIndex" in pset_topology:
+                        wall_aggregates[pset_topology["FaceIndex"]] = element
+
+        # Attach Element Assemblies to Wall aggregates
+        for element in self.file.by_type("IfcElementAssembly"):
+            if get_parent_building(element) == self.building:
+                pset_topology = ifcopenshell.util.element.get_psets(element).get(
+                    "EPset_Topology"
+                )
+                if pset_topology:
+                    if (
+                        "FaceIndex" in pset_topology
+                        and pset_topology["FaceIndex"] in wall_aggregates
+                    ):
+                        api.aggregate.assign_object(
+                            self.file,
+                            products=[element],
+                            relating_object=wall_aggregates[pset_topology["FaceIndex"]],
+                        )
+
     def stash_topology(self):
         """Represent a Topologic model as IFC geometry"""
         # Cellcomplex stashed as Tessellation representation items
