@@ -443,17 +443,20 @@ class Wall(TraceClass):
                     representation=shape,
                 )
 
-            shape = self.file.createIfcShapeRepresentation(
-                axis_context,
-                axis_context.ContextIdentifier,
-                "Curve2D",
-                [axis],
-            )
-            api.geometry.assign_representation(
-                self.file,
-                product=mywall,
-                representation=shape,
-            )
+                shape = self.file.createIfcShapeRepresentation(
+                    axis_context,
+                    axis_context.ContextIdentifier,
+                    "Curve2D",
+                    [axis],
+                )
+                api.geometry.assign_representation(
+                    self.file,
+                    product=mywall,
+                    representation=shape,
+                )
+            else:
+                # thickness is used for opening geometry
+                thickness = 1.0
             api.geometry.edit_object_placement(
                 self.file,
                 product=mywall,
