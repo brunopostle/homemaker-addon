@@ -264,6 +264,7 @@ class Molior:
         if self.cellcomplex:
             self.connect_structure()
             self.connect_spaces()
+            self.connect_assemblies()
             self.stash_topology()
 
     def connect_structure(self):
@@ -718,6 +719,9 @@ class Molior:
                                 pset_topology["BackCellIndex"],
                             )
 
+    def connect_assemblies(self):
+        """Assign parents to entities tagged with Topologic indexes"""
+
         # Collect Wall aggregates (without representations)
         wall_aggregates = {}
         for element in self.file.by_type("IfcWall"):
@@ -730,7 +734,9 @@ class Molior:
                         wall_aggregates[pset_topology["FaceIndex"]] = element
 
         # Attach Element Assemblies to Wall aggregates
-        for element in self.file.by_type("IfcElementAssembly"):
+        for element in self.file.by_type("IfcElementAssembly") + self.file.by_type(
+            "IfcCovering"
+        ):
             if get_parent_building(element) == self.building:
                 pset_topology = ifcopenshell.util.element.get_psets(element).get(
                     "EPset_Topology"
