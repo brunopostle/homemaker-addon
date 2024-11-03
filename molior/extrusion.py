@@ -58,7 +58,7 @@ class Extrusion(TraceClass):
             self.style_object,
             ifc_type=self.ifc + "Type",
             stylename=self.style,
-            name=self.name,
+            name=self.typename,
         )
 
         # loop through segments

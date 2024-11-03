@@ -8,12 +8,14 @@
 exterior:
   class: Wall
   ifc: IfcWall
+  typename: exterior
   condition: external
   offset: -0.25
   do_populate_exterior_openings: 1
 interior:
   class: Wall
   ifc: IfcWall
+  typename: interior
   condition: internal
   offset: -0.08
   ceiling: 0.2
@@ -22,7 +24,7 @@ interior:
 
 # we don't want a Wall Element in the 'open' trace, as it needs to be open.
 # Place a Virtual Element here to attach space boundaries etc.. draw columns
-# and beams along the 'open' trace.
+# and beams along the 'open' trace. Note Virtual Elements can't be typed.
 
 external-open:
   class: Wall
@@ -31,6 +33,7 @@ external-open:
 external beam:
   class: Extrusion
   ifc: IfcBeam
+  typename: external beam
   condition: open
   offset: 0.0
   extension: 0.0
@@ -52,6 +55,7 @@ column:
 ground beam:
   class: Extrusion
   ifc: IfcFooting
+  typename: ground beam
   condition: bottom-backward-level
   offset: 0.0
   extension: 0.25
@@ -64,45 +68,52 @@ ground beam:
 internal ground beam:
   class: Extrusion
   ifc: IfcFooting
+  typename: internal ground beam
   condition: internal-footing
   offset: 0.0
   extension: 0.0
 
 # Dress a subsection of traces with extruded Elements.
 
-eaves_corona:
+eaves corona:
   class: Extrusion
   ifc: IfcCovering
+  typename: eaves_corona
   condition: top-backward-up
   offset: -0.25
   extension: 0.25
-eaves_gutter:
+eaves gutter:
   class: Extrusion
   ifc: IfcPipeSegment
+  typename: eaves_gutter
   condition: top-backward-up
   offset: -0.25
   extension: 0.25
-eaves_tiles:
+eaves tiles:
   class: Extrusion
   ifc: IfcCovering
+  typename: eaves_tiles
   condition: top-backward-up
   offset: -0.25
   extension: 0.25
 parapet:
   class: Extrusion
   ifc: IfcWall
+  typename: parapet
   condition: top-backward-level
   offset: 0.0
   extension: 0.25
 coping:
   class: Extrusion
   ifc: IfcCovering
+  typename: coping
   condition: top-backward-level
   offset: 0.0
   extension: 0.25
 crown:
   class: Extrusion
   ifc: IfcCovering
+  typename: crown
   condition: top-backward-level
   offset: 0.0
   extension: 0.25
@@ -186,46 +197,55 @@ bedroom-floor:
   class: Floor
   condition: bedroom
   ifc: IfcCovering
+  typename: bedroom-floor
   offset: 0.0
 circulation-floor:
   class: Floor
   condition: circulation
   ifc: IfcCovering
+  typename: circulation-floor
   offset: 0.0
 kitchen-floor:
   class: Floor
   condition: kitchen
   ifc: IfcCovering
+  typename: kitchen-floor
   offset: 0.0
 living-floor:
   class: Floor
   condition: living
   ifc: IfcCovering
+  typename: living-floor
   offset: 0.0
 retail-floor:
   class: Floor
   condition: retail
   ifc: IfcCovering
+  typename: retail-floor
   offset: 0.0
 stair-floor:
   class: Floor
   condition: stair
   ifc: IfcCovering
+  typename: stair-floor
   offset: 0.0
 toilet-floor:
   class: Floor
   condition: toilet
   ifc: IfcCovering
+  typename: toilet-floor
   offset: 0.0
 outside-floor:
   class: Floor
   condition: outside
   ifc: IfcCovering
+  typename: outside-floor
   offset: 0.0
 sahn-floor:
   class: Floor
   condition: sahn
   ifc: IfcCovering
+  typename: sahn-floor
   offset: 0.0
 
 # FIXME stairs are not implemented yet

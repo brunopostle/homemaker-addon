@@ -2,12 +2,14 @@
 exterior:
   class: Wall
   ifc: IfcWall
+  typename: exterior
   condition: external
   offset: -0.305
   do_populate_exterior_openings: 1
 crown:
   class: Extrusion
   ifc: IfcCovering
+  typename: crown
   condition: external
   xshift: 0.305
   yshift: -0.24

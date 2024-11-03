@@ -14,11 +14,11 @@ ground beam:
   condition: noop
 internal ground beam:
   condition: noop
-eaves_corona:
+eaves corona:
   condition: noop
-eaves_gutter:
+eaves gutter:
   condition: noop
-eaves_tiles:
+eaves tiles:
   condition: noop
 parapet:
   condition: noop
@@ -34,6 +34,7 @@ crown:
 exterior-empty:
   class: Wall
   ifc: IfcWall
+  typename: exterior-empty
   condition: external
   offset: -0.1
   do_populate_exterior_openings: 1
@@ -44,6 +45,7 @@ exterior-empty:
 joist:
   class: Extrusion
   ifc: IfcMember
+  typename: joist
   condition: noop
   offset: 0.0
   extension: 0.05
@@ -52,6 +54,7 @@ joist:
 purlin:
   class: Extrusion
   ifc: IfcMember
+  typename: purlin
   condition: noop
   offset: 0.0
   extension: 0.0
@@ -60,6 +63,7 @@ purlin:
 batten:
   class: Extrusion
   ifc: IfcBuildingElementProxy
+  typename: batten
   condition: noop
   offset: 0.0
   extension: 0.0
@@ -68,6 +72,7 @@ batten:
 nogging-flat-roof:
   class: Extrusion
   ifc: IfcMember
+  typename: nogging-flat-roof
   condition: noop
   offset: 0.0
   extension: -0.019
@@ -76,6 +81,7 @@ nogging-flat-roof:
 stud-external:
   class: Extrusion
   ifc: IfcMember
+  typename: stud-external
   condition: noop
   offset: 0.0
   extension: -0.038
@@ -84,6 +90,7 @@ stud-external:
 nogging-external:
   class: Extrusion
   ifc: IfcMember
+  typename: nogging-external
   condition: noop
   offset: 0.0
   extension: -0.019

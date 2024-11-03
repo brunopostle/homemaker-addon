@@ -9,6 +9,7 @@
 Cinema row:
   class: Extrusion
   ifc: IfcMember
+  typename: Cinema row
   condition: noop
   offset: 0.0
   extension: 0.05

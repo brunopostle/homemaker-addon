@@ -9,11 +9,11 @@ internal ground beam:
   condition: noop
 eaves:
   condition: noop
-eaves_corona:
+eaves corona:
   condition: noop
-eaves_tiles:
+eaves tiles:
   condition: noop
-eaves_gutter:
+eaves gutter:
   condition: noop
 parapet:
   condition: noop

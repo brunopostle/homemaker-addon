@@ -35,9 +35,9 @@ class BaseClass:
         self.style = "default"
         self.file = None
         self.ifc = "IfcBuildingElementProxy"
+        self.typename = "my type"
         for arg in args:
             self.__dict__[arg] = args[arg]
-        self.identifier = self.style + "/" + self.name
 
     def add_psets(self, product):
         """self.psets is a dictionary of Psets, add them to an Ifc product"""

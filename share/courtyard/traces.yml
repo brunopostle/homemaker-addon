@@ -1,5 +1,5 @@
 ---
-eaves_gutter:
+eaves gutter:
   condition: noop
 crown:
   condition: noop

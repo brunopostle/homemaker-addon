@@ -94,7 +94,7 @@ class Floor(TraceClass):
             self.style_object,
             ifc_type=self.ifc + "Type",
             stylename=self.style,
-            name=self.name,
+            name=self.typename,
         )
         api.type.assign_type(
             self.file,

@@ -33,6 +33,7 @@ balustrade_small:
 handrail:
   class: Extrusion
   ifc: IfcRailing
+  typename: handrail
   height: 0.0
   condition: none
   xshift: 0.0
@@ -41,6 +42,7 @@ handrail:
 bar:
   class: Extrusion
   ifc: IfcRailing
+  typename: bar
   height: 0.0
   condition: none
   xshift: 0.0

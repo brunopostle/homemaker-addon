@@ -8,6 +8,7 @@
 exterior:
   class: Wall
   ifc: IfcWall
+  typename: exterior
   offset: -0.25
   condition: external
   party_wall: true
@@ -28,6 +29,7 @@ external-open:
 openwall:
   class: Wall
   ifc: IfcWall
+  typename: openwall
   offset: -0.25
   condition: open
   party_wall: true

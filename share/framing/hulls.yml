@@ -95,6 +95,7 @@ external-nogging:
 batten-insulation:
   class: Shell
   ifc: IfcSlab
+  typename: batten-insulation
   condition: noop
   offset: -0.06
   inset: 0.02
