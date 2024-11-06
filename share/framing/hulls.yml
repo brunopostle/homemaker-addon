@@ -17,7 +17,9 @@ flat-roof:
 
 # 'external-studs' is the 'external' wall hull sliced as a 'Grillage', the
 # lines in the grillage are drawn with traces and the areas between the lines
-# are drawn with hulls
+# are drawn with hulls. As a top-level hull associated with a single
+# CellComplex Face it will be aggregated into a wall and cut by windows and
+# doors.
 
 external-studs:
   class: Grillage
@@ -25,7 +27,19 @@ external-studs:
   ifc: IfcElementAssembly
   spacing: 0.45
   traces: [stud-external]
-  hulls: [external-nogging]
+  hulls: [batten-insulation]
+
+# 'ply-sheathing' is the 'external' wall hull drawn with a Covering material,
+# the offset places it on the outside of the building. As a top-level hull
+# associated with a single CellComplex Face it will be aggregated into a wall
+# and cut by windows and doors.
+
+ply-sheathing:
+  class: Shell
+  condition: external
+  ifc: IfcCovering
+  typename: Ply sheathing
+  offset: -0.085
 
 # Here the 'roof' hull is sliced three different ways, joists are perpendicular
 # to purlins and battens, each has a different spacing and the lines are drawn
@@ -81,14 +95,6 @@ flat-roof-nogging:
   angle: 0.0
   spacing: 1.2
   traces: [nogging-flat-roof]
-external-nogging:
-  class: Grillage
-  ifc: IfcElementAssembly
-  condition: noop
-  angle: 0.0
-  spacing: 1.2
-  traces: [nogging-external]
-  hulls: [batten-insulation]
 
 # Insulation filling a hull
 
