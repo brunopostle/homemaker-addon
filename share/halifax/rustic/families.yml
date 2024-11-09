@@ -7,5 +7,5 @@
 
 column:
   -
-    name: column_rustic_290
+    typename: column_rustic_290
     height: 2.9

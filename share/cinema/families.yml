@@ -4,5 +4,5 @@
 
 Cinema seat:
   -
-    name: 'Cinema seat 600'
+    typename: 'Cinema seat 600'
     height: 0.0

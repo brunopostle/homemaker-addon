@@ -3,9 +3,9 @@
 
 balustrade_large:
   -
-    name: balustrade_102
+    typename: balustrade_102
     height: 1.02
 balustrade_small:
   -
-    name: balustrade_90
+    typename: balustrade_90
     height: 0.9

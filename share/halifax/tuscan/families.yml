@@ -9,5 +9,5 @@
 
 column:
   -
-    name: column_tuscan_320
+    typename: column_tuscan_320
     height: 3.2

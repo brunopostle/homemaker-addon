@@ -8,167 +8,167 @@
 
 entrance door:
   -
-    name: door_panelled_tall
+    typename: door_panelled_tall
     height: 2.545
     width: 0.91
     side: 0.8
     end: 0.4
   -
-    name: door_panelled
+    typename: door_panelled
     height: 2.08
     width: 0.91
     side: 0.8
     end: 0.1
 flat entrance door:
   -
-    name: door_panelled_tall_flat
+    typename: door_panelled_tall_flat
     height: 2.545
     width: 0.91
     side: 0.8
     end: 0.4
   -
-    name: door_panelled
+    typename: door_panelled
     height: 2.08
     width: 0.91
     side: 0.8
     end: 0.1
 single storey entrance door:
   -
-    name: door_panelled
+    typename: door_panelled
     height: 2.08
     width: 0.91
     side: 0.8
     end: 0.1
 wider back door:
    -
-    name: door_panelled
+    typename: door_panelled
     height: 2.08
     width: 0.91
     side: 0.6
     end: 0.1
    -
-    name: door_panelled_double
+    typename: door_panelled_double
     height: 2.08
     width: 1.8
     side: 0.6
     end: 0.1
    -
-    name: door_panelled_double_tall
+    typename: door_panelled_double_tall
     height: 2.545
     width: 1.8
     side: 0.6
     end: 0.1
 back door:
    -
-    name: door_panelled
+    typename: door_panelled
     height: 2.08
     width: 0.91
     side: 0.6
     end: 0.1
 single inside door:
   -
-    name: door_inside
+    typename: door_inside
     height: 2.1
     width: 0.8
     side: 0.1
     end: 0.1
 double inside door:
   -
-    name: door_inside_double
+    typename: door_inside_double
     height: 2.1
     width: 1.6
     side: 0.1
     end: 0.1
   -
-    name: door_inside
+    typename: door_inside
     height: 2.1
     width: 0.8
     side: 0.1
     end: 0.1
 entrance gate:
   -
-    name: gate
+    typename: gate
     height: 2.08
     width: 1.41
     side: 0.8
     end: 0.4
 shopfront:
   -
-    name: shopfront
+    typename: shopfront
     height: 2.545
     width: 5.0
     side: 0.8
     end: 0.4
   -
-    name: shopfront_smaller
+    typename: shopfront_smaller
     height: 2.545
     width: 3.98
     side: 0.8
     end: 0.4
   -
-    name: shopfront_smallest
+    typename: shopfront_smallest
     height: 2.545
     width: 2.96
     side: 0.8
     end: 0.4
   -
-    name: door_panelled_tall
+    typename: door_panelled_tall
     height: 2.545
     width: 0.91
     side: 0.8
     end: 0.4
 sash window:
   -
-    name: sash_big
+    typename: sash_big
     height: 1.82
     width: 0.91
     side: 0.8
     end: 0.3
   -
-    name: sash_narrow
+    typename: sash_narrow
     height: 1.82
     width: 0.625
     side: 0.8
     end: 0.3
   -
-    name: sash_shorter
+    typename: sash_shorter
     height: 1.445
     width: 0.91
     side: 0.8
     end: 0.3
   -
-    name: sash_narrow_shorter
+    typename: sash_narrow_shorter
     height: 1.445
     width: 0.625
     side: 0.8
     end: 0.3
   -
-    name: sash_small
+    typename: sash_small
     height: 0.995
     width: 0.625
     side: 0.8
     end: 0.3
   -
-    name: sash_big_taller
+    typename: sash_big_taller
     height: 2.23
     width: 0.91
     side: 0.8
     end: 0.3
   -
-    name: sash_shortest
+    typename: sash_shortest
     height: 1.025
     width: 0.91
     side: 0.8
     end: 0.3
   -
-    name: sash_tall_arched
+    typename: sash_tall_arched
     height: 2.65
     width: 0.91
     side: 0.8
     end: 0.3
 fancy sash window:
   -
-    name: sash_big_fancy
+    typename: sash_big_fancy
     height: 1.82
     width: 0.91
     side: 0.8
@@ -179,72 +179,72 @@ fancy sash window:
 
 column:
   -
-    name: column_210
+    typename: column_210
     height: 2.1
   -
-    name: column_220
+    typename: column_220
     height: 2.2
   -
-    name: column_230
+    typename: column_230
     height: 2.3
   -
-    name: column_240
+    typename: column_240
     height: 2.4
   -
-    name: column_250
+    typename: column_250
     height: 2.5
   -
-    name: column_260
+    typename: column_260
     height: 2.6
   -
-    name: column_270
+    typename: column_270
     height: 2.7
   -
-    name: column_280
+    typename: column_280
     height: 2.8
   -
-    name: column_290
+    typename: column_290
     height: 2.9
   -
-    name: column_300
+    typename: column_300
     height: 3.0
   -
-    name: column_310
+    typename: column_310
     height: 3.1
   -
-    name: column_320
+    typename: column_320
     height: 3.2
   -
-    name: column_330
+    typename: column_330
     height: 3.3
   -
-    name: column_340
+    typename: column_340
     height: 3.4
 post:
   -
-    name: post_200
+    typename: post_200
     height: 2.00
   -
-    name: post_215
+    typename: post_215
     height: 2.15
   -
-    name: post_230
+    typename: post_230
     height: 2.30
   -
-    name: post_245
+    typename: post_245
     height: 2.45
   -
-    name: post_260
+    typename: post_260
     height: 2.60
   -
-    name: post_275
+    typename: post_275
     height: 2.75
   -
-    name: post_290
+    typename: post_290
     height: 2.90
   -
-    name: post_305
+    typename: post_305
     height: 3.05
   -
-    name: post_320
+    typename: post_320
     height: 3.20

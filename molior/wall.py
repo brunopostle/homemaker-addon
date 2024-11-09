@@ -468,7 +468,7 @@ class Wall(TraceClass):
             for id_opening in range(len(self.openings[id_segment])):
                 db = self.get_family(segment[id_opening]["name"])
                 opening = db["list"][segment[id_opening]["size"]]
-                name = opening["name"]
+                typename = opening["typename"]
 
                 left, right = self.opening_coor(id_segment, id_opening)
                 opening_offset = scale_2d(-self.offset, self.normal_segment(id_segment))
@@ -511,7 +511,7 @@ class Wall(TraceClass):
                     self.style_object,
                     ifc_type=ifc_class + "Type",
                     stylename=self.style,
-                    name=name,
+                    name=typename,
                 )
                 api.type.assign_type(
                     self.file,
@@ -830,28 +830,28 @@ class Wall(TraceClass):
         return {
             "list": [
                 {
-                    "name": "error",
+                    "typename": "error",
                     "height": 1.0,
                     "width": 1.0,
                     "side": 0.1,
                     "end": 0.0,
                 },
                 {
-                    "name": "error",
+                    "typename": "error",
                     "height": 2.0,
                     "width": 1.0,
                     "side": 0.1,
                     "end": 0.0,
                 },
                 {
-                    "name": "error",
+                    "typename": "error",
                     "height": 2.0,
                     "width": 2.0,
                     "side": 0.1,
                     "end": 0.0,
                 },
                 {
-                    "name": "error",
+                    "typename": "error",
                     "height": 1.0,
                     "width": 2.0,
                     "side": 0.1,

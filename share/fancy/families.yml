@@ -1,9 +1,9 @@
 ---
 bracket:
   -
-    name: bracket
+    typename: bracket
     height: 0.0
 monkey:
   -
-    name: monkey
+    typename: monkey
     height: 0.0

@@ -63,7 +63,7 @@ class Repeat(TraceClass):
                 height = self.style_families[self.family][index]["height"]
                 if height >= self.height - self.ceiling:
                     break
-            asset_name = self.style_families[self.family][index]["name"]
+            asset_name = self.style_families[self.family][index]["typename"]
         else:
             asset_name = "error"
 
