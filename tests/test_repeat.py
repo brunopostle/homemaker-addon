@@ -169,7 +169,8 @@ class Tests(unittest.TestCase):
         self.assertEqual(len(self.repeat), 4)
         self.assertEqual(self.repeat[0].height, 0.05)
         self.assertEqual(self.repeat[0].level, 2)
-        self.assertEqual(self.repeat[0].name, "eaves_corona")
+        self.assertEqual(self.repeat[0].name, "eaves corona")
+        self.assertEqual(self.repeat[0].typename, "eaves_corona")
         self.assertEqual(self.repeat[3].__dict__["class"], "Repeat")
 
 

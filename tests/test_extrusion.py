@@ -169,7 +169,8 @@ class Tests(unittest.TestCase):
     def test_sanity(self):
         self.assertEqual(len(self.extrusion), 3)
         self.assertEqual(self.extrusion[0].level, 2)
-        self.assertEqual(self.extrusion[0].name, "eaves_corona")
+        self.assertEqual(self.extrusion[0].name, "eaves corona")
+        self.assertEqual(self.extrusion[0].typename, "eaves_corona")
         self.assertEqual(self.extrusion[0].__dict__["class"], "Extrusion")
 
 
