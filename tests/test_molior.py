@@ -90,7 +90,7 @@ class Tests(unittest.TestCase):
         wall4.populate_exterior_openings(2, "kitchen", 0)
         self.assertEqual(
             wall4.openings[2][0],
-            {"name": "kitchen outside window", "along": 0.5, "size": 0},
+            {"family": "kitchen outside window", "along": 0.5, "size": 0},
         )
 
         self.assertEqual(wall4.__dict__["guid"], "my building")

@@ -111,10 +111,10 @@ class Tests(unittest.TestCase):
         self.assertAlmostEqual(self.wall.openings[0][0]["along"], 0.545)
 
         self.wall.openings[0].append(
-            {"name": "toilet outside door", "along": 2.5, "size": 0}
+            {"family": "toilet outside door", "along": 2.5, "size": 0}
         )
         self.wall.openings[0].append(
-            {"name": "toilet outside door", "along": 0.5, "size": 0}
+            {"family": "toilet outside door", "along": 0.5, "size": 0}
         )
         self.assertEqual(self.wall.openings[0][1]["along"], 2.545)
         self.assertEqual(self.wall.openings[0][2]["along"], 2.5)
