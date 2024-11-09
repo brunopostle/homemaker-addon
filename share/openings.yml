@@ -1,141 +1,141 @@
 ---
 house entrance:
-  name: entrance door
+  family: entrance door
   type: door
   cill: 0.02
 house entrance covered:
-  name: flat entrance door
+  family: flat entrance door
   type: door
   cill: 0.02
 house entrance single storey:
-  name: single storey entrance door
+  family: single storey entrance door
   type: door
   cill: 0.02
 kitchen outside door:
-  name: back door
+  family: back door
   type: door
   cill: 0.02
 living outside door:
-  name: wider back door
+  family: wider back door
   type: door
   cill: 0.02
 circulation outside door:
-  name: back door
+  family: back door
   type: door
   cill: 0.02
 bedroom outside door:
-  name: back door
+  family: back door
   type: door
   cill: 0.02
 kitchen sahn door:
-  name: back door
+  family: back door
   type: door
   cill: 0.02
 living sahn door:
-  name: wider back door
+  family: wider back door
   type: door
   cill: 0.02
 circulation sahn door:
-  name: back door
+  family: back door
   type: door
   cill: 0.02
 bedroom sahn door:
-  name: back door
+  family: back door
   type: door
   cill: 0.02
 toilet sahn door:
-  name: back door
+  family: back door
   type: door
   cill: 0.02
 kitchen inside door:
-  name: single inside door
+  family: single inside door
   type: door
   cill: 0.02
 living inside door:
-  name: single inside door
+  family: single inside door
   type: door
   cill: 0.02
 circulation inside door:
-  name: single inside door
+  family: single inside door
   type: door
   cill: 0.02
 bedroom inside door:
-  name: single inside door
+  family: single inside door
   type: door
   cill: 0.02
 toilet inside door:
-  name: single inside door
+  family: single inside door
   type: door
   cill: 0.02
 kitchen living inside door:
-  name: double inside door
+  family: double inside door
   type: door
   cill: 0.02
 house entrance gate:
-  name: entrance gate
+  family: entrance gate
   type: door
   cill: -0.01
 retail entrance:
-  name: shopfront
+  family: shopfront
   type: door
   cill: 0.02
 kitchen outside window:
-  name: sash window
+  family: sash window
   type: window
   cill: 1.05
 living outside window:
-  name: sash window
+  family: sash window
   type: window
   cill: 0.75
 circulation outside window:
-  name: sash window
+  family: sash window
   type: window
   cill: 0.75
 bedroom outside window:
-  name: sash window
+  family: sash window
   type: window
   cill: 0.75
 toilet outside window:
-  name: sash window
+  family: sash window
   type: window
   cill: 0.75
 kitchen street window:
-  name: sash window
+  family: sash window
   type: window
   cill: 1.05
 living street window:
-  name: sash window
+  family: sash window
   type: window
   cill: 0.75
 circulation street window:
-  name: sash window
+  family: sash window
   type: window
   cill: 0.75
 bedroom street window:
-  name: sash window
+  family: sash window
   type: window
   cill: 0.75
 toilet street window:
-  name: sash window
+  family: sash window
   type: window
   cill: 0.75
 kitchen sahn window:
-  name: sash window
+  family: sash window
   type: window
   cill: 1.05
 living sahn window:
-  name: sash window
+  family: sash window
   type: window
   cill: 0.75
 circulation sahn window:
-  name: sash window
+  family: sash window
   type: window
   cill: 0.75
 bedroom sahn window:
-  name: sash window
+  family: sash window
   type: window
   cill: 0.75
 toilet sahn window:
-  name: sash window
+  family: sash window
   type: window
   cill: 0.75

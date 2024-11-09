@@ -1,7 +1,7 @@
 ---
 # 'families' are each a list of different sized variations on the same item
 #
-# 'name' refers to the Type Name in the library
+# 'typename' refers to the Type Name in the library
 #
 # doors and windows have width and height. side and end dimensions indicate the
 # minimum amount of wall between items and between items and wall edges

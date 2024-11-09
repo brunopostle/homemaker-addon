@@ -1,37 +1,37 @@
 ---
 living outside window:
-  name: fancy sash window
+  family: fancy sash window
   type: window
   cill: 0.75
 circulation outside window:
-  name: fancy sash window
+  family: fancy sash window
   type: window
   cill: 0.75
 bedroom outside window:
-  name: fancy sash window
+  family: fancy sash window
   type: window
   cill: 0.75
 living street window:
-  name: fancy sash window
+  family: fancy sash window
   type: window
   cill: 0.75
 circulation street window:
-  name: fancy sash window
+  family: fancy sash window
   type: window
   cill: 0.75
 bedroom street window:
-  name: fancy sash window
+  family: fancy sash window
   type: window
   cill: 0.75
 living sahn window:
-  name: fancy sash window
+  family: fancy sash window
   type: window
   cill: 0.75
 circulation sahn window:
-  name: fancy sash window
+  family: fancy sash window
   type: window
   cill: 0.75
 bedroom sahn window:
-  name: fancy sash window
+  family: fancy sash window
   type: window
   cill: 0.75

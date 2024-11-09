@@ -466,7 +466,7 @@ class Wall(TraceClass):
 
             segment = self.openings[id_segment]
             for id_opening in range(len(self.openings[id_segment])):
-                db = self.get_family(segment[id_opening]["name"])
+                db = self.get_family(segment[id_opening]["family"])
                 opening = db["list"][segment[id_opening]["size"]]
                 typename = opening["typename"]
 
@@ -482,7 +482,7 @@ class Wall(TraceClass):
                 entity = api.root.create_entity(
                     self.file,
                     ifc_class=ifc_class,
-                    name=segment[id_opening]["name"],
+                    name=segment[id_opening]["family"],
                 )
                 add_face_topology_epsets(self.file, entity, face, back_cell, front_cell)
                 # window/door width and height attributes can't be set in Type
@@ -757,7 +757,7 @@ class Wall(TraceClass):
     def opening_coor(self, id_segment, id_opening):
         """rectangle coordinates of an opening on the axis"""
         opening = self.openings[id_segment][id_opening]
-        db = self.get_family(opening["name"])
+        db = self.get_family(opening["family"])
         width = db["list"][opening["size"]]["width"]
         height = db["list"][opening["size"]]["height"]
         up = opening["up"]
@@ -776,54 +776,54 @@ class Wall(TraceClass):
         """Add initial windows and doors to a segment"""
         if interior_type is None:
             self.openings[id_segment].append(
-                {"name": "undefined outside window", "along": 0.5, "size": 0}
+                {"family": "undefined outside window", "along": 0.5, "size": 0}
             )
         if interior_type in ("living", "retail"):
             self.openings[id_segment].append(
-                {"name": "living outside window", "along": 0.5, "size": 0}
+                {"family": "living outside window", "along": 0.5, "size": 0}
             )
         if interior_type == "toilet":
             self.openings[id_segment].append(
-                {"name": "toilet outside window", "along": 0.5, "size": 0}
+                {"family": "toilet outside window", "along": 0.5, "size": 0}
             )
         if interior_type == "kitchen":
             self.openings[id_segment].append(
-                {"name": "kitchen outside window", "along": 0.5, "size": 0}
+                {"family": "kitchen outside window", "along": 0.5, "size": 0}
             )
         if interior_type == "bedroom":
             self.openings[id_segment].append(
-                {"name": "bedroom outside window", "along": 0.5, "size": 0}
+                {"family": "bedroom outside window", "along": 0.5, "size": 0}
             )
         if interior_type in ("circulation", "stair"):
             self.openings[id_segment].append(
-                {"name": "circulation outside window", "along": 0.5, "size": 0}
+                {"family": "circulation outside window", "along": 0.5, "size": 0}
             )
         if interior_type == "retail" and self.level == 0:
             self.openings[id_segment].append(
-                {"name": "retail entrance", "along": 0.5, "size": 0}
+                {"family": "retail entrance", "along": 0.5, "size": 0}
             )
         if interior_type in ("circulation", "stair") and self.level == 0:
             self.openings[id_segment].append(
-                {"name": "house entrance", "along": 0.5, "size": 0}
+                {"family": "house entrance", "along": 0.5, "size": 0}
             )
         if interior_type != "toilet" and access == 1:
             self.openings[id_segment].append(
-                {"name": "living outside door", "along": 0.5, "size": 0}
+                {"family": "living outside door", "along": 0.5, "size": 0}
             )
 
     def populate_interior_openings(self, id_segment, type_a, type_b, access):
         """Add an initial door to an interior segment"""
         self.openings[id_segment].append(
-            {"name": "living inside door", "along": 0.5, "size": 0}
+            {"family": "living inside door", "along": 0.5, "size": 0}
         )
 
     def get_family(self, usage):
         """Retrieve an family definition via the style"""
         if usage in self.style_openings:
             family = self.style_openings[usage]
-            if family["name"] in self.style_families:
+            if family["family"] in self.style_families:
                 return {
-                    "list": self.style_families[family["name"]],
+                    "list": self.style_families[family["family"]],
                     "type": family["type"],
                     "cill": family["cill"],
                 }
@@ -871,7 +871,7 @@ class Wall(TraceClass):
         openings_new = []
 
         for opening in openings:
-            db = self.get_family(opening["name"])
+            db = self.get_family(opening["family"])
             mylist = db["list"]
             opening["up"] = db["cill"]
             width_original = mylist[opening["size"]]["width"]
@@ -915,13 +915,13 @@ class Wall(TraceClass):
         for id_opening in range(len(openings) - 1):
             # this opening has a width and side space
             opening = openings[id_opening]
-            db = self.get_family(opening["name"])
+            db = self.get_family(opening["family"])
             width = db["list"][opening["size"]]["width"]
             side = db["list"][opening["size"]]["side"]
 
             # how much side space does the next opening need
             opening_next = openings[id_opening + 1]
-            db_next = self.get_family(opening_next["name"])
+            db_next = self.get_family(opening_next["family"])
             side_next = db_next["list"][opening_next["size"]]["side"]
 
             # minimum allowable space between this opening and the next
@@ -942,7 +942,7 @@ class Wall(TraceClass):
         # this is the furthest an opening can go
         length = self.length_segment(id_segment) - self.border(id_segment)[1]
 
-        db_last = self.get_family(openings[-1]["name"])
+        db_last = self.get_family(openings[-1]["family"])
         width_last = db_last["list"][openings[-1]["size"]]["width"]
         end_last = db_last["list"][openings[-1]["size"]]["end"]
 
@@ -958,7 +958,7 @@ class Wall(TraceClass):
         """openings can't start before beginning of segment"""
         openings = self.openings[id_segment]
 
-        db_first = self.get_family(openings[0]["name"])
+        db_first = self.get_family(openings[0]["family"])
         end_first = db_first["list"][openings[0]["size"]]["end"]
 
         underrun = self.border(id_segment)[0] + end_first - openings[0]["along"]
@@ -970,13 +970,13 @@ class Wall(TraceClass):
         for id_opening in reversed(range(len(openings) - 1)):
             # this opening has a width and side space
             opening = openings[id_opening]
-            db = self.get_family(opening["name"])
+            db = self.get_family(opening["family"])
             width = db["list"][opening["size"]]["width"]
             side = db["list"][opening["size"]]["side"]
 
             # how much side space does the next opening need
             opening_next = openings[id_opening + 1]
-            db_next = self.get_family(opening_next["name"])
+            db_next = self.get_family(opening_next["family"])
             side_next = db_next["list"][opening_next["size"]]["side"]
 
             # minimum allowable space between this opening and the next
@@ -1038,16 +1038,16 @@ class Wall(TraceClass):
         if len(openings) == 0:
             return 0.0
 
-        db_first = self.get_family(openings[0]["name"])
+        db_first = self.get_family(openings[0]["family"])
         end_first = db_first["list"][openings[0]["size"]]["end"]
-        db_last = self.get_family(openings[-1]["name"])
+        db_last = self.get_family(openings[-1]["family"])
         end_last = db_last["list"][openings[-1]["size"]]["end"]
 
         # start with end spacing
         length_openings = end_first + end_last
         # add width of all the openings
         for id_opening in range(len(openings)):
-            db = self.get_family(openings[id_opening]["name"])
+            db = self.get_family(openings[id_opening]["family"])
             width = db["list"][openings[id_opening]["size"]]["width"]
             length_openings += width
 
@@ -1055,10 +1055,10 @@ class Wall(TraceClass):
         for id_opening in range(len(openings) - 1):
             if not len(openings) > 1:
                 continue
-            db = self.get_family(openings[id_opening]["name"])
+            db = self.get_family(openings[id_opening]["family"])
             side = db["list"][openings[id_opening]["size"]]["side"]
 
-            db_next = self.get_family(openings[id_opening + 1]["name"])
+            db_next = self.get_family(openings[id_opening + 1]["family"])
             side_next = db_next["list"][openings[id_opening + 1]["size"]]["side"]
 
             if side_next > side:
@@ -1084,7 +1084,7 @@ class Wall(TraceClass):
         found_window = False
         new_openings = []
         for opening in openings:
-            db = self.get_family(opening["name"])
+            db = self.get_family(opening["family"])
             if db["type"] == "door" and not found_door:
                 new_openings.append(opening)
                 found_door = True
@@ -1116,7 +1116,7 @@ class Wall(TraceClass):
 
         # find a door, fit the widest of this height
         for opening in openings:
-            db = self.get_family(opening["name"])
+            db = self.get_family(opening["family"])
             if db["type"] == "door":
                 mylist = db["list"]
                 height_original = mylist[opening["size"]]["height"]
@@ -1144,7 +1144,7 @@ class Wall(TraceClass):
 
         # find a window, fit the widest of this height
         for opening in openings:
-            db = self.get_family(opening["name"])
+            db = self.get_family(opening["family"])
             if db["type"] == "window":
                 mylist = db["list"]
                 height_original = mylist[opening["size"]]["height"]
@@ -1187,7 +1187,7 @@ class Wall(TraceClass):
                 self.openings[id_segment] = []
                 return
 
-            db_last = self.get_family(openings[-1]["name"])
+            db_last = self.get_family(openings[-1]["family"])
 
             if db_last["type"] == "door":
                 self.openings[id_segment].pop(0)
@@ -1215,7 +1215,7 @@ class Wall(TraceClass):
 
         along = module / 2
         for id_opening in range(len(openings)):
-            db = self.get_family(openings[id_opening]["name"])
+            db = self.get_family(openings[id_opening]["family"])
             width = db["list"][openings[id_opening]["size"]]["width"]
             openings[id_opening]["along"] = along - (width / 2)
             along += module
@@ -1245,7 +1245,7 @@ class Wall(TraceClass):
             ) or not FaceUtility.IsInside(face, right_top, 0.001):
                 # try and find a shorter window
                 opening = openings[id_opening]
-                db = self.get_family(opening["name"])
+                db = self.get_family(opening["family"])
                 mylist = db["list"]
                 width_original = mylist[opening["size"]]["width"]
                 height_original = mylist[opening["size"]]["height"]

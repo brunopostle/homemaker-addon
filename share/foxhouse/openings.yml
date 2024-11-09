@@ -1,21 +1,21 @@
 ---
 kitchen outside window:
-  name: mullioned window
+  family: mullioned window
   type: window
   cill: 1.05
 living outside window:
-  name: mullioned window
+  family: mullioned window
   type: window
   cill: 0.75
 circulation outside window:
-  name: mullioned window
+  family: mullioned window
   type: window
   cill: 0.75
 bedroom outside window:
-  name: mullioned window
+  family: mullioned window
   type: window
   cill: 0.75
 toilet outside window:
-  name: mullioned window
+  family: mullioned window
   type: window
   cill: 1.05
