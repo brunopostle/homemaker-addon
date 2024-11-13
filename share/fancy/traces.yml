@@ -8,30 +8,5 @@ brackets:
   xshift: 0.0
   yshift: -0.285
   inset: 0.1
-  spacing: 0.5
+  spacing: 0.3
   alternate: 0
-  traces: [monkey, low-brackets]
-low-brackets:
-  class: Repeat
-  ifc: IfcRoof
-  family: bracket
-  condition: na
-  offset: 0.05
-  xshift: 0.0
-  yshift: -0.585
-  inset: 0.1
-  spacing: 0.1
-  alternate: 1
-  traces: []
-monkey:
-  class: Repeat
-  ifc: IfcRoof
-  family: monkey
-  condition: na
-  offset: -0.05
-  xshift: 0.0
-  yshift: -0.535
-  inset: 0.1
-  spacing: -1
-  alternate: 1
-  traces: []
