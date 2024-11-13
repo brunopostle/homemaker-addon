@@ -179,6 +179,12 @@ class Wall(TraceClass):
             thickness = get_thickness(self.file, product_type)
             self.inner = thickness + self.offset
 
+            for inverse in self.file.get_inverse(
+                ifcopenshell.util.element.get_material(product_type)
+            ):
+                if inverse.is_a("IfcMaterialLayerSetUsage"):
+                    inverse.OffsetFromReferenceLine = self.offset
+
             # mapping from normalised X-axis to this rotated axis
             matrix_forward = matrix_align(
                 [*self.corner_coor(id_segment), 0.0],
