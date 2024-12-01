@@ -3,7 +3,7 @@ VERSION := 0.$(shell date '+%Y%m%d').0
 dist:
 	rm -rf homemaker
 	mkdir -p homemaker/wheels
-	cp -r ../__init__.py ../widgets.blend ../README.md ../LICENSE ../share/ ../molior/ ../topologist/ ../blender_manifest.toml homemaker/
+	cp -r ../__init__.py ../README.md ../LICENSE ../share/ ../molior/ ../topologist/ ../blender_manifest.toml homemaker/
 	rm -f homemaker/*.{orig,rej}
 	rm -f homemaker/*/*.{orig,rej}
 	rm -f homemaker/*/*/*.{orig,rej}
