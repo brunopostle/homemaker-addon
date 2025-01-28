@@ -41,12 +41,24 @@ def init(name="Homemaker Project", file=None):
         name=name,
     )
 
+    length_unit = api.unit.add_si_unit(file, unit_type="LENGTHUNIT")
+    force_unit = api.unit.add_si_unit(file, unit_type="FORCEUNIT", prefix="KILO")
     unit_assignment = api.unit.assign_unit(file)
     unit_assignment.Units = [
-        api.unit.add_si_unit(file, unit_type="LENGTHUNIT"),
+        length_unit,
         api.unit.add_si_unit(file, unit_type="AREAUNIT"),
         api.unit.add_si_unit(file, unit_type="VOLUMEUNIT"),
         api.unit.add_si_unit(file, unit_type="PLANEANGLEUNIT"),
+        force_unit,
+        api.unit.add_derived_unit(
+            file, "LINEARMOMENTUNIT", None, {force_unit: 1, length_unit: 1}
+        ),
+        api.unit.add_derived_unit(
+            file, "LINEARFORCEUNIT", None, {force_unit: 1, length_unit: -1}
+        ),
+        api.unit.add_derived_unit(
+            file, "PLANARFORCEUNIT", None, {force_unit: 1, length_unit: -2}
+        ),
     ]
 
     create_default_contexts(file)
@@ -256,6 +268,15 @@ def get_structural_analysis_model_by_name(self, spatial_element, name):
     )
     rel.RelatingSystem = model
     rel.RelatedBuildings = [spatial_element]
+    load_group = api.root.create_entity(
+        self,
+        ifc_class="IfcStructuralLoadGroup",
+        name="Load Group",
+        predefined_type="NOTDEFINED",
+    )
+    load_group.ActionSource = "NOTDEFINED"
+    load_group.ActionType = "NOTDEFINED"
+    model.LoadedBy = [load_group]
     return model
 
 
