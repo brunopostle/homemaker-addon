@@ -250,7 +250,7 @@ class Repeat(TraceClass):
                         )
                         api.structural.assign_structural_analysis_model(
                             self.file,
-                            product=structural_member,
+                            products=[structural_member],
                             structural_analysis_model=self.structural_analysis_model,
                         )
                         api.geometry.assign_representation(

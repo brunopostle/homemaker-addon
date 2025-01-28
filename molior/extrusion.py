@@ -276,7 +276,7 @@ class Extrusion(TraceClass):
                 structural_member.Axis = self.file.createIfcDirection([0.0, 0.0, 1.0])
                 api.structural.assign_structural_analysis_model(
                     self.file,
-                    product=structural_member,
+                    products=[structural_member],
                     structural_analysis_model=self.structural_analysis_model,
                 )
                 api.geometry.assign_representation(

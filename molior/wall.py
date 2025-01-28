@@ -309,7 +309,7 @@ class Wall(TraceClass):
             structural_surface.Thickness = self.structural_thickness
             api.structural.assign_structural_analysis_model(
                 self.file,
-                product=structural_surface,
+                products=[structural_surface],
                 structural_analysis_model=self.structural_analysis_model,
             )
             api.geometry.assign_representation(

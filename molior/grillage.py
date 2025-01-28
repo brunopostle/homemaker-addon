@@ -138,7 +138,7 @@ class Grillage(BaseClass):
             structural_surface.Thickness = 0.2
             api.structural.assign_structural_analysis_model(
                 self.file,
-                product=structural_surface,
+                products=[structural_surface],
                 structural_analysis_model=self.structural_analysis_model,
             )
             api.geometry.assign_representation(

@@ -342,7 +342,7 @@ class Molior:
             curve_connection.ObjectPlacement = structural_placement
             api.structural.assign_structural_analysis_model(
                 self.file,
-                product=curve_connection,
+                products=[curve_connection],
                 structural_analysis_model=self.structural_analysis_model,
             )
             if abs(start[2] - end[2]) < 0.0001:
@@ -499,7 +499,7 @@ class Molior:
                             )
                             api.structural.assign_structural_analysis_model(
                                 self.file,
-                                product=point_connection,
+                                products=[point_connection],
                                 structural_analysis_model=self.structural_analysis_model,
                             )
                             api.structural.add_structural_member_connection(
