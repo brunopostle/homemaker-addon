@@ -686,18 +686,18 @@ def delete_ifc_product(self, product):
             for child_product in child.RelatedElements:
                 delete_ifc_product(self, child_product)
     if getattr(product, "FillsVoids", None):
-        api.void.remove_filling(self, element=product)
+        api.feature.remove_filling(self, element=product)
     if product.is_a("IfcOpeningElement"):
         if product.HasFillings:
             for rel in product.HasFillings:
-                api.void.remove_filling(self, element=rel.RelatedBuildingElement)
+                api.feature.remove_filling(self, element=rel.RelatedBuildingElement)
         else:
             if product.VoidsElements:
-                api.void.remove_filling(self, element=product)
+                api.feature.remove_filling(self, element=product)
     else:
         if getattr(product, "HasOpenings", None):
             for rel in product.HasOpenings:
-                api.void.remove_filling(self, element=rel.RelatedOpeningElement)
+                api.feature.remove_filling(self, element=rel.RelatedOpeningElement)
         for port in ifcopenshell.util.system.get_ports(product):
             api.root.remove_product(self, product=port)
     api.root.remove_product(self, product=product)

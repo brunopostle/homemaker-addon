@@ -1,5 +1,5 @@
 import ifcopenshell.api.type
-import ifcopenshell.api.void
+import ifcopenshell.api.feature
 import ifcopenshell.geom
 import numpy
 
@@ -662,15 +662,9 @@ class Wall(TraceClass):
                     ),
                 )
                 # use the opening to cut the wall, no need to assign a storey
-                api.void.add_opening(self.file, opening=myopening, element=mywall)
-                # # using the opening to cut the structural model isn't allowed
-                # api.void.add_opening(
-                #     self.file,
-                #     opening=myopening,
-                #     element=structural_surface,
-                # )
+                api.feature.add_feature(self.file, feature=myopening, element=mywall)
                 # associate the opening with our window
-                api.void.add_filling(self.file, opening=myopening, element=entity)
+                api.feature.add_filling(self.file, opening=myopening, element=entity)
 
                 # openings are also space boundaries
                 cill = self.elevation + db["cill"]

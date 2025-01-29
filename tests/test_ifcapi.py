@@ -230,9 +230,9 @@ class Tests(unittest.TestCase):
             matrix=matrix_align([11.0, -0.5, 3.0], [11.0, 2.0, 0.0]),
         )
         # use the opening to cut the wall, no need to assign a storey
-        api.void.add_opening(ifc, opening=myopening, element=mywall)
+        api.feature.add_feature(ifc, feature=myopening, element=mywall)
         # associate the opening with our door
-        api.void.add_filling(ifc, opening=myopening, element=myproduct)
+        api.feature.add_filling(ifc, opening=myopening, element=myproduct)
 
         ifc.write("_test.ifc")
 
