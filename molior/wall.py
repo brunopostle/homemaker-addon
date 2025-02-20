@@ -179,11 +179,11 @@ class Wall(TraceClass):
             thickness = get_thickness(self.file, product_type)
             self.inner = thickness + self.offset
 
-            for inverse in self.file.get_inverse(
-                ifcopenshell.util.element.get_material(product_type)
-            ):
-                if inverse.is_a("IfcMaterialLayerSetUsage"):
-                    inverse.OffsetFromReferenceLine = self.offset
+            type_material = ifcopenshell.util.element.get_material(product_type)
+            if type_material:
+                for inverse in self.file.get_inverse(type_material):
+                    if inverse.is_a("IfcMaterialLayerSetUsage"):
+                        inverse.OffsetFromReferenceLine = self.offset
 
             # mapping from normalised X-axis to this rotated axis
             matrix_forward = matrix_align(
@@ -200,6 +200,7 @@ class Wall(TraceClass):
             v_in_b = self.corner_in(id_segment + 1)
 
             # wall is a plan shape extruded vertically
+            # FIXME solid is created and clipped even if it doesn't get used because it has no thickness
             solid = create_extruded_area_solid(
                 self.file,
                 [
