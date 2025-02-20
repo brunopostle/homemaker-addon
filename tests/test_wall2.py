@@ -16,8 +16,7 @@ assert topologist.vertex
 
 class Tests(unittest.TestCase):
     def setUp(self):
-        widgets_text = [
-        ]
+        widgets_text = []
 
         faces_text = [
             [
@@ -128,6 +127,12 @@ class Tests(unittest.TestCase):
         )
         molior_object.execute()
         molior_object.file.write("_test.ifc")
+
+        self.assertEqual(len(molior_object.file.by_type("IfcWindow")), 4)
+        self.assertEqual(len(molior_object.file.by_type("IfcWall")), 4)
+        self.assertEqual(
+            molior_object.file.by_type("IfcWall")[0].Name, "exterior-empty"
+        )
 
 
 if __name__ == "__main__":
