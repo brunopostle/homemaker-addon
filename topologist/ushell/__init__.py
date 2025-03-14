@@ -12,68 +12,97 @@ class shell:
         self.nodes = {}
         self.faces = []
 
+    @staticmethod
+    def _node_to_key(node):
+        """Convert node coordinates to a string key"""
+        return f"{node[0]}__{node[1]}__{node[2]}"
+
+    @staticmethod
+    def _nodes_to_keys(node_coors):
+        """Convert a list of node coordinates to string keys"""
+        return [shell._node_to_key(node) for node in node_coors]
+
     def add_facet(self, node_coors, data):
-        """add a face to this shell"""
-        nodes_str = [
-            str(node[0]) + "__" + str(node[1]) + "__" + str(node[2])
-            for node in node_coors
-        ]
+        """
+        Add a face to this shell
+
+        Args:
+            node_coors: List of 3D coordinates for the face vertices
+            data: Associated data for the face
+        """
+        nodes_str = self._nodes_to_keys(node_coors)
         my_face = [nodes_str, data, None]
         self.faces.append(my_face)
-        for index in range(len(node_coors)):
-            if nodes_str[index] not in self.nodes:
-                self.nodes[nodes_str[index]] = []
-            self.nodes[nodes_str[index]].append(my_face)
+
+        for node_key in nodes_str:
+            if node_key not in self.nodes:
+                self.nodes[node_key] = []
+            self.nodes[node_key].append(my_face)
 
     # FIXME doesn't appear to be in use
     def nodes_all(self):
-        """get a list of node coordinates for export"""
-        return [string_to_coor(node) for node in list(self.nodes)]
+        """Get a list of node coordinates for export"""
+        return [string_to_coor(node) for node in self.nodes]
 
     # FIXME doesn't appear to be in use
     def faces_all(self):
-        """get a list of faces as node ids for export"""
-        faces = []
+        """Get a list of faces as node ids for export"""
         nodes = list(self.nodes)
-        for face in self.faces:
-            faces.append([nodes.index(vertex) for vertex in face[0]])
-        return faces
+        return [[nodes.index(vertex) for vertex in face[0]] for face in self.faces]
 
     def segment(self):
-        """Utility to allocate index numbers to faces by contiguous region"""
-        if self.faces[0][2] is None:
-            # put first face in group 0
-            self.faces[0][2] = 0
-        indices_in_use = {}
-        dirty = True
-        while dirty is True:
-            dirty = False
-            for face in self.faces:
-                if face[2] is None:
-                    for node_str in face[0]:
-                        node = self.nodes[node_str]
-                        for face_ref in node:
-                            if face_ref[2] is not None:
-                                face[2] = face_ref[2]
-                                dirty = True
-                                continue
-                else:
-                    indices_in_use[face[2]] = True
-        index = len(list(indices_in_use))
+        """
+        Utility to allocate index numbers to faces by contiguous region.
+        Uses a breadth-first traversal to identify connected components.
+        """
+        if not self.faces:
+            return
+
+        # Reset all face groups
         for face in self.faces:
-            if face[2] is None:
-                face[2] = index
-                self.segment()
+            face[2] = None
+
+        current_group = 0
+
+        # Process each face
+        for start_face in self.faces:
+            # Skip faces that have already been assigned to a group
+            if start_face[2] is not None:
+                continue
+
+            # Start a new connected component
+            start_face[2] = current_group
+            queue = [start_face]
+
+            # Breadth-first traversal
+            while queue:
+                current_face = queue.pop(0)
+
+                # Find all adjacent faces through shared nodes
+                for node_key in current_face[0]:
+                    for adjacent_face in self.nodes[node_key]:
+                        if adjacent_face[2] is None:
+                            adjacent_face[2] = current_group
+                            queue.append(adjacent_face)
+
+            current_group += 1
 
     def decompose(self):
-        """Identify contiguous regions and return a list of new shells"""
+        """
+        Identify contiguous regions and return a list of new shells
+
+        Returns:
+            list: List of shell objects, each representing a contiguous region
+        """
         self.segment()
         results = {}
         for face in self.faces:
             group = face[2]
             if group not in results:
                 results[group] = shell()
-            results[group].add_facet(
-                [string_to_coor(node_str) for node_str in face[0]], face[1]
-            )
+
+            # Convert node strings back to coordinates
+            node_coords = [string_to_coor(node_str) for node_str in face[0]]
+            results[group].add_facet(node_coords, face[1])
+
         return list(results.values())
