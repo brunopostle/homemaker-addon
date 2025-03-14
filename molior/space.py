@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 import ifcopenshell.api.root
 import ifcopenshell.api.style
 
@@ -110,9 +110,9 @@ class Space(TraceClass):
         )
 
         if not is_external:
-            red = numpy.clip(1.0 - crinkliness, 0.0, 1.0)
-            green = numpy.clip(crinkliness, 0.0, 1.0)
-            blue = numpy.clip(crinkliness - 1.0, 0.0, 1.0)
+            red = np.clip(1.0 - crinkliness, 0.0, 1.0)
+            green = np.clip(crinkliness, 0.0, 1.0)
+            blue = np.clip(crinkliness - 1.0, 0.0, 1.0)
             style = api.style.add_style(
                 self.file, name="Crinkliness " + str(crinkliness)
             )

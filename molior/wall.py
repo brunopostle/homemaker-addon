@@ -1,7 +1,7 @@
 import ifcopenshell.api.type
 import ifcopenshell.api.feature
 import ifcopenshell.geom
-import numpy
+import numpy as np
 
 from topologic_core import Vertex, Edge, Face, FaceUtility
 from .baseclass import TraceClass
@@ -190,7 +190,7 @@ class Wall(TraceClass):
                 [*self.corner_coor(id_segment), 0.0],
                 [*self.corner_coor(id_segment + 1), 0.0],
             )
-            matrix_reverse = numpy.linalg.inv(matrix_forward)
+            matrix_reverse = np.linalg.inv(matrix_forward)
 
             # outside face start and end coordinates
             v_out_a = self.corner_out(id_segment)

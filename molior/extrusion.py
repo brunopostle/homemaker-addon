@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 import ifcopenshell.api.root
 from ifcopenshell.util.placement import a2p
 
@@ -133,7 +133,7 @@ class Extrusion(TraceClass):
             ]
             placement = a2p(start_world, [0.0, 0.0, 1.0], direction)
             matrix = placement @ to_x_axis
-            inverse = numpy.linalg.inv(matrix)
+            inverse = np.linalg.inv(matrix)
 
             # clip ends
 

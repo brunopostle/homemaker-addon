@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 import ifcopenshell.api.attribute
 import ifcopenshell.api.geometry
 import ifcopenshell.api.root
@@ -179,7 +179,7 @@ class Grillage(BaseClass):
                 [Vertex.ByCoordinates(*node, 0.0) for node in points]
             )
             cropped_faces, cropped_edges = topologic_face.ParallelSlice(
-                self.spacing, numpy.deg2rad(self.angle)
+                self.spacing, np.deg2rad(self.angle)
             )
 
             # recursively process cropped faces

@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 import ifcopenshell.api.attribute
 import ifcopenshell.api.geometry
 import ifcopenshell.api.root
@@ -330,7 +330,7 @@ class Repeat(TraceClass):
                     )
 
                     if self.ref_direction:
-                        vertical_matrix = numpy.array(
+                        vertical_matrix = np.array(
                             [
                                 [1.0, 0.0, 0.0, 0.0],
                                 [

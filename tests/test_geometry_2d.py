@@ -3,7 +3,7 @@
 import os
 import sys
 import unittest
-import numpy
+import numpy as np
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from molior.geometry import (
@@ -28,10 +28,10 @@ class Tests(unittest.TestCase):
     """geometry functions"""
 
     def test_transform(self):
-        identity_matrix = numpy.array(
+        identity_matrix = np.array(
             [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
         )
-        scale_matrix = numpy.array(
+        scale_matrix = np.array(
             [[2, 0, 0, 0], [0, 2, 0, 0], [0, 0, 2, 0], [0, 0, 0, 2]]
         )
         self.assertEqual(transform(identity_matrix, [2, 3, 4]), [2, 3, 4])

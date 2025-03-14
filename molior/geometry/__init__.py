@@ -1,5 +1,5 @@
 from math import sqrt, pi, atan, cos, sin
-import numpy
+import numpy as np
 import shapely
 from ifcopenshell.util.placement import a2p
 
@@ -7,7 +7,7 @@ from ifcopenshell.util.placement import a2p
 # FIXME doesn't seem to be in use
 def matrix_transform(theta, coor):
     """A transform matrix from a rotation in the XY plane and an XYZ shift"""
-    return numpy.array(
+    return np.array(
         [
             [cos(theta), 0 - sin(theta), 0.0, coor[0]],
             [sin(theta), cos(theta), 0.0, coor[1]],
@@ -20,7 +20,7 @@ def matrix_transform(theta, coor):
 def matrix_align(A, B):
     """A transform matrix that moves to A and 2D rotates to align the X axis to B"""
     v = normalise_2d(subtract_2d(B, A))
-    return numpy.array(
+    return np.array(
         [
             [v[0], 0 - v[1], 0.0, A[0]],
             [v[1], v[0], 0.0, A[1]],
@@ -33,11 +33,11 @@ def matrix_align(A, B):
 def transform(matrix, A):
     """Transform a 2d or 3d vector using a 4x4 matrix"""
     if len(A) == 3:
-        vertex = numpy.array([[*A, 1.0]]).T
+        vertex = np.array([[*A, 1.0]]).T
         result = matrix @ vertex
         return result.T.tolist()[0][:3]
     elif len(A) == 2:
-        vertex = numpy.array([[*A, 0.0, 1.0]]).T
+        vertex = np.array([[*A, 0.0, 1.0]]).T
         result = matrix @ vertex
         return result.T.tolist()[0][:2]
 
@@ -55,7 +55,7 @@ def map_to_2d(vertices, normal_vector):
     ]
 
     # coordinates need to be vertical in 4 high matrix
-    nodes_3d = numpy.array([[*vertex, 1.0] for vertex in vertices]).T
+    nodes_3d = np.array([[*vertex, 1.0] for vertex in vertices]).T
 
     # normal has to be a 1x4 matrix
     normal = [[normal_vector[0]], [normal_vector[1]], [normal_vector[2]], [1.0]]
@@ -65,7 +65,7 @@ def map_to_2d(vertices, normal_vector):
         normal_z = [0.0, -1.0]
     else:
         normal_z = normalise_2d([normal[0][0], normal[1][0]])
-    z_rot_mat = numpy.array(
+    z_rot_mat = np.array(
         [
             [0 - normal_z[1], 0 - normal_z[0], 0.0, 0.0],
             [normal_z[0], 0 - normal_z[1], 0.0, 0.0],
@@ -73,11 +73,11 @@ def map_to_2d(vertices, normal_vector):
             [0.0, 0.0, 0.0, 1.0],
         ]
     )
-    z_rot_inv = numpy.linalg.inv(z_rot_mat)
+    z_rot_inv = np.linalg.inv(z_rot_mat)
 
     # rotate around x axis
     normal_x = z_rot_inv @ normal
-    x_rot_mat = numpy.array(
+    x_rot_mat = np.array(
         [
             [1.0, 0.0, 0.0, 0.0],
             [0.0, normal_x[2][0], normal_x[1][0], 0.0],
@@ -85,7 +85,7 @@ def map_to_2d(vertices, normal_vector):
             [0.0, 0.0, 0.0, 1.0],
         ]
     )
-    x_rot_inv = numpy.linalg.inv(x_rot_mat)
+    x_rot_inv = np.linalg.inv(x_rot_mat)
 
     # combined rotation and rotation
     zx_rot_inv = x_rot_inv @ z_rot_inv
@@ -94,7 +94,7 @@ def map_to_2d(vertices, normal_vector):
     nodes_2d_tmp = zx_rot_inv @ nodes_3d
 
     # shift to origin
-    origin_matrix = numpy.array(
+    origin_matrix = np.array(
         [
             [1.0, 0.0, 0.0, 0 - nodes_2d_tmp[0][0]],
             [0.0, 1.0, 0.0, 0 - nodes_2d_tmp[1][0]],
@@ -105,12 +105,12 @@ def map_to_2d(vertices, normal_vector):
 
     # combined rotation, rotation and shift
     combined_inv = origin_matrix @ zx_rot_inv
-    combined = numpy.linalg.inv(combined_inv)
+    combined = np.linalg.inv(combined_inv)
 
     # outline of roof shifted and rotated to z=0 plane
     nodes_2d = [
         [float(node[0]), float(node[1])]
-        for node in numpy.transpose(combined_inv @ nodes_3d)
+        for node in np.transpose(combined_inv @ nodes_3d)
     ]
 
     return nodes_2d, combined, [normal_x[0][0], normal_x[1][0], normal_x[2][0]]
@@ -123,7 +123,7 @@ def map_to_2d_simple(vertices, normal):
         vertices.reverse()
     xvector = normalise_3d(subtract_3d(vertices[1], vertices[0]))
     matrix = a2p(vertices[0], normal, xvector)
-    inverse = numpy.linalg.inv(matrix)
+    inverse = np.linalg.inv(matrix)
     nodes_2d = [transform(inverse, node3d)[0:2] for node3d in vertices]
     return nodes_2d, matrix
 
@@ -145,7 +145,7 @@ def inset_path(vertices, inset=0.0):
     return vertices
 
 
-# FIXME replace these with appropriate numpy functions
+# FIXME replace these with appropriate np functions
 
 
 def add_2d(A, B):
