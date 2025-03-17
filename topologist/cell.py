@@ -101,9 +101,10 @@ def ExternalWallArea(self, cellcomplex):
 
 def Crinkliness(self, cellcomplex):
     """ExternalWallArea() / PlanArea()"""
-    if self.PlanArea() == 0.0:
+    plan_area = self.PlanArea()
+    if plan_area == 0.0:
         return 0.0
-    return self.ExternalWallArea(cellcomplex) / self.PlanArea()
+    return self.ExternalWallArea(cellcomplex) / plan_area
 
 
 def Perimeter(self, host_topology):

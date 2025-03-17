@@ -78,10 +78,7 @@ def ShortestPathTable(self):
     if self.IsConnected():
         vertices_ptr = []
         self.Vertices(vertices_ptr)
-        vertices_list = []
-        for vertex in vertices_ptr:
-            if vertex.Get("class") == "Cell":
-                vertices_list.append(vertex)
+        vertices_list = [v for v in vertices_ptr if v.Get("class") == "Cell"]
         for i in range(len(vertices_list)):
             for j in range(len(vertices_list)):
                 if j <= i:
@@ -91,9 +88,7 @@ def ShortestPathTable(self):
                 )
                 edges_ptr = []
                 wire.Edges(None, edges_ptr)
-                length = 0.0
-                for edge in edges_ptr:
-                    length += edge.Length()
+                length = sum(edge.Length() for edge in edges_ptr)
                 i_index = vertices_list[i].Get("index")
                 j_index = vertices_list[j].Get("index")
                 if i_index not in result:
@@ -125,11 +120,11 @@ def Faces(self, cellcomplex):
     """Return all the Faces from a CellComplex corresponding to this Graph"""
     vertices_ptr = []
     self.Vertices(vertices_ptr)
-    faces_ptr = []
-    for vertex in vertices_ptr:
-        if vertex.Get("class") == "Face":
-            face = self.GetEntity(cellcomplex, vertex)
-            faces_ptr.append(face)
+    faces_ptr = [
+        self.GetEntity(cellcomplex, vertex)
+        for vertex in vertices_ptr
+        if vertex.Get("class") == "Face"
+    ]
     return faces_ptr
 
 
@@ -137,11 +132,11 @@ def Cells(self, cellcomplex):
     """Return all the Cells from a CellComplex corresponding to this Graph"""
     vertices_ptr = []
     self.Vertices(vertices_ptr)
-    cells_ptr = []
-    for vertex in vertices_ptr:
-        if vertex.Get("class") == "Cell":
-            cell = self.GetEntity(cellcomplex, vertex)
-            cells_ptr.append(cell)
+    cells_ptr = [
+        self.GetEntity(cellcomplex, vertex)
+        for vertex in vertices_ptr
+        if vertex.Get("class") == "Cell"
+    ]
     return cells_ptr
 
 
