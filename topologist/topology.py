@@ -1,6 +1,7 @@
 """Overloads domain-specific methods onto topologic_core.Topology"""
 
 from functools import lru_cache
+import numpy as np
 import topologic_core
 from topologic_core import StringAttribute, Vertex, FaceUtility
 from .helpers import el
@@ -9,7 +10,7 @@ from . import hulls
 from . import normals
 
 
-@lru_cache(maxsize=256)
+@lru_cache(maxsize=1024)
 def Cells_Cached(self, host_topology):
     """List of Cells directly attached to this Topology"""
     cells_ptr = []
@@ -17,7 +18,7 @@ def Cells_Cached(self, host_topology):
     return cells_ptr
 
 
-@lru_cache(maxsize=256)
+@lru_cache(maxsize=1024)
 def Faces_Cached(self, host_topology):
     """List of Faces directly attached to this Topology"""
     faces_ptr = []
@@ -29,9 +30,7 @@ def FacesVertical(self, faces_ptr):
     """List of vertical Faces within this Topology"""
     elements_ptr = []
     self.Faces(None, elements_ptr)
-    for face in elements_ptr:
-        if face.IsVertical():
-            faces_ptr.append(face)
+    faces_ptr.extend(face for face in elements_ptr if face.IsVertical())
 
 
 # FIXME doesn't appear to be in use
@@ -66,28 +65,23 @@ def FacesWorld(self, host_topology):
     return faces_ptr
 
 
-@lru_cache(maxsize=256)
+@lru_cache(maxsize=1024)
 def Elevation(self):
     """Lowest Z-height in this Topology"""
-    lowest = 9999999.9
     vertices_ptr = []
     self.Vertices(None, vertices_ptr)
-    for vertex in vertices_ptr:
-        if vertex.Z() < lowest:
-            lowest = vertex.Z()
-    return el(lowest)
+    return el(min(vertex.Z() for vertex in vertices_ptr)) if vertices_ptr else 0.0
 
 
-@lru_cache(maxsize=256)
+@lru_cache(maxsize=1024)
 def Height(self):
     """Vertical distance between the lowest and highest points in this Topology"""
-    highest = -9999999.9
     vertices_ptr = []
     self.Vertices(None, vertices_ptr)
-    for vertex in vertices_ptr:
-        if vertex.Z() > highest:
-            highest = vertex.Z()
-    return el(highest - self.Elevation())
+    if not vertices_ptr:
+        return 0.0
+    z_values = [vertex.Z() for vertex in vertices_ptr]
+    return el(max(z_values) - min(z_values))
 
 
 def Mesh(self):
@@ -168,7 +162,7 @@ def GraphVertex(self, graph):
                 return vertex
 
 
-@lru_cache(maxsize=256)
+@lru_cache(maxsize=1024)
 def VertexId(self, vertex):
     i = 0
     vertices_ptr = []
@@ -200,7 +194,7 @@ def ApplyDictionary(self, source_faces_ptr):
 
 
 def dot_product_3d(A, B):
-    return (A[0] * B[0]) + (A[1] * B[1]) + (A[2] * B[2])
+    return np.dot(np.array(A), np.array(B))
 
 
 def IndexTopology(self):
