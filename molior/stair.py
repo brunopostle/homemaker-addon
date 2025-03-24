@@ -5,8 +5,7 @@ class Stair(TraceClass):
     """a stair filling a single storey extruded space"""
 
     def __init__(self, args=None):
-        if args is None:
-            args = {}
+        args = args or {}
         super().__init__(args)
         self.ceiling = 0.2
         self.corners_in_use = []

@@ -21,8 +21,7 @@ class Repeat(TraceClass):
     """A row of evenly spaced identical objects"""
 
     def __init__(self, args=None):
-        if args is None:
-            args = {}
+        args = args or {}
         super().__init__(args)
         self.alternate = 0
         self.height = 0.0

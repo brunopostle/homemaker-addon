@@ -30,8 +30,7 @@ class Shell(BaseClass):
     """A pitched roof or soffit"""
 
     def __init__(self, args=None):
-        if args is None:
-            args = {}
+        args = args or {}
         super().__init__(args)
         self.ifc = "IfcRoof"
         self.party_wall = False

@@ -17,8 +17,7 @@ class BaseClass:
     """A generic building object"""
 
     def __init__(self, args=None):
-        if args is None:
-            args = {}
+        args = args or {}
         self.do_representation = True
         self.elevation = 0.0
         self.extension = 0.0

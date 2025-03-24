@@ -20,8 +20,7 @@ class Floor(TraceClass):
     """A floor filling a room or space"""
 
     def __init__(self, args=None):
-        if args is None:
-            args = {}
+        args = args or {}
         super().__init__(args)
         self.ifc = "IfcCovering"
         self.path = []

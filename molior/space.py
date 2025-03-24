@@ -20,8 +20,7 @@ class Space(TraceClass):
     """A room or outside volume, as a 2D path extruded vertically"""
 
     def __init__(self, args=None):
-        if args is None:
-            args = {}
+        args = args or {}
         super().__init__(args)
         self.ceiling = 0.2
         self.floor = 0.02

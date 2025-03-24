@@ -23,8 +23,7 @@ class Extrusion(TraceClass):
     """A profile following a horizontal 2D path"""
 
     def __init__(self, args=None):
-        if args is None:
-            args = {}
+        args = args or {}
         super().__init__(args)
         self.ifc = "IfcBuildingElementProxy"
         self.extension = 0.0

@@ -41,8 +41,7 @@ class Wall(TraceClass):
     """A vertical wall, internal or external"""
 
     def __init__(self, args=None):
-        if args is None:
-            args = {}
+        args = args or {}
         super().__init__(args)
         self.ceiling = 0.35
         self.ifc = "IfcWall"

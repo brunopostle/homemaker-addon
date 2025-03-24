@@ -31,8 +31,7 @@ class Grillage(BaseClass):
     """planar feature consisting of repeated linear elements"""
 
     def __init__(self, args=None):
-        if args is None:
-            args = {}
+        args = args or {}
         super().__init__(args)
         self.structural_material = "Concrete"
         self.spacing = 0.45
