@@ -3,7 +3,7 @@ SHELL=/bin/bash
 all : lint test todo black
 
 test :
-	python3 -m unittest discover -s tests
+	pytest tests/
 
 lint :
 	pyflakes *.py {tests,topologist,molior}/*.py {topologist,molior}/*/*.py || true

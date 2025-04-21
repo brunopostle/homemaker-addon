@@ -2,7 +2,7 @@
 
 import os
 import sys
-import unittest
+import pytest
 import ifcopenshell.api.root
 import ifcopenshell.util.element
 
@@ -18,110 +18,110 @@ from molior.style import Style
 api = ifcopenshell.api
 
 
-class Tests(unittest.TestCase):
-    def setUp(self):
-        self.file = molior.ifc.init(name="My Project")
-        self.body_context = get_context_by_name(self.file, context_identifier="Body")
+@pytest.fixture
+def ifc_project():
+    """Fixture to set up the primary IFC file."""
+    file = molior.ifc.init(name="My Project")
+    body_context = get_context_by_name(file, context_identifier="Body")
 
-        column_type = get_type_object(
-            self.file,
-            Style(),
-            ifc_type="IfcMemberType",
-            stylename="framing",
-            name="purlin",
+    column_type = get_type_object(
+        file,
+        Style(),
+        ifc_type="IfcMemberType",
+        stylename="framing",
+        name="purlin",
+    )
+
+    mycolumn = api.root.create_entity(file, ifc_class="IfcColumn", name="My Column")
+    api.type.assign_type(
+        file,
+        related_objects=[mycolumn],
+        relating_type=column_type,
+    )
+
+    for material in file.by_type("IfcMaterial"):
+        add_pset(file, material, "some pset name", {"foo": "bar"})
+
+    # test copying materials
+    another_file = molior.ifc.init(name="My Other Project")
+    for entity in file.by_type("IfcMaterial"):
+        api.project.append_asset(
+            another_file,
+            library=file,
+            element=entity,
         )
 
-        mycolumn = api.root.create_entity(
-            self.file, ifc_class="IfcColumn", name="My Column"
-        )
-        api.type.assign_type(
-            self.file,
-            related_objects=[mycolumn],
-            relating_type=column_type,
-        )
-
-        for material in self.file.by_type("IfcMaterial"):
-            add_pset(self.file, material, "some pset name", {"foo": "bar"})
-
-        # test copying materials
-        self.another_file = molior.ifc.init(name="My Other Project")
-        for entity in self.file.by_type("IfcMaterial"):
-            api.project.append_asset(
-                self.another_file,
-                library=self.file,
-                element=entity,
-            )
-
-        # an extruded solid
-        shape = self.file.createIfcShapeRepresentation(
-            self.body_context,
-            self.body_context.ContextIdentifier,
-            "SweptSolid",
-            [
-                self.file.createIfcExtrudedAreaSolid(
-                    material_profile.Profile,
-                    self.file.createIfcAxis2Placement3D(
-                        self.file.createIfcCartesianPoint([0.0, 0.0, 0.0]),
-                        self.file.createIfcDirection([0.0, 1.0, 0.0]),
-                        self.file.createIfcDirection([1.0, 0.0, 0.0]),
-                    ),
-                    self.file.createIfcDirection([0.0, 0.0, 1.0]),
-                    3.0,
-                )
-                for material_profile in column_type.HasAssociations[
-                    0
-                ].RelatingMaterial.MaterialProfiles
-            ],
-        )
-        api.geometry.assign_representation(
-            self.file,
-            product=mycolumn,
-            representation=shape,
-        )
-
-    def test_write(self):
-        self.file.write("_test.ifc")
-
-    def test_copy_material(self):
-        self.assertEqual(
-            len(self.file.by_type("IfcGeometricRepresentationContext")), 13
-        )
-        self.assertEqual(
-            len(self.another_file.by_type("IfcGeometricRepresentationContext")), 13
-        )
-        for material in self.another_file.by_type("IfcMaterial"):
-            if material.Name == "Cheese":
-                self.assertEqual(len(material.HasRepresentation), 0)
-                continue
-
-            self.assertEqual(len(material.HasRepresentation), 1)
-            self.assertEqual(len(material.HasRepresentation[0].Representations), 1)
-            self.assertEqual(
-                len(material.HasRepresentation[0].Representations[0].Items), 1
-            )
-            self.assertEqual(
-                len(material.HasRepresentation[0].Representations[0].Items[0].Styles), 1
-            )
-            self.assertEqual(
-                len(
-                    material.HasRepresentation[0]
-                    .Representations[0]
-                    .Items[0]
-                    .Styles[0]
-                    .Styles
+    # an extruded solid
+    shape = file.createIfcShapeRepresentation(
+        body_context,
+        body_context.ContextIdentifier,
+        "SweptSolid",
+        [
+            file.createIfcExtrudedAreaSolid(
+                material_profile.Profile,
+                file.createIfcAxis2Placement3D(
+                    file.createIfcCartesianPoint([0.0, 0.0, 0.0]),
+                    file.createIfcDirection([0.0, 1.0, 0.0]),
+                    file.createIfcDirection([1.0, 0.0, 0.0]),
                 ),
-                1,
+                file.createIfcDirection([0.0, 0.0, 1.0]),
+                3.0,
             )
-            self.assertEqual(
+            for material_profile in column_type.HasAssociations[
+                0
+            ].RelatingMaterial.MaterialProfiles
+        ],
+    )
+    api.geometry.assign_representation(
+        file,
+        product=mycolumn,
+        representation=shape,
+    )
+
+    return file, another_file
+
+
+def test_write(ifc_project):
+    """Test writing the IFC file."""
+    file, _ = ifc_project
+    file.write("_test.ifc")
+
+
+def test_copy_material(ifc_project):
+    """Test copying materials between IFC files."""
+    file, another_file = ifc_project
+
+    # Check the number of geometric representation contexts
+    assert len(file.by_type("IfcGeometricRepresentationContext")) == 13
+    assert len(another_file.by_type("IfcGeometricRepresentationContext")) == 13
+
+    # Validate material representations
+    for material in another_file.by_type("IfcMaterial"):
+        if material.Name == "Cheese":
+            assert len(material.HasRepresentation) == 0
+            continue
+
+        assert len(material.HasRepresentation) == 1
+        assert len(material.HasRepresentation[0].Representations) == 1
+        assert len(material.HasRepresentation[0].Representations[0].Items) == 1
+        assert (
+            len(material.HasRepresentation[0].Representations[0].Items[0].Styles) == 1
+        )
+        assert (
+            len(
                 material.HasRepresentation[0]
                 .Representations[0]
                 .Items[0]
                 .Styles[0]
-                .Styles[0]
-                .SurfaceColour.is_a(),
-                "IfcColourRgb",
+                .Styles
             )
-
-
-if __name__ == "__main__":
-    unittest.main()
+            == 1
+        )
+        assert (
+            material.HasRepresentation[0]
+            .Representations[0]
+            .Items[0]
+            .Styles[0]
+            .Styles[0]
+            .SurfaceColour.is_a()
+        ) == "IfcColourRgb"

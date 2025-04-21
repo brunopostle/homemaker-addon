@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-import unittest
 import sys
 import os
+import pytest
 
 from topologic_core import Vertex, Face, CellComplex
 
@@ -14,126 +14,139 @@ import topologist.vertex
 assert topologist.vertex
 
 
-class Tests(unittest.TestCase):
-    def setUp(self):
-        widgets_text = []
+@pytest.fixture
+def setup_building():
+    widgets_text = []
 
-        faces_text = [
+    faces_text = [
+        [
             [
-                [
-                    [-1.0, -1.0, -1.0],
-                    [1.0, -1.0, -1.0],
-                    [1.0, -1.0, 1.0],
-                    [-1.0, -1.0, 1.0],
-                ],
-                "framing",
+                [-1.0, -1.0, -1.0],
+                [1.0, -1.0, -1.0],
+                [1.0, -1.0, 1.0],
+                [-1.0, -1.0, 1.0],
             ],
+            "framing",
+        ],
+        [
             [
-                [
-                    [-1.0, 1.0, -1.0],
-                    [1.0, 1.0, -1.0],
-                    [1.0, 1.0, 1.0],
-                    [-1.0, 1.0, 1.0],
-                ],
-                "framing",
+                [-1.0, 1.0, -1.0],
+                [1.0, 1.0, -1.0],
+                [1.0, 1.0, 1.0],
+                [-1.0, 1.0, 1.0],
             ],
+            "framing",
+        ],
+        [
             [
-                [
-                    [-1.0, -1.0, -1.0],
-                    [1.0, -1.0, -1.0],
-                    [1.0, 1.0, -1.0],
-                    [-1.0, 1.0, -1.0],
-                ],
-                "framing",
+                [-1.0, -1.0, -1.0],
+                [1.0, -1.0, -1.0],
+                [1.0, 1.0, -1.0],
+                [-1.0, 1.0, -1.0],
             ],
+            "framing",
+        ],
+        [
             [
-                [
-                    [-1.0, -1.0, 1.0],
-                    [1.0, -1.0, 1.0],
-                    [1.0, 1.0, 1.0],
-                    [-1.0, 1.0, 1.0],
-                ],
-                "framing",
+                [-1.0, -1.0, 1.0],
+                [1.0, -1.0, 1.0],
+                [1.0, 1.0, 1.0],
+                [-1.0, 1.0, 1.0],
             ],
+            "framing",
+        ],
+        [
             [
-                [
-                    [-1.0, -1.0, -1.0],
-                    [-1.0, -1.0, 1.0],
-                    [-1.0, 1.0, 1.0],
-                    [-1.0, 1.0, -1.0],
-                ],
-                "framing",
+                [-1.0, -1.0, -1.0],
+                [-1.0, -1.0, 1.0],
+                [-1.0, 1.0, 1.0],
+                [-1.0, 1.0, -1.0],
             ],
+            "framing",
+        ],
+        [
             [
-                [
-                    [1.0, -1.0, -1.0],
-                    [1.0, -1.0, 1.0],
-                    [1.0, 1.0, 1.0],
-                    [1.0, 1.0, -1.0],
-                ],
-                "framing",
+                [1.0, -1.0, -1.0],
+                [1.0, -1.0, 1.0],
+                [1.0, 1.0, 1.0],
+                [1.0, 1.0, -1.0],
             ],
-        ]
+            "framing",
+        ],
+    ]
 
-        widgets = []
-        for widget in widgets_text:
-            vertex = Vertex.ByCoordinates(*widget[1])
-            vertex.Set("usage", widget[0])
-            widgets.append(vertex)
+    widgets = []
+    for widget in widgets_text:
+        vertex = Vertex.ByCoordinates(*widget[1])
+        vertex.Set("usage", widget[0])
+        widgets.append(vertex)
 
-        faces_ptr = []
-        for face in faces_text:
-            face_ptr = Face.ByVertices([Vertex.ByCoordinates(*v) for v in face[0]])
-            face_ptr.Set("stylename", face[1])
-            faces_ptr.append(face_ptr)
+    faces_ptr = []
+    for face in faces_text:
+        face_ptr = Face.ByVertices([Vertex.ByCoordinates(*v) for v in face[0]])
+        face_ptr.Set("stylename", face[1])
+        faces_ptr.append(face_ptr)
 
-        # Generate a Topologic CellComplex
-        self.cc = CellComplex.ByFaces(faces_ptr, 0.0001)
-        # Give every Cell and Face an index number
-        self.cc.IndexTopology()
-        # Copy styles from Faces to the CellComplex
-        self.cc.ApplyDictionary(faces_ptr)
-        # Assign Cell usages from widgets
-        self.cc.AllocateCells(widgets)
-        # Generate a circulation Graph
-        self.circulation = self.cc.Adjacency()
-        self.circulation.Circulation(self.cc)
-        self.shortest_path_table = self.circulation.ShortestPathTable()
-        self.circulation.Separation(self.shortest_path_table, self.cc)
+    # Generate a Topologic CellComplex
+    cc = CellComplex.ByFaces(faces_ptr, 0.0001)
+    # Give every Cell and Face an index number
+    cc.IndexTopology()
+    # Copy styles from Faces to the CellComplex
+    cc.ApplyDictionary(faces_ptr)
+    # Assign Cell usages from widgets
+    cc.AllocateCells(widgets)
+    # Generate a circulation Graph
+    circulation = cc.Adjacency()
+    circulation.Circulation(cc)
+    shortest_path_table = circulation.ShortestPathTable()
+    circulation.Separation(shortest_path_table, cc)
 
-    def test_circulation(self):
-        cells_ptr = []
-        self.cc.Cells(None, cells_ptr)
-        self.assertTrue(self.circulation.IsConnected())
+    return {
+        "cc": cc,
+        "circulation": circulation,
+        "shortest_path_table": shortest_path_table,
+    }
 
-        assessor = p159_light_on_two_sides_of_every_room.Assessor(
-            self.cc, self.circulation, self.shortest_path_table
-        )
-        for cell in cells_ptr:
-            assessor.execute(cell)
 
-    def test_molior(self):
-        traces, normals, elevations = self.cc.GetTraces()
-        hulls = self.cc.GetHulls()
+def test_circulation(setup_building):
+    cc = setup_building["cc"]
+    circulation = setup_building["circulation"]
+    shortest_path_table = setup_building["shortest_path_table"]
 
-        molior_object = Molior(
-            circulation=self.circulation,
-            traces=traces,
-            hulls=hulls,
-            normals=normals,
-            cellcomplex=self.cc,
-            name="My test building",
-            elevations=elevations,
-        )
-        molior_object.execute()
-        molior_object.file.write("_test.ifc")
+    cells_ptr = []
+    cc.Cells(None, cells_ptr)
+    assert circulation.IsConnected()
 
-        self.assertEqual(len(molior_object.file.by_type("IfcWindow")), 4)
-        self.assertEqual(len(molior_object.file.by_type("IfcWall")), 4)
-        self.assertEqual(
-            molior_object.file.by_type("IfcWall")[0].Name, "exterior-empty"
-        )
+    assessor = p159_light_on_two_sides_of_every_room.Assessor(
+        cc, circulation, shortest_path_table
+    )
+    for cell in cells_ptr:
+        assessor.execute(cell)
+
+
+def test_molior(setup_building):
+    cc = setup_building["cc"]
+    circulation = setup_building["circulation"]
+
+    traces, normals, elevations = cc.GetTraces()
+    hulls = cc.GetHulls()
+
+    molior_object = Molior(
+        circulation=circulation,
+        traces=traces,
+        hulls=hulls,
+        normals=normals,
+        cellcomplex=cc,
+        name="My test building",
+        elevations=elevations,
+    )
+    molior_object.execute()
+    molior_object.file.write("_test.ifc")
+
+    assert len(molior_object.file.by_type("IfcWindow")) == 4
+    assert len(molior_object.file.by_type("IfcWall")) == 4
+    assert molior_object.file.by_type("IfcWall")[0].Name == "exterior-empty"
 
 
 if __name__ == "__main__":
-    unittest.main()
+    pytest.main()
