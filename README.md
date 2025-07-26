@@ -12,11 +12,9 @@ industry-standard IFC (BIM) model, suitable for taking the project towards
 construction.
 
 ![A blender mesh where walls and floors are drawn as simple faces](docs/example-mesh.png)
-
 <figcaption>A blender mesh where walls and floors are drawn as simple faces</figcaption>
 
 ![An IFC model generated from these simple faces](docs/example-ifc.png)
-
 <figcaption>An IFC model generated from these simple faces</figcaption>
 
 The software is a general python library for turning 3D geometry and style
