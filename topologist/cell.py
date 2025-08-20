@@ -1,7 +1,7 @@
 """Overloads domain-specific methods onto topologic_core.Cell"""
 
 import topologic_core
-from topologic_core import Edge, Face, FaceUtility
+from topologic_core import Edge, Face, FaceUtility, CellUtility
 from .helpers import el
 from . import ugraph
 
@@ -84,6 +84,11 @@ def PlanArea(self):
     for face in faces_ptr:
         result += FaceUtility.Area(face)
     return result
+
+
+def Volume(self):
+    """Volume of this cell, no allowance is made for wall thickness"""
+    return CellUtility.Volume(self)
 
 
 def ExternalWallArea(self, cellcomplex):
@@ -191,6 +196,7 @@ setattr(topologic_core.Cell, "CellsBelow", CellsBelow)
 setattr(topologic_core.Cell, "Usage", Usage)
 setattr(topologic_core.Cell, "IsOutside", IsOutside)
 setattr(topologic_core.Cell, "PlanArea", PlanArea)
+setattr(topologic_core.Cell, "Volume", Volume)
 setattr(topologic_core.Cell, "ExternalWallArea", ExternalWallArea)
 setattr(topologic_core.Cell, "Crinkliness", Crinkliness)
 setattr(topologic_core.Cell, "Perimeter", Perimeter)

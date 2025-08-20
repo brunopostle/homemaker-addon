@@ -71,6 +71,14 @@ class Space(TraceClass):
             "EPset_Pattern",
             {"Crinkliness": crinkliness, "Separation": separation},
         )
+        if type(cell).__name__ == "Cell":
+            add_pset(
+                self.file,
+                element,
+                "Qto_SpaceBaseQuantities",
+                {"NetFloorArea": cell.PlanArea(), "NetVolume": cell.Volume()},
+            )
+
         add_cell_topology_epsets(self.file, element, cell)
 
         self.add_psets(element)
