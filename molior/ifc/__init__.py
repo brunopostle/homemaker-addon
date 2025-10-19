@@ -5,6 +5,7 @@ A collection of code for commonly used IFC related tasks
 """
 
 from typing import Dict, List, Union, Optional, Any
+import weakref
 import numpy as np
 import ifcopenshell
 import ifcopenshell.entity_instance
@@ -29,6 +30,28 @@ from ..geometry import (
 )
 
 api = ifcopenshell.api
+
+# Registry to keep library files alive as long as the project file exists
+# Maps project IFC files to lists of library IFC files they depend on
+_library_file_registry: weakref.WeakKeyDictionary = weakref.WeakKeyDictionary()
+
+
+def _register_library_file(
+    project_file: ifcopenshell.file, library_file: ifcopenshell.file
+) -> None:
+    """Register a library file to keep it alive as long as the project file exists.
+
+    This prevents library files from being garbage collected while their entities
+    are still referenced by the project file, which would cause segmentation faults.
+
+    Args:
+        project_file: The IFC project file that depends on the library.
+        library_file: The IFC library file to keep alive.
+    """
+    if project_file not in _library_file_registry:
+        _library_file_registry[project_file] = []
+    if library_file not in _library_file_registry[project_file]:
+        _library_file_registry[project_file].append(library_file)
 
 
 def init(
@@ -429,6 +452,8 @@ def get_material_by_name(
             stylename, "IfcMaterial", name
         )
         if element:
+            # Register library file to prevent garbage collection
+            _register_library_file(self, library_file)
             # add to current project from library file
             mymaterial = api.project.append_asset(
                 self, library=library_file, element=element
@@ -971,6 +996,8 @@ def get_type_object(
         stylename, ifc_type, name
     )
     if element:
+        # Register library file to prevent garbage collection
+        _register_library_file(self, library_file)
         # add to current project from library file
         definition = api.project.append_asset(
             self, library=library_file, element=element
