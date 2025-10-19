@@ -1,4 +1,7 @@
 import pytest
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from topologic_core import Vertex, Edge, Wire, Face, CellComplex
 
 import topologist.face
