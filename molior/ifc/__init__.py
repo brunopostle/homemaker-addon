@@ -1,4 +1,4 @@
-""" Domain-specific extensions to IfcOpenShell
+"""Domain-specific extensions to IfcOpenShell
 
 A collection of code for commonly used IFC related tasks
 

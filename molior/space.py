@@ -76,7 +76,10 @@ class Space(TraceClass):
                 self.file,
                 element,
                 "Qto_SpaceBaseQuantities",
-                {"NetFloorArea": cell.PlanArea(), "NetVolume": cell.Volume()},
+                {
+                    "NetFloorArea": self.file.createIfcAreaMeasure(cell.PlanArea()),
+                    "NetVolume": self.file.createIfcVolumeMeasure(cell.Volume()),
+                },
             )
 
         add_cell_topology_epsets(self.file, element, cell)
