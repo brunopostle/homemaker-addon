@@ -1,4 +1,5 @@
 import ifcopenshell.api.aggregate
+import ifcopenshell.api.boundary
 import ifcopenshell.api.geometry
 import ifcopenshell.api.material
 import ifcopenshell.api.root
@@ -8,8 +9,8 @@ from .baseclass import BaseClass
 from .geometry import map_to_2d, map_to_2d_simple, matrix_align, inset_path
 from .ifc import (
     add_face_topology_epsets,
+    assign_structural_product,
     create_extruded_area_solid,
-    create_curve_bounded_plane,
     create_face_surface,
     assign_storey_byindex,
     get_type_object,
@@ -118,13 +119,13 @@ class Shell(BaseClass):
                     else:
                         nodes_2d, matrix = map_to_2d_simple(vertices, normal)
 
-                    curve_bounded_plane = create_curve_bounded_plane(
-                        self.file, nodes_2d, matrix
-                    )
-                    boundary.ConnectionGeometry = (
-                        self.file.createIfcConnectionSurfaceGeometry(
-                            curve_bounded_plane
-                        )
+                    api.boundary.assign_connection_geometry(
+                        self.file,
+                        rel_space_boundary=boundary,
+                        outer_boundary=nodes_2d,
+                        location=matrix[:, 3][0:3].tolist(),
+                        axis=matrix[:, 2][0:3].tolist(),
+                        ref_direction=matrix[:, 0][0:3].tolist(),
                     )
                     if element.is_a("IfcVirtualElement"):
                         boundary.PhysicalOrVirtualBoundary = "VIRTUAL"
@@ -197,11 +198,7 @@ class Shell(BaseClass):
                 ),
             )
 
-            assignment = api.root.create_entity(
-                self.file, ifc_class="IfcRelAssignsToProduct"
-            )
-            assignment.RelatingProduct = structural_surface
-            assignment.RelatedObjects = [element]
+            assign_structural_product(self.file, structural_surface, element)
 
             # type (IfcVirtualElementType isn't valid)
 

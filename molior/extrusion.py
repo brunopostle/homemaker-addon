@@ -10,6 +10,7 @@ from .geometry import (
 )
 from .ifc import (
     add_face_topology_epsets,
+    assign_structural_product,
     assign_storey_byindex,
     get_material_by_name,
     get_context_by_name,
@@ -259,11 +260,7 @@ class Extrusion(TraceClass):
                     name=self.style + "/" + self.name,
                     predefined_type="RIGID_JOINED_MEMBER",
                 )
-                assignment = api.root.create_entity(
-                    self.file, ifc_class="IfcRelAssignsToProduct"
-                )
-                assignment.RelatingProduct = structural_member
-                assignment.RelatedObjects = [linear_element]
+                assign_structural_product(self.file, structural_member, linear_element)
 
                 segment = self.chain.edges()[id_segment]
                 face = self.chain.graph[segment[0]][1]["face"]

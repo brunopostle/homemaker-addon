@@ -208,10 +208,16 @@ def create_storeys(
             ifc_class="IfcBuildingStorey",
             name=str(elevations[elevation]),
         )
-        mystorey.Elevation = elevation
-        mystorey.Description = "Storey " + mystorey.Name
-        mystorey.LongName = mystorey.Description
-        mystorey.CompositionType = "ELEMENT"
+        api.attribute.edit_attributes(
+            self,
+            product=mystorey,
+            attributes={
+                "Elevation": elevation,
+                "Description": "Storey " + mystorey.Name,
+                "LongName": "Storey " + mystorey.Name,
+                "CompositionType": "ELEMENT",
+            },
+        )
         api.aggregate.assign_object(self, products=[mystorey], relating_object=parent)
         api.geometry.edit_object_placement(
             self,
@@ -322,9 +328,15 @@ def get_site_by_name(
             return site
     site = api.root.create_entity(self, ifc_class="IfcSite", name=name)
     # TODO allow setting location
-    site.RefLatitude = [53, 23, 0]
-    site.RefLongitude = [1, 28, 0]
-    site.RefElevation = 75.0
+    api.attribute.edit_attributes(
+        self,
+        product=site,
+        attributes={
+            "RefLatitude": [53, 23, 0],
+            "RefLongitude": [1, 28, 0],
+            "RefElevation": 75.0,
+        },
+    )
     api.aggregate.assign_object(self, products=[site], relating_object=parent)
     return site
 
@@ -393,8 +405,11 @@ def get_structural_analysis_model_by_name(
         name="Load Group",
         predefined_type="NOTDEFINED",
     )
-    load_group.ActionSource = "NOTDEFINED"
-    load_group.ActionType = "NOTDEFINED"
+    api.attribute.edit_attributes(
+        self,
+        product=load_group,
+        attributes={"ActionSource": "NOTDEFINED", "ActionType": "NOTDEFINED"},
+    )
     model.LoadedBy = [load_group]
     return model
 
@@ -618,37 +633,6 @@ def create_extruded_area_solid2(
     )
 
 
-def create_curve_bounded_plane(
-    self: ifcopenshell.file, polygon: List[List[float]], matrix: np.ndarray
-) -> ifcopenshell.entity_instance:
-    """Create a bounded shape in the Z=0 plane.
-
-    Args:
-        self: The IFC file.
-        polygon: A list of 2D points defining the boundary curve.
-        matrix: A transformation matrix defining the position and orientation of the plane.
-
-    Returns:
-        An IfcCurveBoundedPlane entity.
-    """
-    if not polygon[-1] == polygon[0]:
-        polygon.append(polygon[0])
-
-    return self.createIfcCurveBoundedPlane(
-        self.createIfcPlane(
-            self.createIfcAxis2Placement3D(
-                self.createIfcCartesianPoint(matrix[:, 3][0:3].tolist()),
-                self.createIfcDirection(matrix[:, 2][0:3].tolist()),
-                self.createIfcDirection(matrix[:, 0][0:3].tolist()),
-            )
-        ),
-        self.createIfcPolyline(
-            [self.createIfcCartesianPoint(point) for point in polygon]
-        ),
-        [],
-    )
-
-
 def create_face_surface(
     self: ifcopenshell.file, polygon: List[List[float]], normal: List[float]
 ) -> ifcopenshell.entity_instance:
@@ -762,6 +746,7 @@ def clip_solid(
     solid: ifcopenshell.entity_instance,
     start: List[float],
     end: List[float],
+    element: Optional[ifcopenshell.entity_instance] = None,
 ) -> ifcopenshell.entity_instance:
     """Clip a wall using a half-space solid.
 
@@ -770,41 +755,28 @@ def clip_solid(
         solid: The solid to be clipped.
         start: The start point of the clipping plane.
         end: The end point of the clipping plane.
+        element: If provided, registers the clipping in the element's
+            BBIM_Boolean pset so Bonsai preserves it on regeneration.
 
     Returns:
         An IfcBooleanClippingResult entity.
     """
     vector = subtract_3d(end, start)
     perp_plan = normalise_3d([0 - vector[1], vector[0], 0.0])
-    xprod = x_product_3d(vector, perp_plan)
-
-    polygon = [
+    normal = x_product_3d(vector, perp_plan)
+    boundary_points = [
         add_2d(start[0:2], perp_plan[0:2]),
         add_2d(end[0:2], perp_plan[0:2]),
         subtract_2d(end[0:2], perp_plan[0:2]),
         subtract_2d(start[0:2], perp_plan[0:2]),
-        add_2d(start[0:2], perp_plan[0:2]),
     ]
-
-    return self.createIfcBooleanClippingResult(
-        "DIFFERENCE",
-        solid,
-        self.createIfcPolygonalBoundedHalfSpace(
-            self.createIfcPlane(
-                self.createIfcAxis2Placement3D(
-                    self.createIfcCartesianPoint(start),
-                    self.createIfcDirection(xprod),
-                    self.createIfcDirection(perp_plan),
-                )
-            ),
-            False,
-            self.createIfcAxis2Placement3D(
-                self.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
-            ),
-            self.createIfcPolyline(
-                [self.createIfcCartesianPoint(point) for point in polygon]
-            ),
-        ),
+    return api.geometry.clip_solid_bounded(
+        self,
+        item=solid,
+        location=start,
+        normal=normal,
+        boundary_points=boundary_points,
+        element=element,
     )
 
 
@@ -1063,6 +1035,17 @@ def delete_ifc_product(
         for port in ifcopenshell.util.system.get_ports(product):
             api.root.remove_product(self, product=port)
     api.root.remove_product(self, product=product)
+
+
+def assign_structural_product(
+    file: ifcopenshell.file,
+    product: ifcopenshell.entity_instance,
+    element: ifcopenshell.entity_instance,
+) -> None:
+    """Link a structural product to a physical element via IfcRelAssignsToProduct."""
+    assignment = api.root.create_entity(file, ifc_class="IfcRelAssignsToProduct")
+    assignment.RelatingProduct = product
+    assignment.RelatedObjects = [element]
 
 
 def purge_unused(self: ifcopenshell.file) -> None:

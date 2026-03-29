@@ -1,3 +1,4 @@
+import ifcopenshell.api.boundary
 import ifcopenshell.api.type
 import ifcopenshell.api.feature
 import ifcopenshell.geom
@@ -17,6 +18,7 @@ from .geometry import (
 )
 from .ifc import (
     add_face_topology_epsets,
+    assign_structural_product,
     create_extruded_area_solid,
     clip_solid,
     create_face_surface,
@@ -25,7 +27,6 @@ from .ifc import (
     get_material_by_name,
     get_context_by_name,
     get_thickness,
-    create_curve_bounded_plane,
     create_closed_profile_from_points,
 )
 
@@ -138,11 +139,13 @@ class Wall(TraceClass):
                 else:
                     nodes_2d, matrix = map_to_2d_simple(vertices, normal)
 
-                curve_bounded_plane = create_curve_bounded_plane(
-                    self.file, nodes_2d, matrix
-                )
-                boundary.ConnectionGeometry = (
-                    self.file.createIfcConnectionSurfaceGeometry(curve_bounded_plane)
+                api.boundary.assign_connection_geometry(
+                    self.file,
+                    rel_space_boundary=boundary,
+                    outer_boundary=nodes_2d,
+                    location=matrix[:, 3][0:3].tolist(),
+                    axis=matrix[:, 2][0:3].tolist(),
+                    ref_direction=matrix[:, 0][0:3].tolist(),
                 )
                 cell_index = cell.Get("index")
                 if cell_index is not None:
@@ -209,81 +212,34 @@ class Wall(TraceClass):
                 self.height,
             )
 
-            # FIXME use geometry.connect_path
             # Rel Connects Path Elements
             if previous_wall is None:
                 first_wall = mywall
             else:
-                rel_connects = api.root.create_entity(
+                api.geometry.connect_path(
                     self.file,
-                    ifc_class="IfcRelConnectsPathElements",
-                    name=self.name,
+                    relating_element=mywall,
+                    related_element=previous_wall,
+                    relating_connection="ATSTART",
+                    related_connection="ATEND",
+                    description="MITRE",
                 )
-                rel_connects.RelatingElement = mywall
-                rel_connects.RelatingConnectionType = "ATSTART"
-                rel_connects.RelatingPriorities = []
-                rel_connects.ConnectionGeometry = (
-                    self.file.createIfcConnectionCurveGeometry(
-                        self.file.createIfcPolyline(
-                            [
-                                self.file.createIfcCartesianPoint(
-                                    transform(matrix_reverse, v_in_a)
-                                ),
-                                self.file.createIfcCartesianPoint(
-                                    transform(matrix_reverse, v_out_a)
-                                ),
-                            ]
-                        ),
-                        None,
-                    )
-                )
-                rel_connects.RelatedElement = previous_wall
-                rel_connects.RelatedConnectionType = "ATEND"
-                rel_connects.RelatedPriorities = []
-                rel_connects.Description = "MITRE"
             if self.closed and id_segment == len(self.path) - 1:
-                rel_connects = api.root.create_entity(
+                api.geometry.connect_path(
                     self.file,
-                    ifc_class="IfcRelConnectsPathElements",
-                    name=self.name,
+                    relating_element=mywall,
+                    related_element=first_wall,
+                    relating_connection="ATEND",
+                    related_connection="ATSTART",
+                    description="MITRE",
                 )
-                rel_connects.RelatingElement = mywall
-                rel_connects.RelatingConnectionType = "ATEND"
-                rel_connects.RelatingPriorities = []
-                rel_connects.ConnectionGeometry = (
-                    self.file.createIfcConnectionCurveGeometry(
-                        self.file.createIfcPolyline(
-                            [
-                                self.file.createIfcCartesianPoint(
-                                    transform(matrix_reverse, v_in_b)
-                                ),
-                                self.file.createIfcCartesianPoint(
-                                    transform(matrix_reverse, v_out_b)
-                                ),
-                            ]
-                        ),
-                        None,
-                    )
-                )
-                rel_connects.RelatedElement = first_wall
-                rel_connects.RelatedConnectionType = "ATSTART"
-                rel_connects.RelatedPriorities = []
-                rel_connects.Description = "MITRE"
             previous_wall = mywall
 
             # axis is a straight line
-            axis = self.file.createIfcPolyline(
-                [
-                    self.file.createIfcCartesianPoint(point)
-                    for point in [
-                        transform(matrix_reverse, vertex)
-                        for vertex in [
-                            self.corner_coor(id_segment),
-                            self.corner_coor(id_segment + 1),
-                        ]
-                    ]
-                ]
-            )
+            axis_points = [
+                transform(matrix_reverse, self.corner_coor(id_segment)),
+                transform(matrix_reverse, self.corner_coor(id_segment + 1)),
+            ]
 
             back_cell = self.chain.graph[segment[0]][1]["back_cell"]
             front_cell = self.chain.graph[segment[0]][1]["front_cell"]
@@ -298,11 +254,7 @@ class Wall(TraceClass):
                 name=self.style + "/" + self.name,
                 predefined_type="SHELL",
             )
-            assignment = api.root.create_entity(
-                self.file, ifc_class="IfcRelAssignsToProduct"
-            )
-            assignment.RelatingProduct = structural_surface
-            assignment.RelatedObjects = [mywall]
+            assign_structural_product(self.file, structural_surface, mywall)
             add_face_topology_epsets(
                 self.file, structural_surface, face, back_cell, front_cell
             )
@@ -347,6 +299,7 @@ class Wall(TraceClass):
                         [0.0, 0.0, self.elevation],
                     ),
                     subtract_3d(end_coor, [0.0, 0.0, self.elevation]),
+                    mywall,
                 )
                 # clip beyond the end of the wall if necessary
                 if (
@@ -368,6 +321,7 @@ class Wall(TraceClass):
                             add_3d(start_coor, [1.0, 0.0, 0.0]),
                             [0.0, 0.0, self.elevation],
                         ),
+                        mywall,
                     )
                 elif (
                     el(start_coor[2]) < el(self.elevation + self.height)
@@ -388,6 +342,7 @@ class Wall(TraceClass):
                             add_3d(start_coor, [-1.0, 0.0, 0.0]),
                             [0.0, 0.0, self.elevation],
                         ),
+                        mywall,
                     )
                 # clip beyond the start of the wall if necessary
                 if (
@@ -409,6 +364,7 @@ class Wall(TraceClass):
                             subtract_3d(end_coor, [1.0, 0.0, 0.0]),
                             [0.0, 0.0, self.elevation],
                         ),
+                        mywall,
                     )
                 elif (
                     el(end_coor[2]) < el(self.elevation + self.height)
@@ -429,6 +385,7 @@ class Wall(TraceClass):
                             subtract_3d(end_coor, [-1.0, 0.0, 0.0]),
                             [0.0, 0.0, self.elevation],
                         ),
+                        mywall,
                     )
 
             if len(edges_ptr) == 0:
@@ -449,16 +406,12 @@ class Wall(TraceClass):
                     representation=shape,
                 )
 
-                shape = self.file.createIfcShapeRepresentation(
-                    axis_context,
-                    axis_context.ContextIdentifier,
-                    "Curve2D",
-                    [axis],
-                )
                 api.geometry.assign_representation(
                     self.file,
                     product=mywall,
-                    representation=shape,
+                    representation=api.geometry.add_axis_representation(
+                        self.file, context=axis_context, axis=axis_points
+                    ),
                 )
             else:
                 # thickness is used for opening geometry
@@ -698,13 +651,13 @@ class Wall(TraceClass):
                     else:
                         nodes_2d, matrix = map_to_2d_simple(vertices, normal)
 
-                    curve_bounded_plane = create_curve_bounded_plane(
-                        self.file, nodes_2d, matrix
-                    )
-                    boundary.ConnectionGeometry = (
-                        self.file.createIfcConnectionSurfaceGeometry(
-                            curve_bounded_plane
-                        )
+                    api.boundary.assign_connection_geometry(
+                        self.file,
+                        rel_space_boundary=boundary,
+                        outer_boundary=nodes_2d,
+                        location=matrix[:, 3][0:3].tolist(),
+                        axis=matrix[:, 2][0:3].tolist(),
+                        ref_direction=matrix[:, 0][0:3].tolist(),
                     )
                     boundary.Description = parent_boundary.Description
                     boundary.Name = parent_boundary.Name

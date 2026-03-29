@@ -8,6 +8,7 @@ from .baseclass import BaseClass
 from .geometry import map_to_2d, add_2d, scale_2d, subtract_3d, inset_path
 from .ifc import (
     add_face_topology_epsets,
+    assign_structural_product,
     create_face_surface,
     assign_storey_byindex,
     get_material_by_name,
@@ -161,11 +162,7 @@ class Grillage(BaseClass):
                 ),
             )
 
-            assignment = api.root.create_entity(
-                self.file, ifc_class="IfcRelAssignsToProduct"
-            )
-            assignment.RelatingProduct = structural_surface
-            assignment.RelatedObjects = [face_aggregate]
+            assign_structural_product(self.file, structural_surface, face_aggregate)
 
             # generate repeating grillage elements
 

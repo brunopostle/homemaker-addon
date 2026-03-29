@@ -7,6 +7,7 @@ from .baseclass import TraceClass
 from .geometry import add_2d, subtract_2d, scale_2d, distance_2d, matrix_align
 from .ifc import (
     add_face_topology_epsets,
+    assign_structural_product,
     assign_storey_byindex,
     get_type_object,
     get_material_by_name,
@@ -230,12 +231,7 @@ class Repeat(TraceClass):
                             ifc_class="IfcStructuralCurveMember",
                             name=self.style + "/" + self.name,
                         )
-                        assignment = api.root.create_entity(
-                            self.file,
-                            ifc_class="IfcRelAssignsToProduct",
-                        )
-                        assignment.RelatingProduct = structural_member
-                        assignment.RelatedObjects = [entity]
+                        assign_structural_product(self.file, structural_member, entity)
                         segment = self.chain.edges()[id_segment]
                         face = self.chain.graph[segment[0]][1]["face"]
                         back_cell = self.chain.graph[segment[0]][1]["back_cell"]
