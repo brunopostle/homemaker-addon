@@ -175,7 +175,7 @@ def create_default_contexts(self: ifcopenshell.file) -> None:
     get_context_by_name(
         self,
         context_identifier="Axis",
-        parent_context_identifier="Model",
+        parent_context_identifier="Plan",
         target_view="GRAPH_VIEW",
     )
 
@@ -392,13 +392,11 @@ def get_structural_analysis_model_by_name(
             return model
     model = api.structural.add_structural_analysis_model(self)
     model.Name = "Structure/" + name
-    rel = api.root.create_entity(
+    api.structural.assign_to_building(
         self,
-        ifc_class="IfcRelServicesBuildings",
-        name=model.Name,
+        structural_analysis_model=model,
+        building=spatial_element,
     )
-    rel.RelatingSystem = model
-    rel.RelatedBuildings = [spatial_element]
     load_group = api.root.create_entity(
         self,
         ifc_class="IfcStructuralLoadGroup",
@@ -736,7 +734,7 @@ def create_tessellations_from_mesh_split(
                 "Transparency": 0.8,
             },
         )
-        self.createIfcStyledItem(tessellation, [style], stylename)
+        api.style.assign_item_style(self, item=tessellation, style=style)
         index += 1
     return tessellations
 
@@ -1036,16 +1034,6 @@ def delete_ifc_product(
             api.root.remove_product(self, product=port)
     api.root.remove_product(self, product=product)
 
-
-def assign_structural_product(
-    file: ifcopenshell.file,
-    product: ifcopenshell.entity_instance,
-    element: ifcopenshell.entity_instance,
-) -> None:
-    """Link a structural product to a physical element via IfcRelAssignsToProduct."""
-    assignment = api.root.create_entity(file, ifc_class="IfcRelAssignsToProduct")
-    assignment.RelatingProduct = product
-    assignment.RelatedObjects = [element]
 
 
 def purge_unused(self: ifcopenshell.file) -> None:

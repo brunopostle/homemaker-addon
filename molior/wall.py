@@ -1,4 +1,6 @@
 import ifcopenshell.api.boundary
+import ifcopenshell.api.geometry
+import ifcopenshell.api.structural
 import ifcopenshell.api.type
 import ifcopenshell.api.feature
 import ifcopenshell.geom
@@ -18,7 +20,6 @@ from .geometry import (
 )
 from .ifc import (
     add_face_topology_epsets,
-    assign_structural_product,
     create_extruded_area_solid,
     clip_solid,
     create_face_surface,
@@ -63,7 +64,9 @@ class Wall(TraceClass):
             self.file, context_identifier="Reference", target_view="GRAPH_VIEW"
         )
         body_context = get_context_by_name(self.file, context_identifier="Body")
-        axis_context = get_context_by_name(self.file, context_identifier="Axis")
+        axis_context = get_context_by_name(
+            self.file, context_identifier="Axis", parent_context_identifier="Plan"
+        )
         clearance_context = get_context_by_name(
             self.file, context_identifier="Clearance"
         )
@@ -254,7 +257,9 @@ class Wall(TraceClass):
                 name=self.style + "/" + self.name,
                 predefined_type="SHELL",
             )
-            assign_structural_product(self.file, structural_surface, mywall)
+            api.structural.assign_product(
+                self.file, relating_product=structural_surface, related_object=mywall
+            )
             add_face_topology_epsets(
                 self.file, structural_surface, face, back_cell, front_cell
             )
@@ -267,11 +272,10 @@ class Wall(TraceClass):
             api.geometry.assign_representation(
                 self.file,
                 product=structural_surface,
-                representation=self.file.createIfcTopologyRepresentation(
-                    reference_context,
-                    reference_context.ContextIdentifier,
-                    "Face",
-                    [face_surface],
+                representation=api.geometry.add_topology_representation(
+                    self.file,
+                    context=reference_context,
+                    item=face_surface,
                 ),
             )
             api.material.assign_material(

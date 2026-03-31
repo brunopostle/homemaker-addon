@@ -9,7 +9,6 @@ from .baseclass import BaseClass
 from .geometry import map_to_2d, map_to_2d_simple, matrix_align, inset_path
 from .ifc import (
     add_face_topology_epsets,
-    assign_structural_product,
     create_extruded_area_solid,
     create_face_surface,
     assign_storey_byindex,
@@ -180,11 +179,10 @@ class Shell(BaseClass):
             api.geometry.assign_representation(
                 self.file,
                 product=structural_surface,
-                representation=self.file.createIfcTopologyRepresentation(
-                    reference_context,
-                    reference_context.ContextIdentifier,
-                    "Face",
-                    [face_surface],
+                representation=api.geometry.add_topology_representation(
+                    self.file,
+                    context=reference_context,
+                    item=face_surface,
                 ),
             )
             api.material.assign_material(
@@ -198,7 +196,9 @@ class Shell(BaseClass):
                 ),
             )
 
-            assign_structural_product(self.file, structural_surface, element)
+            api.structural.assign_product(
+                self.file, relating_product=structural_surface, related_object=element
+            )
 
             # type (IfcVirtualElementType isn't valid)
 

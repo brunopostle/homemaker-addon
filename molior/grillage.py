@@ -2,13 +2,13 @@ import numpy as np
 import ifcopenshell.api.attribute
 import ifcopenshell.api.geometry
 import ifcopenshell.api.root
+import ifcopenshell.api.structural
 
 from topologic_core import Face, Vertex
 from .baseclass import BaseClass
 from .geometry import map_to_2d, add_2d, scale_2d, subtract_3d, inset_path
 from .ifc import (
     add_face_topology_epsets,
-    assign_structural_product,
     create_face_surface,
     assign_storey_byindex,
     get_material_by_name,
@@ -144,11 +144,10 @@ class Grillage(BaseClass):
             api.geometry.assign_representation(
                 self.file,
                 product=structural_surface,
-                representation=self.file.createIfcTopologyRepresentation(
-                    reference_context,
-                    reference_context.ContextIdentifier,
-                    "Face",
-                    [face_surface],
+                representation=api.geometry.add_topology_representation(
+                    self.file,
+                    context=reference_context,
+                    item=face_surface,
                 ),
             )
             api.material.assign_material(
@@ -162,7 +161,11 @@ class Grillage(BaseClass):
                 ),
             )
 
-            assign_structural_product(self.file, structural_surface, face_aggregate)
+            api.structural.assign_product(
+                self.file,
+                relating_product=structural_surface,
+                related_object=face_aggregate,
+            )
 
             # generate repeating grillage elements
 

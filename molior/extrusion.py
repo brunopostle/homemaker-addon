@@ -1,5 +1,7 @@
 import numpy as np
+import ifcopenshell.api.geometry
 import ifcopenshell.api.root
+import ifcopenshell.api.structural
 from ifcopenshell.util.placement import a2p
 
 from .baseclass import TraceClass
@@ -10,7 +12,6 @@ from .geometry import (
 )
 from .ifc import (
     add_face_topology_epsets,
-    assign_structural_product,
     assign_storey_byindex,
     get_material_by_name,
     get_context_by_name,
@@ -260,7 +261,11 @@ class Extrusion(TraceClass):
                     name=self.style + "/" + self.name,
                     predefined_type="RIGID_JOINED_MEMBER",
                 )
-                assign_structural_product(self.file, structural_member, linear_element)
+                api.structural.assign_product(
+                    self.file,
+                    relating_product=structural_member,
+                    related_object=linear_element,
+                )
 
                 segment = self.chain.edges()[id_segment]
                 face = self.chain.graph[segment[0]][1]["face"]
@@ -278,20 +283,17 @@ class Extrusion(TraceClass):
                 api.geometry.assign_representation(
                     self.file,
                     product=structural_member,
-                    representation=self.file.createIfcTopologyRepresentation(
-                        reference_context,
-                        reference_context.ContextIdentifier,
-                        "Edge",
-                        [
-                            self.file.createIfcEdge(
-                                self.file.createIfcVertexPoint(
-                                    self.file.createIfcCartesianPoint(start_world)
-                                ),
-                                self.file.createIfcVertexPoint(
-                                    self.file.createIfcCartesianPoint(end_world)
-                                ),
-                            )
-                        ],
+                    representation=api.geometry.add_topology_representation(
+                        self.file,
+                        context=reference_context,
+                        item=self.file.createIfcEdge(
+                            self.file.createIfcVertexPoint(
+                                self.file.createIfcCartesianPoint(start_world)
+                            ),
+                            self.file.createIfcVertexPoint(
+                                self.file.createIfcCartesianPoint(end_world)
+                            ),
+                        ),
                     ),
                 )
                 # FIXME get Type as per Grillage
