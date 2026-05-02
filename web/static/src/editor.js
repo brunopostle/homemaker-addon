@@ -464,7 +464,10 @@ canvas.addEventListener("pointermove", (e) => {
   _raycaster.setFromCamera(_pointer, camera);
   const hits = _raycaster.intersectObjects(_getHandleObjects());
   _getHandleObjects().forEach((h) => {
-    if (!_drag) h.material.color.setHex(HANDLE_COLOR);
+    const r  = _roomById(h.userData.roomId);
+    const fi = h.userData.faceIndex;
+    const faceStyle = r?.face_styles?.[fi] ?? r?.stylename;
+    h.material.color.setHex(faceStyle !== r?.stylename ? HANDLE_STYLED_COLOR : HANDLE_COLOR);
   });
   if (hits.length > 0) {
     hits[0].object.material.color.setHex(HANDLE_HOVER_COLOR);
