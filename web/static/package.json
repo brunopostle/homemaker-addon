@@ -5,20 +5,23 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite static/",
-    "build": "vite build static/ --outDir dist"
+    "dev": "vite .",
+    "build": "vite build --outDir ../../dist",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "three": "^0.168.0",
     "@thatopen/components": "^2.4.0"
   },
   "devDependencies": {
-    "vite": "^5.0.0"
+    "vite": "^5.0.0",
+    "vitest": "^2.0.0"
   },
   "notes": [
-    "The Three.js and @thatopen/components imports in the JS files use",
-    "an importmap (in index.html) pointing to jsDelivr CDN, so no build",
-    "step is required for development. Run 'npm run build' only for",
-    "a production bundle where you want everything self-hosted."
+    "Three.js and @thatopen/components are loaded from CDN via importmap in",
+    "index.html — no build step needed for development.",
+    "Run 'npm run build' only for a production self-hosted bundle.",
+    "Run 'npm test' (from web/static/) to run the Vitest unit tests."
   ]
 }

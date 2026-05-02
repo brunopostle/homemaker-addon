@@ -21,6 +21,7 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { snapToFaces, computeFaceDrag, SNAP_THRESHOLD, GRID_SNAP } from "./editor-utils.js";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -35,8 +36,6 @@ const HANDLE_RADIUS       = 0.12;   // metres
 
 // Human-readable name for each face index (used in props panel label).
 const FACE_NAMES = ["Floor", "Right wall", "Ceiling", "Left wall", "Back wall", "Front wall"];
-const SNAP_THRESHOLD     = 0.15;   // metres
-const GRID_SNAP          = 0.1;    // metres — coarse grid for free dragging
 const DEFAULT_W = 4.0, DEFAULT_D = 4.0, DEFAULT_H = 3.0;
 
 // Face indices: 0=floor(−y) 1=right(+x) 2=ceiling(+y) 3=left(−x) 4=back(−z) 5=front(+z)
@@ -412,40 +411,20 @@ function _updateHandleDrag(event) {
 
   const { room, axis, sign, startPos, startSize } = _drag;
   const axisNames = ["x", "y", "z"];
-  const sizeAxes  = [0, 2, 1]; // Three.js BoxGeometry: x→w, z→d, y→h
 
-  // Raw world coordinate of the dragged face
+  // Raw world coordinate of the dragged face.
   let worldCoord = hit[axisNames[axis]];
 
-  // Face snap takes priority: check before grid so grid can't push us off a face plane.
-  worldCoord = _snapToOtherFaces(worldCoord, axis, room);
-
-  // Grid snap only if face snap didn't engage.
+  // Face snap takes priority over grid so grid can't push us off a face plane.
+  worldCoord = snapToFaces(worldCoord, axis, _rooms, room);
   worldCoord = Math.round(worldCoord / GRID_SNAP) * GRID_SNAP;
-  worldCoord = _snapToOtherFaces(worldCoord, axis, room);
+  worldCoord = snapToFaces(worldCoord, axis, _rooms, room);
 
-  // Derive new position + size from the new face location
-  const sizeIdx = sizeAxes[axis]; // index into [w,d,h]
+  const result = computeFaceDrag(startPos, startSize, axis, sign, worldCoord);
+  if (!result) return;
 
-  let newPos  = [...startPos];
-  let newSize = [...startSize];
-
-  if (sign > 0) {
-    // Moving the +ve face: only size changes
-    const newDim = worldCoord - room.position[axis];
-    if (newDim < 0.3) return; // minimum room dimension
-    newSize[sizeIdx] = newDim;
-  } else {
-    // Moving the −ve face: position and size both change
-    const farFace = room.position[axis] + startSize[sizeIdx];
-    const newDim = farFace - worldCoord;
-    if (newDim < 0.3) return;
-    newPos[axis === 0 ? 0 : axis === 1 ? 1 : 2] = worldCoord;
-    newSize[sizeIdx] = newDim;
-  }
-
-  room.position = newPos;
-  room.size     = newSize;
+  room.position = result.position;
+  room.size     = result.size;
   _updateRoomGroup(room);
   _emitEdit();
 }
@@ -453,29 +432,6 @@ function _updateHandleDrag(event) {
 function _endHandleDrag() {
   _drag = null;
   controls.enabled = true;
-}
-
-// ---------------------------------------------------------------------------
-// Snap logic
-// ---------------------------------------------------------------------------
-function _snapToOtherFaces(worldCoord, axis, draggedRoom) {
-  const axisNames = ["x", "y", "z"];
-  const sizeAxes  = [0, 2, 1];
-
-  for (const room of _rooms) {
-    if (room === draggedRoom) continue;
-    const [px, py, pz] = room.position;
-    const [w, d, h]    = room.size;
-    const origins = [px, py, pz];
-    const dims    = [w, d, h];
-
-    const lo = origins[axis];
-    const hi = origins[axis] + dims[sizeAxes[axis]];
-
-    if (Math.abs(worldCoord - lo) < SNAP_THRESHOLD) return lo;
-    if (Math.abs(worldCoord - hi) < SNAP_THRESHOLD) return hi;
-  }
-  return worldCoord;
 }
 
 // ---------------------------------------------------------------------------
