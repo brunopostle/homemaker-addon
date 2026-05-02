@@ -53,3 +53,6 @@ _build/
 *.egg-info/
 .coverage
 htmlcov/
+
+# Test-generated IFC artefacts
+tests/*.ifc
