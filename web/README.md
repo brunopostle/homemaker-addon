@@ -53,7 +53,8 @@ SHARE_DIR=/path/to/share uvicorn server:app ...
 | Action | How |
 |---|---|
 | Add a room | **+ Room** button (toolbar) |
-| Select a room | Click the room body |
+| Move a room | **Drag** the room body — snaps to adjacent faces |
+| Select a room | **Click** the room body (short click without dragging) |
 | Resize a face | **Drag** a face handle (sphere) outward or inward |
 | Set face style | **Click** a face handle (without dragging) — a "Face style" row appears in the properties panel |
 | Set room usage | Properties panel → Usage dropdown |
@@ -62,8 +63,12 @@ SHARE_DIR=/path/to/share uvicorn server:app ...
 | Zoom | Scroll wheel |
 | Top-down view | **T** key or **Top** button |
 | Delete room | **Delete** / **Backspace** with room selected, or "Delete room" button |
+| Save layout | **Save** button — downloads `rooms.json` |
+| Load layout | **Load** button — restores from a previously saved `rooms.json` |
 | Force regeneration | **Generate IFC** button |
 | Download the IFC file | **Download IFC** button (enabled after first successful generation) |
+
+The layout is also **autosaved** to `localStorage` on every edit, so the browser restores your last session automatically on reload.
 
 ### Style vs usage
 

@@ -26,6 +26,36 @@ let _lastIfcBuffer   = null;   // most recently generated IFC bytes, for downloa
 
 const statusEl     = document.getElementById("status");
 const downloadBtn  = document.getElementById("btn-download");
+const saveBtn      = document.getElementById("btn-save");
+const loadInput    = document.getElementById("inp-load");
+
+// ---------------------------------------------------------------------------
+// Save / Load JSON
+// ---------------------------------------------------------------------------
+saveBtn?.addEventListener("click", () => {
+  const data = window.__hmGetGeometry?.();
+  if (!data) return;
+  const url = URL.createObjectURL(
+    new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })
+  );
+  const a = document.createElement("a");
+  a.href = url; a.download = "rooms.json"; a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById("btn-load")?.addEventListener("click", () => loadInput?.click());
+
+loadInput?.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try { window.__hmLoadGeometry?.(JSON.parse(ev.target.result)); }
+    catch (_) { setStatus("invalid file", "error"); }
+  };
+  reader.readAsText(file);
+  e.target.value = "";  // allow reloading the same file
+});
 
 function setStatus(text, cls = "") {
   statusEl.textContent = text;
@@ -40,6 +70,12 @@ window.addEventListener("hm:edit", () => {
 
   clearTimeout(_debounceTimer);
   _debounceTimer = setTimeout(_maybeRegenerate, DEBOUNCE_MS);
+
+  // Autosave — persists the layout across page reloads.
+  try {
+    const data = window.__hmGetGeometry?.();
+    if (data) localStorage.setItem("hm-rooms", JSON.stringify(data));
+  } catch (_) {}
 });
 
 /** Manual generate button */
@@ -115,18 +151,23 @@ async function _forceRegenerate() {
   }
 }
 
-// Populate all style selectors from server on load, then kick off first generation.
+// Populate style selectors from server, restore saved layout, then regenerate.
 fetch("/api/styles")
   .then((r) => r.json())
   .then(({ styles }) => {
-    if (!styles?.length) return;
-    const targets = ["sel-style", "room-style", "face-style-sel"];
-    for (const id of targets) {
-      const sel = document.getElementById(id);
-      if (!sel) continue;
-      sel.innerHTML = "";
-      for (const s of styles) sel.add(new Option(s, s));
+    if (styles?.length) {
+      for (const id of ["sel-style", "room-style", "face-style-sel"]) {
+        const sel = document.getElementById(id);
+        if (!sel) continue;
+        sel.innerHTML = "";
+        for (const s of styles) sel.add(new Option(s, s));
+      }
     }
+    // Restore saved layout if available (overrides the seed rooms from editor.js).
+    try {
+      const saved = localStorage.getItem("hm-rooms");
+      if (saved) window.__hmLoadGeometry?.(JSON.parse(saved));
+    } catch (_) {}
     _forceRegenerate();
   })
   .catch(() => {

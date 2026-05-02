@@ -148,20 +148,14 @@
   </select>
 
   <label for="sel-usage">Usage</label>
-  <select id="sel-usage">
-    <option value="living">living</option>
-    <option value="bedroom">bedroom</option>
-    <option value="kitchen">kitchen</option>
-    <option value="circulation">circulation</option>
-    <option value="toilet">toilet</option>
-    <option value="stair">stair</option>
-    <option value="void">void</option>
-    <option value="outside">outside</option>
-  </select>
+  <select id="sel-usage"></select>
 
   <button id="btn-top-view">Top</button>
   <button id="btn-generate">Generate IFC</button>
   <button id="btn-download" disabled>Download IFC</button>
+  <button id="btn-save">Save</button>
+  <button id="btn-load">Load</button>
+  <input type="file" id="inp-load" accept=".json" style="display:none" />
 
   <span id="status">—</span>
 </div>
@@ -177,16 +171,7 @@
     </div>
     <div class="prop-row">
       <label>Usage</label>
-      <select id="room-usage">
-        <option value="living">living</option>
-        <option value="bedroom">bedroom</option>
-        <option value="kitchen">kitchen</option>
-        <option value="circulation">circulation</option>
-        <option value="toilet">toilet</option>
-        <option value="stair">stair</option>
-        <option value="void">void</option>
-        <option value="outside">outside</option>
-      </select>
+      <select id="room-usage"></select>
     </div>
     <hr style="border-color:#444;margin:4px 0;display:none" id="face-divider" />
     <div class="prop-row" id="face-style-row" style="display:none">
@@ -197,8 +182,8 @@
   </div>
 
   <div id="hints">
-    Click: select &nbsp;|&nbsp; Drag face handle: resize &nbsp;|&nbsp;
-    Right-drag / scroll: orbit &nbsp;|&nbsp; T: top view
+    Drag room: move &nbsp;|&nbsp; Drag face handle: resize &nbsp;|&nbsp; Click handle: set face style &nbsp;|&nbsp;
+    Right-drag / scroll: orbit &nbsp;|&nbsp; T: top view &nbsp;|&nbsp; Del: delete
   </div>
 </div>
 

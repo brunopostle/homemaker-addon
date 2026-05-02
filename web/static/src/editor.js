@@ -36,6 +36,7 @@ const HANDLE_RADIUS       = 0.12;   // metres
 
 // Human-readable name for each face index (used in props panel label).
 const FACE_NAMES = ["Floor", "Right wall", "Ceiling", "Left wall", "Back wall", "Front wall"];
+const USAGES     = ["living","bedroom","kitchen","circulation","toilet","stair","void","outside"];
 const DEFAULT_W = 4.0, DEFAULT_D = 4.0, DEFAULT_H = 3.0;
 
 // Face indices: 0=floor(−y) 1=right(+x) 2=ceiling(+y) 3=left(−x) 4=back(−z) 5=front(+z)
@@ -82,6 +83,14 @@ controls.mouseButtons = { LEFT: null, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MO
 window.__hmScene    = scene;
 window.__hmRenderer = renderer;
 window.__hmCamera   = camera;
+
+// Populate both usage selectors from the single USAGES constant.
+for (const id of ["sel-usage", "room-usage"]) {
+  const sel = document.getElementById(id);
+  if (!sel) continue;
+  sel.innerHTML = "";
+  for (const u of USAGES) sel.add(new Option(u, u));
+}
 
 // ---------------------------------------------------------------------------
 // Room data model
@@ -356,14 +365,13 @@ function _roomById(id) {
 let _drag = null;
 /*
   _drag = {
+    mode:      "face" | "move",
     room:      Room,
-    faceIndex: number,
-    axis:      0|1|2,       // world axis being moved
-    sign:      1|-1,
-    startFacePos: number,   // world coordinate of the face plane before drag started
-    startSize:    [w,d,h],
-    startPos:     [px,py,pz],
-    dragPlane:    THREE.Plane,  // world plane under the pointer during drag
+    dragPlane: THREE.Plane,
+    // face-drag only:
+    faceIndex, axis, sign, startSize, startPos, handleMesh,
+    // move only:
+    pointerOffset: [dx, dz],   // pointer offset from room.position[0/2] at drag start
   }
 */
 
@@ -388,17 +396,76 @@ function _beginHandleDrag(event, handleMesh) {
   );
 
   _drag = {
+    mode:       "face",
     room,
-    faceIndex: fi,
+    faceIndex:  fi,
     axis,
     sign,
     startSize:  [...room.size],
     startPos:   [...room.position],
     dragPlane:  _dragPlaneHelper.clone(),
-    handleMesh,           // retained so pointerup can detect a face-handle click
+    handleMesh,
   };
 
   controls.enabled = false;
+}
+
+function _beginRoomMove(event, fillMesh) {
+  const room = _roomById(fillMesh.userData.roomId);
+  if (!room) return;
+
+  // Horizontal plane at the room's floor elevation so movement stays on the same level.
+  const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -room.position[1]);
+
+  _updatePointer(event);
+  _raycaster.setFromCamera(_pointer, camera);
+  const hit = new THREE.Vector3();
+  if (!_raycaster.ray.intersectPlane(dragPlane, hit)) return;
+
+  _drag = {
+    mode:          "move",
+    room,
+    dragPlane,
+    pointerOffset: [hit.x - room.position[0], hit.z - room.position[2]],
+  };
+  controls.enabled = false;
+  canvas.style.cursor = "grabbing";
+}
+
+function _updateRoomMove(event) {
+  if (!_drag) return;
+  _updatePointer(event);
+  _raycaster.setFromCamera(_pointer, camera);
+
+  const hit = new THREE.Vector3();
+  if (!_raycaster.ray.intersectPlane(_drag.dragPlane, hit)) return;
+
+  const { room, pointerOffset } = _drag;
+  const [ox, oz] = pointerOffset;
+
+  let newX = Math.round((hit.x - ox) / GRID_SNAP) * GRID_SNAP;
+  let newZ = Math.round((hit.z - oz) / GRID_SNAP) * GRID_SNAP;
+
+  // Snap both the lo and hi faces of the room to nearby faces on each axis.
+  const w = room.size[0];
+  const d = room.size[1];   // Z-axis extent (depth)
+
+  const sx0 = snapToFaces(newX,     0, _rooms, room);
+  const sx1 = snapToFaces(newX + w, 0, _rooms, room);
+  if      (sx0 !== newX)     newX = sx0;
+  else if (sx1 !== newX + w) newX = sx1 - w;
+
+  const sz0 = snapToFaces(newZ,     2, _rooms, room);
+  const sz1 = snapToFaces(newZ + d, 2, _rooms, room);
+  if      (sz0 !== newZ)     newZ = sz0;
+  else if (sz1 !== newZ + d) newZ = sz1 - d;
+
+  if (newX === room.position[0] && newZ === room.position[2]) return;
+
+  room.position[0] = newX;
+  room.position[2] = newZ;
+  _updateRoomGroup(room);
+  _emitEdit();
 }
 
 function _updateHandleDrag(event) {
@@ -429,9 +496,10 @@ function _updateHandleDrag(event) {
   _emitEdit();
 }
 
-function _endHandleDrag() {
+function _endDrag() {
   _drag = null;
   controls.enabled = true;
+  canvas.style.cursor = "default";
 }
 
 // ---------------------------------------------------------------------------
@@ -444,51 +512,65 @@ canvas.addEventListener("pointerdown", (e) => {
   _updatePointer(e);
   _raycaster.setFromCamera(_pointer, camera);
 
-  // Check handles first
+  // Handles take priority over fill meshes.
   const handleHits = _raycaster.intersectObjects(_getHandleObjects());
   if (handleHits.length > 0) {
     e.stopPropagation();
     _beginHandleDrag(e, handleHits[0].object);
     return;
   }
+
+  // Fill mesh: start a move drag (click vs drag resolved on pointerup).
+  const fillHits = _raycaster.intersectObjects(_getFillObjects());
+  if (fillHits.length > 0) {
+    e.stopPropagation();
+    _beginRoomMove(e, fillHits[0].object);
+  }
 });
 
 canvas.addEventListener("pointermove", (e) => {
   if (_drag) {
-    _updateHandleDrag(e);
+    if (_drag.mode === "move") _updateRoomMove(e);
+    else _updateHandleDrag(e);
     return;
   }
 
-  // Hover highlight handles
+  // Hover: highlight handles, show grab cursor over rooms.
   _updatePointer(e);
   _raycaster.setFromCamera(_pointer, camera);
-  const hits = _raycaster.intersectObjects(_getHandleObjects());
-  _getHandleObjects().forEach((h) => {
+  const handleObjects = _getHandleObjects();
+  const handleHits    = _raycaster.intersectObjects(handleObjects);
+  handleObjects.forEach((h) => {
     const r  = _roomById(h.userData.roomId);
     const fi = h.userData.faceIndex;
     const faceStyle = r?.face_styles?.[fi] ?? r?.stylename;
     h.material.color.setHex(faceStyle !== r?.stylename ? HANDLE_STYLED_COLOR : HANDLE_COLOR);
   });
-  if (hits.length > 0) {
-    hits[0].object.material.color.setHex(HANDLE_HOVER_COLOR);
+  if (handleHits.length > 0) {
+    handleHits[0].object.material.color.setHex(HANDLE_HOVER_COLOR);
+    canvas.style.cursor = "crosshair";
+  } else {
+    const fillHits = _raycaster.intersectObjects(_getFillObjects());
+    canvas.style.cursor = fillHits.length > 0 ? "grab" : "default";
   }
-  canvas.style.cursor = hits.length > 0 ? "crosshair" : "default";
 });
 
 canvas.addEventListener("pointerup", (e) => {
   if (_drag) {
     const dx = e.clientX - (_pointerDownPos?.x ?? e.clientX);
     const dy = e.clientY - (_pointerDownPos?.y ?? e.clientY);
-    const { handleMesh } = _drag;
-    _endHandleDrag();
-    // Short movement = click on handle → select that face for per-face style editing.
-    if (Math.hypot(dx, dy) <= 4 && handleMesh) {
-      _selectFace(handleMesh);
+    const isClick         = Math.hypot(dx, dy) <= 4;
+    const { mode, handleMesh, room } = _drag;
+    _endDrag();
+    if (mode === "face" && isClick && handleMesh) {
+      _selectFace(handleMesh);           // short click on handle → per-face style
+    } else if (mode === "move" && isClick) {
+      _setSelected(room);                // short click on fill → select room
     }
     return;
   }
 
-  // Click to select (only if pointer didn't move much)
+  // Click on empty space → deselect.
   if (!_pointerDownPos) return;
   const dx = e.clientX - _pointerDownPos.x;
   const dy = e.clientY - _pointerDownPos.y;
@@ -496,17 +578,11 @@ canvas.addEventListener("pointerup", (e) => {
 
   _updatePointer(e);
   _raycaster.setFromCamera(_pointer, camera);
-  const hits = _raycaster.intersectObjects(_getFillObjects());
-  if (hits.length > 0) {
-    const room = _roomById(hits[0].object.userData.roomId);
-    _setSelected(room || null);
-  } else {
-    _setSelected(null);
-  }
+  if (_raycaster.intersectObjects(_getFillObjects()).length === 0) _setSelected(null);
 });
 
 window.addEventListener("pointerup", () => {
-  if (_drag) _endHandleDrag();
+  if (_drag) _endDrag();
 });
 
 // ---------------------------------------------------------------------------
@@ -554,11 +630,38 @@ function _animate() {
 _animate();
 
 // ---------------------------------------------------------------------------
-// Seed with a default room pair so the app opens with something visible
+// Geometry load  (called by regenerate.js to restore saved state)
 // ---------------------------------------------------------------------------
-// Two ground-floor rooms sharing the wall at x=4.
-// position[1] (Three.js Y) = 0 for all rooms on the ground floor.
-// The second room is narrower in depth (size[1]=3 vs 4) to demonstrate
-// partial wall overlap — homemaker infers a door-sized opening there.
+window.__hmLoadGeometry = function (data) {
+  if (!Array.isArray(data?.rooms)) return;
+  for (const r of [..._rooms]) _removeRoomGroup(r);
+  _rooms = [];
+  _nextId = 1;
+  _setSelected(null);
+
+  for (const r of data.rooms) {
+    const stylename  = r.stylename  || "default";
+    const face_styles = r.face_styles || Array(6).fill(stylename);
+    const room = {
+      id:          `r${_nextId++}`,
+      position:    (r.position || [0, 0, 0]).slice(0, 3),
+      size:        (r.size     || [DEFAULT_W, DEFAULT_D, DEFAULT_H]).slice(0, 3),
+      stylename,
+      face_styles,
+      usage:       r.usage || "living",
+      _group:      null,
+      _handles:    [],
+    };
+    _rooms.push(room);
+    _makeRoomGroup(room);
+  }
+  if (_rooms.length > 0) _setSelected(_rooms[0]);
+  _emitEdit();
+};
+
+// ---------------------------------------------------------------------------
+// Seed with a default room pair so the app opens with something visible
+// (overridden by regenerate.js if localStorage has a saved layout)
+// ---------------------------------------------------------------------------
 addRoom({ position: [0, 0, 0], size: [4, 4, 3], usage: "living",  stylename: "default" });
 addRoom({ position: [4, 0, 0], size: [3, 3, 3], usage: "bedroom", stylename: "default" });
