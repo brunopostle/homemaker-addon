@@ -53,7 +53,8 @@ SHARE_DIR=/path/to/share uvicorn server:app ...
 | Action | How |
 |---|---|
 | Add a room | **+ Room** button (toolbar) |
-| Move a room | **Drag** the room body — snaps to adjacent faces |
+| Move a room horizontally | **Drag** the room body — snaps to adjacent faces |
+| Move a room vertically | **Shift+drag** the room body — snaps to floor/ceiling of adjacent rooms |
 | Select a room | **Click** the room body (short click without dragging) |
 | Resize a face | **Drag** a face handle (sphere) outward or inward |
 | Set face style | **Click** a face handle (without dragging) — a "Face style" row appears in the properties panel |

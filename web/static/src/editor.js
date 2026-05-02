@@ -414,22 +414,49 @@ function _beginRoomMove(event, fillMesh) {
   const room = _roomById(fillMesh.userData.roomId);
   if (!room) return;
 
-  // Horizontal plane at the room's floor elevation so movement stays on the same level.
-  const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -room.position[1]);
-
   _updatePointer(event);
   _raycaster.setFromCamera(_pointer, camera);
   const hit = new THREE.Vector3();
-  if (!_raycaster.ray.intersectPlane(dragPlane, hit)) return;
 
-  _drag = {
-    mode:          "move",
-    room,
-    dragPlane,
-    pointerOffset: [hit.x - room.position[0], hit.z - room.position[2]],
-  };
+  let dragPlane, vertical;
+
+  if (event.shiftKey) {
+    // Shift+drag → vertical (Y-only).  Use a vertical plane facing the camera
+    // so that dragging up/down on screen moves the room up/down in world space.
+    vertical = true;
+    const camDir = camera.getWorldDirection(new THREE.Vector3());
+    const planeNormal = new THREE.Vector3(camDir.x, 0, camDir.z).normalize();
+    const roomCentre  = new THREE.Vector3(
+      room.position[0] + room.size[0] / 2,
+      room.position[1] + room.size[2] / 2,
+      room.position[2] + room.size[1] / 2,
+    );
+    dragPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal, roomCentre);
+    if (!_raycaster.ray.intersectPlane(dragPlane, hit)) return;
+    _drag = {
+      mode:          "move",
+      vertical:      true,
+      room,
+      dragPlane,
+      pointerOffset: hit.y - room.position[1],
+    };
+    canvas.style.cursor = "ns-resize";
+  } else {
+    // Normal drag → horizontal (XZ-only).
+    vertical = false;
+    dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -room.position[1]);
+    if (!_raycaster.ray.intersectPlane(dragPlane, hit)) return;
+    _drag = {
+      mode:          "move",
+      vertical:      false,
+      room,
+      dragPlane,
+      pointerOffset: [hit.x - room.position[0], hit.z - room.position[2]],
+    };
+    canvas.style.cursor = "grabbing";
+  }
+
   controls.enabled = false;
-  canvas.style.cursor = "grabbing";
 }
 
 function _updateRoomMove(event) {
@@ -440,30 +467,38 @@ function _updateRoomMove(event) {
   const hit = new THREE.Vector3();
   if (!_raycaster.ray.intersectPlane(_drag.dragPlane, hit)) return;
 
-  const { room, pointerOffset } = _drag;
-  const [ox, oz] = pointerOffset;
+  const { room, pointerOffset, vertical } = _drag;
 
-  let newX = Math.round((hit.x - ox) / GRID_SNAP) * GRID_SNAP;
-  let newZ = Math.round((hit.z - oz) / GRID_SNAP) * GRID_SNAP;
+  if (vertical) {
+    // Y-axis only.  size[2] = height (Three.js Y-up, SIZE_AXES[1] = 2).
+    let newY = Math.round((hit.y - pointerOffset) / GRID_SNAP) * GRID_SNAP;
+    const h  = room.size[2];
+    const sy0 = snapToFaces(newY,     1, _rooms, room);
+    const sy1 = snapToFaces(newY + h, 1, _rooms, room);
+    if      (sy0 !== newY)     newY = sy0;
+    else if (sy1 !== newY + h) newY = sy1 - h;
+    if (newY === room.position[1]) return;
+    room.position[1] = newY;
+  } else {
+    // XZ-axis only.
+    const [ox, oz] = pointerOffset;
+    let newX = Math.round((hit.x - ox) / GRID_SNAP) * GRID_SNAP;
+    let newZ = Math.round((hit.z - oz) / GRID_SNAP) * GRID_SNAP;
+    const w = room.size[0];
+    const d = room.size[1];
+    const sx0 = snapToFaces(newX,     0, _rooms, room);
+    const sx1 = snapToFaces(newX + w, 0, _rooms, room);
+    if      (sx0 !== newX)     newX = sx0;
+    else if (sx1 !== newX + w) newX = sx1 - w;
+    const sz0 = snapToFaces(newZ,     2, _rooms, room);
+    const sz1 = snapToFaces(newZ + d, 2, _rooms, room);
+    if      (sz0 !== newZ)     newZ = sz0;
+    else if (sz1 !== newZ + d) newZ = sz1 - d;
+    if (newX === room.position[0] && newZ === room.position[2]) return;
+    room.position[0] = newX;
+    room.position[2] = newZ;
+  }
 
-  // Snap both the lo and hi faces of the room to nearby faces on each axis.
-  const w = room.size[0];
-  const d = room.size[1];   // Z-axis extent (depth)
-
-  const sx0 = snapToFaces(newX,     0, _rooms, room);
-  const sx1 = snapToFaces(newX + w, 0, _rooms, room);
-  if      (sx0 !== newX)     newX = sx0;
-  else if (sx1 !== newX + w) newX = sx1 - w;
-
-  const sz0 = snapToFaces(newZ,     2, _rooms, room);
-  const sz1 = snapToFaces(newZ + d, 2, _rooms, room);
-  if      (sz0 !== newZ)     newZ = sz0;
-  else if (sz1 !== newZ + d) newZ = sz1 - d;
-
-  if (newX === room.position[0] && newZ === room.position[2]) return;
-
-  room.position[0] = newX;
-  room.position[2] = newZ;
   _updateRoomGroup(room);
   _emitEdit();
 }
