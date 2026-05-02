@@ -27,6 +27,16 @@ export const MIN_DIM        = 0.3;   // metres — minimum room dimension
 export function snapToFaces(worldCoord, axis, rooms, draggedRoom) {
     for (const room of rooms) {
         if (room === draggedRoom) continue;
+        if (!room.position) {
+            // Polygon rooms only snap on Y axis (elevation).
+            if (axis === 1 && room.type === "polygon") {
+                const lo = room.elevation;
+                const hi = room.elevation + room.height;
+                if (Math.abs(worldCoord - lo) < SNAP_THRESHOLD) return lo;
+                if (Math.abs(worldCoord - hi) < SNAP_THRESHOLD) return hi;
+            }
+            continue;
+        }
         const lo = room.position[axis];
         const hi = room.position[axis] + room.size[SIZE_AXES[axis]];
         if (Math.abs(worldCoord - lo) < SNAP_THRESHOLD) return lo;

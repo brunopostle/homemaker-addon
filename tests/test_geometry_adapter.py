@@ -23,6 +23,7 @@ from geometry_adapter import (
     widgets_from_json,
     rooms_to_faces_and_widgets,
     _snap,
+    _polygon_room,
 )
 
 
@@ -366,3 +367,131 @@ class TestPerFaceStyles:
         faces, _ = rooms_to_faces_and_widgets(rooms)
         assert all(f.Get("stylename") == "a" for f in faces[:6])
         assert all(f.Get("stylename") == "b" for f in faces[6:])
+
+
+# ---------------------------------------------------------------------------
+# Polygon rooms
+# ---------------------------------------------------------------------------
+
+class TestPolygonRoom:
+    """Tests for _polygon_room() and rooms_to_faces_and_widgets with polygon rooms."""
+
+    def _square(self, elevation=0.0, height=3.0, stylename="default", usage="living",
+                face_styles=None):
+        # Square polygon: 4 vertices → 4+2=6 faces
+        r = {
+            "type": "polygon",
+            "vertices": [[0.0, 0.0], [4.0, 0.0], [4.0, 4.0], [0.0, 4.0]],
+            "elevation": elevation,
+            "height": height,
+            "stylename": stylename,
+            "usage": usage,
+        }
+        if face_styles is not None:
+            r["face_styles"] = face_styles
+        return r
+
+    def _hexagon(self, cx=0.0, cz=0.0, r=2.5, elevation=0.0, height=3.0):
+        import math
+        n = 6
+        vertices = [
+            [round(cx + r * math.cos(i / n * 2 * math.pi), 3),
+             round(cz + r * math.sin(i / n * 2 * math.pi), 3)]
+            for i in range(n)
+        ]
+        return {
+            "type": "polygon",
+            "vertices": vertices,
+            "elevation": elevation,
+            "height": height,
+            "stylename": "default",
+            "usage": "living",
+        }
+
+    def test_square_produces_six_faces(self):
+        faces, widgets = rooms_to_faces_and_widgets([self._square()])
+        assert len(faces) == 6   # floor + ceiling + 4 walls
+
+    def test_hexagon_produces_eight_faces(self):
+        faces, widgets = rooms_to_faces_and_widgets([self._hexagon()])
+        assert len(faces) == 8   # floor + ceiling + 6 walls
+
+    def test_produces_one_widget(self):
+        _, widgets = rooms_to_faces_and_widgets([self._square()])
+        assert len(widgets) == 1
+
+    def test_widget_usage_preserved(self):
+        _, widgets = rooms_to_faces_and_widgets([self._square(usage="bedroom")])
+        assert widgets[0].Get("usage") == "bedroom"
+
+    def test_floor_at_elevation(self):
+        faces, _ = rooms_to_faces_and_widgets([self._square(elevation=5.0)])
+        all_z = [z for face in faces for (x, y, z) in _face_vertices(face)]
+        assert min(all_z) == pytest.approx(5.0)
+
+    def test_ceiling_at_elevation_plus_height(self):
+        faces, _ = rooms_to_faces_and_widgets([self._square(elevation=2.0, height=4.0)])
+        all_z = [z for face in faces for (x, y, z) in _face_vertices(face)]
+        assert max(all_z) == pytest.approx(6.0)
+
+    def test_coordinate_conversion_x_unchanged(self):
+        # Polygon vertex three_x=3.0 → IFC X=3.0
+        faces, _ = rooms_to_faces_and_widgets([self._square()])
+        all_x = [x for face in faces for (x, y, z) in _face_vertices(face)]
+        assert min(all_x) == pytest.approx(0.0)
+        assert max(all_x) == pytest.approx(4.0)
+
+    def test_coordinate_conversion_depth_to_ifc_y(self):
+        # Polygon vertex three_z=4.0 (depth) → IFC Y=4.0
+        faces, _ = rooms_to_faces_and_widgets([self._square()])
+        all_y = [y for face in faces for (x, y, z) in _face_vertices(face)]
+        assert min(all_y) == pytest.approx(0.0)
+        assert max(all_y) == pytest.approx(4.0)
+
+    def test_widget_centroid_ifc_space(self):
+        # Square [0,0]→[4,0]→[4,4]→[0,4], elevation=0, height=3
+        # centroid: IFC X=2, IFC Y=2, IFC Z=1.5
+        _, widgets = rooms_to_faces_and_widgets([self._square()])
+        cx, cy, cz = _coords(widgets[0])
+        assert cx == pytest.approx(2.0)
+        assert cy == pytest.approx(2.0)
+        assert cz == pytest.approx(1.5)
+
+    def test_widget_centroid_respects_elevation(self):
+        _, widgets = rooms_to_faces_and_widgets([self._square(elevation=3.0, height=4.0)])
+        _, _, cz = _coords(widgets[0])
+        assert cz == pytest.approx(5.0)  # 3.0 + 4.0/2
+
+    def test_face_styles_floor(self):
+        faces, _ = rooms_to_faces_and_widgets([
+            self._square(face_styles=["marble", None, None, None, None, None])
+        ])
+        assert faces[0].Get("stylename") == "marble"
+
+    def test_face_styles_ceiling(self):
+        faces, _ = rooms_to_faces_and_widgets([
+            self._square(face_styles=[None, "fancy", None, None, None, None])
+        ])
+        assert faces[1].Get("stylename") == "fancy"
+
+    def test_face_styles_wall(self):
+        faces, _ = rooms_to_faces_and_widgets([
+            self._square(face_styles=[None, None, "brick", "brick", "brick", "brick"])
+        ])
+        # Walls start at index 2
+        for f in faces[2:]:
+            assert f.Get("stylename") == "brick"
+
+    def test_face_styles_fallback_to_stylename(self):
+        faces, _ = rooms_to_faces_and_widgets([
+            self._square(stylename="fox", face_styles=None)
+        ])
+        assert all(f.Get("stylename") == "fox" for f in faces)
+
+    def test_mixed_cuboid_and_polygon(self):
+        cuboid = {"position": [0, 0, 0], "size": [4, 4, 3], "stylename": "a", "usage": "living"}
+        polygon = self._square(stylename="b")
+        polygon["face_styles"] = ["b"] * 6
+        faces, widgets = rooms_to_faces_and_widgets([cuboid, polygon])
+        assert len(faces) == 12   # 6 cuboid + 6 polygon
+        assert len(widgets) == 2

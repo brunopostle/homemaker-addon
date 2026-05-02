@@ -93,6 +93,28 @@ describe("snapToFaces", () => {
     it("returns unchanged coord when rooms list is empty", () => {
         expect(snapToFaces(3.5, 0, [], null)).toBe(3.5);
     });
+
+    it("skips polygon rooms on X axis (they have no position)", () => {
+        const poly = { type: "polygon", vertices: [[0,0],[4,0],[4,4],[0,4]], elevation: 0, height: 3 };
+        // Should not throw and should not snap on X axis
+        expect(snapToFaces(0.05, 0, [poly], null)).toBe(0.05);
+    });
+
+    it("skips polygon rooms on Z axis", () => {
+        const poly = { type: "polygon", vertices: [[0,0],[4,0],[4,4],[0,4]], elevation: 0, height: 3 };
+        expect(snapToFaces(0.05, 2, [poly], null)).toBe(0.05);
+    });
+
+    it("snaps polygon room floor/ceiling on Y axis", () => {
+        const poly = { type: "polygon", vertices: [[0,0],[4,0],[4,4],[0,4]], elevation: 2, height: 3 };
+        expect(snapToFaces(2.05, 1, [poly], null)).toBe(2);    // snap to floor y=2
+        expect(snapToFaces(4.9,  1, [poly], null)).toBe(5);    // snap to ceiling y=5
+    });
+
+    it("does not snap to polygon room Y faces when dragging that same polygon room", () => {
+        const poly = { type: "polygon", vertices: [[0,0],[4,0],[4,4],[0,4]], elevation: 2, height: 3 };
+        expect(snapToFaces(2.05, 1, [poly], poly)).toBe(2.05);
+    });
 });
 
 // ---------------------------------------------------------------------------

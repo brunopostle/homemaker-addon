@@ -156,19 +156,31 @@ class WidgetData(BaseModel):
 
 
 class RoomData(BaseModel):
-    position:    list[float]            # [px, py, pz] — Three.js Y-up coords
-    size:        list[float]            # [w, d, h]
-    face_styles: Optional[list[Optional[str]]] = None  # per-face stylenames, length ≤ 6; None entries fall back to stylename
-    stylename:   str = "default"        # fallback when face_styles absent/short
+    # Cuboid fields (required for cuboid rooms, absent for polygon rooms)
+    position:    Optional[list[float]] = None   # [px, py, pz] — Three.js Y-up coords
+    size:        Optional[list[float]] = None   # [w, d, h]
+    # Polygon fields (present instead of position/size for polygon rooms)
+    type:        str = "cuboid"
+    vertices:    Optional[list[list[float]]] = None  # [[x,z],...] Three.js XZ plane
+    elevation:   float = 0.0
+    height:      float = 3.0
+    # Common fields
+    face_styles: Optional[list[Optional[str]]] = None
+    stylename:   str = "default"
     usage:       str = "living"
 
     @field_validator("position")
     @classmethod
-    def val_position(cls, v): return _check_coords(v, 3, "position")
+    def val_position(cls, v):
+        if v is None:
+            return v
+        return _check_coords(v, 3, "position")
 
     @field_validator("size")
     @classmethod
     def val_size(cls, v):
+        if v is None:
+            return v
         if len(v) != 3:
             raise ValueError(f"size must have exactly 3 elements, got {len(v)}")
         for dim in v:
@@ -176,6 +188,36 @@ class RoomData(BaseModel):
                 raise ValueError(f"size dimension {dim} m is below minimum {_MIN_DIM} m")
             if dim > _MAX_DIM:
                 raise ValueError(f"size dimension {dim} m exceeds maximum {_MAX_DIM} m")
+        return v
+
+    @field_validator("vertices")
+    @classmethod
+    def val_vertices(cls, v):
+        if v is None:
+            return v
+        if len(v) < 3:
+            raise ValueError(f"polygon must have at least 3 vertices, got {len(v)}")
+        if len(v) > 64:
+            raise ValueError(f"polygon must have at most 64 vertices, got {len(v)}")
+        for i, vert in enumerate(v):
+            _check_coords(vert, 2, f"polygon vertex {i}")
+        return v
+
+    @field_validator("height")
+    @classmethod
+    def val_height_field(cls, v):
+        if v < _MIN_DIM:
+            raise ValueError(f"height {v} m is below minimum {_MIN_DIM} m")
+        if v > _MAX_DIM:
+            raise ValueError(f"height {v} m exceeds maximum {_MAX_DIM} m")
+        return v
+
+    @field_validator("elevation")
+    @classmethod
+    def val_elevation(cls, v):
+        lo, hi = _COORD_RANGE
+        if not (lo <= v <= hi):
+            raise ValueError(f"elevation {v} out of range [{lo}, {hi}]")
         return v
 
     @field_validator("stylename")
@@ -194,12 +236,35 @@ class RoomData(BaseModel):
     def val_face_styles(cls, v):
         if v is None:
             return v
-        if len(v) > 6:
-            raise ValueError(f"face_styles must have at most 6 entries, got {len(v)}")
+        if len(v) > 66:  # hard cap: 64 polygon walls + floor + ceiling
+            raise ValueError(f"face_styles must have at most 66 entries, got {len(v)}")
         for s in v:
             if s is not None:
                 _check_style(s, "face style")
         return v
+
+    @model_validator(mode="after")
+    def val_room_geometry(self):
+        if self.vertices:
+            # Polygon room — face_styles bounded by vertex count
+            max_fs = len(self.vertices) + 2
+            if self.face_styles and len(self.face_styles) > max_fs:
+                raise ValueError(
+                    f"polygon with {len(self.vertices)} vertices: "
+                    f"face_styles must have at most {max_fs} entries"
+                )
+        else:
+            # Cuboid room — position and size required
+            if self.position is None:
+                raise ValueError("cuboid room requires 'position'")
+            if self.size is None:
+                raise ValueError("cuboid room requires 'size'")
+            if self.face_styles and len(self.face_styles) > 6:
+                raise ValueError(
+                    f"cuboid room face_styles must have at most 6 entries, "
+                    f"got {len(self.face_styles)}"
+                )
+        return self
 
 
 class GenerateRequest(BaseModel):
