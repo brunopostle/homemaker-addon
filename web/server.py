@@ -80,10 +80,11 @@ class WidgetData(BaseModel):
     usage: str = "living"
 
 class RoomData(BaseModel):
-    position: list[float]   # [px, py, pz] — Three.js Y-up coords
-    size: list[float]       # [w, d, h]
-    stylename: str = "default"
-    usage: str = "living"
+    position:    list[float]            # [px, py, pz] — Three.js Y-up coords
+    size:        list[float]            # [w, d, h]
+    face_styles: Optional[list[str]] = None  # per-face stylenames, length 6
+    stylename:   str = "default"        # fallback when face_styles absent/short
+    usage:       str = "living"
 
 class GenerateRequest(BaseModel):
     name: str = "My Building"

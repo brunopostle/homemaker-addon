@@ -285,7 +285,7 @@ class TestFacePlanes:
         assert sorted(plane_ys) == pytest.approx([3.0, 8.0])
         assert sorted(plane_zs) == pytest.approx([2.0, 8.0])
 
-    def test_stylename_on_all_faces(self):
+    def test_stylename_fallback_when_no_face_styles(self):
         room = {
             "position": [0, 0, 0],
             "size": [4, 4, 3],
@@ -294,3 +294,75 @@ class TestFacePlanes:
         }
         faces, _ = rooms_to_faces_and_widgets([room])
         assert all(f.Get("stylename") == "brick" for f in faces)
+
+
+# ---------------------------------------------------------------------------
+# rooms_to_faces_and_widgets — per-face styles
+# ---------------------------------------------------------------------------
+
+class TestPerFaceStyles:
+    """face_styles[i] overrides the room-level stylename for each face."""
+
+    # Editor face_styles index order matches geometry_adapter face_vertex_groups:
+    # 0=floor, 1=right, 2=ceiling, 3=left, 4=back, 5=front
+
+    def _room(self, face_styles=None, stylename="default"):
+        r = {
+            "position": [0, 0, 0],
+            "size": [4, 4, 3],
+            "stylename": stylename,
+            "usage": "living",
+        }
+        if face_styles is not None:
+            r["face_styles"] = face_styles
+        return r
+
+    def test_all_faces_get_explicit_style(self):
+        styles = ["s0", "s1", "s2", "s3", "s4", "s5"]
+        faces, _ = rooms_to_faces_and_widgets([self._room(face_styles=styles)])
+        assert len(faces) == 6
+        assert [f.Get("stylename") for f in faces] == styles
+
+    def test_partial_face_styles_falls_back(self):
+        # Only first 3 faces specified; rest fall back to room stylename.
+        faces, _ = rooms_to_faces_and_widgets([
+            self._room(face_styles=["a", "b", "c"], stylename="default")
+        ])
+        assert faces[0].Get("stylename") == "a"
+        assert faces[1].Get("stylename") == "b"
+        assert faces[2].Get("stylename") == "c"
+        assert faces[3].Get("stylename") == "default"
+        assert faces[4].Get("stylename") == "default"
+        assert faces[5].Get("stylename") == "default"
+
+    def test_none_entry_falls_back_to_stylename(self):
+        faces, _ = rooms_to_faces_and_widgets([
+            self._room(face_styles=["party", None, None, "party", None, None],
+                       stylename="default")
+        ])
+        assert faces[0].Get("stylename") == "party"
+        assert faces[1].Get("stylename") == "default"
+        assert faces[2].Get("stylename") == "default"
+        assert faces[3].Get("stylename") == "party"
+
+    def test_empty_face_styles_falls_back_to_stylename(self):
+        faces, _ = rooms_to_faces_and_widgets([self._room(face_styles=[], stylename="fox")])
+        assert all(f.Get("stylename") == "fox" for f in faces)
+
+    def test_face_styles_none_falls_back_to_stylename(self):
+        faces, _ = rooms_to_faces_and_widgets([self._room(face_styles=None, stylename="fox")])
+        assert all(f.Get("stylename") == "fox" for f in faces)
+
+    def test_two_rooms_independent_face_styles(self):
+        rooms = [
+            self._room(face_styles=["a"] * 6, stylename="a"),
+            {
+                "position": [4, 0, 0], "size": [4, 4, 3],
+                "stylename": "b",
+                "face_styles": ["b"] * 6,
+                "usage": "bedroom",
+            },
+        ]
+        faces, _ = rooms_to_faces_and_widgets(rooms)
+        assert all(f.Get("stylename") == "a" for f in faces[:6])
+        assert all(f.Get("stylename") == "b" for f in faces[6:])

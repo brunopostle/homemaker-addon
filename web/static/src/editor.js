@@ -28,10 +28,13 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 const FACE_FILL_COLOR    = 0x4488cc;
 const FACE_FILL_OPACITY  = 0.18;
 const FACE_EDGE_COLOR    = 0x88bbee;
-const HANDLE_COLOR       = 0xffffff;
-const HANDLE_HOVER_COLOR = 0xffdd44;
-const HANDLE_ACTIVE_COLOR= 0xff8800;
-const HANDLE_RADIUS      = 0.12;   // metres
+const HANDLE_COLOR        = 0xffffff;
+const HANDLE_STYLED_COLOR = 0x88ddff;  // face has a style different from room default
+const HANDLE_HOVER_COLOR  = 0xffdd44;
+const HANDLE_RADIUS       = 0.12;   // metres
+
+// Human-readable name for each face index (used in props panel label).
+const FACE_NAMES = ["Floor", "Right wall", "Ceiling", "Left wall", "Back wall", "Front wall"];
 const SNAP_THRESHOLD     = 0.15;   // metres
 const GRID_SNAP          = 0.1;    // metres — coarse grid for free dragging
 const DEFAULT_W = 4.0, DEFAULT_D = 4.0, DEFAULT_H = 3.0;
@@ -90,9 +93,10 @@ window.__hmCamera   = camera;
  *             _group:THREE.Group, _handles:THREE.Mesh[] }} Room
  */
 
-let _rooms   = [];   // Room[]
-let _nextId  = 1;
-let _selected = null; // Room | null
+let _rooms            = [];   // Room[]
+let _nextId           = 1;
+let _selected         = null; // Room | null
+let _selectedFaceIdx  = null; // face index (0-5) of the last clicked handle, or null
 
 // ---------------------------------------------------------------------------
 // Room visual construction
@@ -133,9 +137,13 @@ function _makeRoomGroup(room) {
     const hy = h / 2 + normal.y * h / 2;
     const hz = d / 2 + normal.z * d / 2;
 
+    // Blue tint when this face has a style different from the room default.
+    const faceStyle = room.face_styles?.[fi] ?? room.stylename;
+    const baseColor = faceStyle !== room.stylename ? HANDLE_STYLED_COLOR : HANDLE_COLOR;
+
     const mesh = new THREE.Mesh(
       handleGeo,
-      new THREE.MeshBasicMaterial({ color: HANDLE_COLOR })
+      new THREE.MeshBasicMaterial({ color: baseColor })
     );
     mesh.position.set(hx, hy, hz);
     mesh.userData.isHandle = true;
@@ -167,14 +175,24 @@ function _updateRoomGroup(room) {
 }
 
 function _setSelected(room) {
-  // Reset all fills
+  // Deselect any face.
+  _selectedFaceIdx = null;
+  const faceRow    = document.getElementById("face-style-row");
+  const faceDivider = document.getElementById("face-divider");
+  if (faceRow)    faceRow.style.display    = "none";
+  if (faceDivider) faceDivider.style.display = "none";
+
+  // Reset all fills and handle colours.
   _rooms.forEach((r) => {
     if (r._group) {
       r._group.children.forEach((c) => {
         if (c.isMesh && c.userData.isRoomFill)
           c.material.color.setHex(FACE_FILL_COLOR);
-        if (c.isMesh && c.userData.isHandle)
-          c.material.color.setHex(HANDLE_COLOR);
+        if (c.isMesh && c.userData.isHandle) {
+          const fi = c.userData.faceIndex;
+          const faceStyle = r.face_styles?.[fi] ?? r.stylename;
+          c.material.color.setHex(faceStyle !== r.stylename ? HANDLE_STYLED_COLOR : HANDLE_COLOR);
+        }
       });
     }
   });
@@ -203,6 +221,25 @@ function _setSelected(room) {
   }
 }
 
+function _selectFace(handleMesh) {
+  const room = _roomById(handleMesh.userData.roomId);
+  if (!room) return;
+  // Select the room (resets _selectedFaceIdx to null), then override.
+  _setSelected(room);
+  _selectedFaceIdx = handleMesh.userData.faceIndex;
+
+  const faceRow     = document.getElementById("face-style-row");
+  const faceDivider = document.getElementById("face-divider");
+  const faceLabel   = document.getElementById("face-style-label");
+  const faceSel     = document.getElementById("face-style-sel");
+  if (faceRow && faceLabel && faceSel) {
+    faceLabel.textContent = FACE_NAMES[_selectedFaceIdx];
+    faceSel.value = room.face_styles?.[_selectedFaceIdx] ?? room.stylename;
+    faceRow.style.display    = "";
+    if (faceDivider) faceDivider.style.display = "";
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Geometry serialisation  (→ server)
 // ---------------------------------------------------------------------------
@@ -210,10 +247,10 @@ window.__hmGetGeometry = function () {
   return {
     name: "My Building",
     rooms: _rooms.map((r) => ({
-      position: r.position,
-      size: r.size,
-      stylename: r.stylename,
-      usage: r.usage,
+      position:    r.position,
+      size:        r.size,
+      face_styles: r.face_styles,
+      usage:       r.usage,
     })),
   };
 };
@@ -228,14 +265,16 @@ function _emitEdit() {
 function addRoom(options = {}) {
   const usage    = document.getElementById("sel-usage")?.value || "living";
   const stylename= document.getElementById("sel-style")?.value  || "default";
+  const resolvedStyle = options.stylename || stylename;
   const room = {
-    id:        `r${_nextId++}`,
-    position:  options.position  || [0, 0, 0],
-    size:      options.size      || [DEFAULT_W, DEFAULT_D, DEFAULT_H],
-    stylename: options.stylename || stylename,
-    usage:     options.usage     || usage,
-    _group:    null,
-    _handles:  [],
+    id:          `r${_nextId++}`,
+    position:    options.position    || [0, 0, 0],
+    size:        options.size        || [DEFAULT_W, DEFAULT_D, DEFAULT_H],
+    stylename:   resolvedStyle,
+    face_styles: options.face_styles || Array(6).fill(resolvedStyle),
+    usage:       options.usage       || usage,
+    _group:      null,
+    _handles:    [],
   };
   _rooms.push(room);
   _makeRoomGroup(room);
@@ -259,10 +298,31 @@ document.getElementById("delete-room")?.addEventListener("click", () => {
 
 // Props panel changes
 document.getElementById("room-style")?.addEventListener("change", (e) => {
-  if (_selected) { _selected.stylename = e.target.value; _emitEdit(); }
+  if (_selected) {
+    _selected.stylename   = e.target.value;
+    _selected.face_styles = Array(6).fill(e.target.value);
+    _updateRoomGroup(_selected);
+    _emitEdit();
+  }
 });
 document.getElementById("room-usage")?.addEventListener("change", (e) => {
   if (_selected) { _selected.usage = e.target.value; _emitEdit(); }
+});
+document.getElementById("face-style-sel")?.addEventListener("change", (e) => {
+  if (_selected && _selectedFaceIdx !== null) {
+    const fi = _selectedFaceIdx;
+    _selected.face_styles[fi] = e.target.value;
+    _updateRoomGroup(_selected);
+    // Restore face selection — _updateRoomGroup → _setSelected resets it.
+    _selectedFaceIdx = fi;
+    const faceRow     = document.getElementById("face-style-row");
+    const faceDivider = document.getElementById("face-divider");
+    const faceLabel   = document.getElementById("face-style-label");
+    if (faceRow)     faceRow.style.display     = "";
+    if (faceDivider) faceDivider.style.display = "";
+    if (faceLabel)   faceLabel.textContent     = FACE_NAMES[fi];
+    _emitEdit();
+  }
 });
 
 // ---------------------------------------------------------------------------
@@ -333,9 +393,10 @@ function _beginHandleDrag(event, handleMesh) {
     faceIndex: fi,
     axis,
     sign,
-    startSize: [...room.size],
-    startPos:  [...room.position],
-    dragPlane: _dragPlaneHelper.clone(),
+    startSize:  [...room.size],
+    startPos:   [...room.position],
+    dragPlane:  _dragPlaneHelper.clone(),
+    handleMesh,           // retained so pointerup can detect a face-handle click
   };
 
   controls.enabled = false;
@@ -457,7 +518,14 @@ canvas.addEventListener("pointermove", (e) => {
 
 canvas.addEventListener("pointerup", (e) => {
   if (_drag) {
+    const dx = e.clientX - (_pointerDownPos?.x ?? e.clientX);
+    const dy = e.clientY - (_pointerDownPos?.y ?? e.clientY);
+    const { handleMesh } = _drag;
     _endHandleDrag();
+    // Short movement = click on handle → select that face for per-face style editing.
+    if (Math.hypot(dx, dy) <= 4 && handleMesh) {
+      _selectFace(handleMesh);
+    }
     return;
   }
 

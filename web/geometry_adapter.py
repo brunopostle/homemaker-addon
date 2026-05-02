@@ -99,20 +99,31 @@ def rooms_to_faces_and_widgets(rooms: list) -> tuple:
             "lfc": Vertex.ByCoordinates(px, qy, qz),   # left-front-ceiling
         }
 
-        # All 6 faces — including ceiling — so partial overlaps with adjacent
-        # rooms are handled correctly by CellComplex.ByFaces().
-        face_vertex_groups = [
-            [verts["lbf"], verts["rbf"], verts["rbc"], verts["lbc"]],  # back wall  (y=py)
-            [verts["rbf"], verts["rff"], verts["rfc"], verts["rbc"]],  # right wall (x=qx)
-            [verts["rff"], verts["lff"], verts["lfc"], verts["rfc"]],  # front wall (y=qy)
-            [verts["lff"], verts["lbf"], verts["lbc"], verts["lfc"]],  # left wall  (x=px)
-            [verts["lbf"], verts["rbf"], verts["rff"], verts["lff"]],  # floor      (z=pz)
-            [verts["lbc"], verts["rbc"], verts["rfc"], verts["lfc"]],  # ceiling    (z=qz)
+        # Per-face styles: face_styles[i] maps to each face below (editor face index order:
+        # 0=floor(−Y) 1=right(+X) 2=ceiling(+Y) 3=left(−X) 4=back(−Z) 5=front(+Z)).
+        # Falls back to room-level stylename for any missing entry.
+        raw_face_styles = room.get("face_styles") or []
+        face_styles = [
+            (raw_face_styles[i] if i < len(raw_face_styles) and raw_face_styles[i]
+             else stylename)
+            for i in range(6)
         ]
 
-        for vg in face_vertex_groups:
+        # All 6 faces — including ceiling — so partial overlaps with adjacent
+        # rooms are handled correctly by CellComplex.ByFaces().
+        # Face order matches editor FACE_NORMALS / face_styles indexing.
+        face_vertex_groups = [
+            [verts["lbf"], verts["rbf"], verts["rff"], verts["lff"]],  # 0: floor      (z=pz)
+            [verts["rbf"], verts["rff"], verts["rfc"], verts["rbc"]],  # 1: right wall (x=qx)
+            [verts["lbc"], verts["rbc"], verts["rfc"], verts["lfc"]],  # 2: ceiling    (z=qz)
+            [verts["lff"], verts["lbf"], verts["lbc"], verts["lfc"]],  # 3: left wall  (x=px)
+            [verts["lbf"], verts["rbf"], verts["rbc"], verts["lbc"]],  # 4: back wall  (y=py)
+            [verts["rff"], verts["lff"], verts["lfc"], verts["rfc"]],  # 5: front wall (y=qy)
+        ]
+
+        for i, vg in enumerate(face_vertex_groups):
             face = Face.ByVertices(vg)
-            face.Set("stylename", stylename)
+            face.Set("stylename", face_styles[i])
             faces.append(face)
 
         # Widget centroid in IFC space
