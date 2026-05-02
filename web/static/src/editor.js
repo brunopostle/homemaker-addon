@@ -357,10 +357,11 @@ function _updateHandleDrag(event) {
   // Raw world coordinate of the dragged face
   let worldCoord = hit[axisNames[axis]];
 
-  // Snap to grid
-  worldCoord = Math.round(worldCoord / GRID_SNAP) * GRID_SNAP;
+  // Face snap takes priority: check before grid so grid can't push us off a face plane.
+  worldCoord = _snapToOtherFaces(worldCoord, axis, room);
 
-  // Snap to face planes of other rooms
+  // Grid snap only if face snap didn't engage.
+  worldCoord = Math.round(worldCoord / GRID_SNAP) * GRID_SNAP;
   worldCoord = _snapToOtherFaces(worldCoord, axis, room);
 
   // Derive new position + size from the new face location
@@ -530,5 +531,9 @@ _animate();
 // ---------------------------------------------------------------------------
 // Seed with a default room pair so the app opens with something visible
 // ---------------------------------------------------------------------------
+// Two ground-floor rooms sharing the wall at x=4.
+// position[1] (Three.js Y) = 0 for all rooms on the ground floor.
+// The second room is narrower in depth (size[1]=3 vs 4) to demonstrate
+// partial wall overlap — homemaker infers a door-sized opening there.
 addRoom({ position: [0, 0, 0], size: [4, 4, 3], usage: "living",  stylename: "default" });
-addRoom({ position: [4, 1, 0], size: [3, 2, 3], usage: "bedroom", stylename: "default" });
+addRoom({ position: [4, 0, 0], size: [3, 3, 3], usage: "bedroom", stylename: "default" });
