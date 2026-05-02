@@ -22,8 +22,10 @@ let _lastGeneratedAt = 0;
 let _inFlight        = false;
 let _editActive      = false;
 let _solidTimer      = null;
+let _lastIfcBuffer   = null;   // most recently generated IFC bytes, for download
 
-const statusEl = document.getElementById("status");
+const statusEl     = document.getElementById("status");
+const downloadBtn  = document.getElementById("btn-download");
 
 function setStatus(text, cls = "") {
   statusEl.textContent = text;
@@ -44,6 +46,17 @@ window.addEventListener("hm:edit", () => {
 document.getElementById("btn-generate")?.addEventListener("click", () => {
   clearTimeout(_debounceTimer);
   _forceRegenerate();
+});
+
+/** Download the most recently generated IFC file. */
+downloadBtn?.addEventListener("click", () => {
+  if (!_lastIfcBuffer) return;
+  const url = URL.createObjectURL(new Blob([_lastIfcBuffer], { type: "application/x-step" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "building.ifc";
+  a.click();
+  URL.revokeObjectURL(url);
 });
 
 function _maybeRegenerate() {
@@ -84,6 +97,8 @@ async function _forceRegenerate() {
 
     const buf = await resp.arrayBuffer();
     _lastGeneratedAt = Date.now();
+    _lastIfcBuffer = buf;
+    if (downloadBtn) downloadBtn.disabled = false;
 
     await loadIfc(buf);
 

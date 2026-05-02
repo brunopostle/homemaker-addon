@@ -63,6 +63,7 @@ SHARE_DIR=/path/to/share uvicorn server:app ...
 | Top-down view | **T** key or **Top** button |
 | Delete room | **Delete** / **Backspace** with room selected, or "Delete room" button |
 | Force regeneration | **Generate IFC** button |
+| Download the IFC file | **Download IFC** button (enabled after first successful generation) |
 
 ### Style vs usage
 
