@@ -199,6 +199,17 @@ cd tests
 python -m pytest
 ```
 
-`test_geometry_adapter.py` covers the coordinate axis swap, per-face style assignment, face plane geometry, and widget centroid placement.  `tests/pytest.ini` prevents pytest from traversing up to the Blender addon `__init__.py`.
+`test_geometry_adapter.py` covers the coordinate axis swap, per-face style assignment, face plane geometry, and widget centroid placement.  `test_server_validation.py` covers all Pydantic input validators (position/size bounds, stylename sanitisation, usage whitelist, edge lengths) without requiring topologic_core or a running server.  `tests/pytest.ini` prevents pytest from traversing up to the Blender addon `__init__.py`.
 
-There are no JavaScript tests at present.  The snap and face-drag arithmetic in `editor.js` are the highest-value candidates for unit tests using Vitest.
+JavaScript unit tests use [Vitest](https://vitest.dev/) and run in Node — no browser required.
+
+```bash
+cd web/static
+npm test
+```
+
+`editor-utils.test.js` covers the pure geometry helpers extracted from `editor.js`:
+
+- `SIZE_AXES` mapping (world axis → size array index)
+- `snapToFaces` — face-snap engagement, threshold boundary, axis variants, self-exclusion
+- `computeFaceDrag` — all six face directions, minimum-dimension guard, far-face invariant across multiple drag frames (catches the drift bug that occurs when `room.position` is read instead of the captured `startPos`)
