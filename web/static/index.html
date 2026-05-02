@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>homemaker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #1a1a1a;
+      color: #e0e0e0;
+      font-family: system-ui, sans-serif;
+      font-size: 13px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      background: #242424;
+      border-bottom: 1px solid #333;
+      flex-shrink: 0;
+    }
+
+    #toolbar h1 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-right: 8px;
+      color: #fff;
+    }
+
+    button {
+      background: #383838;
+      border: 1px solid #555;
+      color: #e0e0e0;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    button:hover { background: #484848; }
+    button.primary { background: #2563eb; border-color: #3b82f6; color: #fff; }
+    button.primary:hover { background: #1d4ed8; }
+
+    select {
+      background: #383838;
+      border: 1px solid #555;
+      color: #e0e0e0;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    label { font-size: 12px; color: #aaa; }
+
+    #status {
+      margin-left: auto;
+      font-size: 11px;
+      color: #888;
+      min-width: 160px;
+      text-align: right;
+    }
+    #status.generating { color: #f59e0b; }
+    #status.ready      { color: #22c55e; }
+    #status.error      { color: #ef4444; }
+
+    #viewport {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Room properties panel — appears when a room is selected */
+    #props-panel {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 200px;
+      background: rgba(30,30,30,0.92);
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 12px;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+    #props-panel.visible { display: flex; }
+    #props-panel h2 { font-size: 12px; font-weight: 600; color: #fff; }
+
+    .prop-row {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .prop-row label { font-size: 11px; color: #888; }
+    .prop-row select, .prop-row input {
+      width: 100%;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      color: #e0e0e0;
+      padding: 3px 6px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+
+    #delete-room {
+      background: #7f1d1d;
+      border-color: #991b1b;
+      color: #fca5a5;
+      margin-top: 4px;
+    }
+    #delete-room:hover { background: #991b1b; }
+
+    /* Keyboard shortcut hint */
+    #hints {
+      position: absolute;
+      bottom: 8px;
+      left: 10px;
+      font-size: 10px;
+      color: #555;
+      line-height: 1.6;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<div id="toolbar">
+  <h1>homemaker</h1>
+
+  <button id="btn-add-room" class="primary">+ Room</button>
+
+  <label for="sel-style">Style</label>
+  <select id="sel-style">
+    <option value="default">default</option>
+  </select>
+
+  <label for="sel-usage">Usage</label>
+  <select id="sel-usage">
+    <option value="living">living</option>
+    <option value="bedroom">bedroom</option>
+    <option value="kitchen">kitchen</option>
+    <option value="circulation">circulation</option>
+    <option value="toilet">toilet</option>
+    <option value="stair">stair</option>
+    <option value="void">void</option>
+    <option value="outside">outside</option>
+  </select>
+
+  <button id="btn-top-view">Top</button>
+  <button id="btn-generate">Generate IFC</button>
+
+  <span id="status">—</span>
+</div>
+
+<div id="viewport">
+  <canvas id="canvas"></canvas>
+
+  <div id="props-panel">
+    <h2>Room</h2>
+    <div class="prop-row">
+      <label>Style</label>
+      <select id="room-style"></select>
+    </div>
+    <div class="prop-row">
+      <label>Usage</label>
+      <select id="room-usage">
+        <option value="living">living</option>
+        <option value="bedroom">bedroom</option>
+        <option value="kitchen">kitchen</option>
+        <option value="circulation">circulation</option>
+        <option value="toilet">toilet</option>
+        <option value="stair">stair</option>
+        <option value="void">void</option>
+        <option value="outside">outside</option>
+      </select>
+    </div>
+    <button id="delete-room">Delete room</button>
+  </div>
+
+  <div id="hints">
+    Click: select &nbsp;|&nbsp; Drag face handle: resize &nbsp;|&nbsp;
+    Right-drag / scroll: orbit &nbsp;|&nbsp; T: top view
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.168.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module" src="src/editor.js"></script>
+<script type="module" src="src/preview.js"></script>
+<script type="module" src="src/regenerate.js"></script>
+
+</body>
+</html>

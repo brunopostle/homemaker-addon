@@ -1,0 +1,25 @@
+{
+  "name": "homemaker-web",
+  "version": "0.1.0",
+  "description": "Three.js cuboid editor + IFC viewer for homemaker-addon",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite static/",
+    "build": "vite build static/ --outDir dist"
+  },
+  "dependencies": {
+    "three": "^0.168.0",
+    "@thatopen/components": "^2.4.0",
+    "@thatopen/components-front": "^2.4.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "notes": [
+    "The Three.js and @thatopen/components imports in the JS files use",
+    "an importmap (in index.html) pointing to jsDelivr CDN, so no build",
+    "step is required for development. Run 'npm run build' only for",
+    "a production bundle where you want everything self-hosted."
+  ]
+}
