@@ -15,6 +15,7 @@ the building geometry is correct in the generated IFC file:
   IFC Z  = position[1]   (Three.js Y, elevation)
 """
 
+import topologist  # applies Face.ByVertices / Vertex.Set monkey-patches
 from topologic_core import Vertex, Face
 
 
