@@ -36,17 +36,18 @@ const SNAP_THRESHOLD     = 0.15;   // metres
 const GRID_SNAP          = 0.1;    // metres — coarse grid for free dragging
 const DEFAULT_W = 4.0, DEFAULT_D = 4.0, DEFAULT_H = 3.0;
 
-// Face indices: 0=back(−y) 1=right(+x) 2=front(+y) 3=left(−x) 4=floor(−z) 5=ceiling(+z)
+// Face indices: 0=floor(−y) 1=right(+x) 2=ceiling(+y) 3=left(−x) 4=back(−z) 5=front(+z)
+// Three.js is Y-up: Y = elevation, Z = depth.
 const FACE_NORMALS = [
-  new THREE.Vector3( 0,-1, 0),
-  new THREE.Vector3( 1, 0, 0),
-  new THREE.Vector3( 0, 1, 0),
-  new THREE.Vector3(-1, 0, 0),
-  new THREE.Vector3( 0, 0,-1),
-  new THREE.Vector3( 0, 0, 1),
+  new THREE.Vector3( 0,-1, 0),  // floor   (−Y, bottom)
+  new THREE.Vector3( 1, 0, 0),  // right   (+X)
+  new THREE.Vector3( 0, 1, 0),  // ceiling (+Y, top)
+  new THREE.Vector3(-1, 0, 0),  // left    (−X)
+  new THREE.Vector3( 0, 0,-1),  // back    (−Z)
+  new THREE.Vector3( 0, 0, 1),  // front   (+Z)
 ];
 // Which axis & sign each face handle moves on drag
-const FACE_AXIS  = [1, 0, 1, 0, 2, 2];   // 0=x 1=y 2=z
+const FACE_AXIS  = [1, 0, 1, 0, 2, 2];   // 0=x 1=y(elevation) 2=z(depth)
 const FACE_SIGN  = [-1, 1, 1, -1, -1, 1];
 
 // ---------------------------------------------------------------------------
@@ -206,10 +207,8 @@ function _setSelected(room) {
 // Geometry serialisation  (→ server)
 // ---------------------------------------------------------------------------
 window.__hmGetGeometry = function () {
-  const styleSel = document.getElementById("sel-style");
   return {
     name: "My Building",
-    share_dir: styleSel?.value || "default",
     rooms: _rooms.map((r) => ({
       position: r.position,
       size: r.size,
@@ -372,7 +371,6 @@ function _updateHandleDrag(event) {
 
   if (sign > 0) {
     // Moving the +ve face: only size changes
-    const minPos = newPos[axis === 0 ? 0 : axis === 1 ? 1 : 2];
     const newDim = worldCoord - room.position[axis];
     if (newDim < 0.3) return; // minimum room dimension
     newSize[sizeIdx] = newDim;

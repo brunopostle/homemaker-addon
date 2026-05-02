@@ -3,19 +3,28 @@
 Wraps the homemaker-addon Python library to expose IFC generation over HTTP.
 The heavy lifting (topologic_core, ifcopenshell) runs server-side; the
 browser receives a binary IFC file and renders it with @thatopen/components.
+
+Style / usage terminology
+-------------------------
+share_dir   — server-side filesystem path to the share/ directory tree.
+              Contains all style definitions. Never client-controlled.
+stylename   — short leaf-directory name within share_dir (e.g. "default",
+              "foxhouse", "simple"). Set per face/room by the client.
+usage       — room type string ("bedroom", "kitchen", "living", …).
+              Set per room (widget vertex) by the client.
 """
 
-import io
 import os
 import sys
 import pathlib
 import tempfile
 import asyncio
+from contextlib import asynccontextmanager
 from concurrent.futures import ProcessPoolExecutor
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import Response, FileResponse
+from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -32,7 +41,7 @@ import molior.ifc as molior_ifc
 from geometry_adapter import faces_from_json, widgets_from_json, rooms_to_faces_and_widgets
 
 # Locate share/ — works both from a git clone and from a pip-installed package.
-# Allow override via environment variable for Docker deployments.
+# Override via SHARE_DIR env var for Docker deployments.
 def _find_share_dir() -> str:
     try:
         import importlib.resources
@@ -46,10 +55,16 @@ def _find_share_dir() -> str:
 
 _share_dir = os.environ.get("SHARE_DIR", _find_share_dir())
 
-app = FastAPI(title="homemaker-web", version="0.1.0")
-
 # One worker process per CPU for CPU-bound topologic_core work.
 _executor = ProcessPoolExecutor(max_workers=2)
+
+
+@asynccontextmanager
+async def _lifespan(app: FastAPI):
+    yield
+    _executor.shutdown(wait=False)
+
+app = FastAPI(title="homemaker-web", version="0.1.0", lifespan=_lifespan)
 
 
 # ---------------------------------------------------------------------------
@@ -65,15 +80,14 @@ class WidgetData(BaseModel):
     usage: str = "living"
 
 class RoomData(BaseModel):
-    position: list[float]          # [px, py, pz] — Three.js coords (Y-up)
-    size: list[float]              # [w, d, h]
+    position: list[float]   # [px, py, pz] — Three.js Y-up coords
+    size: list[float]       # [w, d, h]
     stylename: str = "default"
     usage: str = "living"
 
 class GenerateRequest(BaseModel):
     name: str = "My Building"
-    share_dir: Optional[str] = None  # style name or absolute path; None = server default
-    faces: Optional[list[FaceData]] = None    # raw face list (advanced)
+    faces: Optional[list[FaceData]] = None    # raw face list (advanced use)
     widgets: Optional[list[WidgetData]] = None
     rooms: Optional[list[RoomData]] = None    # cuboid editor format (preferred)
 
@@ -95,15 +109,6 @@ def _generate_ifc(request_dict: dict, share_dir: str) -> bytes:
     import molior.ifc as molior_ifc
     from geometry_adapter import faces_from_json, widgets_from_json, rooms_to_faces_and_widgets
 
-    # Resolve share_dir: bare style name → parent share directory
-    requested = request_dict.get("share_dir")
-    if requested:
-        candidate = pathlib.Path(share_dir) / requested
-        resolved_share = str(candidate.parent) if candidate.is_dir() else share_dir
-    else:
-        resolved_share = share_dir
-
-    # Build face + widget lists
     if request_dict.get("rooms"):
         faces, widgets = rooms_to_faces_and_widgets(request_dict["rooms"])
     else:
@@ -119,7 +124,7 @@ def _generate_ifc(request_dict: dict, share_dir: str) -> bytes:
         faces=faces,
         widgets=widgets,
         name=request_dict.get("name", "My Building"),
-        share_dir=resolved_share,
+        share_dir=share_dir,
     )
     molior_obj.execute()
 
@@ -167,10 +172,7 @@ def _validate_geometry(request_dict: dict, share_dir: str) -> dict:
 
 @app.post("/api/generate")
 async def generate(request: GenerateRequest):
-    """Generate an IFC building from cuboid rooms or raw face geometry.
-
-    Returns the IFC file as application/octet-stream.
-    """
+    """Generate an IFC building from cuboid rooms or raw face geometry."""
     loop = asyncio.get_running_loop()
     try:
         ifc_bytes = await loop.run_in_executor(
@@ -193,23 +195,25 @@ async def generate(request: GenerateRequest):
 
 @app.get("/api/styles")
 def list_styles():
-    """List available style names from the share directory."""
+    """List stylenames available in the share directory.
+
+    "default" is always first — it is the root-level style (share/ itself,
+    not a named subdirectory).  All other names are leaf subdirectory names
+    that can be assigned to individual room faces.
+    """
     share = pathlib.Path(_share_dir)
     if not share.is_dir():
-        return {"styles": []}
-    styles = sorted(
+        return {"styles": ["default"]}
+    subdirs = sorted(
         d.name for d in share.iterdir()
         if d.is_dir() and not d.name.startswith(".")
     )
-    return {"styles": styles, "share_dir": str(share)}
+    return {"styles": ["default"] + subdirs}
 
 
 @app.post("/api/validate")
 async def validate(request: GenerateRequest):
-    """Quick geometry validation: build CellComplex only (no full IFC generation).
-
-    Returns cell and face counts to give the client fast feedback.
-    """
+    """Quick geometry validation: build CellComplex only (no full IFC generation)."""
     loop = asyncio.get_running_loop()
     try:
         result = await loop.run_in_executor(

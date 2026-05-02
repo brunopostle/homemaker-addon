@@ -100,7 +100,7 @@ async function _forceRegenerate() {
   }
 }
 
-// Populate style selector from server on load.
+// Populate style selector from server on load, then kick off first generation.
 fetch("/api/styles")
   .then((r) => r.json())
   .then(({ styles }) => {
@@ -110,9 +110,13 @@ fetch("/api/styles")
     sel.innerHTML = "";
     if (roomSel) roomSel.innerHTML = "";
     for (const s of styles) {
-      const opt = new Option(s, s);
-      sel.add(opt);
+      sel.add(new Option(s, s));
       if (roomSel) roomSel.add(new Option(s, s));
     }
+    // Trigger initial IFC generation now that styles are loaded.
+    _forceRegenerate();
   })
-  .catch(() => {});
+  .catch(() => {
+    // Server unreachable on load — still attempt a generation with seed rooms.
+    _forceRegenerate();
+  });

@@ -10,8 +10,7 @@
   },
   "dependencies": {
     "three": "^0.168.0",
-    "@thatopen/components": "^2.4.0",
-    "@thatopen/components-front": "^2.4.0"
+    "@thatopen/components": "^2.4.0"
   },
   "devDependencies": {
     "vite": "^5.0.0"
