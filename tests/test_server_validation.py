@@ -58,6 +58,15 @@ class TestRoomVertices:
         with pytest.raises(ValidationError, match="at most 64"):
             RoomData(**_room(vertices=[[float(i), 0] for i in range(65)]))
 
+    def test_concave_rejected(self):
+        with pytest.raises(ValidationError, match="convex"):
+            RoomData(**_room(vertices=[[0, 0], [4, 0], [2, 1], [4, 4], [0, 4]]))
+
+    def test_convex_pentagon_accepted(self):
+        import math
+        verts = [[math.cos(2*math.pi*i/5), math.sin(2*math.pi*i/5)] for i in range(5)]
+        RoomData(**_room(vertices=verts))
+
     def test_vertex_out_of_range(self):
         with pytest.raises(ValidationError, match="out of range"):
             RoomData(**_room(vertices=[[0, 0], [4, 0], [4, 20_000]]))
@@ -67,7 +76,7 @@ class TestRoomVertices:
             RoomData(**_room(vertices=[[0, 0, 0], [4, 0, 0], [4, 4, 0]]))
 
     def test_boundary_coords_accepted(self):
-        RoomData(**_room(vertices=[[9999.9, -9999.9], [0, 0], [1, 1], [0, 1]]))
+        RoomData(**_room(vertices=[[-9999.9, -9999.9], [9999.9, -9999.9], [9999.9, 9999.9], [-9999.9, 9999.9]]))
 
 
 # ---------------------------------------------------------------------------
@@ -275,6 +284,10 @@ class TestGenerateRequest:
     def test_empty_rejected(self):
         with pytest.raises(ValidationError, match="provide either"):
             GenerateRequest(name="test")
+
+    def test_both_rooms_and_faces_rejected(self):
+        with pytest.raises(ValidationError, match="not both"):
+            GenerateRequest(rooms=[_room()], faces=[_quad()])
 
     def test_name_too_long(self):
         with pytest.raises(ValidationError, match="256"):

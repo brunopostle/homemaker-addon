@@ -105,6 +105,25 @@ def _check_coords(coords: list[float], n: int, label: str) -> list[float]:
     return coords
 
 
+def _is_convex_2d(verts: list) -> bool:
+    """Return True if the 2-D polygon [[x,z],...] is convex (all cross products same sign)."""
+    n = len(verts)
+    sign = None
+    for i in range(n):
+        ax, az = float(verts[i][0]),           float(verts[i][1])
+        bx, bz = float(verts[(i + 1) % n][0]), float(verts[(i + 1) % n][1])
+        cx, cz = float(verts[(i + 2) % n][0]), float(verts[(i + 2) % n][1])
+        cross = (bx - ax) * (cz - bz) - (bz - az) * (cx - bx)
+        if abs(cross) < 1e-10:
+            continue  # collinear edge — skip
+        s = 1 if cross > 0 else -1
+        if sign is None:
+            sign = s
+        elif sign != s:
+            return False
+    return True
+
+
 # ---------------------------------------------------------------------------
 # Request / response models
 # ---------------------------------------------------------------------------
@@ -172,6 +191,8 @@ class RoomData(BaseModel):
             raise ValueError(f"room must have at most 64 vertices, got {len(v)}")
         for i, vert in enumerate(v):
             _check_coords(vert, 2, f"vertex {i}")
+        if not _is_convex_2d(v):
+            raise ValueError("room polygon must be convex")
         return v
 
     @field_validator("height")
@@ -242,6 +263,8 @@ class GenerateRequest(BaseModel):
     def val_not_empty(self):
         if not self.rooms and not self.faces:
             raise ValueError("provide either rooms or faces")
+        if self.rooms and self.faces:
+            raise ValueError("provide either rooms or faces, not both")
         if self.rooms and len(self.rooms) > _MAX_ROOMS:
             raise ValueError(f"too many rooms (max {_MAX_ROOMS})")
         if self.faces and len(self.faces) > _MAX_FACES:

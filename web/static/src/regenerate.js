@@ -114,6 +114,7 @@ async function _forceRegenerate() {
   if (_inFlight) return;
   _inFlight = true;
   _editActive = false;
+  clearTimeout(_solidTimer);
   setStatus("generating…", "generating");
 
   try {

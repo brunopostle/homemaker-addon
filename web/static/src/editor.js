@@ -595,7 +595,9 @@ function _beginRoomMove(event, fillMesh) {
     if (event.shiftKey) {
         // Vertical move — drag plane faces the camera horizontally.
         const camDir    = camera.getWorldDirection(new THREE.Vector3());
-        const planeNorm = new THREE.Vector3(camDir.x, 0, camDir.z).normalize();
+        const planeNorm = new THREE.Vector3(camDir.x, 0, camDir.z);
+        if (planeNorm.lengthSq() < 0.01) return;  // camera nearly vertical (top-view) — no-op
+        planeNorm.normalize();
         const centre    = new THREE.Vector3(c.x, room.elevation + room.height / 2, c.z);
         const dragPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNorm, centre);
         if (!_raycaster.ray.intersectPlane(dragPlane, hit)) return;
@@ -856,13 +858,15 @@ window.addEventListener("keydown", (e) => {
 // ---------------------------------------------------------------------------
 // Resize / render loop
 // ---------------------------------------------------------------------------
+let _lastCssW = 0, _lastCssH = 0;
+
 function _resize() {
     const w = canvas.clientWidth, h = canvas.clientHeight;
-    if (renderer.domElement.width !== w || renderer.domElement.height !== h) {
-        renderer.setSize(w, h, false);
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
-    }
+    if (w === _lastCssW && h === _lastCssH) return;
+    _lastCssW = w; _lastCssH = h;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
 }
 
 function _animate() {

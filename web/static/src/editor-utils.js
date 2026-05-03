@@ -2,7 +2,7 @@
  * editor-utils.js — pure geometry helpers for the quad-cell editor.
  *
  * All cells share a single data model:
- *   vertices  — [[x,z], [x,z], [x,z], [x,z]]  in Three.js XZ plane (always 4)
+ *   vertices  — [[x,z], ...]  in Three.js XZ plane (3 or more vertices)
  *   elevation — Y position of the floor
  *   height    — room height (Y extent)
  *
