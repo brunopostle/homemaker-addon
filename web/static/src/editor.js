@@ -295,6 +295,19 @@ function _makeCellGroup(room) {
 function _removeRoomGroup(room) {
     if (room._group) {
         scene.remove(room._group);
+        room._group.traverse((obj) => {
+            if (obj.isLineSegments) {
+                obj.geometry?.dispose();
+                obj.material?.dispose();
+            } else if (obj.isMesh && !obj.userData.isHandle && !obj.userData.isVertexHandle) {
+                // Per-room fill mesh — owned geometry and material.
+                obj.geometry?.dispose();
+                obj.material?.dispose();
+            } else if (obj.isMesh) {
+                // Handle meshes share _HANDLE_GEO/_VERTEX_HANDLE_GEO — only dispose the per-mesh material.
+                obj.material?.dispose();
+            }
+        });
         room._group         = null;
         room._fillMesh      = null;
         room._handles       = [];
@@ -535,11 +548,17 @@ const _dragPlaneHelper = new THREE.Plane();
 
 // fi=0 = floor (sign -1), fi=1 = ceiling (sign +1), fi>=2 = wall (click only)
 function _beginHandleDrag(event, handleMesh) {
-    const fi = handleMesh.userData.faceIndex;
-    if (fi >= 2) return;   // wall handles: click selects face style, no drag resize
-
+    const fi   = handleMesh.userData.faceIndex;
     const room = handleMesh.userData.room;
     if (!room) return;
+
+    if (fi >= 2) {
+        // Wall handles are click-only. Set _drag so pointerup click detection fires _selectFace.
+        _drag = { mode: "face", faceIndex: fi, room, handleMesh, dragPlane: null };
+        controls.enabled = false;
+        return;
+    }
+
     _pushUndo();
 
     _dragPlaneHelper.setFromNormalAndCoplanarPoint(
@@ -562,7 +581,6 @@ function _beginHandleDrag(event, handleMesh) {
 function _beginRoomMove(event, fillMesh) {
     const room = fillMesh.userData.room;
     if (!room) return;
-    _pushUndo();
 
     _updatePointer(event);
     _raycaster.setFromCamera(_pointer, camera);
@@ -576,12 +594,14 @@ function _beginRoomMove(event, fillMesh) {
         const centre    = new THREE.Vector3(c.x, room.elevation + room.height / 2, c.z);
         const dragPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNorm, centre);
         if (!_raycaster.ray.intersectPlane(dragPlane, hit)) return;
+        _pushUndo();
         _drag = { mode: "move", vertical: true, room, dragPlane, pointerOffset: hit.y - room.elevation };
         canvas.style.cursor = "ns-resize";
     } else {
         // Horizontal move — drag plane is the floor.
         const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -room.elevation);
         if (!_raycaster.ray.intersectPlane(dragPlane, hit)) return;
+        _pushUndo();
         _drag = {
             mode: "move", vertical: false, room, dragPlane,
             pointerOffset:  [hit.x - c.x, hit.z - c.z],
@@ -596,7 +616,6 @@ function _beginRoomMove(event, fillMesh) {
 function _beginVertexDrag(event, vertexMesh) {
     const room = vertexMesh.userData.room;
     if (!room) return;
-    _pushUndo();
     const vertexIndex = vertexMesh.userData.vertexIndex;
     const midY = room.elevation + room.height / 2;
 
@@ -605,6 +624,7 @@ function _beginVertexDrag(event, vertexMesh) {
     const hit = new THREE.Vector3();
     const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -midY);
     if (!_raycaster.ray.intersectPlane(dragPlane, hit)) return;
+    _pushUndo();
 
     const [vx, vz] = room.vertices[vertexIndex];
     _drag = {
@@ -666,7 +686,7 @@ function _updateRoomMove(event) {
 }
 
 function _updateHandleDrag(event) {
-    if (!_drag) return;
+    if (!_drag || !_drag.dragPlane) return;   // null dragPlane = wall handle (click-only)
     _updatePointer(event);
     _raycaster.setFromCamera(_pointer, camera);
     const hit = new THREE.Vector3();

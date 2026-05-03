@@ -96,6 +96,11 @@ downloadBtn?.addEventListener("click", () => {
 });
 
 function _maybeRegenerate() {
+  if (_inFlight) {
+    // Another request is running; retry once it finishes rather than dropping this edit.
+    _debounceTimer = setTimeout(_maybeRegenerate, 1_000);
+    return;
+  }
   const elapsed = Date.now() - _lastGeneratedAt;
   const remaining = MIN_INTERVAL_MS - elapsed;
   if (remaining > 0) {
