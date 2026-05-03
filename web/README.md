@@ -1,13 +1,13 @@
 # homemaker-web
 
 A standalone web application for the [homemaker-addon](https://github.com/brunopostle/homemaker-addon) library.
-Draw cuboid rooms in a 3D editor, assign styles and usages, and get a live IFC building model generated in the background.
+Draw rooms in a 3D editor, assign styles and usages, and get a live IFC building model generated in the background.
 
 ## Overview
 
 The application has two parts running in the same browser window:
 
-1. **3D cuboid editor** — create and resize rooms as axis-aligned boxes.  Each room has a usage (bedroom, kitchen, …) and each of its six faces has a style (default, foxhouse, party, …).  The editor uses Three.js.
+1. **3D room editor** — create and reshape rooms as quadrilateral prisms (vertical walls, horizontal floor and ceiling).  The default shape is an axis-aligned rectangle, but any corner can be dragged to create non-orthogonal plans.  Each room has a usage (bedroom, kitchen, …) and each of its faces has a style (default, foxhouse, …).  The editor uses Three.js.
 
 2. **IFC preview overlay** — the IFC model is regenerated on the server in the background and loaded into the same Three.js scene via `@thatopen/components`.  While you are editing the overlay is ghosted; when you stop it becomes solid.
 
@@ -53,13 +53,16 @@ SHARE_DIR=/path/to/share uvicorn server:app ...
 | Action | How |
 |---|---|
 | Add a room | **+ Room** button (toolbar) |
-| Move a room horizontally | **Drag** the room body — snaps to adjacent faces |
+| Move a room horizontally | **Drag** the room body — snaps to wall planes of adjacent rooms |
 | Move a room vertically | **Shift+drag** the room body — snaps to floor/ceiling of adjacent rooms |
 | Select a room | **Click** the room body (short click without dragging) |
-| Resize a face | **Drag** a face handle (sphere) outward or inward |
-| Set face style | **Click** a face handle (without dragging) — a "Face style" row appears in the properties panel |
+| Resize height | **Drag** the floor or ceiling handle (white sphere at plan centroid) |
+| Reshape plan | **Drag** an orange corner handle to move that vertex |
+| Set face style | **Click** any handle (without dragging) — a "Face style" row appears in the properties panel |
 | Set room usage | Properties panel → Usage dropdown |
-| Set room style | Properties panel → Style dropdown (resets all six faces to that style) |
+| Set room style | Properties panel → Style dropdown (resets all faces to that style) |
+| Undo | **Ctrl+Z** |
+| Redo | **Ctrl+Shift+Z** or **Ctrl+Y** |
 | Orbit camera | Right-drag or two-finger drag |
 | Zoom | Scroll wheel |
 | Top-down view | **T** key or **Top** button |
@@ -77,7 +80,7 @@ The layout is also **autosaved** to `localStorage` on every edit, so the browser
 
 **Stylename** is a property of each *face* (wall, floor, ceiling).  It selects a named style definition from the `share/` directory tree.  Examples: `default`, `foxhouse`, `simple`, `party`.  A party wall — one that should render without windows — gets a different stylename from an external wall of the same room.
 
-The toolbar **Style** dropdown sets the default stylename for newly added rooms.  The properties panel **Style** dropdown resets all six faces of the selected room to one style.  To override a single face, click its handle sphere (short click, not a drag) and change the **Face style** dropdown that appears.
+The toolbar **Style** dropdown sets the default stylename for newly added rooms.  The properties panel **Style** dropdown resets all faces of the selected room to one style.  To override a single face, click its handle sphere (short click, not a drag) and change the **Face style** dropdown that appears.
 
 Face handle spheres are **white** when the face uses the room's default style, and **blue** when the face has been individually overridden.
 
@@ -96,7 +99,8 @@ web/
   static/
     index.html           Single-page application shell
     src/
-      editor.js          Three.js cuboid room editor
+      editor.js          Three.js quad-cell room editor
+      editor-utils.js    Pure geometry helpers (snap, face drag)
       preview.js         @thatopen/components IFC loader (shared scene)
       regenerate.js      Background regeneration loop (debounce + rate-limit)
     package.json         npm metadata; Three.js loaded from CDN (no build needed)
@@ -113,8 +117,9 @@ Generate an IFC file from a set of rooms.  Returns `application/octet-stream`.
   "name": "My Building",
   "rooms": [
     {
-      "position": [0, 0, 0],
-      "size": [4, 4, 3],
+      "vertices": [[0, 0], [4, 0], [4, 4], [0, 4]],
+      "elevation": 0.0,
+      "height": 3.0,
       "face_styles": ["default", "default", "default", "party", "default", "default"],
       "stylename": "default",
       "usage": "kitchen"
@@ -123,22 +128,22 @@ Generate an IFC file from a set of rooms.  Returns `application/octet-stream`.
 }
 ```
 
-`position` and `size` use **Three.js Y-up coordinates**: `position[0]` = east, `position[1]` = elevation, `position[2]` = depth.  The adapter converts these to IFC Z-up internally.
+`vertices` is a list of `[x, z]` pairs in Three.js XZ plane (Three.js Y-up, so `x` = east, `z` = depth).  At least 3 vertices, at most 64.  `elevation` is the floor height (Three.js Y).  `height` is the room height.
 
-`face_styles` is an array of six stylenames in face-index order:
+`face_styles` is an array of stylenames in face-index order:
 
 | Index | Face |
 |---|---|
-| 0 | Floor (−Y / bottom) |
-| 1 | Right wall (+X) |
-| 2 | Ceiling (+Y / top) |
-| 3 | Left wall (−X) |
-| 4 | Back wall (−Z) |
-| 5 | Front wall (+Z) |
+| 0 | Floor |
+| 1 | Ceiling |
+| 2 | Wall along edge vertex 0 → 1 |
+| 3 | Wall along edge vertex 1 → 2 |
+| 4 | Wall along edge vertex 2 → 3 |
+| 5 | Wall along edge vertex 3 → 0 |
 
-Any missing or null entry falls back to `stylename`.  The `stylename` field alone (no `face_styles`) applies one style to all six faces.
+Any missing or null entry falls back to `stylename`.  The `stylename` field alone (no `face_styles`) applies one style to all faces.
 
-Advanced: send raw `faces` (list of vertex arrays, Z-up) and `widgets` (list of position + usage) instead of `rooms` for direct control.
+Advanced: send raw `faces` (list of 4-vertex arrays in IFC Z-up coordinates) and `widgets` (list of `{position: [x,y,z], usage}`) instead of `rooms` for direct control.
 
 ### `GET /api/styles`
 
@@ -179,9 +184,9 @@ The IFC model regenerates automatically in the background:
 Three.js uses Y-up (`Y` = elevation).  IFC and homemaker use Z-up (`Z` = elevation).  The conversion happens in `geometry_adapter.py`:
 
 ```
-IFC X = Three.js position[0]  (east,  unchanged)
-IFC Y = Three.js position[2]  (depth, Three.js Z)
-IFC Z = Three.js position[1]  (elevation, Three.js Y)
+IFC X = Three.js vertex x   (east,  unchanged)
+IFC Y = Three.js vertex z   (depth, Three.js XZ plane second component)
+IFC Z = elevation           (Three.js Y elevation)
 ```
 
 ### IFC viewer integration
@@ -205,7 +210,7 @@ cd tests
 python -m pytest
 ```
 
-`test_geometry_adapter.py` covers the coordinate axis swap, per-face style assignment, face plane geometry, and widget centroid placement.  `test_server_validation.py` covers all Pydantic input validators (position/size bounds, stylename sanitisation, usage whitelist, edge lengths) without requiring topologic_core or a running server.  `tests/pytest.ini` prevents pytest from traversing up to the Blender addon `__init__.py`.
+`test_geometry_adapter.py` covers the coordinate axis swap, per-face style assignment, face plane geometry, and widget centroid placement.  `test_server_validation.py` covers all Pydantic input validators (vertex bounds, height/elevation ranges, stylename sanitisation, usage whitelist, face edge lengths) without requiring topologic_core or a running server.  `tests/pytest.ini` prevents pytest from traversing up to the Blender addon `__init__.py`.
 
 JavaScript unit tests use [Vitest](https://vitest.dev/) and run in Node — no browser required.
 
@@ -216,6 +221,6 @@ npm test
 
 `editor-utils.test.js` covers the pure geometry helpers extracted from `editor.js`:
 
-- `SIZE_AXES` mapping (world axis → size array index)
-- `snapToFaces` — face-snap engagement, threshold boundary, axis variants, self-exclusion
-- `computeFaceDrag` — all six face directions, minimum-dimension guard, far-face invariant across multiple drag frames (catches the drift bug that occurs when `room.position` is read instead of the captured `startPos`)
+- `snapToFaces` — Y-axis snap to floor/ceiling of adjacent rooms, threshold boundary, self-exclusion
+- `computeFaceDrag` — ceiling drag (floor fixed) and floor drag (ceiling fixed), minimum-dimension guard, opposite-face invariant across multiple drag frames
+- `snapVertexToWallPlanes` — snaps a vertex to the infinite wall planes of adjacent rooms; handles axis-aligned, diagonal, and non-rectangular walls; picks nearest plane when multiple are within threshold
