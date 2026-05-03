@@ -19,6 +19,8 @@
 
 const CDN_OBC = "https://cdn.jsdelivr.net/npm/@thatopen/components@2.4.0/dist/index.esm.js";
 
+const FADE_OUT_MS = 500;
+
 let _components = null;   // OBC.Components — created once
 let _ifcLoader  = null;   // OBC.IfcLoader  — created once
 let _model      = null;   // current FragmentsGroup in the editor scene
@@ -58,7 +60,8 @@ async function _ensureInit() {
 
 /**
  * Load an IFC ArrayBuffer into the shared Three.js scene.
- * Replaces any previously loaded IFC overlay.
+ * The old model stays visible during parsing, then fades out as the new
+ * model fades in — no blank gap between models.
  */
 export async function loadIfc(arrayBuffer) {
     await _ensureInit();
@@ -69,40 +72,61 @@ export async function loadIfc(arrayBuffer) {
         return;
     }
 
-    // Dispose and remove previous model.
-    if (_model) {
-        scene.remove(_model);
-        _model.traverse((obj) => {
-            if (!obj.isMesh) return;
-            obj.geometry?.dispose();
-            const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
-            mats.forEach((m) => m?.dispose());
-        });
-        _model = null;
-    }
-
+    // Parse while the old model stays visible (avoids a blank gap).
+    let newModel;
     try {
-        const model = await _ifcLoader.load(new Uint8Array(arrayBuffer));
-        _model = model;
-        scene.add(model);
-        _applyOpacity(_opacity);
+        newModel = await _ifcLoader.load(new Uint8Array(arrayBuffer));
     } catch (err) {
         console.error("IFC load error:", err);
+        return;
+    }
+
+    // Swap: new model in at current opacity, old model fades out.
+    const oldModel = _model;
+    _model = newModel;
+    scene.add(newModel);
+    _applyOpacityToModel(newModel, _opacity);
+
+    if (oldModel) {
+        _fadeOutAndDispose(oldModel, scene);
     }
 }
 
 /**
- * Set the opacity of the IFC overlay (0 = invisible, 1 = solid).
- * Mutates materials in-place — no cloning, no material leaks.
+ * Fade a model's opacity to zero over FADE_OUT_MS, then remove and dispose it.
+ */
+function _fadeOutAndDispose(model, scene) {
+    const startOpacity = _opacity;
+    const t0 = performance.now();
+    (function tick() {
+        const t = Math.min((performance.now() - t0) / FADE_OUT_MS, 1);
+        // Ease-out: feels faster at start, slower at end.
+        _applyOpacityToModel(model, startOpacity * (1 - t * t));
+        if (t < 1) {
+            requestAnimationFrame(tick);
+        } else {
+            scene.remove(model);
+            model.traverse((obj) => {
+                if (!obj.isMesh) return;
+                obj.geometry?.dispose();
+                (Array.isArray(obj.material) ? obj.material : [obj.material])
+                    .forEach((m) => m?.dispose());
+            });
+        }
+    })();
+}
+
+/**
+ * Set the opacity of the current IFC overlay (0 = invisible, 1 = solid).
  */
 export function setOpacity(value) {
     _opacity = value;
-    _applyOpacity(value);
+    _applyOpacityToModel(_model, value);
 }
 
-function _applyOpacity(value) {
-    if (!_model) return;
-    _model.traverse((obj) => {
+function _applyOpacityToModel(model, value) {
+    if (!model) return;
+    model.traverse((obj) => {
         if (!obj.isMesh) return;
         const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
         for (const m of mats) {
