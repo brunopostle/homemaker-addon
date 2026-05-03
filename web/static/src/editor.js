@@ -318,7 +318,10 @@ function _removeRoomGroup(room) {
 function _updateRoomGroup(room) {
     _removeRoomGroup(room);
     _makeCellGroup(room);
-    _setSelected(room);
+    // Only update fill colour — avoid the O(n·handles) full reset of _setSelected.
+    if (room === _selected) {
+        room._fillMesh?.material.color.setHex(0x66aaff);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -559,8 +562,6 @@ function _beginHandleDrag(event, handleMesh) {
         return;
     }
 
-    _pushUndo();
-
     _dragPlaneHelper.setFromNormalAndCoplanarPoint(
         new THREE.Vector3(0, 1, 0),
         handleMesh.getWorldPosition(new THREE.Vector3())
@@ -574,6 +575,7 @@ function _beginHandleDrag(event, handleMesh) {
         startHeight:    room.height,
         dragPlane: _dragPlaneHelper.clone(),
         handleMesh,
+        undoPushed: false,
     };
     controls.enabled = false;
 }
@@ -701,6 +703,7 @@ function _updateHandleDrag(event) {
     const result = computeFaceDrag(startElevation, startHeight, sign, worldY);
     if (!result) return;
 
+    if (!_drag.undoPushed) { _pushUndo(); _drag.undoPushed = true; }
     room.elevation = result.elevation;
     room.height    = result.height;
     _updateRoomGroup(room);
@@ -719,6 +722,8 @@ function _updateVertexDrag(event) {
     let newX = Math.round((hit.x - ox) / GRID_SNAP) * GRID_SNAP;
     let newZ = Math.round((hit.z - oz) / GRID_SNAP) * GRID_SNAP;
     [newX, newZ] = snapVertexToWallPlanes(newX, newZ, _rooms, room);
+    newX = Math.round(newX * 1000) / 1000;
+    newZ = Math.round(newZ * 1000) / 1000;
 
     if (newX === room.vertices[vertexIndex][0] && newZ === room.vertices[vertexIndex][1]) return;
     room.vertices[vertexIndex][0] = newX;
