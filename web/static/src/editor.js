@@ -722,8 +722,6 @@ function _updateVertexDrag(event) {
     let newX = Math.round((hit.x - ox) / GRID_SNAP) * GRID_SNAP;
     let newZ = Math.round((hit.z - oz) / GRID_SNAP) * GRID_SNAP;
     [newX, newZ] = snapVertexToWallPlanes(newX, newZ, _rooms, room);
-    newX = Math.round(newX * 1000) / 1000;
-    newZ = Math.round(newZ * 1000) / 1000;
 
     if (newX === room.vertices[vertexIndex][0] && newZ === room.vertices[vertexIndex][1]) return;
     room.vertices[vertexIndex][0] = newX;
