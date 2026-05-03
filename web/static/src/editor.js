@@ -9,7 +9,7 @@
  *   vertices  — [[x,z],[x,z],[x,z],[x,z]]  in Three.js XZ plane (CCW from above)
  *   elevation — Y of the floor
  *   height    — room height
- *   face_styles — [floor, ceiling, wall0, wall1, wall2, wall3]  (6 entries)
+ *   face_styles — [floor, ceiling, wall0..walln-1]  (n+2 entries for n-vertex room)
  *   stylename, usage — per-room defaults
  *
  * Face indices:
@@ -50,7 +50,11 @@ const VERTEX_HANDLE_COLOR  = 0xff9900; // orange — polygon vertex corner handl
 const VERTEX_HANDLE_RADIUS = 0.14;
 
 // fi=0 floor, fi=1 ceiling, fi=2..5 walls
-const FACE_NAMES = ["Floor", "Ceiling", "Wall 1", "Wall 2", "Wall 3", "Wall 4"];
+function _faceName(fi) {
+    if (fi === 0) return "Floor";
+    if (fi === 1) return "Ceiling";
+    return `Wall ${fi - 1}`;
+}
 const USAGES     = ["living","bedroom","kitchen","circulation","toilet","stair","void","outside"];
 const DEFAULT_W = 4.0, DEFAULT_D = 4.0, DEFAULT_H = 3.0;
 
@@ -149,12 +153,14 @@ function _restoreSnapshot(snapshot) {
 }
 
 function undo() {
+    if (_drag) _endDrag();
     if (_undoStack.length === 0) return;
     _redoStack.push(_snapshotRooms());
     _restoreSnapshot(_undoStack.pop());
 }
 
 function redo() {
+    if (_drag) _endDrag();
     if (_redoStack.length === 0) return;
     _undoStack.push(_snapshotRooms());
     _restoreSnapshot(_redoStack.pop());
@@ -375,7 +381,7 @@ function _selectFace(handleMesh) {
     const faceLabel   = document.getElementById("face-style-label");
     const faceSel     = document.getElementById("face-style-sel");
     if (faceRow && faceLabel && faceSel) {
-        faceLabel.textContent = FACE_NAMES[_selectedFaceIdx];
+        faceLabel.textContent = _faceName(_selectedFaceIdx);
         faceSel.value = room.face_styles?.[_selectedFaceIdx] ?? room.stylename;
         faceRow.style.display = "";
         if (faceDivider) faceDivider.style.display = "";
@@ -465,7 +471,7 @@ document.getElementById("sel-style")?.addEventListener("change", (e) => {
     if (_selected) {
         _pushUndo();
         _selected.stylename    = v;
-        _selected.face_styles  = Array(6).fill(v);
+        _selected.face_styles  = Array(_selected.vertices.length + 2).fill(v);
         _updateRoomGroup(_selected);
         const rsSel = document.getElementById("room-style");
         if (rsSel) rsSel.value = v;
@@ -488,7 +494,7 @@ document.getElementById("room-style")?.addEventListener("change", (e) => {
     if (_selected) {
         _pushUndo();
         _selected.stylename   = e.target.value;
-        _selected.face_styles = Array(6).fill(e.target.value);
+        _selected.face_styles = Array(_selected.vertices.length + 2).fill(e.target.value);
         _updateRoomGroup(_selected);
         const tSel = document.getElementById("sel-style");
         if (tSel) tSel.value = e.target.value;
@@ -518,7 +524,7 @@ document.getElementById("face-style-sel")?.addEventListener("change", (e) => {
         const faceLabel   = document.getElementById("face-style-label");
         if (faceRow)     faceRow.style.display     = "";
         if (faceDivider) faceDivider.style.display = "";
-        if (faceLabel)   faceLabel.textContent     = FACE_NAMES[fi];
+        if (faceLabel)   faceLabel.textContent     = _faceName(fi);
         _emitEdit();
     }
 });
@@ -674,8 +680,10 @@ function _updateRoomMove(event) {
             }
         }
 
+        const newVerts = tentative.map(([x, z]) => [x + snapDX, z + snapDZ]);
+        if (newVerts.every(([x, z], i) => x === room.vertices[i][0] && z === room.vertices[i][1])) return;
         if (!_drag.undoPushed) { _pushUndo(); _drag.undoPushed = true; }
-        room.vertices = tentative.map(([x, z]) => [x + snapDX, z + snapDZ]);
+        room.vertices = newVerts;
     }
 
     _updateRoomGroup(room);
@@ -738,6 +746,7 @@ function _endDrag() {
 let _pointerDownPos = null;
 
 canvas.addEventListener("pointerdown", (e) => {
+    if (_drag) _endDrag();
     _pointerDownPos = { x: e.clientX, y: e.clientY };
     _updatePointer(e);
     _raycaster.setFromCamera(_pointer, camera);

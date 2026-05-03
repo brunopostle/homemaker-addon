@@ -363,7 +363,7 @@ def list_styles():
         return {"styles": ["default"]}
     subdirs = sorted(
         d.name for d in share.iterdir()
-        if d.is_dir() and not d.name.startswith(".")
+        if d.is_dir() and not d.name.startswith(".") and d.name != "default"
     )
     return {"styles": ["default"] + subdirs}
 

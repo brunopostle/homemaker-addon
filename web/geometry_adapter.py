@@ -123,8 +123,7 @@ def _room(room: dict) -> tuple:
         wall.Set("stylename", fstyle(2 + i))
         faces.append(wall)
 
-    cx = sum(float(v[0]) for v in vertices_2d) / n
-    cy = sum(float(v[1]) for v in vertices_2d) / n
+    cx, cy = _polygon_centroid(vertices_2d)
     cz = elevation + height / 2
     widget = Vertex.ByCoordinates(*_snap([cx, cy, cz]))
     widget.Set("usage", room.get("usage", "living"))
@@ -134,3 +133,25 @@ def _room(room: dict) -> tuple:
 def _snap(coords: list) -> list:
     """Round coordinates to 3 decimal places to ensure face adjacency within tolerance."""
     return [round(float(c), 3) for c in coords]
+
+
+def _polygon_centroid(vertices_2d: list) -> tuple:
+    """Area-weighted centroid of a simple polygon (guaranteed interior for convex polygons).
+    Falls back to arithmetic mean for degenerate (zero-area) polygons."""
+    ax = cx = cy = 0.0
+    n = len(vertices_2d)
+    for i in range(n):
+        j = (i + 1) % n
+        xi, yi = float(vertices_2d[i][0]), float(vertices_2d[i][1])
+        xj, yj = float(vertices_2d[j][0]), float(vertices_2d[j][1])
+        cross = xi * yj - xj * yi
+        ax += cross
+        cx += (xi + xj) * cross
+        cy += (yi + yj) * cross
+    ax *= 0.5
+    if abs(ax) < 1e-10:
+        return (
+            sum(float(v[0]) for v in vertices_2d) / n,
+            sum(float(v[1]) for v in vertices_2d) / n,
+        )
+    return cx / (6.0 * ax), cy / (6.0 * ax)
