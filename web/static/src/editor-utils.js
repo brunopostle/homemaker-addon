@@ -20,6 +20,63 @@ export const GRID_SNAP      = 0.1;   // metres — coarse grid for free dragging
 export const MIN_DIM        = 0.3;   // metres — minimum room dimension
 
 /**
+ * Return the wall planes of a room as {nx, nz, d} objects where
+ * nx*x + nz*z + d = 0  and  (nx, nz) is an outward unit normal.
+ * Used for infinite-plane vertex snapping.
+ */
+function _wallPlanesOf(room) {
+    if (room.type === "polygon" && room.vertices) {
+        const verts = room.vertices;
+        const n = verts.length;
+        const planes = [];
+        for (let i = 0; i < n; i++) {
+            const j = (i + 1) % n;
+            const [x1, z1] = verts[i];
+            const [x2, z2] = verts[j];
+            const dx = x2 - x1, dz = z2 - z1;
+            const len = Math.sqrt(dx * dx + dz * dz);
+            if (len < 0.001) continue;
+            const nx = -dz / len, nz = dx / len;
+            planes.push({ nx, nz, d: -(nx * x1 + nz * z1) });
+        }
+        return planes;
+    }
+    if (room.position) {
+        const [px, , pz] = room.position;
+        const w = room.size[0], depth = room.size[1];
+        return [
+            { nx:  1, nz: 0, d: -px },
+            { nx: -1, nz: 0, d:  px + w },
+            { nx: 0, nz:  1, d: -pz },
+            { nx: 0, nz: -1, d:  pz + depth },
+        ];
+    }
+    return [];
+}
+
+/**
+ * Snap a polygon vertex at (vx, vz) to the nearest wall plane of any room
+ * in rooms except draggedRoom, within SNAP_THRESHOLD.
+ * Returns [snappedX, snappedZ].
+ */
+export function snapVertexToWallPlanes(vx, vz, rooms, draggedRoom) {
+    let bestDist = Infinity;
+    let snapX = vx, snapZ = vz;
+    for (const room of rooms) {
+        if (room === draggedRoom) continue;
+        for (const plane of _wallPlanesOf(room)) {
+            const dist = plane.nx * vx + plane.nz * vz + plane.d;
+            if (Math.abs(dist) < SNAP_THRESHOLD && Math.abs(dist) < bestDist) {
+                bestDist = Math.abs(dist);
+                snapX = vx - dist * plane.nx;
+                snapZ = vz - dist * plane.nz;
+            }
+        }
+    }
+    return [snapX, snapZ];
+}
+
+/**
  * Snap worldCoord (along axis) to the near or far face of any room
  * in rooms except draggedRoom, within SNAP_THRESHOLD.
  * Returns the snapped coordinate, or worldCoord unchanged if no snap.

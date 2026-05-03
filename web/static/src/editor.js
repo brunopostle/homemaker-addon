@@ -16,7 +16,7 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { snapToFaces, computeFaceDrag, SNAP_THRESHOLD, GRID_SNAP } from "./editor-utils.js";
+import { snapToFaces, snapVertexToWallPlanes, computeFaceDrag, SNAP_THRESHOLD, GRID_SNAP } from "./editor-utils.js";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -410,18 +410,17 @@ function addRoom(options = {}) {
 function addPolygonRoom(options = {}) {
   const usage     = document.getElementById("sel-usage")?.value || "living";
   const stylename = options.stylename || document.getElementById("sel-style")?.value || "default";
-  const n  = options.sides    ?? 6;
-  const r  = options.radius   ?? 2.5;
-  const cx = options.cx       ?? 0;
-  const cz = options.cz       ?? 0;
-  const vertices = [];
-  for (let i = 0; i < n; i++) {
-    const angle = (i / n) * 2 * Math.PI;
-    vertices.push([
-      Math.round((cx + r * Math.cos(angle)) * 1000) / 1000,
-      Math.round((cz + r * Math.sin(angle)) * 1000) / 1000,
-    ]);
-  }
+  const cx = options.cx ?? 0;
+  const cz = options.cz ?? 0;
+  const w  = options.width  ?? DEFAULT_W;
+  const d  = options.depth  ?? DEFAULT_D;
+  const vertices = options.vertices ?? [
+    [cx,     cz    ],
+    [cx + w, cz    ],
+    [cx + w, cz + d],
+    [cx,     cz + d],
+  ];
+  const n = vertices.length;
   const room = {
     id:            `r${_nextId++}`,
     type:          "polygon",
@@ -722,8 +721,9 @@ function _updateVertexDrag(event) {
 
   const { room, vertexIndex, pointerOffset } = _drag;
   const [ox, oz] = pointerOffset;
-  const newX = Math.round((hit.x - ox) / GRID_SNAP) * GRID_SNAP;
-  const newZ = Math.round((hit.z - oz) / GRID_SNAP) * GRID_SNAP;
+  let newX = Math.round((hit.x - ox) / GRID_SNAP) * GRID_SNAP;
+  let newZ = Math.round((hit.z - oz) / GRID_SNAP) * GRID_SNAP;
+  [newX, newZ] = snapVertexToWallPlanes(newX, newZ, _rooms, room);
   if (newX === room.vertices[vertexIndex][0] && newZ === room.vertices[vertexIndex][1]) return;
   room.vertices[vertexIndex][0] = newX;
   room.vertices[vertexIndex][1] = newZ;

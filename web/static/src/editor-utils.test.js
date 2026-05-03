@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
     snapToFaces,
+    snapVertexToWallPlanes,
     computeFaceDrag,
     SNAP_THRESHOLD,
     GRID_SNAP,
@@ -253,4 +254,95 @@ describe("computeFaceDrag — all six face axes and signs", () => {
             expect(r).not.toBeNull();
         });
     }
+});
+
+// ---------------------------------------------------------------------------
+// snapVertexToWallPlanes
+// ---------------------------------------------------------------------------
+
+describe("snapVertexToWallPlanes", () => {
+    const cuboid = room([2, 0, 3], [4, 4, 3]); // X: [2, 6], Z: [3, 7]
+
+    it("returns vertex unchanged when no rooms are nearby", () => {
+        expect(snapVertexToWallPlanes(0, 0, [cuboid], null)).toEqual([0, 0]);
+    });
+
+    it("snaps to left wall plane of a cuboid (X = px)", () => {
+        // vertex at x=2.05 is within threshold of X=2
+        const [sx, sz] = snapVertexToWallPlanes(2.05, 5, [cuboid], null);
+        expect(sx).toBeCloseTo(2);
+        expect(sz).toBeCloseTo(5);
+    });
+
+    it("snaps to right wall plane of a cuboid (X = px+w)", () => {
+        const [sx, sz] = snapVertexToWallPlanes(5.9, 5, [cuboid], null);
+        expect(sx).toBeCloseTo(6);
+        expect(sz).toBeCloseTo(5);
+    });
+
+    it("snaps to front wall plane of a cuboid (Z = pz)", () => {
+        const [sx, sz] = snapVertexToWallPlanes(4, 3.1, [cuboid], null);
+        expect(sx).toBeCloseTo(4);
+        expect(sz).toBeCloseTo(3);
+    });
+
+    it("snaps to back wall plane of a cuboid (Z = pz+depth)", () => {
+        const [sx, sz] = snapVertexToWallPlanes(4, 6.9, [cuboid], null);
+        expect(sx).toBeCloseTo(4);
+        expect(sz).toBeCloseTo(7);
+    });
+
+    it("does not snap when outside threshold", () => {
+        const justOutside = 2 - SNAP_THRESHOLD - 0.01;
+        const result = snapVertexToWallPlanes(justOutside, 5, [cuboid], null);
+        expect(result[0]).toBeCloseTo(justOutside);
+        expect(result[1]).toBeCloseTo(5);
+    });
+
+    it("skips the dragged room itself", () => {
+        const [sx] = snapVertexToWallPlanes(2.05, 5, [cuboid], cuboid);
+        expect(sx).toBeCloseTo(2.05);
+    });
+
+    it("snaps to a polygon room wall plane", () => {
+        // polygon with a vertical edge from [0,0] to [4,0] — wall plane Z=0
+        const poly = { type: "polygon", vertices: [[0,0],[4,0],[4,4],[0,4]], elevation: 0, height: 3 };
+        const [sx, sz] = snapVertexToWallPlanes(2, 0.08, [poly], null);
+        expect(sx).toBeCloseTo(2);
+        expect(sz).toBeCloseTo(0);
+    });
+
+    it("snaps to a diagonal polygon wall plane", () => {
+        // polygon with an edge from [0,0] to [4,4] — wall plane nx=-0.707, nz=0.707, d=0
+        const poly = { type: "polygon", vertices: [[0,0],[4,4],[0,4]], elevation: 0, height: 3 };
+        // Point [2.1, 1.9] is close to the plane nx*x + nz*z + d = 0 where nx=-1/√2, nz=1/√2, d=0
+        // dist = (-1/√2)*2.1 + (1/√2)*1.9 + 0 = (-2.1+1.9)/√2 = -0.2/√2 ≈ -0.141
+        // That's outside SNAP_THRESHOLD=0.15. Try [2.05, 1.95]:
+        // dist = (-2.05+1.95)/√2 = -0.1/√2 ≈ -0.0707 → within threshold
+        const [sx, sz] = snapVertexToWallPlanes(2.05, 1.95, [poly], null);
+        // snapped point should lie on the line x=z
+        expect(sx).toBeCloseTo(sz, 4);
+    });
+
+    it("picks the nearest plane when two planes are both within threshold", () => {
+        // Two cuboids with wall planes at x=0 (dist 0.05) and x=4.08 (dist 0.07)
+        const a = room([0, 0, 0], [4, 4, 3]); // X lo=0
+        const b = room([4.08, 0, 0], [4, 4, 3]); // X lo=4.08
+        // vertex at x=0.05: dist to a's X=0 is 0.05, dist to b's X=4.08 is 4.03 (far away)
+        const [sx] = snapVertexToWallPlanes(0.05, 2, [a, b], null);
+        expect(sx).toBeCloseTo(0);
+    });
+
+    it("returns unchanged when rooms list is empty", () => {
+        expect(snapVertexToWallPlanes(3, 4, [], null)).toEqual([3, 4]);
+    });
+
+    it("snaps correctly to wall planes aligned far from the vertex's position (infinite plane)", () => {
+        // The whole point: wall plane X=10 extends infinitely in Z.
+        // vertex at (9.95, 100) should still snap to X=10
+        const far = room([10, 0, 0], [4, 4, 3]);
+        const [sx, sz] = snapVertexToWallPlanes(9.95, 100, [far], null);
+        expect(sx).toBeCloseTo(10);
+        expect(sz).toBeCloseTo(100);
+    });
 });
