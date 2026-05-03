@@ -54,6 +54,10 @@ const FACE_NAMES = ["Floor", "Ceiling", "Wall 1", "Wall 2", "Wall 3", "Wall 4"];
 const USAGES     = ["living","bedroom","kitchen","circulation","toilet","stair","void","outside"];
 const DEFAULT_W = 4.0, DEFAULT_D = 4.0, DEFAULT_H = 3.0;
 
+// Shared sphere geometries — constant across all rooms; created once.
+const _HANDLE_GEO        = new THREE.SphereGeometry(HANDLE_RADIUS,        12, 8);
+const _VERTEX_HANDLE_GEO = new THREE.SphereGeometry(VERTEX_HANDLE_RADIUS, 12, 8);
+
 // ---------------------------------------------------------------------------
 // Scene setup
 // ---------------------------------------------------------------------------
@@ -220,6 +224,7 @@ function _buildCellGeometry(vertices2d, elevation, height) {
 function _makeCellGroup(room) {
     const group = new THREE.Group();
     const { vertices, elevation, height } = room;
+    const n   = vertices.length;
     const geo = _buildCellGeometry(vertices, elevation, height);
 
     const fill = new THREE.Mesh(
@@ -229,8 +234,10 @@ function _makeCellGroup(room) {
             depthWrite: false, side: THREE.DoubleSide,
         })
     );
-    fill.userData.roomId = room.id;
+    fill.userData.roomId    = room.id;
+    fill.userData.room      = room;
     fill.userData.isRoomFill = true;
+    room._fillMesh = fill;
     group.add(fill);
 
     group.add(new THREE.LineSegments(
@@ -240,14 +247,13 @@ function _makeCellGroup(room) {
 
     const centroid = _polygonCentroid(vertices);
     const midY = elevation + height / 2;
-    const handleGeo = new THREE.SphereGeometry(HANDLE_RADIUS, 12, 8);
 
-    // 6 face handles: fi=0 floor, fi=1 ceiling, fi=2..5 walls
+    // 6 face handles: fi=0 floor, fi=1 ceiling, fi=2..n+1 walls
     const handlePositions = [
-        [centroid.x, elevation,          centroid.z],   // fi=0 floor
-        [centroid.x, elevation + height, centroid.z],   // fi=1 ceiling
-        ...Array.from({ length: 4 }, (_, i) => {        // fi=2..5 walls
-            const j = (i + 1) % 4;
+        [centroid.x, elevation,          centroid.z],
+        [centroid.x, elevation + height, centroid.z],
+        ...Array.from({ length: n }, (_, i) => {
+            const j = (i + 1) % n;
             return [
                 (vertices[i][0] + vertices[j][0]) / 2,
                 midY,
@@ -256,28 +262,27 @@ function _makeCellGroup(room) {
         }),
     ];
 
-    const handles = handlePositions.map(([hx, hy, hz], fi) => {
+    room._handles = handlePositions.map(([hx, hy, hz], fi) => {
         const fs    = room.face_styles?.[fi] ?? room.stylename;
         const color = fs !== room.stylename ? HANDLE_STYLED_COLOR : HANDLE_COLOR;
-        const mesh  = new THREE.Mesh(handleGeo, new THREE.MeshBasicMaterial({ color }));
+        const mesh  = new THREE.Mesh(_HANDLE_GEO, new THREE.MeshBasicMaterial({ color }));
         mesh.position.set(hx, hy, hz);
-        mesh.userData.isHandle   = true;
-        mesh.userData.faceIndex  = fi;
-        mesh.userData.roomId     = room.id;
+        mesh.userData.isHandle  = true;
+        mesh.userData.faceIndex = fi;
+        mesh.userData.roomId    = room.id;
+        mesh.userData.room      = room;
         group.add(mesh);
         return mesh;
     });
 
-    room._handles = handles;
-
     // Vertex handles — orange spheres at each plan corner at mid-height
-    const vtxGeo = new THREE.SphereGeometry(VERTEX_HANDLE_RADIUS, 12, 8);
     room._vertexHandles = vertices.map(([x, z], i) => {
-        const m = new THREE.Mesh(vtxGeo, new THREE.MeshBasicMaterial({ color: VERTEX_HANDLE_COLOR }));
+        const m = new THREE.Mesh(_VERTEX_HANDLE_GEO, new THREE.MeshBasicMaterial({ color: VERTEX_HANDLE_COLOR }));
         m.position.set(x, midY, z);
         m.userData.isVertexHandle = true;
         m.userData.vertexIndex    = i;
         m.userData.roomId         = room.id;
+        m.userData.room           = room;
         group.add(m);
         return m;
     });
@@ -290,8 +295,9 @@ function _makeCellGroup(room) {
 function _removeRoomGroup(room) {
     if (room._group) {
         scene.remove(room._group);
-        room._group        = null;
-        room._handles      = [];
+        room._group         = null;
+        room._fillMesh      = null;
+        room._handles       = [];
         room._vertexHandles = [];
     }
 }
@@ -312,33 +318,26 @@ function _setSelected(room) {
     if (faceRow)     faceRow.style.display     = "none";
     if (faceDivider) faceDivider.style.display = "none";
 
-    _rooms.forEach((r) => {
-        if (!r._group) return;
-        r._group.children.forEach((c) => {
-            if (!c.isMesh) return;
-            if (c.userData.isRoomFill)
-                c.material.color.setHex(FACE_FILL_COLOR);
-            if (c.userData.isHandle) {
-                const fi = c.userData.faceIndex;
-                const fs = r.face_styles?.[fi] ?? r.stylename;
-                c.material.color.setHex(fs !== r.stylename ? HANDLE_STYLED_COLOR : HANDLE_COLOR);
-            }
-            if (c.userData.isVertexHandle)
-                c.material.color.setHex(VERTEX_HANDLE_COLOR);
-        });
-    });
+    for (const r of _rooms) {
+        r._fillMesh?.material.color.setHex(FACE_FILL_COLOR);
+        for (const h of r._handles) {
+            const fi = h.userData.faceIndex;
+            const fs = r.face_styles?.[fi] ?? r.stylename;
+            h.material.color.setHex(fs !== r.stylename ? HANDLE_STYLED_COLOR : HANDLE_COLOR);
+        }
+        for (const h of r._vertexHandles) {
+            h.material.color.setHex(VERTEX_HANDLE_COLOR);
+        }
+    }
 
     _selected = room;
     const panel = document.getElementById("props-panel");
     if (!room) { panel?.classList.remove("visible"); return; }
 
-    room._group?.children.forEach((c) => {
-        if (c.isMesh && c.userData.isRoomFill) c.material.color.setHex(0x66aaff);
-    });
+    room._fillMesh?.material.color.setHex(0x66aaff);
 
     if (panel) {
         panel.classList.add("visible");
-        document.getElementById("room-style")?.setAttribute("value", room.stylename);
         const rsSel = document.getElementById("room-style");
         const ruSel = document.getElementById("room-usage");
         if (rsSel) rsSel.value = room.stylename;
@@ -353,7 +352,7 @@ function _setSelected(room) {
 }
 
 function _selectFace(handleMesh) {
-    const room = _roomById(handleMesh.userData.roomId);
+    const room = handleMesh.userData.room;
     if (!room) return;
     _setSelected(room);
     _selectedFaceIdx = handleMesh.userData.faceIndex;
@@ -525,12 +524,7 @@ function _updatePointer(event) {
 
 function _getHandleObjects()       { return _rooms.flatMap((r) => r._handles       || []); }
 function _getVertexHandleObjects() { return _rooms.flatMap((r) => r._vertexHandles || []); }
-function _getFillObjects() {
-    return _rooms.flatMap((r) =>
-        (r._group?.children || []).filter((c) => c.isMesh && c.userData.isRoomFill)
-    );
-}
-function _roomById(id) { return _rooms.find((r) => r.id === id) || null; }
+function _getFillObjects()         { return _rooms.flatMap((r) => r._fillMesh ? [r._fillMesh] : []); }
 
 // ---------------------------------------------------------------------------
 // Drag state
@@ -544,7 +538,7 @@ function _beginHandleDrag(event, handleMesh) {
     const fi = handleMesh.userData.faceIndex;
     if (fi >= 2) return;   // wall handles: click selects face style, no drag resize
 
-    const room = _roomById(handleMesh.userData.roomId);
+    const room = handleMesh.userData.room;
     if (!room) return;
     _pushUndo();
 
@@ -566,7 +560,7 @@ function _beginHandleDrag(event, handleMesh) {
 }
 
 function _beginRoomMove(event, fillMesh) {
-    const room = _roomById(fillMesh.userData.roomId);
+    const room = fillMesh.userData.room;
     if (!room) return;
     _pushUndo();
 
@@ -600,7 +594,7 @@ function _beginRoomMove(event, fillMesh) {
 }
 
 function _beginVertexDrag(event, vertexMesh) {
-    const room = _roomById(vertexMesh.userData.roomId);
+    const room = vertexMesh.userData.room;
     if (!room) return;
     _pushUndo();
     const vertexIndex = vertexMesh.userData.vertexIndex;
@@ -768,7 +762,7 @@ canvas.addEventListener("pointermove", (e) => {
 
     // Reset colours.
     handleObjs.forEach((h) => {
-        const r  = _roomById(h.userData.roomId);
+        const r  = h.userData.room;
         const fi = h.userData.faceIndex;
         const fs = r?.face_styles?.[fi] ?? r?.stylename;
         h.material.color.setHex(fs !== r?.stylename ? HANDLE_STYLED_COLOR : HANDLE_COLOR);
