@@ -56,3 +56,4 @@ htmlcov/
 
 # Test-generated IFC artefacts
 tests/*.ifc
+*.ifc
