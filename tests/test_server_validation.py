@@ -24,7 +24,14 @@ from server import FaceData, WidgetData, RoomData, GenerateRequest
 # ---------------------------------------------------------------------------
 
 def _room(**kwargs):
-    defaults = {"position": [0, 0, 0], "size": [4, 4, 3], "usage": "living", "stylename": "default"}
+    """Build a valid quad room dict (4-vertex rectangle)."""
+    defaults = {
+        "vertices":  [[0, 0], [4, 0], [4, 4], [0, 4]],
+        "elevation": 0.0,
+        "height":    3.0,
+        "stylename": "default",
+        "usage":     "living",
+    }
     return {**defaults, **kwargs}
 
 def _quad(z=0):
@@ -33,70 +40,84 @@ def _quad(z=0):
 
 
 # ---------------------------------------------------------------------------
-# RoomData — position
+# RoomData — vertices
 # ---------------------------------------------------------------------------
 
-class TestRoomPosition:
-    def test_valid(self):
-        RoomData(**_room(position=[0, 0, 0]))
+class TestRoomVertices:
+    def test_valid_quad(self):
+        RoomData(**_room())
 
-    def test_too_few_coords(self):
-        with pytest.raises(ValidationError, match="exactly 3"):
-            RoomData(**_room(position=[0, 0]))
+    def test_triangle_accepted(self):
+        RoomData(**_room(vertices=[[0, 0], [3, 0], [1.5, 3]]))
 
-    def test_too_many_coords(self):
-        with pytest.raises(ValidationError, match="exactly 3"):
-            RoomData(**_room(position=[0, 0, 0, 0]))
+    def test_too_few_vertices(self):
+        with pytest.raises(ValidationError, match="at least 3"):
+            RoomData(**_room(vertices=[[0, 0], [1, 0]]))
 
-    def test_coord_out_of_range_high(self):
+    def test_too_many_vertices(self):
+        with pytest.raises(ValidationError, match="at most 64"):
+            RoomData(**_room(vertices=[[float(i), 0] for i in range(65)]))
+
+    def test_vertex_out_of_range(self):
         with pytest.raises(ValidationError, match="out of range"):
-            RoomData(**_room(position=[0, 0, 20_000]))
+            RoomData(**_room(vertices=[[0, 0], [4, 0], [4, 20_000]]))
 
-    def test_coord_out_of_range_low(self):
-        with pytest.raises(ValidationError, match="out of range"):
-            RoomData(**_room(position=[-20_000, 0, 0]))
+    def test_vertex_wrong_dimension(self):
+        with pytest.raises(ValidationError, match="exactly 2"):
+            RoomData(**_room(vertices=[[0, 0, 0], [4, 0, 0], [4, 4, 0]]))
 
-    def test_boundary_coord_accepted(self):
-        RoomData(**_room(position=[9999.9, -9999.9, 0]))
+    def test_boundary_coords_accepted(self):
+        RoomData(**_room(vertices=[[9999.9, -9999.9], [0, 0], [1, 1], [0, 1]]))
 
 
 # ---------------------------------------------------------------------------
-# RoomData — size
+# RoomData — height
 # ---------------------------------------------------------------------------
 
-class TestRoomSize:
+class TestRoomHeight:
     def test_valid(self):
-        RoomData(**_room(size=[4, 4, 3]))
+        RoomData(**_room(height=3.0))
 
-    def test_too_few_dims(self):
-        with pytest.raises(ValidationError, match="exactly 3"):
-            RoomData(**_room(size=[4, 4]))
-
-    def test_too_many_dims(self):
-        with pytest.raises(ValidationError, match="exactly 3"):
-            RoomData(**_room(size=[4, 4, 3, 1]))
-
-    def test_zero_dimension(self):
+    def test_too_small(self):
         with pytest.raises(ValidationError, match="minimum"):
-            RoomData(**_room(size=[0, 4, 3]))
+            RoomData(**_room(height=0.1))
 
-    def test_negative_dimension(self):
-        with pytest.raises(ValidationError, match="minimum"):
-            RoomData(**_room(size=[-1, 4, 3]))
+    def test_at_min(self):
+        RoomData(**_room(height=0.3))
 
-    def test_below_min_dim(self):
-        with pytest.raises(ValidationError, match="minimum"):
-            RoomData(**_room(size=[0.1, 4, 3]))
-
-    def test_exactly_min_dim(self):
-        RoomData(**_room(size=[0.3, 0.3, 0.3]))
-
-    def test_above_max_dim(self):
+    def test_too_large(self):
         with pytest.raises(ValidationError, match="maximum"):
-            RoomData(**_room(size=[4, 4, 2000]))
+            RoomData(**_room(height=2000))
 
-    def test_exactly_max_dim(self):
-        RoomData(**_room(size=[1000, 1000, 1000]))
+    def test_at_max(self):
+        RoomData(**_room(height=1000))
+
+    def test_zero_rejected(self):
+        with pytest.raises(ValidationError, match="minimum"):
+            RoomData(**_room(height=0.0))
+
+
+# ---------------------------------------------------------------------------
+# RoomData — elevation
+# ---------------------------------------------------------------------------
+
+class TestRoomElevation:
+    def test_valid_zero(self):
+        RoomData(**_room(elevation=0.0))
+
+    def test_negative_ok(self):
+        RoomData(**_room(elevation=-100.0))
+
+    def test_out_of_range_high(self):
+        with pytest.raises(ValidationError, match="out of range"):
+            RoomData(**_room(elevation=20_000))
+
+    def test_out_of_range_low(self):
+        with pytest.raises(ValidationError, match="out of range"):
+            RoomData(**_room(elevation=-20_000))
+
+    def test_boundary_accepted(self):
+        RoomData(**_room(elevation=9999.9))
 
 
 # ---------------------------------------------------------------------------
@@ -165,8 +186,9 @@ class TestRoomFaceStyles:
         RoomData(**_room(face_styles=["default", "foxhouse"]))
 
     def test_too_many_rejected(self):
+        # 4-vertex quad: max face_styles = 4+2 = 6; 7 should be rejected
         with pytest.raises(ValidationError, match="at most 6"):
-            RoomData(**_room(face_styles=["default"] * 7))  # caught by model_validator
+            RoomData(**_room(face_styles=["default"] * 7))
 
     def test_bad_style_in_list(self):
         with pytest.raises(ValidationError, match="alphanumeric"):
@@ -174,6 +196,14 @@ class TestRoomFaceStyles:
 
     def test_none_entry_accepted(self):
         RoomData(**_room(face_styles=["default", None, "foxhouse", None, None, None]))
+
+    def test_triangle_room_max_five(self):
+        # 3-vertex triangle: max face_styles = 3+2 = 5; 6 should be rejected
+        with pytest.raises(ValidationError, match="at most 5"):
+            RoomData(**_room(vertices=[[0,0],[3,0],[1.5,3]], face_styles=["default"] * 6))
+
+    def test_triangle_room_five_accepted(self):
+        RoomData(**_room(vertices=[[0,0],[3,0],[1.5,3]], face_styles=["default"] * 5))
 
 
 # ---------------------------------------------------------------------------
@@ -266,77 +296,3 @@ class TestGenerateRequest:
 
     def test_5000_faces_accepted(self):
         GenerateRequest(faces=[_quad(z=float(i) * 2) for i in range(5000)])
-
-
-# ---------------------------------------------------------------------------
-# RoomData — polygon rooms
-# ---------------------------------------------------------------------------
-
-def _polygon_room(**kwargs):
-    defaults = {
-        "vertices": [[0, 0], [4, 0], [4, 4], [0, 4]],
-        "elevation": 0.0,
-        "height": 3.0,
-        "stylename": "default",
-        "usage": "living",
-    }
-    return {**defaults, **kwargs}
-
-
-class TestPolygonRoomData:
-    def test_valid_polygon(self):
-        RoomData(**_polygon_room())
-
-    def test_triangle_accepted(self):
-        RoomData(**_polygon_room(vertices=[[0, 0], [3, 0], [1.5, 3]]))
-
-    def test_too_few_vertices(self):
-        with pytest.raises(ValidationError, match="at least 3"):
-            RoomData(**_polygon_room(vertices=[[0, 0], [1, 0]]))
-
-    def test_too_many_vertices(self):
-        with pytest.raises(ValidationError, match="at most 64"):
-            RoomData(**_polygon_room(vertices=[[float(i), 0] for i in range(65)]))
-
-    def test_vertex_out_of_range(self):
-        with pytest.raises(ValidationError, match="out of range"):
-            RoomData(**_polygon_room(vertices=[[0, 0], [4, 0], [4, 20_000]]))
-
-    def test_vertex_wrong_dimension(self):
-        with pytest.raises(ValidationError, match="exactly 2"):
-            RoomData(**_polygon_room(vertices=[[0, 0, 0], [4, 0, 0], [4, 4, 0]]))
-
-    def test_height_too_small(self):
-        with pytest.raises(ValidationError, match="minimum"):
-            RoomData(**_polygon_room(height=0.1))
-
-    def test_height_too_large(self):
-        with pytest.raises(ValidationError, match="maximum"):
-            RoomData(**_polygon_room(height=2000))
-
-    def test_height_at_min(self):
-        RoomData(**_polygon_room(height=0.3))
-
-    def test_elevation_out_of_range(self):
-        with pytest.raises(ValidationError, match="out of range"):
-            RoomData(**_polygon_room(elevation=20_000))
-
-    def test_elevation_negative_ok(self):
-        RoomData(**_polygon_room(elevation=-100.0))
-
-    def test_face_styles_for_polygon(self):
-        # 4-vertex polygon: floor + ceiling + 4 walls = 6 face_styles accepted
-        RoomData(**_polygon_room(face_styles=["default"] * 6))
-
-    def test_face_styles_too_many_for_polygon(self):
-        # 4-vertex polygon: max is 4+2=6, so 7 should be rejected
-        with pytest.raises(ValidationError, match="at most 6"):
-            RoomData(**_polygon_room(face_styles=["default"] * 7))
-
-    def test_cuboid_still_requires_position(self):
-        with pytest.raises(ValidationError, match="requires 'position'"):
-            RoomData(size=[4, 4, 3], stylename="default", usage="living")
-
-    def test_cuboid_still_requires_size(self):
-        with pytest.raises(ValidationError, match="requires 'size'"):
-            RoomData(position=[0, 0, 0], stylename="default", usage="living")

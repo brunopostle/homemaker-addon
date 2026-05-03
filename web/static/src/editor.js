@@ -99,6 +99,64 @@ let _selected = null;
 let _selectedFaceIdx = null;
 
 // ---------------------------------------------------------------------------
+// Undo / Redo
+// ---------------------------------------------------------------------------
+const MAX_UNDO   = 50;
+let _undoStack   = [];
+let _redoStack   = [];
+
+function _snapshotRooms() {
+    return _rooms.map(r => ({
+        vertices:    r.vertices.map(v => [...v]),
+        elevation:   r.elevation,
+        height:      r.height,
+        stylename:   r.stylename,
+        face_styles: [...(r.face_styles || [])],
+        usage:       r.usage,
+    }));
+}
+
+function _pushUndo() {
+    _undoStack.push(_snapshotRooms());
+    if (_undoStack.length > MAX_UNDO) _undoStack.shift();
+    _redoStack = [];
+}
+
+function _restoreSnapshot(snapshot) {
+    for (const r of [..._rooms]) _removeRoomGroup(r);
+    _rooms  = [];
+    _nextId = 1;
+    _setSelected(null);
+    for (const r of snapshot) {
+        const room = {
+            id: `r${_nextId++}`,
+            vertices:    r.vertices.map(v => [...v]),
+            elevation:   r.elevation,
+            height:      r.height,
+            stylename:   r.stylename,
+            face_styles: [...r.face_styles],
+            usage:       r.usage,
+            _group: null, _handles: [], _vertexHandles: [],
+        };
+        _rooms.push(room);
+        _makeCellGroup(room);
+    }
+    _emitEdit();
+}
+
+function undo() {
+    if (_undoStack.length === 0) return;
+    _redoStack.push(_snapshotRooms());
+    _restoreSnapshot(_undoStack.pop());
+}
+
+function redo() {
+    if (_redoStack.length === 0) return;
+    _undoStack.push(_snapshotRooms());
+    _restoreSnapshot(_redoStack.pop());
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -380,16 +438,20 @@ function deleteRoom(room) {
     _emitEdit();
 }
 
-document.getElementById("btn-add-room")?.addEventListener("click", () => addRoom());
+document.getElementById("btn-add-room")?.addEventListener("click", () => {
+    _pushUndo();
+    addRoom();
+});
 
 document.getElementById("delete-room")?.addEventListener("click", () => {
-    if (_selected) deleteRoom(_selected);
+    if (_selected) { _pushUndo(); deleteRoom(_selected); }
 });
 
 // Toolbar selectors: update selected room (if any) AND serve as defaults for new rooms.
 document.getElementById("sel-style")?.addEventListener("change", (e) => {
     const v = e.target.value;
     if (_selected) {
+        _pushUndo();
         _selected.stylename    = v;
         _selected.face_styles  = Array(6).fill(v);
         _updateRoomGroup(_selected);
@@ -402,6 +464,7 @@ document.getElementById("sel-style")?.addEventListener("change", (e) => {
 document.getElementById("sel-usage")?.addEventListener("change", (e) => {
     const v = e.target.value;
     if (_selected) {
+        _pushUndo();
         _selected.usage = v;
         const ruSel = document.getElementById("room-usage");
         if (ruSel) ruSel.value = v;
@@ -411,6 +474,7 @@ document.getElementById("sel-usage")?.addEventListener("change", (e) => {
 
 document.getElementById("room-style")?.addEventListener("change", (e) => {
     if (_selected) {
+        _pushUndo();
         _selected.stylename   = e.target.value;
         _selected.face_styles = Array(6).fill(e.target.value);
         _updateRoomGroup(_selected);
@@ -422,6 +486,7 @@ document.getElementById("room-style")?.addEventListener("change", (e) => {
 
 document.getElementById("room-usage")?.addEventListener("change", (e) => {
     if (_selected) {
+        _pushUndo();
         _selected.usage = e.target.value;
         const tSel = document.getElementById("sel-usage");
         if (tSel) tSel.value = e.target.value;
@@ -431,6 +496,7 @@ document.getElementById("room-usage")?.addEventListener("change", (e) => {
 
 document.getElementById("face-style-sel")?.addEventListener("change", (e) => {
     if (_selected && _selectedFaceIdx !== null) {
+        _pushUndo();
         const fi = _selectedFaceIdx;
         _selected.face_styles[fi] = e.target.value;
         _updateRoomGroup(_selected);
@@ -480,6 +546,7 @@ function _beginHandleDrag(event, handleMesh) {
 
     const room = _roomById(handleMesh.userData.roomId);
     if (!room) return;
+    _pushUndo();
 
     _dragPlaneHelper.setFromNormalAndCoplanarPoint(
         new THREE.Vector3(0, 1, 0),
@@ -501,6 +568,7 @@ function _beginHandleDrag(event, handleMesh) {
 function _beginRoomMove(event, fillMesh) {
     const room = _roomById(fillMesh.userData.roomId);
     if (!room) return;
+    _pushUndo();
 
     _updatePointer(event);
     _raycaster.setFromCamera(_pointer, camera);
@@ -534,6 +602,7 @@ function _beginRoomMove(event, fillMesh) {
 function _beginVertexDrag(event, vertexMesh) {
     const room = _roomById(vertexMesh.userData.roomId);
     if (!room) return;
+    _pushUndo();
     const vertexIndex = vertexMesh.userData.vertexIndex;
     const midY = room.elevation + room.height / 2;
 
@@ -757,7 +826,12 @@ document.getElementById("btn-top-view")?.addEventListener("click", () => {
 
 window.addEventListener("keydown", (e) => {
     if (e.key === "t" || e.key === "T") document.getElementById("btn-top-view")?.click();
-    if ((e.key === "Delete" || e.key === "Backspace") && _selected) deleteRoom(_selected);
+    if ((e.key === "Delete" || e.key === "Backspace") && _selected && !e.ctrlKey && !e.metaKey) {
+        _pushUndo();
+        deleteRoom(_selected);
+    }
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === "z") { e.preventDefault(); undo(); }
+    if ((e.ctrlKey || e.metaKey) && (e.shiftKey  && e.key === "z" || e.key === "y")) { e.preventDefault(); redo(); }
 });
 
 // ---------------------------------------------------------------------------
@@ -788,46 +862,21 @@ window.__hmLoadGeometry = function (data) {
     for (const r of [..._rooms]) _removeRoomGroup(r);
     _rooms  = [];
     _nextId = 1;
+    _undoStack = [];
+    _redoStack = [];
     _setSelected(null);
 
     for (const r of data.rooms) {
+        if (!r.vertices || r.vertices[0]?.length !== 2) continue;
         const stylename = r.stylename || "default";
-        let vertices, elevation, height, face_styles;
-
-        if (r.vertices && r.vertices[0]?.length === 2) {
-            // New unified format or old polygon format.
-            vertices    = r.vertices.map(v => [...v]);
-            elevation   = r.elevation ?? 0;
-            height      = r.height    ?? DEFAULT_H;
-            face_styles = r.face_styles || Array(6).fill(stylename);
-        } else if (r.position && r.size) {
-            // Old cuboid format — convert to quad.
-            const [px, py, pz] = r.position;
-            const [w, d, h]    = r.size;
-            vertices  = [[px, pz], [px + w, pz], [px + w, pz + d], [px, pz + d]];
-            elevation = py;
-            height    = h;
-            // Remap face_styles: old [floor,right,ceil,left,back,front]
-            //                  → new [floor,ceil,wall0,wall1,wall2,wall3]
-            // wall0(v0→v1)=old back(4), wall1(v1→v2)=old right(1),
-            // wall2(v2→v3)=old front(5), wall3(v3→v0)=old left(3)
-            const o = r.face_styles || Array(6).fill(stylename);
-            face_styles = [
-                o[0] || stylename,  // floor
-                o[2] || stylename,  // ceiling
-                o[4] || stylename,  // wall 0
-                o[1] || stylename,  // wall 1
-                o[5] || stylename,  // wall 2
-                o[3] || stylename,  // wall 3
-            ];
-        } else {
-            continue;  // unrecognised format
-        }
-
         const room = {
             id: `r${_nextId++}`,
-            vertices, elevation, height, stylename, face_styles,
-            usage: r.usage || "living",
+            vertices:    r.vertices.map(v => [...v]),
+            elevation:   r.elevation ?? 0,
+            height:      r.height    ?? DEFAULT_H,
+            stylename,
+            face_styles: r.face_styles || Array(6).fill(stylename),
+            usage:       r.usage || "living",
             _group: null, _handles: [], _vertexHandles: [],
         };
         _rooms.push(room);
