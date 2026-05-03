@@ -58,14 +58,12 @@ describe("snapToFaces", () => {
         expect(snapToFaces(3.5, [], null)).toBe(3.5);
     });
 
-    it("snaps to first matching room when two are within threshold", () => {
-        const a = rect(0, 0, 4, 4, 0, 3);   // ceiling at y=3
-        const b = rect(0, 0, 4, 4, 0.05, 3); // floor at y=0.05
-        // y=0.04 is closer to a's ceiling (3) — no, let's test the floor snap
-        // y=0.08 is within threshold of both a.elevation=0 (dist 0.08) and b.elevation=0.05 (dist 0.03)
+    it("snaps to nearest face when two are within threshold", () => {
+        const a = rect(0, 0, 4, 4, 0, 3);    // floor at y=0   (dist 0.08)
+        const b = rect(0, 0, 4, 4, 0.05, 3); // floor at y=0.05 (dist 0.03)
+        // y=0.08 is within threshold of both; b's floor is closer
         const result = snapToFaces(0.08, [a, b], null);
-        // a is first and dist 0.08 < 0.15 → snaps to a's floor=0
-        expect(result).toBe(0);
+        expect(result).toBe(0.05);
     });
 });
 

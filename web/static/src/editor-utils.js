@@ -25,14 +25,18 @@ export const MIN_DIM        = 0.3;   // metres — minimum room dimension
  * Returns the snapped Y coordinate, or worldY unchanged if no snap.
  */
 export function snapToFaces(worldY, rooms, draggedRoom) {
+    let bestDist = SNAP_THRESHOLD;
+    let snapY = worldY;
     for (const room of rooms) {
         if (room === draggedRoom) continue;
         const lo = room.elevation;
         const hi = room.elevation + room.height;
-        if (Math.abs(worldY - lo) < SNAP_THRESHOLD) return lo;
-        if (Math.abs(worldY - hi) < SNAP_THRESHOLD) return hi;
+        const dlo = Math.abs(worldY - lo);
+        const dhi = Math.abs(worldY - hi);
+        if (dlo < bestDist) { bestDist = dlo; snapY = lo; }
+        if (dhi < bestDist) { bestDist = dhi; snapY = hi; }
     }
-    return worldY;
+    return snapY;
 }
 
 /**

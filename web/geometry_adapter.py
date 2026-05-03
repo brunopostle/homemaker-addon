@@ -93,11 +93,11 @@ def _room(room: dict) -> tuple:
 
     # IFC X = three_x, IFC Y = three_z (depth), IFC Z = elevation
     floor_verts = [
-        Vertex.ByCoordinates(round(float(v[0]), 3), round(float(v[1]), 3), ifc_floor_z)
+        Vertex.ByCoordinates(*_snap([v[0], v[1], ifc_floor_z]))
         for v in vertices_2d
     ]
     ceil_verts = [
-        Vertex.ByCoordinates(round(float(v[0]), 3), round(float(v[1]), 3), ifc_ceil_z)
+        Vertex.ByCoordinates(*_snap([v[0], v[1], ifc_ceil_z]))
         for v in vertices_2d
     ]
 
@@ -123,10 +123,10 @@ def _room(room: dict) -> tuple:
         wall.Set("stylename", fstyle(2 + i))
         faces.append(wall)
 
-    cx = round(sum(float(v[0]) for v in vertices_2d) / n, 3)
-    cy = round(sum(float(v[1]) for v in vertices_2d) / n, 3)
-    cz = round(elevation + height / 2, 3)
-    widget = Vertex.ByCoordinates(cx, cy, cz)
+    cx = sum(float(v[0]) for v in vertices_2d) / n
+    cy = sum(float(v[1]) for v in vertices_2d) / n
+    cz = elevation + height / 2
+    widget = Vertex.ByCoordinates(*_snap([cx, cy, cz]))
     widget.Set("usage", room.get("usage", "living"))
     return faces, widget
 

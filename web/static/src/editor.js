@@ -234,7 +234,6 @@ function _makeCellGroup(room) {
             depthWrite: false, side: THREE.DoubleSide,
         })
     );
-    fill.userData.roomId    = room.id;
     fill.userData.room      = room;
     fill.userData.isRoomFill = true;
     room._fillMesh = fill;
@@ -269,7 +268,6 @@ function _makeCellGroup(room) {
         mesh.position.set(hx, hy, hz);
         mesh.userData.isHandle  = true;
         mesh.userData.faceIndex = fi;
-        mesh.userData.roomId    = room.id;
         mesh.userData.room      = room;
         group.add(mesh);
         return mesh;
@@ -281,7 +279,6 @@ function _makeCellGroup(room) {
         m.position.set(x, midY, z);
         m.userData.isVertexHandle = true;
         m.userData.vertexIndex    = i;
-        m.userData.roomId         = room.id;
         m.userData.room           = room;
         group.add(m);
         return m;
@@ -433,7 +430,7 @@ function addRoom(options = {}) {
         elevation:      options.elevation  ?? 0,
         height:         options.height     ?? DEFAULT_H,
         stylename,
-        face_styles:    options.face_styles ?? Array(6).fill(stylename),
+        face_styles:    options.face_styles ?? Array(vertices.length + 2).fill(stylename),
         usage:          options.usage       || usage,
         _group:         null,
         _handles:       [],
@@ -596,19 +593,18 @@ function _beginRoomMove(event, fillMesh) {
         const centre    = new THREE.Vector3(c.x, room.elevation + room.height / 2, c.z);
         const dragPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNorm, centre);
         if (!_raycaster.ray.intersectPlane(dragPlane, hit)) return;
-        _pushUndo();
-        _drag = { mode: "move", vertical: true, room, dragPlane, pointerOffset: hit.y - room.elevation };
+        _drag = { mode: "move", vertical: true, room, dragPlane, pointerOffset: hit.y - room.elevation, undoPushed: false };
         canvas.style.cursor = "ns-resize";
     } else {
         // Horizontal move — drag plane is the floor.
         const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -room.elevation);
         if (!_raycaster.ray.intersectPlane(dragPlane, hit)) return;
-        _pushUndo();
         _drag = {
             mode: "move", vertical: false, room, dragPlane,
             pointerOffset:  [hit.x - c.x, hit.z - c.z],
             startCentroid:  [c.x, c.z],
             startVertices:  room.vertices.map(v => [...v]),
+            undoPushed: false,
         };
         canvas.style.cursor = "grabbing";
     }
@@ -626,12 +622,12 @@ function _beginVertexDrag(event, vertexMesh) {
     const hit = new THREE.Vector3();
     const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -midY);
     if (!_raycaster.ray.intersectPlane(dragPlane, hit)) return;
-    _pushUndo();
 
     const [vx, vz] = room.vertices[vertexIndex];
     _drag = {
         mode: "vertex", room, vertexIndex, dragPlane,
         pointerOffset: [hit.x - vx, hit.z - vz],
+        undoPushed: false,
     };
     controls.enabled = false;
 }
@@ -653,6 +649,7 @@ function _updateRoomMove(event) {
         if      (sy0 !== newY)     newY = sy0;
         else if (sy1 !== newY + h) newY = sy1 - h;
         if (newY === room.elevation) return;
+        if (!_drag.undoPushed) { _pushUndo(); _drag.undoPushed = true; }
         room.elevation = newY;
     } else {
         const [ox, oz] = pointerOffset;
@@ -677,10 +674,8 @@ function _updateRoomMove(event) {
             }
         }
 
-        room.vertices = tentative.map(([x, z]) => [
-            Math.round((x + snapDX) * 1000) / 1000,
-            Math.round((z + snapDZ) * 1000) / 1000,
-        ]);
+        if (!_drag.undoPushed) { _pushUndo(); _drag.undoPushed = true; }
+        room.vertices = tentative.map(([x, z]) => [x + snapDX, z + snapDZ]);
     }
 
     _updateRoomGroup(room);
@@ -724,6 +719,7 @@ function _updateVertexDrag(event) {
     [newX, newZ] = snapVertexToWallPlanes(newX, newZ, _rooms, room);
 
     if (newX === room.vertices[vertexIndex][0] && newZ === room.vertices[vertexIndex][1]) return;
+    if (!_drag.undoPushed) { _pushUndo(); _drag.undoPushed = true; }
     room.vertices[vertexIndex][0] = newX;
     room.vertices[vertexIndex][1] = newZ;
     _updateRoomGroup(room);
@@ -749,7 +745,6 @@ canvas.addEventListener("pointerdown", (e) => {
     // Vertex handles first (orange corners).
     const vtxHits = _raycaster.intersectObjects(_getVertexHandleObjects());
     if (vtxHits.length > 0) {
-        e.stopPropagation();
         _beginVertexDrag(e, vtxHits[0].object);
         return;
     }
@@ -757,7 +752,6 @@ canvas.addEventListener("pointerdown", (e) => {
     // Face handles.
     const handleHits = _raycaster.intersectObjects(_getHandleObjects());
     if (handleHits.length > 0) {
-        e.stopPropagation();
         _beginHandleDrag(e, handleHits[0].object);
         return;
     }
@@ -765,7 +759,6 @@ canvas.addEventListener("pointerdown", (e) => {
     // Room fill.
     const fillHits = _raycaster.intersectObjects(_getFillObjects());
     if (fillHits.length > 0) {
-        e.stopPropagation();
         _beginRoomMove(e, fillHits[0].object);
     }
 });
@@ -892,7 +885,7 @@ window.__hmLoadGeometry = function (data) {
             elevation:   r.elevation ?? 0,
             height:      r.height    ?? DEFAULT_H,
             stylename,
-            face_styles: r.face_styles || Array(6).fill(stylename),
+            face_styles: r.face_styles || Array(r.vertices.length + 2).fill(stylename),
             usage:       r.usage || "living",
             _group: null, _handles: [], _vertexHandles: [],
         };
