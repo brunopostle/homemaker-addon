@@ -78,6 +78,11 @@ class TestRoomVertices:
     def test_boundary_coords_accepted(self):
         RoomData(**_room(vertices=[[-9999.9, -9999.9], [9999.9, -9999.9], [9999.9, 9999.9], [-9999.9, 9999.9]]))
 
+    def test_collinear_polygon_rejected(self):
+        # All three points on a line — passes convexity but has zero area.
+        with pytest.raises(ValidationError, match="area"):
+            RoomData(**_room(vertices=[[0, 0], [1, 0], [2, 0]]))
+
 
 # ---------------------------------------------------------------------------
 # RoomData — height

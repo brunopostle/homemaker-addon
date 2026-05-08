@@ -40,7 +40,7 @@ saveBtn?.addEventListener("click", () => {
   );
   const a = document.createElement("a");
   a.href = url; a.download = "rooms.json"; a.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 });
 
 document.getElementById("btn-load")?.addEventListener("click", () => loadInput?.click());
@@ -92,7 +92,7 @@ downloadBtn?.addEventListener("click", () => {
   a.href = url;
   a.download = "building.ifc";
   a.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 });
 
 function _maybeRegenerate() {
@@ -132,7 +132,12 @@ async function _forceRegenerate() {
 
     if (!resp.ok) {
       const err = await resp.text();
-      setStatus("error", "error");
+      let detail = "error";
+      try {
+        const parsed = JSON.parse(err);
+        detail = parsed?.detail?.[0]?.msg ?? parsed?.detail ?? "error";
+      } catch (_) {}
+      setStatus(String(detail), "error");
       console.error("generate error:", err);
       return;
     }
@@ -157,6 +162,13 @@ async function _forceRegenerate() {
   }
 }
 
+function _restoreSavedLayout() {
+  try {
+    const saved = localStorage.getItem("hm-rooms");
+    if (saved) window.__hmLoadGeometry?.(JSON.parse(saved));
+  } catch (_) {}
+}
+
 // Populate style selectors from server, restore saved layout, then regenerate.
 fetch("/api/styles")
   .then((r) => r.json())
@@ -169,13 +181,10 @@ fetch("/api/styles")
         for (const s of styles) sel.add(new Option(s, s));
       }
     }
-    // Restore saved layout if available (overrides the seed rooms from editor.js).
-    try {
-      const saved = localStorage.getItem("hm-rooms");
-      if (saved) window.__hmLoadGeometry?.(JSON.parse(saved));
-    } catch (_) {}
+    _restoreSavedLayout();
     _forceRegenerate();
   })
   .catch(() => {
+    _restoreSavedLayout();
     _forceRegenerate();
   });

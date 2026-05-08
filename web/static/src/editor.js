@@ -518,7 +518,6 @@ document.getElementById("face-style-sel")?.addEventListener("change", (e) => {
         const fi = _selectedFaceIdx;
         _selected.face_styles[fi] = e.target.value;
         _updateRoomGroup(_selected);
-        _selectedFaceIdx = fi;
         const faceRow     = document.getElementById("face-style-row");
         const faceDivider = document.getElementById("face-divider");
         const faceLabel   = document.getElementById("face-style-label");
@@ -890,7 +889,7 @@ window.__hmLoadGeometry = function (data) {
     _setSelected(null);
 
     for (const r of data.rooms) {
-        if (!r.vertices || r.vertices[0]?.length !== 2) continue;
+        if (!r.vertices || r.vertices.length < 3 || r.vertices[0]?.length !== 2) continue;
         const stylename = r.stylename || "default";
         const room = {
             id: `r${_nextId++}`,

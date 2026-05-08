@@ -85,6 +85,7 @@ _MIN_DIM     = 0.3                       # metres — mirrors editor MIN_DIM
 _MAX_DIM     = 1_000.0                   # metres
 _MIN_EDGE    = 0.01                      # metres — shortest face edge (raw faces)
 _MAX_EDGE    = 2_000.0                   # metres — longest face edge (raw faces)
+_MIN_AREA    = 0.01                      # m² — collinear/degenerate polygon guard
 _MAX_ROOMS   = 500
 _MAX_FACES   = 5_000
 
@@ -193,6 +194,14 @@ class RoomData(BaseModel):
             _check_coords(vert, 2, f"vertex {i}")
         if not _is_convex_2d(v):
             raise ValueError("room polygon must be convex")
+        # Shoelace area — catches all-collinear polygons that pass the convexity test.
+        n = len(v)
+        area = abs(sum(
+            float(v[i][0]) * float(v[(i + 1) % n][1]) - float(v[(i + 1) % n][0]) * float(v[i][1])
+            for i in range(n)
+        )) * 0.5
+        if area < _MIN_AREA:
+            raise ValueError(f"room polygon area {area:.4f} m² is below minimum {_MIN_AREA} m²")
         return v
 
     @field_validator("height")
