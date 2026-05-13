@@ -549,36 +549,58 @@ function _getFillObjects()         { return _rooms.flatMap((r) => r._fillMesh ? 
 // ---------------------------------------------------------------------------
 let _drag = null;
 
-const _dragPlaneHelper = new THREE.Plane();
-
-// fi=0 = floor (sign -1), fi=1 = ceiling (sign +1), fi>=2 = wall (click only)
+// fi=0 = floor (sign=-1), fi=1 = ceiling (sign=+1), fi>=2 = wall push/pull
 function _beginHandleDrag(event, handleMesh) {
     const fi   = handleMesh.userData.faceIndex;
     const room = handleMesh.userData.room;
     if (!room) return;
 
-    if (fi >= 2) {
-        // Wall handles are click-only. Set _drag so pointerup click detection fires _selectFace.
-        _drag = { mode: "face", faceIndex: fi, room, handleMesh, dragPlane: null };
-        controls.enabled = false;
-        return;
+    // Vertical drag plane facing the camera: mouse Y maps to world Y (height),
+    // mouse X maps to depth along the plane. Used for both floor/ceiling and walls.
+    _updatePointer(event);
+    _raycaster.setFromCamera(_pointer, camera);
+    const camDir = camera.getWorldDirection(new THREE.Vector3());
+    const planeNorm = new THREE.Vector3(camDir.x, 0, camDir.z);
+    if (planeNorm.lengthSq() < 0.01) planeNorm.set(0, 0, 1);  // top-view fallback
+    else planeNorm.normalize();
+    const handlePos = handleMesh.getWorldPosition(new THREE.Vector3());
+    const dragPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNorm, handlePos);
+    const startHit  = new THREE.Vector3();
+    if (!_raycaster.ray.intersectPlane(dragPlane, startHit)) return;
+
+    if (fi === 0 || fi === 1) {
+        _drag = {
+            mode: "face",
+            room, faceIndex: fi,
+            sign: fi === 0 ? -1 : 1,
+            startElevation: room.elevation,
+            startHeight:    room.height,
+            startHitY: startHit.y,
+            dragPlane,
+            handleMesh,
+            undoPushed: false,
+        };
+    } else {
+        // Wall handle: push/pull the face along its outward normal.
+        const wallIdx = fi - 2;
+        const n  = room.vertices.length;
+        const v0 = room.vertices[wallIdx];
+        const v1 = room.vertices[(wallIdx + 1) % n];
+        const dx = v1[0] - v0[0], dz = v1[1] - v0[1];
+        const len = Math.sqrt(dx * dx + dz * dz);
+        const wallNormal = len > 0.001
+            ? new THREE.Vector3(-dz / len, 0, dx / len)
+            : new THREE.Vector3(1, 0, 0);
+        _drag = {
+            mode: "wall",
+            room, faceIndex: fi, wallIdx, wallNormal,
+            startVertices: room.vertices.map(v => [...v]),
+            startHit: startHit.clone(),
+            dragPlane,
+            handleMesh,
+            undoPushed: false,
+        };
     }
-
-    _dragPlaneHelper.setFromNormalAndCoplanarPoint(
-        new THREE.Vector3(0, 1, 0),
-        handleMesh.getWorldPosition(new THREE.Vector3())
-    );
-
-    _drag = {
-        mode: "face",
-        room, faceIndex: fi,
-        sign: fi === 0 ? -1 : 1,
-        startElevation: room.elevation,
-        startHeight:    room.height,
-        dragPlane: _dragPlaneHelper.clone(),
-        handleMesh,
-        undoPushed: false,
-    };
     controls.enabled = false;
 }
 
@@ -692,14 +714,16 @@ function _updateRoomMove(event) {
 }
 
 function _updateHandleDrag(event) {
-    if (!_drag || !_drag.dragPlane) return;   // null dragPlane = wall handle (click-only)
+    if (!_drag) return;
     _updatePointer(event);
     _raycaster.setFromCamera(_pointer, camera);
     const hit = new THREE.Vector3();
     if (!_raycaster.ray.intersectPlane(_drag.dragPlane, hit)) return;
 
-    const { room, sign, startElevation, startHeight } = _drag;
-    let worldY = hit.y;
+    const { room, sign, startElevation, startHeight, startHitY } = _drag;
+    // startFaceY is the Y of the dragged face at rest; map mouse delta to world Y delta.
+    const startFaceY = sign > 0 ? startElevation + startHeight : startElevation;
+    let worldY = startFaceY + (hit.y - startHitY);
     worldY = snapToFaces(worldY, _rooms, room);
     worldY = Math.round(worldY / GRID_SNAP) * GRID_SNAP;
     worldY = snapToFaces(worldY, _rooms, room);
@@ -710,6 +734,36 @@ function _updateHandleDrag(event) {
     if (!_drag.undoPushed) { _pushUndo(); _drag.undoPushed = true; }
     room.elevation = result.elevation;
     room.height    = result.height;
+    _updateRoomGroup(room);
+    _emitEdit();
+}
+
+function _updateWallHandleDrag(event) {
+    if (!_drag) return;
+    _updatePointer(event);
+    _raycaster.setFromCamera(_pointer, camera);
+    const hit = new THREE.Vector3();
+    if (!_raycaster.ray.intersectPlane(_drag.dragPlane, hit)) return;
+
+    const { room, wallIdx, wallNormal, startVertices, startHit } = _drag;
+    // Project mouse displacement onto the wall's outward normal.
+    let displacement = hit.clone().sub(startHit).dot(wallNormal);
+    displacement = Math.round(displacement / GRID_SNAP) * GRID_SNAP;
+
+    const n  = room.vertices.length;
+    const i1 = (wallIdx + 1) % n;
+    const newVerts = startVertices.map(v => [...v]);
+    newVerts[wallIdx] = [
+        startVertices[wallIdx][0] + displacement * wallNormal.x,
+        startVertices[wallIdx][1] + displacement * wallNormal.z,
+    ];
+    newVerts[i1] = [
+        startVertices[i1][0] + displacement * wallNormal.x,
+        startVertices[i1][1] + displacement * wallNormal.z,
+    ];
+
+    if (!_drag.undoPushed) { _pushUndo(); _drag.undoPushed = true; }
+    room.vertices = newVerts;
     _updateRoomGroup(room);
     _emitEdit();
 }
@@ -777,6 +831,7 @@ canvas.addEventListener("pointermove", (e) => {
     if (_drag) {
         if      (_drag.mode === "vertex") _updateVertexDrag(e);
         else if (_drag.mode === "move")   _updateRoomMove(e);
+        else if (_drag.mode === "wall")   _updateWallHandleDrag(e);
         else                              _updateHandleDrag(e);
         return;
     }
@@ -814,7 +869,7 @@ canvas.addEventListener("pointerup", (e) => {
         _endDrag();
         if (mode === "vertex") {
             // no click action for vertex handles
-        } else if (mode === "face" && isClick && handleMesh) {
+        } else if ((mode === "face" || mode === "wall") && isClick && handleMesh) {
             _selectFace(handleMesh);
         } else if (mode === "move" && isClick) {
             _setSelected(room);
