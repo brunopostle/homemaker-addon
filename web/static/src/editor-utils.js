@@ -87,21 +87,26 @@ function _wallPlanesOf(room) {
 /**
  * Snap a vertex at (vx, vz) to the nearest wall plane of any room except
  * draggedRoom, within SNAP_THRESHOLD.
- * Returns [snappedX, snappedZ].
+ * Returns { x, z, snapRoom, snapWallIdx } — snapRoom is null if no snap fired.
  */
 export function snapVertexToWallPlanes(vx, vz, rooms, draggedRoom) {
     let bestDist = Infinity;
     let snapX = vx, snapZ = vz;
+    let snapRoom = null, snapWallIdx = -1;
     for (const room of rooms) {
         if (room === draggedRoom) continue;
-        for (const plane of _wallPlanesOf(room)) {
+        const planes = _wallPlanesOf(room);
+        for (let wi = 0; wi < planes.length; wi++) {
+            const plane = planes[wi];
             const dist = plane.nx * vx + plane.nz * vz + plane.d;
             if (Math.abs(dist) < SNAP_THRESHOLD && Math.abs(dist) < bestDist) {
                 bestDist = Math.abs(dist);
                 snapX = vx - dist * plane.nx;
                 snapZ = vz - dist * plane.nz;
+                snapRoom = room;
+                snapWallIdx = wi;
             }
         }
     }
-    return [snapX, snapZ];
+    return { x: snapX, z: snapZ, snapRoom, snapWallIdx };
 }

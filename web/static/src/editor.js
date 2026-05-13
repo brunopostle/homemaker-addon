@@ -692,16 +692,22 @@ function _updateRoomMove(event) {
 
         // Wall-plane snap: try each tentative vertex; apply best snap delta to all.
         let bestDist = Infinity, snapDX = 0, snapDZ = 0;
+        let bestSnapRoom = null, bestSnapWallIdx = -1;
         for (const [vx, vz] of tentative) {
-            const [sx, sz] = snapVertexToWallPlanes(vx, vz, _rooms, room);
-            const sdx = sx - vx, sdz = sz - vz;
+            const snap = snapVertexToWallPlanes(vx, vz, _rooms, room);
+            if (!snap.snapRoom) continue;
+            const sdx = snap.x - vx, sdz = snap.z - vz;
             const dist = Math.sqrt(sdx * sdx + sdz * sdz);
             if (dist > 0 && dist < bestDist) {
                 bestDist = dist;
                 snapDX = sdx;
                 snapDZ = sdz;
+                bestSnapRoom = snap.snapRoom;
+                bestSnapWallIdx = snap.snapWallIdx;
             }
         }
+        if (bestSnapRoom) _showSnapHighlight(bestSnapRoom, bestSnapWallIdx);
+        else _clearSnapHighlight();
 
         const newVerts = tentative.map(([x, z]) => [x + snapDX, z + snapDZ]);
         if (newVerts.every(([x, z], i) => x === room.vertices[i][0] && z === room.vertices[i][1])) return;
@@ -746,12 +752,39 @@ function _updateWallHandleDrag(event) {
     if (!_raycaster.ray.intersectPlane(_drag.dragPlane, hit)) return;
 
     const { room, wallIdx, wallNormal, startVertices, startHit } = _drag;
-    // Project mouse displacement onto the wall's outward normal.
+    // Project mouse displacement onto the wall's outward normal, then grid-snap.
     let displacement = hit.clone().sub(startHit).dot(wallNormal);
     displacement = Math.round(displacement / GRID_SNAP) * GRID_SNAP;
 
     const n  = room.vertices.length;
     const i1 = (wallIdx + 1) % n;
+
+    // Tentative new positions for the two wall vertices.
+    const nv0 = [startVertices[wallIdx][0] + displacement * wallNormal.x,
+                 startVertices[wallIdx][1] + displacement * wallNormal.z];
+    const nv1 = [startVertices[i1][0]      + displacement * wallNormal.x,
+                 startVertices[i1][1]      + displacement * wallNormal.z];
+
+    // Wall-plane snap: project snap delta onto wallNormal so we only pull in
+    // the push direction (avoids sideways drift for diagonal walls).
+    let snapAdjust = 0, bestSnapDist = Infinity;
+    let snapR = null, snapWI = -1;
+    for (const [vx, vz] of [nv0, nv1]) {
+        const s = snapVertexToWallPlanes(vx, vz, _rooms, room);
+        if (!s.snapRoom) continue;
+        const adj  = (s.x - vx) * wallNormal.x + (s.z - vz) * wallNormal.z;
+        const dist = Math.sqrt((s.x - vx) ** 2 + (s.z - vz) ** 2);
+        if (dist < bestSnapDist) {
+            bestSnapDist = dist;
+            snapAdjust = adj;
+            snapR = s.snapRoom;
+            snapWI = s.snapWallIdx;
+        }
+    }
+    displacement += snapAdjust;
+    if (snapR) _showSnapHighlight(snapR, snapWI);
+    else _clearSnapHighlight();
+
     const newVerts = startVertices.map(v => [...v]);
     newVerts[wallIdx] = [
         startVertices[wallIdx][0] + displacement * wallNormal.x,
@@ -779,7 +812,10 @@ function _updateVertexDrag(event) {
     const [ox, oz] = pointerOffset;
     let newX = Math.round((hit.x - ox) / GRID_SNAP) * GRID_SNAP;
     let newZ = Math.round((hit.z - oz) / GRID_SNAP) * GRID_SNAP;
-    [newX, newZ] = snapVertexToWallPlanes(newX, newZ, _rooms, room);
+    const snap = snapVertexToWallPlanes(newX, newZ, _rooms, room);
+    newX = snap.x; newZ = snap.z;
+    if (snap.snapRoom) _showSnapHighlight(snap.snapRoom, snap.snapWallIdx);
+    else _clearSnapHighlight();
 
     if (newX === room.vertices[vertexIndex][0] && newZ === room.vertices[vertexIndex][1]) return;
     if (!_drag.undoPushed) { _pushUndo(); _drag.undoPushed = true; }
@@ -789,7 +825,43 @@ function _updateVertexDrag(event) {
     _emitEdit();
 }
 
+// ---------------------------------------------------------------------------
+// Snap highlight — bright LineLoop quad drawn over the wall being snapped to
+// ---------------------------------------------------------------------------
+let _snapHighlight = null;  // { mesh, snapRoom, wallIdx }
+
+function _showSnapHighlight(snapRoom, wallIdx) {
+    if (_snapHighlight?.snapRoom === snapRoom && _snapHighlight?.wallIdx === wallIdx) return;
+    _clearSnapHighlight();
+    const n  = snapRoom.vertices.length;
+    const v0 = snapRoom.vertices[wallIdx];
+    const v1 = snapRoom.vertices[(wallIdx + 1) % n];
+    const lo = snapRoom.elevation;
+    const hi = snapRoom.elevation + snapRoom.height;
+    const pts = new Float32Array([
+        v0[0], lo, v0[1],
+        v1[0], lo, v1[1],
+        v1[0], hi, v1[1],
+        v0[0], hi, v0[1],
+    ]);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(pts, 3));
+    const mesh = new THREE.LineLoop(geo, new THREE.LineBasicMaterial({ color: 0xffdd00 }));
+    scene.add(mesh);
+    _snapHighlight = { mesh, snapRoom, wallIdx };
+}
+
+function _clearSnapHighlight() {
+    if (_snapHighlight) {
+        scene.remove(_snapHighlight.mesh);
+        _snapHighlight.mesh.geometry.dispose();
+        _snapHighlight.mesh.material.dispose();
+        _snapHighlight = null;
+    }
+}
+
 function _endDrag() {
+    _clearSnapHighlight();
     _drag = null;
     controls.enabled = true;
     canvas.style.cursor = "default";
