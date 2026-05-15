@@ -18,6 +18,9 @@ dist:
 	cd homemaker/wheels && wget https://github.com/wassimj/Topologic/releases/download/v6.0.3/topologic_core-6.0.3-cp311-cp311-linux_x86_64.whl
 	cd homemaker/wheels && wget https://github.com/wassimj/Topologic/releases/download/v6.0.3/topologic_core-6.0.3-cp311-cp311-win_amd64.whl
 	cd homemaker/wheels && wget https://github.com/wassimj/Topologic/releases/download/v6.0.3/topologic_core-6.0.3-cp311-cp311-macosx_11_0_arm64.whl
+	cd homemaker/wheels && wget https://github.com/wassimj/Topologic/releases/download/v6.0.3/topologic_core-6.0.3-cp313-cp313-linux_x86_64.whl
+	cd homemaker/wheels && wget https://github.com/wassimj/Topologic/releases/download/v6.0.3/topologic_core-6.0.3-cp313-cp313-win_amd64.whl
+	cd homemaker/wheels && wget https://github.com/wassimj/Topologic/releases/download/v6.0.3/topologic_core-6.0.3-cp313-cp313-macosx_14_0_arm64.whl
 
 	# EXTENSION
 	sed -i 's/version = "0.0.1"/version = "$(VERSION)"/' homemaker/blender_manifest.toml
