@@ -163,7 +163,10 @@ async function _ensureInit() {
     await _components.init();
 
     _ifcLoader = _components.get(OBC.IfcLoader);
-    _ifcLoader.settings.wasm = { path: CDN_WEBIFC, absolute: true };
+    _ifcLoader.settings.wasm    = { path: CDN_WEBIFC, absolute: true };
+    // Keep model in its own IFC world coordinates — no COORDINATE_TO_ORIGIN
+    // shift that would misalign the overlay with the editor's geometry.
+    _ifcLoader.settings.webIfc  = { COORDINATE_TO_ORIGIN: false };
 
     // web-ifc may load lazily during setup(); keep the stub active.
     Object.defineProperty(document, 'currentScript', {
@@ -214,6 +217,14 @@ export async function loadIfc(arrayBuffer) {
     newModel.scale.set(1, 1, -1);
     newModel.traverse((obj) => {
         if (!obj.isMesh) return;
+        // Clone materials so each loaded model owns its opacity state independently.
+        // @thatopen shares material instances across load() calls, so fading the
+        // old model would otherwise also fade the incoming model's materials.
+        if (Array.isArray(obj.material)) {
+            obj.material = obj.material.map(m => m?.clone() ?? m);
+        } else if (obj.material) {
+            obj.material = obj.material.clone();
+        }
         const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
         for (const m of mats) {
             if (m) m.side = 2; // THREE.DoubleSide = 2

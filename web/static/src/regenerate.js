@@ -115,6 +115,10 @@ async function _forceRegenerate() {
   _inFlight = true;
   _editActive = false;
   clearTimeout(_solidTimer);
+  // Clear any pending debounce so a restore-triggered hm:edit doesn't
+  // schedule a phantom regeneration ~10 s after the first real one.
+  clearTimeout(_debounceTimer);
+  _debounceTimer = null;
   setStatus("generating…", "generating");
 
   try {
