@@ -57,3 +57,8 @@ htmlcov/
 # Test-generated IFC artefacts
 tests/*.ifc
 *.ifc
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key

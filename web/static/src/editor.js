@@ -85,7 +85,7 @@ camera.lookAt(0, 1.5, 0);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.1;
-controls.mouseButtons = { LEFT: null, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
+controls.mouseButtons = { LEFT: null, MIDDLE: THREE.MOUSE.PAN, RIGHT: THREE.MOUSE.ROTATE };
 
 window.__hmScene    = scene;
 window.__hmRenderer = renderer;
@@ -178,14 +178,21 @@ function _polygonCentroid(vertices) {
     };
 }
 
-/** Find an X offset so a new DEFAULT_W room doesn't overlap existing ones. */
+/**
+ * Return [cx, cz] for the next new room: flush against the right edge of the
+ * existing bounding box and aligned to its minimum Z, so the new cell shares a
+ * face with the existing complex rather than floating in space.
+ */
 function _nextPlacementPos() {
     if (_rooms.length === 0) return [0, 0];
-    let maxX = -Infinity;
+    let maxX = -Infinity, minZ = Infinity;
     for (const r of _rooms) {
-        for (const [x] of r.vertices) maxX = Math.max(maxX, x);
+        for (const [x, z] of r.vertices) {
+            maxX = Math.max(maxX, x);
+            minZ = Math.min(minZ, z);
+        }
     }
-    return [maxX + 0.5, 0];
+    return [maxX, minZ];
 }
 
 // ---------------------------------------------------------------------------
@@ -459,6 +466,16 @@ function deleteRoom(room) {
 document.getElementById("btn-add-room")?.addEventListener("click", () => {
     _pushUndo();
     addRoom();
+});
+
+document.getElementById("btn-reset")?.addEventListener("click", () => {
+    _pushUndo();
+    for (const r of [..._rooms]) _removeRoomGroup(r);
+    _rooms = []; _nextId = 1;
+    _undoStack.pop(); _redoStack = []; _setSelected(null);
+    addRoom({ vertices: [[0,0],[4,0],[4,4],[0,4]], elevation: 0, height: 3, usage: "living",  stylename: "default" });
+    addRoom({ vertices: [[4,0],[7,0],[7,3],[4,3]], elevation: 0, height: 3, usage: "bedroom", stylename: "default" });
+    try { localStorage.removeItem("hm-rooms"); } catch (_) {}
 });
 
 document.getElementById("delete-room")?.addEventListener("click", () => {
