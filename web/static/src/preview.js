@@ -62,56 +62,26 @@ function removeClearanceGeometry(buffer) {
 }
 
 /**
- * Strip body geometry from all IFCSPACE entities so room volumes are not
- * rendered as solid/semi-transparent masses in the viewer.
- * Navigates: IFCSPACE → IFCPRODUCTDEFINITIONSHAPE → IFCSHAPEREPRESENTATION
- * and empties each representation's items list.
+ * Null the Representation attribute (position 7) in all IFCSPACE lines so
+ * room volumes are never parsed as geometry by web-ifc.
+ *
+ * IFCSPACE positional args (IFC4):
+ *   1 GlobalId  2 OwnerHistory  3 Name  4 Description  5 ObjectType
+ *   6 ObjectPlacement  7 Representation ← replaced with $
  */
 function removeSpaceGeometry(buffer) {
     const header = String.fromCharCode(...buffer.slice(0, 10));
     if (!header.startsWith("ISO-10303")) return buffer;
 
     const text = new TextDecoder().decode(buffer);
-
-    // Match IFCSPACE and capture its Representation attribute (7th positional arg).
-    // Attr types 1-7: 'GUID', #ref/$, str/$, str/$, str/$, #ref/$, #ref/$
     const OPT = `(?:'[^']*'|#\\d+|\\$|\\.[A-Z_]+\\.)`;
-    const shapeIds = new Set();
-    for (const m of text.matchAll(
+    const modified = text.replace(
         new RegExp(
-            `#\\d+\\s*=\\s*IFCSPACE\\s*\\(\\s*'[^']*'\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*(#\\d+|\\$)`,
+            `(#\\d+\\s*=\\s*IFCSPACE\\s*\\(\\s*'[^']*'\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*)#\\d+`,
             'gi'
-        )
-    )) {
-        const ref = m[1].match(/^#(\d+)$/);
-        if (ref) shapeIds.add(ref[1]);
-    }
-    if (!shapeIds.size) return buffer;
-
-    // IFCPRODUCTDEFINITIONSHAPE(Name, Description, Representations-list)
-    const repIds = new Set();
-    for (const id of shapeIds) {
-        for (const m of text.matchAll(
-            new RegExp(
-                `#${id}\\s*=\\s*IFCPRODUCTDEFINITIONSHAPE\\s*\\(\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*\\(([^)]*)\\)`,
-                'gi'
-            )
-        )) {
-            for (const r of m[1].matchAll(/#(\d+)/g)) repIds.add(r[1]);
-        }
-    }
-    if (!repIds.size) return buffer;
-
-    let modified = text;
-    for (const id of repIds)
-        modified = modified.replace(
-            new RegExp(
-                `(#${id}\\s*=\\s*IFCSHAPEREPRESENTATION\\s*\\([^,]+,[^,]+,[^,]+,)\\([^)]*\\)`,
-                'gi'
-            ),
-            '$1()'
-        );
-
+        ),
+        '$1$$'
+    );
     return new TextEncoder().encode(modified);
 }
 
