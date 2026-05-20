@@ -62,12 +62,14 @@ function removeClearanceGeometry(buffer) {
 }
 
 /**
- * Null the Representation attribute (position 7) in all IFCSPACE lines so
- * room volumes are never parsed as geometry by web-ifc.
+ * Strip body geometry from all IFCSPACE entities.
  *
- * IFCSPACE positional args (IFC4):
- *   1 GlobalId  2 OwnerHistory  3 Name  4 Description  5 ObjectType
- *   6 ObjectPlacement  7 Representation ← replaced with $
+ * web-ifc processes ALL IFCSHAPEREPRESENTATION entities it encounters, not only
+ * those reachable via the product chain.  Two passes are therefore needed:
+ *
+ *  1. Null IFCSPACE.Representation (position 7) so the product chain is broken.
+ *  2. Also empty the items list of each affected IFCSHAPEREPRESENTATION so
+ *     web-ifc finds no geometry even when scanning orphaned shape-reps.
  */
 function removeSpaceGeometry(buffer) {
     const header = String.fromCharCode(...buffer.slice(0, 10));
@@ -75,15 +77,55 @@ function removeSpaceGeometry(buffer) {
 
     const text = new TextDecoder().decode(buffer);
     const OPT = `(?:'[^']*'|#\\d+|\\$|\\.[A-Z_]+\\.)`;
+
+    // Pass A — collect IFCPRODUCTDEFINITIONSHAPE ids referenced by IFCSPACE pos-7.
+    const prodDefIds = new Set();
+    for (const m of text.matchAll(new RegExp(
+        `#\\d+\\s*=\\s*IFCSPACE\\s*\\(\\s*'[^']*'\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*(#\\d+)`,
+        'gi'
+    ))) {
+        prodDefIds.add(m[1].slice(1));   // strip leading '#'
+    }
+
+    if (!prodDefIds.size) return buffer;
+
+    // Pass B — collect IFCSHAPEREPRESENTATION ids from those IFCPRODUCTDEFINITIONSHAPE entities.
+    const shapeRepIds = new Set();
+    for (const id of prodDefIds) {
+        for (const m of text.matchAll(new RegExp(
+            `#${id}\\s*=\\s*IFCPRODUCTDEFINITIONSHAPE\\s*\\(\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*\\(([^)]*)\\)`,
+            'gi'
+        ))) {
+            for (const r of m[1].matchAll(/#(\d+)/g)) shapeRepIds.add(r[1]);
+        }
+    }
+
+    let modified = text;
+
+    // Pass C — empty the items list in each IFCSHAPEREPRESENTATION so web-ifc
+    // produces no geometry even when it scans the file for orphaned shape-reps.
+    for (const id of shapeRepIds) {
+        modified = modified.replace(
+            new RegExp(
+                `(#${id}\\s*=\\s*IFCSHAPEREPRESENTATION\\s*\\([^,]+,[^,]+,[^,]+,)\\([^)]*\\)`,
+                'gi'
+            ),
+            '$1()'
+        );
+    }
+
+    // Pass D — also null position 7 in each IFCSPACE line (belt-and-suspenders:
+    // prevents processing via the product chain even if items were not cleared).
     let spaceCount = 0;
-    const modified = text.replace(
+    modified = modified.replace(
         new RegExp(
             `(#\\d+\\s*=\\s*IFCSPACE\\s*\\(\\s*'[^']*'\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*)#\\d+`,
             'gi'
         ),
         (m, g1) => { spaceCount++; return g1 + '$'; }
     );
-    console.log(`removeSpaceGeometry: ${spaceCount} IFCSPACE entities patched`);
+
+    console.log(`removeSpaceGeometry: ${spaceCount} spaces, ${shapeRepIds.size} shape-reps cleared`);
     return new TextEncoder().encode(modified);
 }
 
