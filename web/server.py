@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2024 Bruno Postle <bruno@postle.net>
 """homemaker-web FastAPI server.
 
 Wraps the homemaker-addon Python library to expose IFC generation over HTTP.

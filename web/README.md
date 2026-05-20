@@ -48,6 +48,151 @@ Styles are read from the `share/` directory at the repository root.  Override wi
 SHARE_DIR=/path/to/share uvicorn server:app ...
 ```
 
+## Production deployment
+
+This section covers deploying homemaker-web as a persistent service on a Linux server behind nginx with TLS.
+
+### Prerequisites
+
+`topologic_core` requires the OpenMP runtime library:
+
+```bash
+# Debian/Ubuntu
+apt install -y libgomp1
+```
+
+### Install
+
+Create a dedicated virtual environment and install from the git repository:
+
+```bash
+python3 -m venv /opt/homemaker-web
+cd /tmp && git clone https://github.com/brunopostle/homemaker-addon.git
+/opt/homemaker-web/bin/pip install -e /tmp/homemaker-addon
+/opt/homemaker-web/bin/pip install \
+    fastapi "uvicorn[standard]" python-multipart \
+    topologic_core ifcopenshell numpy pyaml shapely
+
+# Keep the clone — server.py and static/ are served from it:
+mv /tmp/homemaker-addon /opt/homemaker-web/src
+```
+
+The `web/server.py` and `web/static/` frontend assets are served directly from the cloned repository.
+
+### System user
+
+Run the service as a dedicated unprivileged user:
+
+```bash
+adduser --system --shell /bin/false --group --no-create-home homemaker-web
+```
+
+### systemd service
+
+Create `/etc/systemd/system/homemaker-web.service`:
+
+```ini
+[Unit]
+Description=homemaker-web FastAPI service
+After=network.target
+
+[Service]
+Type=simple
+User=homemaker-web
+Group=homemaker-web
+WorkingDirectory=/opt/homemaker-web/src/web
+ExecStart=/opt/homemaker-web/bin/uvicorn server:app \
+    --host 127.0.0.1 \
+    --port 8000
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=60
+Environment=SHARE_DIR=/opt/homemaker-web/src/share
+NoNewPrivileges=yes
+RestrictSUIDSGID=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+RestrictRealtime=yes
+RestrictAddressFamilies=AF_INET AF_INET6
+SystemCallArchitectures=native
+SystemCallFilter=@system-service @process @files @io-event @network-io
+SystemCallErrorNumber=EPERM
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+systemctl daemon-reload
+systemctl enable --now homemaker-web
+# Verify:
+curl http://127.0.0.1:8000/health
+# → {"status":"ok","share_dir":"/opt/homemaker-web/src/share"}
+```
+
+### nginx reverse proxy
+
+IFC generation is CPU-bound and can take several seconds, so extend the proxy timeouts.  Replace `your-domain.com` with your actual hostname:
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name your-domain.com;
+
+    ssl_certificate     /etc/letsencrypt/live/your-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    location / {
+        proxy_pass         http://127.0.0.1:8000;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
+    }
+}
+```
+
+```bash
+ln -s /etc/nginx/sites-available/your-domain.com /etc/nginx/sites-enabled/
+nginx -t && systemctl reload nginx
+```
+
+### TLS certificate
+
+Obtain a certificate with [Certbot](https://certbot.eff.org/) (create the nginx config first so certbot can find the `server_name` block):
+
+```bash
+certbot --nginx -d your-domain.com --non-interactive --agree-tos -m you@example.com
+```
+
+### Updates
+
+```bash
+cd /opt/homemaker-web/src
+git pull
+systemctl restart homemaker-web
+```
+
+### Resource requirements
+
+`topologic_core` is pure CPU — no GPU required.  IFC generation runs in a `ProcessPoolExecutor` (2 worker processes) so it does not block the FastAPI event loop.  Idle memory usage is around 200 MB; peak under concurrent generation is around 400 MB.
+
 ## Using the editor
 
 | Action | How |

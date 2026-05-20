@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2024 Bruno Postle <bruno@postle.net>
 /**
  * fragment.js — encode/decode building layout as a #v1:BASE64URL URL fragment.
  *

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2024 Bruno Postle <bruno@postle.net>
 /**
  * preview.js — IFC overlay using @thatopen/components.
  *

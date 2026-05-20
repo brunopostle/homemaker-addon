@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2024 Bruno Postle <bruno@postle.net>
 /**
  * editor-utils.js — pure geometry helpers for the quad-cell editor.
  *
