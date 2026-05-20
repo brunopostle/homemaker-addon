@@ -11,6 +11,7 @@
  */
 
 import { loadIfc, setOpacity } from "./preview.js";
+import { encodeFragment, decodeFragment } from "./fragment.js";
 
 const DEBOUNCE_MS    = 2_000;
 const MIN_INTERVAL_MS = 10_000;
@@ -23,6 +24,7 @@ let _inFlight        = false;
 let _editActive      = false;
 let _solidTimer      = null;
 let _lastIfcBuffer   = null;   // most recently generated IFC bytes, for download
+let _hashTimer       = null;
 
 const statusEl     = document.getElementById("status");
 const downloadBtn  = document.getElementById("btn-download");
@@ -76,6 +78,17 @@ window.addEventListener("hm:edit", () => {
     const data = window.__hmGetGeometry?.();
     if (data) localStorage.setItem("hm-rooms", JSON.stringify(data));
   } catch (_) {}
+
+  // Update URL fragment (debounced — no browser history entry per keystroke).
+  clearTimeout(_hashTimer);
+  _hashTimer = setTimeout(async () => {
+    const data = window.__hmGetGeometry?.();
+    if (!data?.rooms?.length) return;
+    try {
+      const frag = await encodeFragment(data.rooms);
+      history.replaceState(null, "", "#" + frag);
+    } catch (_) {}
+  }, 500);
 });
 
 /** Manual generate button */
@@ -166,7 +179,14 @@ async function _forceRegenerate() {
   }
 }
 
-function _restoreSavedLayout() {
+async function _restoreSavedLayout() {
+  // Hash fragment takes priority — it represents an explicitly shared design.
+  const rooms = await decodeFragment(location.hash);
+  if (rooms?.length) {
+    window.__hmLoadGeometry?.({ rooms });
+    return;
+  }
+  // Fall back to autosaved localStorage layout.
   try {
     const saved = localStorage.getItem("hm-rooms");
     if (saved) window.__hmLoadGeometry?.(JSON.parse(saved));
@@ -176,7 +196,7 @@ function _restoreSavedLayout() {
 // Populate style selectors from server, restore saved layout, then regenerate.
 fetch("/api/styles")
   .then((r) => r.json())
-  .then(({ styles }) => {
+  .then(async ({ styles }) => {
     if (styles?.length) {
       for (const id of ["sel-style", "room-style", "face-style-sel"]) {
         const sel = document.getElementById(id);
@@ -185,10 +205,10 @@ fetch("/api/styles")
         for (const s of styles) sel.add(new Option(s, s));
       }
     }
-    _restoreSavedLayout();
+    await _restoreSavedLayout();
     _forceRegenerate();
   })
-  .catch(() => {
-    _restoreSavedLayout();
+  .catch(async () => {
+    await _restoreSavedLayout();
     _forceRegenerate();
   });
