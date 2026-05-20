@@ -20,6 +20,7 @@ const DEFAULT_H = 3.0;
 const USAGE_TO_CHAR = {
     living: "l", bedroom: "b", kitchen: "k", circulation: "c",
     toilet: "t", stair: "s", void: "v", outside: "o",
+    retail: "r", sahn: "a",
 };
 const CHAR_TO_USAGE = Object.fromEntries(
     Object.entries(USAGE_TO_CHAR).map(([k, v]) => [v, k])

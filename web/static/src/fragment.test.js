@@ -77,7 +77,7 @@ describe("encodeFragment / decodeFragment round-trip", () => {
     });
 
     it("round-trips all non-default usages", async () => {
-        const usages = ["bedroom","kitchen","circulation","toilet","stair","void","outside"];
+        const usages = ["bedroom","kitchen","circulation","toilet","stair","void","outside","retail","sahn"];
         for (const u of usages) {
             const rooms = [room({ usage: u })];
             const out   = await decodeFragment("#" + await encodeFragment(rooms));

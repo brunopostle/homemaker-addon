@@ -78,6 +78,7 @@ _SIMPLE_RE  = re.compile(r'^[A-Za-z0-9_\-]{1,64}$')
 _VALID_USAGES = frozenset({
     "living", "bedroom", "kitchen", "circulation",
     "toilet", "stair", "void", "outside",
+    "retail", "sahn",
 })
 _COORD_RANGE = (-10_000.0, 10_000.0)    # metres — sane building envelope
 _MIN_DIM     = 0.3                       # metres — mirrors editor MIN_DIM
@@ -377,18 +378,18 @@ async def generate(request: GenerateRequest):
 def list_styles():
     """List stylenames available in the share directory.
 
-    "default" is always first — it is the root-level style (share/ itself,
-    not a named subdirectory).  All other names are leaf subdirectory names
-    that can be assigned to individual room faces.
+    "default" is always first — it is the root-level style (share/ itself).
+    All subdirectory names at any depth are valid styles (they inherit from
+    their parent directories), so we walk the full tree.
     """
     share = pathlib.Path(_share_dir)
     if not share.is_dir():
         return {"styles": ["default"]}
-    subdirs = sorted(
-        d.name for d in share.iterdir()
-        if d.is_dir() and not d.name.startswith(".") and d.name != "default"
-    )
-    return {"styles": ["default"] + subdirs}
+    names = sorted({
+        d.name for d in share.rglob("*")
+        if d.is_dir() and not d.name.startswith(".")
+    } - {"default"})
+    return {"styles": ["default"] + names}
 
 
 @app.post("/api/validate")

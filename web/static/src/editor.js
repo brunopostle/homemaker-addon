@@ -56,7 +56,7 @@ function _faceName(fi) {
     if (fi === 1) return "Ceiling";
     return `Wall ${fi - 1}`;
 }
-const USAGES     = ["living","bedroom","kitchen","circulation","toilet","stair","void","outside"];
+const USAGES     = ["living","bedroom","kitchen","circulation","toilet","stair","void","outside","retail","sahn"];
 const DEFAULT_W = 4.0, DEFAULT_D = 4.0, DEFAULT_H = 3.0;
 
 // Shared sphere geometries — constant across all rooms; created once.
