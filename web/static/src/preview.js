@@ -25,20 +25,25 @@ const HOVER_OPACITY  = 0.15;
 
 /**
  * Strip IFCSHAPEREPRESENTATION items for any subcontext whose
- * ContextIdentifier = 'Clearance' (door-swing / equipment-clearance volumes).
- * Must run before the buffer reaches ifcLoader.load() because web-ifc disposes
- * its IfcAPI after load, so context filtering has to happen on the raw bytes.
+ * ContextIdentifier matches one of the given names.
+ *
+ * Used to suppress geometry that clutters the 3-D preview:
+ *   'Clearance'  — door-swing / equipment-clearance volumes
+ *   'Reference'  — homemaker's stashed CellComplex topology tessellation
+ *                  (IfcPolygonalFaceSet meshes with cycling green/red colours
+ *                   assigned to IfcBuilding for IFC round-trip; not for display)
  */
-function removeClearanceGeometry(buffer) {
+function removeContextGeometry(buffer, ...contextNames) {
     const header = String.fromCharCode(...buffer.slice(0, 10));
     if (!header.startsWith("ISO-10303")) return buffer;
 
     const text = new TextDecoder().decode(buffer);
 
     const ctxIds = new Set();
-    for (const m of text.matchAll(
-        /#(\d+)\s*=\s*IFCGEOMETRICREPRESENTATIONSUBCONTEXT\s*\(\s*'Clearance'/gi
-    )) ctxIds.add(m[1]);
+    for (const name of contextNames)
+        for (const m of text.matchAll(
+            new RegExp(`#(\\d+)\\s*=\\s*IFCGEOMETRICREPRESENTATIONSUBCONTEXT\\s*\\(\\s*'${name}'`, 'gi')
+        )) ctxIds.add(m[1]);
     if (!ctxIds.size) return buffer;
 
     const repIds = new Set();
@@ -125,7 +130,6 @@ function removeSpaceGeometry(buffer) {
         (m, g1) => { spaceCount++; return g1 + '$'; }
     );
 
-    console.log(`removeSpaceGeometry: ${spaceCount} spaces, ${shapeRepIds.size} shape-reps cleared`);
     return new TextEncoder().encode(modified);
 }
 
@@ -211,11 +215,11 @@ export async function loadIfc(arrayBuffer) {
         return;
     }
 
-    // Strip Clearance and IfcSpace geometry before parsing so those volumes
-    // are never rendered — must happen before ifcLoader.load() because web-ifc
-    // disposes its IfcAPI after loading and can't be filtered post-load.
+    // Strip Clearance, Reference (stashed topology tessellation), and IfcSpace
+    // geometry before parsing — must happen before ifcLoader.load() because
+    // web-ifc disposes its IfcAPI after loading and can't be filtered post-load.
     const filtered = removeSpaceGeometry(
-        removeClearanceGeometry(new Uint8Array(arrayBuffer))
+        removeContextGeometry(new Uint8Array(arrayBuffer), 'Clearance', 'Reference')
     );
 
     // Parse while the old model stays visible (avoids a blank gap).
