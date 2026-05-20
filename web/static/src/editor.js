@@ -78,6 +78,7 @@ dirLight.position.set(10, 20, 15);
 scene.add(dirLight);
 
 scene.add(new THREE.GridHelper(40, 40, 0x333333, 0x2a2a2a));
+const GRID_LIMIT = 20;  // half the grid size — keep all vertices within ±20
 
 const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 500);
 camera.position.set(12, 10, 18);
@@ -743,6 +744,7 @@ function _updateRoomMove(event) {
         else _clearSnapHighlight();
 
         const newVerts = tentative.map(([x, z]) => [x + snapDX, z + snapDZ]);
+        if (newVerts.some(([x, z]) => Math.abs(x) > GRID_LIMIT || Math.abs(z) > GRID_LIMIT)) return;
         if (newVerts.every(([x, z], i) => x === room.vertices[i][0] && z === room.vertices[i][1])) return;
         if (!_drag.undoPushed) { _pushUndo(); _drag.undoPushed = true; }
         room.vertices = newVerts;
@@ -843,6 +845,7 @@ function _updateWallHandleDrag(event) {
         startVertices[i1][0] + displacement * wallNormal.x,
         startVertices[i1][1] + displacement * wallNormal.z,
     ];
+    if ([newVerts[wallIdx], newVerts[i1]].some(([x, z]) => Math.abs(x) > GRID_LIMIT || Math.abs(z) > GRID_LIMIT)) return;
 
     if (!_drag.undoPushed) { _pushUndo(); _drag.undoPushed = true; }
     room.vertices = newVerts;
@@ -868,6 +871,7 @@ function _updateVertexDrag(event) {
     if (snap.snapRoom) _showSnapHighlight(snap.snapRoom, snap.snapWallIdx);
     else _clearSnapHighlight();
 
+    if (Math.abs(newX) > GRID_LIMIT || Math.abs(newZ) > GRID_LIMIT) return;
     if (newX === room.vertices[vertexIndex][0] && newZ === room.vertices[vertexIndex][1]) return;
     if (!_drag.undoPushed) { _pushUndo(); _drag.undoPushed = true; }
     room.vertices[vertexIndex][0] = newX;
