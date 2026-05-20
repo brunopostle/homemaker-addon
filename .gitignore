@@ -45,6 +45,16 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
+*.blend
+*.blend1
+*.dae
+*.dxf
+*.obj
+*.mtl
+
+# dist
+dist/*.zip
+dist/homemaker/
 
 # build dir
 build/
