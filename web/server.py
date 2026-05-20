@@ -63,7 +63,9 @@ _executor = ProcessPoolExecutor(max_workers=2)
 @asynccontextmanager
 async def _lifespan(app: FastAPI):
     yield
-    _executor.shutdown(wait=False)
+    # cancel_futures drops queued tasks; wait=True lets any running generation
+    # finish before the worker processes exit, so systemd sees a clean cgroup.
+    _executor.shutdown(wait=True, cancel_futures=True)
 
 app = FastAPI(title="homemaker-web", version="0.1.0", lifespan=_lifespan)
 
