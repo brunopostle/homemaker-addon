@@ -19,7 +19,6 @@ import sys
 import re
 import math
 import pathlib
-import tempfile
 import asyncio
 from contextlib import asynccontextmanager
 from concurrent.futures import ProcessPoolExecutor
@@ -287,7 +286,7 @@ class GenerateRequest(BaseModel):
 
 def _generate_ifc(request_dict: dict, share_dir: str) -> bytes:
     """CPU-bound work: build IFC from geometry data. Runs in a subprocess."""
-    import sys, pathlib, os, tempfile
+    import sys, pathlib
     _here = pathlib.Path(__file__).parent
     _root = _here.parent
     for p in (str(_here), str(_root)):
@@ -317,15 +316,7 @@ def _generate_ifc(request_dict: dict, share_dir: str) -> bytes:
     )
     molior_obj.execute()
 
-    # ifcopenshell.file.write() requires a file path, not a file-like object.
-    tmp_fd, tmp_path = tempfile.mkstemp(suffix=".ifc")
-    os.close(tmp_fd)
-    try:
-        ifc_file.write(tmp_path)
-        with open(tmp_path, "rb") as f:
-            return f.read()
-    finally:
-        os.unlink(tmp_path)
+    return ifc_file.to_string().encode("utf-8")
 
 
 def _validate_geometry(request_dict: dict, share_dir: str) -> dict:
