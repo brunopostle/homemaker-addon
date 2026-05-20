@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
     snapToFaces,
     snapVertexToWallPlanes,
+    snapVertexToVertices,
     computeFaceDrag,
     SNAP_THRESHOLD,
     GRID_SNAP,
@@ -157,80 +158,118 @@ describe("snapVertexToWallPlanes", () => {
     const box = rect(2, 3, 4, 4);
 
     it("returns vertex unchanged when no rooms are nearby", () => {
-        const [sx, sz] = snapVertexToWallPlanes(0, 0, [box], null);
+        const { x: sx, z: sz } = snapVertexToWallPlanes(0, 0, [box], null);
         expect(sx).toBeCloseTo(0);
         expect(sz).toBeCloseTo(0);
     });
 
     it("snaps to the left wall plane (X = px)", () => {
-        const [sx, sz] = snapVertexToWallPlanes(2.05, 5, [box], null);
+        const { x: sx, z: sz } = snapVertexToWallPlanes(2.05, 5, [box], null);
         expect(sx).toBeCloseTo(2);
         expect(sz).toBeCloseTo(5);
     });
 
     it("snaps to the right wall plane (X = px+w)", () => {
-        const [sx, sz] = snapVertexToWallPlanes(5.9, 5, [box], null);
+        const { x: sx, z: sz } = snapVertexToWallPlanes(5.9, 5, [box], null);
         expect(sx).toBeCloseTo(6);
         expect(sz).toBeCloseTo(5);
     });
 
     it("snaps to the front wall plane (Z = pz)", () => {
-        const [sx, sz] = snapVertexToWallPlanes(4, 3.1, [box], null);
+        const { x: sx, z: sz } = snapVertexToWallPlanes(4, 3.1, [box], null);
         expect(sx).toBeCloseTo(4);
         expect(sz).toBeCloseTo(3);
     });
 
     it("snaps to the back wall plane (Z = pz+d)", () => {
-        const [sx, sz] = snapVertexToWallPlanes(4, 6.9, [box], null);
+        const { x: sx, z: sz } = snapVertexToWallPlanes(4, 6.9, [box], null);
         expect(sx).toBeCloseTo(4);
         expect(sz).toBeCloseTo(7);
     });
 
     it("does not snap when outside threshold", () => {
         const justOutside = 2 - SNAP_THRESHOLD - 0.01;
-        const [sx, sz] = snapVertexToWallPlanes(justOutside, 5, [box], null);
+        const { x: sx, z: sz } = snapVertexToWallPlanes(justOutside, 5, [box], null);
         expect(sx).toBeCloseTo(justOutside);
         expect(sz).toBeCloseTo(5);
     });
 
     it("skips the dragged room itself", () => {
-        const [sx] = snapVertexToWallPlanes(2.05, 5, [box], box);
+        const { x: sx } = snapVertexToWallPlanes(2.05, 5, [box], box);
         expect(sx).toBeCloseTo(2.05);
     });
 
     it("snaps to an axis-aligned wall of a non-rectangular quad room", () => {
-        // L-shape approximated as a quad with one axis-aligned edge at Z=0
         const poly = { vertices: [[0,0],[4,0],[4,4],[0,4]], elevation: 0, height: 3 };
-        const [sx, sz] = snapVertexToWallPlanes(2, 0.08, [poly], null);
+        const { x: sx, z: sz } = snapVertexToWallPlanes(2, 0.08, [poly], null);
         expect(sx).toBeCloseTo(2);
         expect(sz).toBeCloseTo(0);
     });
 
     it("snaps to a diagonal wall plane (infinite line)", () => {
-        // quad with edge from [0,0] to [4,4]: plane normal = (-1/√2, 1/√2), d=0
-        // point [2.05, 1.95]: dist = (-2.05+1.95)/√2 ≈ -0.071 → within threshold
-        // snapped point should lie on the line x=z
         const poly = { vertices: [[0,0],[4,4],[0,4]], elevation: 0, height: 3 };
-        const [sx, sz] = snapVertexToWallPlanes(2.05, 1.95, [poly], null);
+        const { x: sx, z: sz } = snapVertexToWallPlanes(2.05, 1.95, [poly], null);
         expect(sx).toBeCloseTo(sz, 4);
     });
 
     it("picks the nearest plane when two are within threshold", () => {
-        const a = rect(0, 0, 4, 4);    // left wall at X=0 (dist 0.05 from x=0.05)
-        const b = rect(4.08, 0, 4, 4); // left wall at X=4.08 (dist ~4 from x=0.05)
-        const [sx] = snapVertexToWallPlanes(0.05, 2, [a, b], null);
+        const a = rect(0, 0, 4, 4);
+        const b = rect(4.08, 0, 4, 4);
+        const { x: sx } = snapVertexToWallPlanes(0.05, 2, [a, b], null);
         expect(sx).toBeCloseTo(0);
     });
 
-    it("returns unchanged when rooms list is empty", () => {
-        expect(snapVertexToWallPlanes(3, 4, [], null)).toEqual([3, 4]);
+    it("returns snapRoom null when rooms list is empty", () => {
+        const { x, z, snapRoom } = snapVertexToWallPlanes(3, 4, [], null);
+        expect(x).toBe(3);
+        expect(z).toBe(4);
+        expect(snapRoom).toBeNull();
     });
 
     it("snaps to a wall plane far from the physical face (infinite plane behaviour)", () => {
-        // Wall at X=10; vertex at (9.95, 100) — far in Z but still on the plane
         const far = rect(10, 0, 4, 4);
-        const [sx, sz] = snapVertexToWallPlanes(9.95, 100, [far], null);
+        const { x: sx, z: sz } = snapVertexToWallPlanes(9.95, 100, [far], null);
         expect(sx).toBeCloseTo(10);
         expect(sz).toBeCloseTo(100);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// snapVertexToVertices
+// ---------------------------------------------------------------------------
+
+describe("snapVertexToVertices", () => {
+    const box = rect(2, 3, 4, 4);  // corners at (2,3), (6,3), (6,7), (2,7)
+
+    it("snaps to a nearby corner vertex", () => {
+        const { x, z, snapRoom } = snapVertexToVertices(2.05, 3.05, [box], null);
+        expect(x).toBeCloseTo(2);
+        expect(z).toBeCloseTo(3);
+        expect(snapRoom).toBe(box);
+    });
+
+    it("returns unchanged when no vertex is within threshold", () => {
+        const { x, z, snapRoom } = snapVertexToVertices(4, 5, [box], null);
+        expect(x).toBeCloseTo(4);
+        expect(z).toBeCloseTo(5);
+        expect(snapRoom).toBeNull();
+    });
+
+    it("skips the dragged room itself", () => {
+        const { x, snapRoom } = snapVertexToVertices(2.05, 3.05, [box], box);
+        expect(x).toBeCloseTo(2.05);
+        expect(snapRoom).toBeNull();
+    });
+
+    it("snaps to the closest vertex when two are within threshold", () => {
+        const a = rect(0, 0, 4, 4);  // corner at (0,0), dist 0.07 from (0.05, 0.05)
+        const b = rect(0, 0.08, 4, 4);  // corner at (0, 0.08), dist ~0.04 from (0.05, 0.05)
+        const { z } = snapVertexToVertices(0.05, 0.05, [a, b], null);
+        expect(z).toBeCloseTo(0.08);
+    });
+
+    it("returns snapRoom null when rooms list is empty", () => {
+        const { snapRoom } = snapVertexToVertices(3, 4, [], null);
+        expect(snapRoom).toBeNull();
     });
 });

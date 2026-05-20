@@ -32,7 +32,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import {
-    snapToFaces, snapVertexToWallPlanes, computeFaceDrag,
+    snapToFaces, snapVertexToWallPlanes, snapVertexToVertices, computeFaceDrag,
     SNAP_THRESHOLD, GRID_SNAP, MIN_DIM,
 } from "./editor-utils.js";
 
@@ -625,6 +625,7 @@ function _beginRoomMove(event, fillMesh) {
     const room = fillMesh.userData.room;
     if (!room) return;
 
+    _setSelected(room);
     _updatePointer(event);
     _raycaster.setFromCamera(_pointer, camera);
     const hit = new THREE.Vector3();
@@ -707,20 +708,34 @@ function _updateRoomMove(event) {
         // Apply rigid delta to all vertices.
         const tentative = startVertices.map(([x, z]) => [x + dX, z + dZ]);
 
-        // Wall-plane snap: try each tentative vertex; apply best snap delta to all.
+        // Snap: vertex-to-vertex takes priority; fall back to wall-plane snap.
         let bestDist = Infinity, snapDX = 0, snapDZ = 0;
         let bestSnapRoom = null, bestSnapWallIdx = -1;
         for (const [vx, vz] of tentative) {
-            const snap = snapVertexToWallPlanes(vx, vz, _rooms, room);
-            if (!snap.snapRoom) continue;
-            const sdx = snap.x - vx, sdz = snap.z - vz;
-            const dist = Math.sqrt(sdx * sdx + sdz * sdz);
-            if (dist > 0 && dist < bestDist) {
-                bestDist = dist;
-                snapDX = sdx;
-                snapDZ = sdz;
-                bestSnapRoom = snap.snapRoom;
-                bestSnapWallIdx = snap.snapWallIdx;
+            const sv = snapVertexToVertices(vx, vz, _rooms, room);
+            if (sv.snapRoom) {
+                const sdx = sv.x - vx, sdz = sv.z - vz;
+                const dist = Math.sqrt(sdx * sdx + sdz * sdz);
+                if (dist > 0 && dist < bestDist) {
+                    bestDist = dist;
+                    snapDX = sdx; snapDZ = sdz;
+                    bestSnapRoom = sv.snapRoom;
+                    bestSnapWallIdx = sv.snapWallIdx;
+                }
+            }
+        }
+        if (!bestSnapRoom) {
+            for (const [vx, vz] of tentative) {
+                const snap = snapVertexToWallPlanes(vx, vz, _rooms, room);
+                if (!snap.snapRoom) continue;
+                const sdx = snap.x - vx, sdz = snap.z - vz;
+                const dist = Math.sqrt(sdx * sdx + sdz * sdz);
+                if (dist > 0 && dist < bestDist) {
+                    bestDist = dist;
+                    snapDX = sdx; snapDZ = sdz;
+                    bestSnapRoom = snap.snapRoom;
+                    bestSnapWallIdx = snap.snapWallIdx;
+                }
             }
         }
         if (bestSnapRoom) _showSnapHighlight(bestSnapRoom, bestSnapWallIdx);
@@ -798,6 +813,22 @@ function _updateWallHandleDrag(event) {
             snapWI = s.snapWallIdx;
         }
     }
+    // Also snap the dragged wall plane to pass through scene vertices.
+    const startD = wallNormal.x * startVertices[wallIdx][0] + wallNormal.z * startVertices[wallIdx][1];
+    for (const other of _rooms) {
+        if (other === room) continue;
+        for (let vi = 0; vi < other.vertices.length; vi++) {
+            const [vx, vz] = other.vertices[vi];
+            const proj = wallNormal.x * vx + wallNormal.z * vz;
+            const dist = Math.abs(proj - startD - displacement);
+            if (dist < SNAP_THRESHOLD && dist < bestSnapDist) {
+                bestSnapDist = dist;
+                snapAdjust = proj - startD - displacement;
+                snapR = other;
+                snapWI = vi;
+            }
+        }
+    }
     displacement += snapAdjust;
     if (snapR) _showSnapHighlight(snapR, snapWI);
     else _clearSnapHighlight();
@@ -829,7 +860,9 @@ function _updateVertexDrag(event) {
     const [ox, oz] = pointerOffset;
     let newX = Math.round((hit.x - ox) / GRID_SNAP) * GRID_SNAP;
     let newZ = Math.round((hit.z - oz) / GRID_SNAP) * GRID_SNAP;
-    const snap = snapVertexToWallPlanes(newX, newZ, _rooms, room);
+    // Vertex-to-vertex snap takes priority over plane snap.
+    let snap = snapVertexToVertices(newX, newZ, _rooms, room);
+    if (!snap.snapRoom) snap = snapVertexToWallPlanes(newX, newZ, _rooms, room);
     newX = snap.x; newZ = snap.z;
     if (snap.snapRoom) _showSnapHighlight(snap.snapRoom, snap.snapWallIdx);
     else _clearSnapHighlight();
@@ -973,7 +1006,9 @@ canvas.addEventListener("pointerup", (e) => {
 
     _updatePointer(e);
     _raycaster.setFromCamera(_pointer, camera);
-    if (_raycaster.intersectObjects(_getFillObjects()).length === 0) _setSelected(null);
+    const fillHits = _raycaster.intersectObjects(_getFillObjects());
+    if (fillHits.length > 0) _setSelected(fillHits[0].object.userData.room);
+    else _setSelected(null);
 });
 
 window.addEventListener("pointerup", () => { if (_drag) _endDrag(); });

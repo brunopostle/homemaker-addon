@@ -85,6 +85,33 @@ function _wallPlanesOf(room) {
 }
 
 /**
+ * Snap a vertex at (vx, vz) to the nearest corner vertex of any room except
+ * draggedRoom, within SNAP_THRESHOLD.
+ * Returns { x, z, snapRoom, snapWallIdx } — snapRoom is null if no snap fired.
+ * snapWallIdx is the outgoing edge from the snapped vertex (for highlight).
+ */
+export function snapVertexToVertices(vx, vz, rooms, draggedRoom) {
+    let bestDist = SNAP_THRESHOLD;
+    let snapX = vx, snapZ = vz;
+    let snapRoom = null, snapWallIdx = -1;
+    for (const room of rooms) {
+        if (room === draggedRoom) continue;
+        for (let vi = 0; vi < room.vertices.length; vi++) {
+            const [rx, rz] = room.vertices[vi];
+            const dist = Math.sqrt((vx - rx) ** 2 + (vz - rz) ** 2);
+            if (dist < bestDist) {
+                bestDist = dist;
+                snapX = rx;
+                snapZ = rz;
+                snapRoom = room;
+                snapWallIdx = vi;
+            }
+        }
+    }
+    return { x: snapX, z: snapZ, snapRoom, snapWallIdx };
+}
+
+/**
  * Snap a vertex at (vx, vz) to the nearest wall plane of any room except
  * draggedRoom, within SNAP_THRESHOLD.
  * Returns { x, z, snapRoom, snapWallIdx } — snapRoom is null if no snap fired.
