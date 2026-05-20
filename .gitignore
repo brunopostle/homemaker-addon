@@ -72,3 +72,6 @@ tests/*.ifc
 .dolt/
 *.db
 .beads-credential-key
+
+# Deployment notes
+*.postle.net.txt
