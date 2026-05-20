@@ -20,7 +20,8 @@
 const CDN_OBC    = "https://esm.sh/@thatopen/components@2.4.0?external=three";
 const CDN_WEBIFC = "https://cdn.jsdelivr.net/npm/web-ifc@0.0.65/";
 
-const FADE_OUT_MS = 500;
+const FADE_OUT_MS    = 500;
+const HOVER_OPACITY  = 0.15;
 
 /**
  * Strip IFCSHAPEREPRESENTATION items for any subcontext whose
@@ -118,6 +119,8 @@ let _components = null;   // OBC.Components — created once
 let _ifcLoader  = null;   // OBC.IfcLoader  — created once
 let _model      = null;   // current FragmentsGroup in the editor scene
 let _opacity    = 1.0;
+let _hovering   = false;
+let _mobileTimer = null;
 
 /**
  * Initialise @thatopen/components the first time loadIfc() is called.
@@ -235,7 +238,8 @@ export async function loadIfc(arrayBuffer) {
     const oldModel = _model;
     _model = newModel;
     scene.add(newModel);
-    _applyOpacityToModel(newModel, _opacity);
+    const effectiveOnLoad = (_hovering && _opacity >= 1.0) ? HOVER_OPACITY : _opacity;
+    _applyOpacityToModel(newModel, effectiveOnLoad);
 
     if (oldModel) {
         _fadeOutAndDispose(oldModel, scene);
@@ -269,7 +273,33 @@ function _fadeOutAndDispose(model, scene) {
  */
 export function setOpacity(value) {
     _opacity = value;
-    _applyOpacityToModel(_model, value);
+    const effective = (_hovering && value >= 1.0) ? HOVER_OPACITY : value;
+    _applyOpacityToModel(_model, effective);
+}
+
+/** Return the current IFC model for external raycasting (may be null). */
+export function getModel() { return _model; }
+
+/**
+ * Activate or deactivate hover transparency.
+ * Only has visual effect when the model is currently solid (opacity = 1).
+ */
+export function setHover(active) {
+    if (active === _hovering) return;
+    _hovering = active;
+    if (_opacity >= 1.0) {
+        _applyOpacityToModel(_model, active ? HOVER_OPACITY : 1.0);
+    }
+}
+
+/**
+ * Mobile peek: make the model transparent for durationMs, then restore.
+ * Calling again resets the timer.
+ */
+export function peekMobile(durationMs = 3000) {
+    setHover(true);
+    clearTimeout(_mobileTimer);
+    _mobileTimer = setTimeout(() => setHover(false), durationMs);
 }
 
 function _applyOpacityToModel(model, value) {

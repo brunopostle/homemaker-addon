@@ -35,6 +35,7 @@ import {
     snapToFaces, snapVertexToWallPlanes, snapVertexToVertices, computeFaceDrag,
     SNAP_THRESHOLD, GRID_SNAP, MIN_DIM,
 } from "./editor-utils.js";
+import { getModel, setHover, peekMobile } from "./preview.js";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -980,6 +981,17 @@ canvas.addEventListener("pointermove", (e) => {
         const fillHits = _raycaster.intersectObjects(_getFillObjects());
         canvas.style.cursor = fillHits.length > 0 ? "grab" : "default";
     }
+
+    // IFC overlay hover: make model transparent while mouse is over it (desktop only).
+    if (e.pointerType !== "touch") {
+        const model = getModel();
+        if (model) {
+            const modelHits = _raycaster.intersectObject(model, true);
+            setHover(modelHits.length > 0);
+        }
+    } else {
+        setHover(false);
+    }
 });
 
 canvas.addEventListener("pointerup", (e) => {
@@ -996,6 +1008,8 @@ canvas.addEventListener("pointerup", (e) => {
         } else if (mode === "move" && isClick) {
             _setSelected(room);
         }
+        // Mobile tap on a cell: peek through the model to expose handles.
+        if (e.pointerType === "touch" && isClick) peekMobile(3000);
         return;
     }
 
@@ -1009,6 +1023,16 @@ canvas.addEventListener("pointerup", (e) => {
     const fillHits = _raycaster.intersectObjects(_getFillObjects());
     if (fillHits.length > 0) _setSelected(fillHits[0].object.userData.room);
     else _setSelected(null);
+
+    // Mobile tap on IFC model: peek transparent for 3 s so cell handles are visible.
+    if (e.pointerType === "touch") {
+        const model = getModel();
+        if (model && _raycaster.intersectObject(model, true).length > 0) {
+            peekMobile(3000);
+        } else {
+            setHover(false);
+        }
+    }
 });
 
 window.addEventListener("pointerup", () => { if (_drag) _endDrag(); });
