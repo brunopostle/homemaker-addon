@@ -75,13 +75,15 @@ function removeSpaceGeometry(buffer) {
 
     const text = new TextDecoder().decode(buffer);
     const OPT = `(?:'[^']*'|#\\d+|\\$|\\.[A-Z_]+\\.)`;
+    let spaceCount = 0;
     const modified = text.replace(
         new RegExp(
             `(#\\d+\\s*=\\s*IFCSPACE\\s*\\(\\s*'[^']*'\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*${OPT}\\s*,\\s*)#\\d+`,
             'gi'
         ),
-        '$1$$'
+        (m, g1) => { spaceCount++; return g1 + '$'; }
     );
+    console.log(`removeSpaceGeometry: ${spaceCount} IFCSPACE entities patched`);
     return new TextEncoder().encode(modified);
 }
 
