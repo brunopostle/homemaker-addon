@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "homemaker_addon",
+  "project_id": "9278f7c2-1cf5-42b4-bfc0-1b414d6e74bb"
+}

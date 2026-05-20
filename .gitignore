@@ -45,6 +45,16 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
+*.blend
+*.blend1
+*.dae
+*.dxf
+*.obj
+*.mtl
+
+# dist
+dist/*.zip
+dist/homemaker/
 
 # build dir
 build/
@@ -53,3 +63,15 @@ _build/
 *.egg-info/
 .coverage
 htmlcov/
+
+# Test-generated IFC artefacts
+tests/*.ifc
+*.ifc
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
+
+# Deployment notes
+*.postle.net.txt

@@ -1,0 +1,11 @@
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+python-multipart>=0.0.9
+# homemaker-addon core library — install from git or a local editable install.
+# In production Docker: homemaker @ git+https://github.com/brunopostle/homemaker-addon.git
+# For local development the repo root is added to sys.path by server.py automatically.
+topologic_core
+ifcopenshell
+numpy
+pyaml
+shapely
