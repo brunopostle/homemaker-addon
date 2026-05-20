@@ -924,6 +924,7 @@ function _endDrag() {
 let _pointerDownPos = null;
 
 canvas.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0) return;   // middle/right reserved for camera (OrbitControls)
     if (_drag) _endDrag();
     _pointerDownPos = { x: e.clientX, y: e.clientY };
     _updatePointer(e);
@@ -1048,6 +1049,12 @@ document.getElementById("btn-top-view")?.addEventListener("click", () => {
 });
 
 window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && _drag) {
+        const moved = _drag.undoPushed;
+        _endDrag();
+        if (moved) undo();   // revert any movement that already happened
+        return;
+    }
     if (e.key === "t" || e.key === "T") document.getElementById("btn-top-view")?.click();
     if ((e.key === "Delete" || e.key === "Backspace") && _selected && !e.ctrlKey && !e.metaKey) {
         _pushUndo();
