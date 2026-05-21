@@ -199,6 +199,30 @@ function _nextPlacementPos() {
     return [maxX, minZ];
 }
 
+function _fitCameraToRooms() {
+    if (_rooms.length === 0) return;
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+    let minZ = Infinity, maxZ = -Infinity;
+    for (const r of _rooms) {
+        minY = Math.min(minY, r.elevation);
+        maxY = Math.max(maxY, r.elevation + r.height);
+        for (const [x, z] of r.vertices) {
+            minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+            minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z);
+        }
+    }
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
+    const cz = (minZ + maxZ) / 2;
+    const size = Math.max(maxX - minX, maxZ - minZ, 4);
+    const dist = size * 2.0;
+    camera.position.set(cx + dist * 0.52, cy + dist * 0.37, cz + dist * 0.77);
+    camera.lookAt(cx, cy, cz);
+    controls.target.set(cx, cy, cz);
+    controls.update();
+}
+
 // ---------------------------------------------------------------------------
 // Cell geometry builder (used for all rooms)
 // ---------------------------------------------------------------------------
@@ -569,6 +593,7 @@ function _getFillObjects()         { return _rooms.flatMap((r) => r._fillMesh ? 
 // Drag state
 // ---------------------------------------------------------------------------
 let _drag = null;
+let _activeTouches = new Set();  // active touch pointerIds
 
 // fi=0 = floor (sign=-1), fi=1 = ceiling (sign=+1), fi>=2 = wall push/pull
 function _beginHandleDrag(event, handleMesh) {
@@ -929,7 +954,17 @@ function _endDrag() {
 // ---------------------------------------------------------------------------
 let _pointerDownPos = null;
 
+// Capture-phase: track touch points and hand multi-touch back to OrbitControls.
+// Runs before OrbitControls' bubble-phase handlers so re-enabling controls here
+// means OrbitControls will see the second touch with controls already enabled.
 canvas.addEventListener("pointerdown", (e) => {
+    if (e.pointerType !== "touch") return;
+    _activeTouches.add(e.pointerId);
+    if (_activeTouches.size >= 2 && _drag) _endDrag();
+}, true);
+
+canvas.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "touch" && _activeTouches.size >= 2) return;  // let OrbitControls handle multi-touch
     if (e.button !== 0) return;   // middle/right reserved for camera (OrbitControls)
     if (_drag) _endDrag();
     _pointerDownPos = { x: e.clientX, y: e.clientY };
@@ -1002,6 +1037,7 @@ canvas.addEventListener("pointermove", (e) => {
 });
 
 canvas.addEventListener("pointerup", (e) => {
+    if (e.pointerType === "touch") _activeTouches.delete(e.pointerId);
     if (_drag) {
         const dx = e.clientX - (_pointerDownPos?.x ?? e.clientX);
         const dy = e.clientY - (_pointerDownPos?.y ?? e.clientY);
@@ -1043,6 +1079,11 @@ canvas.addEventListener("pointerup", (e) => {
 });
 
 window.addEventListener("pointerup", () => { if (_drag) _endDrag(); });
+
+canvas.addEventListener("pointercancel", (e) => {
+    if (e.pointerType === "touch") _activeTouches.delete(e.pointerId);
+    if (_drag) _endDrag();
+});
 
 // ---------------------------------------------------------------------------
 // Top view / keyboard
@@ -1121,7 +1162,10 @@ window.__hmLoadGeometry = function (data) {
         _makeCellGroup(room);
     }
 
-    if (_rooms.length > 0) _setSelected(_rooms[0]);
+    if (_rooms.length > 0) {
+        _setSelected(_rooms[0]);
+        _fitCameraToRooms();
+    }
     _emitEdit();
 };
 
