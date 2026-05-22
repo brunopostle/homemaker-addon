@@ -62,17 +62,18 @@ const USAGES     = ["living","bedroom","kitchen","circulation","toilet","stair",
 const DEFAULT_W = 4.0, DEFAULT_D = 4.0, DEFAULT_H = 3.0;
 
 // One colour per usage — used for floor-plan label fills.
+// Dark enough that white text passes WCAG AA contrast (≥4.5:1).
 const USAGE_COLOR = {
-    living:      0x4a7c9e,
-    bedroom:     0x7c5c9e,
-    kitchen:     0x9e7c4a,
-    circulation: 0x4a9e6a,
-    toilet:      0x5c8e8e,
-    stair:       0x9e5c4a,
-    void:        0x666666,
-    outside:     0x4a9e4a,
-    retail:      0x9e6a4a,
-    sahn:        0x6a9e4a,
+    living:      0x1a5c7a,
+    bedroom:     0x5c3a7a,
+    kitchen:     0x7a5a1a,
+    circulation: 0x1a6a3a,
+    toilet:      0x1a5a5a,
+    stair:       0x7a3a1a,
+    void:        0x3a3a3a,
+    outside:     0x1a6a1a,
+    retail:      0x7a3a4a,
+    sahn:        0x3a6a1a,
 };
 
 function _usageColorCss(usage) {
@@ -325,7 +326,7 @@ function _makeFloorLabel(room) {
 
     const texture = new THREE.CanvasTexture(cv);
     const geo     = new THREE.PlaneGeometry(planeW, planeH);
-    const mat     = new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false });
+    const mat     = new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false, depthTest: false });
     const mesh    = new THREE.Mesh(geo, mat);
     mesh.userData.isFloorLabel = true;
     mesh.rotation.x = -Math.PI / 2;   // lay flat in XZ
