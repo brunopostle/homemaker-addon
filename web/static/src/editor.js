@@ -1035,6 +1035,26 @@ function _endDrag() {
 // ---------------------------------------------------------------------------
 let _pointerDownPos = null;
 
+/**
+ * For touch events: find the handle mesh whose projected screen position is
+ * closest to the touch point, within thresholdCssPx.  Returns null if none
+ * qualify.  Uses CSS-pixel coordinates so it is DPI-independent.
+ */
+function _touchClosest(event, objects, thresholdCssPx) {
+    const rect = canvas.getBoundingClientRect();
+    let best = null, bestDist = thresholdCssPx;
+    for (const obj of objects) {
+        const wp = obj.getWorldPosition(new THREE.Vector3());
+        wp.project(camera);
+        if (wp.z > 1) continue;   // behind the camera clipping plane
+        const sx = (wp.x *  0.5 + 0.5) * rect.width  + rect.left;
+        const sy = (wp.y * -0.5 + 0.5) * rect.height + rect.top;
+        const d  = Math.hypot(event.clientX - sx, event.clientY - sy);
+        if (d < bestDist) { bestDist = d; best = obj; }
+    }
+    return best;
+}
+
 // Capture-phase: track touch points and hand multi-touch back to OrbitControls.
 // Runs before OrbitControls' bubble-phase handlers so re-enabling controls here
 // means OrbitControls will see the second touch with controls already enabled.
@@ -1052,19 +1072,20 @@ canvas.addEventListener("pointerdown", (e) => {
     _updatePointer(e);
     _raycaster.setFromCamera(_pointer, camera);
 
+    const isTouch = e.pointerType === "touch";
+    const TOUCH_PX = 44;   // minimum touch target (Apple HIG)
+
     // Vertex handles first (orange corners).
-    const vtxHits = _raycaster.intersectObjects(_getVertexHandleObjects());
-    if (vtxHits.length > 0) {
-        _beginVertexDrag(e, vtxHits[0].object);
-        return;
-    }
+    const vtxHit = isTouch
+        ? _touchClosest(e, _getVertexHandleObjects(), TOUCH_PX)
+        : _raycaster.intersectObjects(_getVertexHandleObjects())[0]?.object;
+    if (vtxHit) { _beginVertexDrag(e, vtxHit); return; }
 
     // Face handles.
-    const handleHits = _raycaster.intersectObjects(_getHandleObjects());
-    if (handleHits.length > 0) {
-        _beginHandleDrag(e, handleHits[0].object);
-        return;
-    }
+    const handleHit = isTouch
+        ? _touchClosest(e, _getHandleObjects(), TOUCH_PX)
+        : _raycaster.intersectObjects(_getHandleObjects())[0]?.object;
+    if (handleHit) { _beginHandleDrag(e, handleHit); return; }
 
     // Room fill.
     const fillHits = _raycaster.intersectObjects(_getFillObjects());
