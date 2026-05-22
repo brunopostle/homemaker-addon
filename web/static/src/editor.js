@@ -61,6 +61,26 @@ function _faceName(fi) {
 const USAGES     = ["living","bedroom","kitchen","circulation","toilet","stair","void","outside","retail","sahn"];
 const DEFAULT_W = 4.0, DEFAULT_D = 4.0, DEFAULT_H = 3.0;
 
+// One colour per usage — used for floor-plan label fills.
+// Dark enough that white text passes WCAG AA contrast (≥4.5:1).
+const USAGE_COLOR = {
+    living:      0x1a5c7a,
+    bedroom:     0x5c3a7a,
+    kitchen:     0x7a5a1a,
+    circulation: 0x1a6a3a,
+    toilet:      0x1a5a5a,
+    stair:       0x7a3a1a,
+    void:        0x3a3a3a,
+    outside:     0x1a6a1a,
+    retail:      0x7a3a4a,
+    sahn:        0x3a6a1a,
+};
+
+function _usageColorCss(usage) {
+    const n = USAGE_COLOR[usage] ?? 0x888888;
+    return "#" + n.toString(16).padStart(6, "0");
+}
+
 // Shared sphere geometries — constant across all rooms; created once.
 const _HANDLE_GEO        = new THREE.SphereGeometry(HANDLE_RADIUS,        12, 8);
 const _VERTEX_HANDLE_GEO = new THREE.SphereGeometry(VERTEX_HANDLE_RADIUS, 12, 8);
@@ -262,6 +282,65 @@ function _buildCellGeometry(vertices2d, elevation, height) {
 // ---------------------------------------------------------------------------
 // Room visual construction — unified
 // ---------------------------------------------------------------------------
+/**
+ * Canvas-texture label showing room usage, laid flat on the floor.
+ * Sized to the floor's shorter bounding-box dimension; offset in +Z from the
+ * centroid so it doesn't obscure the floor-face handle that sits there.
+ */
+function _makeFloorLabel(room) {
+    const { vertices, elevation, usage } = room;
+
+    // Floor bounding box in XZ.
+    let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+    for (const [x, z] of vertices) {
+        if (x < minX) minX = x; if (x > maxX) maxX = x;
+        if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
+    }
+    const shortSide = Math.min(maxX - minX, maxZ - minZ);
+    const planeW = shortSide * 0.55;   // world-space plane width
+    const planeH = planeW / 4;         // 4:1 aspect — matches canvas below
+
+    // 256×64 canvas — 4:1 ratio.  Long strings (e.g. "circulation") scaled to fit.
+    const CW = 256, CH = 64;
+    const cv  = document.createElement("canvas");
+    cv.width = CW; cv.height = CH;
+    const ctx = cv.getContext("2d");
+
+    // Usage-coloured rounded-rect background.
+    const pad = CH * 0.08, r = CH * 0.3;
+    ctx.fillStyle = _usageColorCss(usage);
+    ctx.beginPath();
+    ctx.roundRect(pad, pad, CW - pad * 2, CH - pad * 2, r);
+    ctx.fill();
+
+    // White text — reduce font size if the string is wider than 88% of canvas.
+    let fontSize = Math.floor(CH * 0.52);
+    ctx.font = `bold ${fontSize}px sans-serif`;
+    const tw = ctx.measureText(usage).width;
+    if (tw > CW * 0.88) fontSize = Math.floor(fontSize * CW * 0.88 / tw);
+    ctx.font = `bold ${fontSize}px sans-serif`;
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(usage, CW / 2, CH / 2);
+
+    const texture = new THREE.CanvasTexture(cv);
+    const geo     = new THREE.PlaneGeometry(planeW, planeH);
+    const mat     = new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false });
+    const mesh    = new THREE.Mesh(geo, mat);
+    mesh.userData.isFloorLabel = true;
+    mesh.rotation.x = -Math.PI / 2;   // lay flat in XZ
+
+    // Place label below the floor handle (+Z from centroid), clear of the sphere.
+    const c = _polygonCentroid(vertices);
+    mesh.position.set(
+        c.x,
+        elevation + 0.005,                          // fractionally above floor to avoid z-fighting
+        c.z + HANDLE_RADIUS * 1.5 + planeH * 0.5,  // top edge of label clears the handle sphere
+    );
+    return mesh;
+}
+
 function _makeCellGroup(room) {
     const group = new THREE.Group();
     const { vertices, elevation, height } = room;
@@ -325,6 +404,8 @@ function _makeCellGroup(room) {
         return m;
     });
 
+    group.add(_makeFloorLabel(room));
+
     room._group = group;
     scene.add(group);
     return group;
@@ -338,8 +419,9 @@ function _removeRoomGroup(room) {
                 obj.geometry?.dispose();
                 obj.material?.dispose();
             } else if (obj.isMesh && !obj.userData.isHandle && !obj.userData.isVertexHandle) {
-                // Per-room fill mesh — owned geometry and material.
+                // Per-room meshes (fill, label) — owned geometry, material, and any texture.
                 obj.geometry?.dispose();
+                obj.material?.map?.dispose();   // canvas texture on floor labels
                 obj.material?.dispose();
             } else if (obj.isMesh) {
                 // Handle meshes share _HANDLE_GEO/_VERTEX_HANDLE_GEO — only dispose the per-mesh material.
@@ -954,6 +1036,26 @@ function _endDrag() {
 // ---------------------------------------------------------------------------
 let _pointerDownPos = null;
 
+/**
+ * For touch events: find the handle mesh whose projected screen position is
+ * closest to the touch point, within thresholdCssPx.  Returns null if none
+ * qualify.  Uses CSS-pixel coordinates so it is DPI-independent.
+ */
+function _touchClosest(event, objects, thresholdCssPx) {
+    const rect = canvas.getBoundingClientRect();
+    let best = null, bestDist = thresholdCssPx;
+    for (const obj of objects) {
+        const wp = obj.getWorldPosition(new THREE.Vector3());
+        wp.project(camera);
+        if (wp.z > 1) continue;   // behind the camera clipping plane
+        const sx = (wp.x *  0.5 + 0.5) * rect.width  + rect.left;
+        const sy = (wp.y * -0.5 + 0.5) * rect.height + rect.top;
+        const d  = Math.hypot(event.clientX - sx, event.clientY - sy);
+        if (d < bestDist) { bestDist = d; best = obj; }
+    }
+    return best;
+}
+
 // Capture-phase: track touch points and hand multi-touch back to OrbitControls.
 // Runs before OrbitControls' bubble-phase handlers so re-enabling controls here
 // means OrbitControls will see the second touch with controls already enabled.
@@ -971,19 +1073,20 @@ canvas.addEventListener("pointerdown", (e) => {
     _updatePointer(e);
     _raycaster.setFromCamera(_pointer, camera);
 
+    const isTouch = e.pointerType === "touch";
+    const TOUCH_PX = 44;   // minimum touch target (Apple HIG)
+
     // Vertex handles first (orange corners).
-    const vtxHits = _raycaster.intersectObjects(_getVertexHandleObjects());
-    if (vtxHits.length > 0) {
-        _beginVertexDrag(e, vtxHits[0].object);
-        return;
-    }
+    const vtxHit = isTouch
+        ? _touchClosest(e, _getVertexHandleObjects(), TOUCH_PX)
+        : _raycaster.intersectObjects(_getVertexHandleObjects())[0]?.object;
+    if (vtxHit) { _beginVertexDrag(e, vtxHit); return; }
 
     // Face handles.
-    const handleHits = _raycaster.intersectObjects(_getHandleObjects());
-    if (handleHits.length > 0) {
-        _beginHandleDrag(e, handleHits[0].object);
-        return;
-    }
+    const handleHit = isTouch
+        ? _touchClosest(e, _getHandleObjects(), TOUCH_PX)
+        : _raycaster.intersectObjects(_getHandleObjects())[0]?.object;
+    if (handleHit) { _beginHandleDrag(e, handleHit); return; }
 
     // Room fill.
     const fillHits = _raycaster.intersectObjects(_getFillObjects());

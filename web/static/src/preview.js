@@ -330,7 +330,8 @@ function _applyOpacityToModel(model, value) {
         for (const m of mats) {
             if (!m) continue;
             m.transparent = value < 1.0;
-            m.opacity = value;
+            m.opacity     = value;
+            m.depthWrite  = value >= 1.0;  // don't occlude floor labels when ghosted
             m.needsUpdate = true;
         }
     });
