@@ -326,7 +326,7 @@ function _makeFloorLabel(room) {
 
     const texture = new THREE.CanvasTexture(cv);
     const geo     = new THREE.PlaneGeometry(planeW, planeH);
-    const mat     = new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false, depthTest: false });
+    const mat     = new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false });
     const mesh    = new THREE.Mesh(geo, mat);
     mesh.userData.isFloorLabel = true;
     mesh.rotation.x = -Math.PI / 2;   // lay flat in XZ
