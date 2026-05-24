@@ -23,8 +23,7 @@ assert topologist.cellcomplex
 assert topologist.vertex
 
 
-@pytest.fixture
-def setup_cell_complex():
+def _make_full_cc():
     """Multi-room, multi-storey building with kitchen, living, stair, toilet,
     circulation and outside cells.  Same fixture as test_pattern1.py."""
     widgets_text = [
@@ -984,3 +983,8 @@ def setup_cell_complex():
     circ.Separation(spt, cc)
 
     return cc, circ, spt
+
+
+@pytest.fixture
+def setup_cell_complex():
+    return _make_full_cc()

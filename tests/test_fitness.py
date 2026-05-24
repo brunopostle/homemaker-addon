@@ -38,8 +38,7 @@ from topologist.fitness.p159_light_on_two_sides_of_every_room import Assessor as
 from topologist.fitness.p190_ceiling_height_variety import Assessor as P190
 
 
-@pytest.fixture
-def cell_complex():
+def _make_simple_cc():
     """Two stacked cubes sharing a mid-floor face."""
     points = [
         [0.0, 0.0, 0.0],
@@ -78,6 +77,11 @@ def cell_complex():
     cc.IndexTopology()
     cc.AllocateCells([])
     return cc
+
+
+@pytest.fixture
+def cell_complex():
+    return _make_simple_cc()
 
 
 @pytest.fixture
@@ -458,3 +462,35 @@ def test_full_building_p190_height_variety(setup_cell_complex):
     inside = [c for c in _all_cells(cc) if not c.IsOutside()]
     scores = [a.execute(c) for c in inside]
     assert any(s > 1.0 for s in scores), "expected at least one cell with height variety bonus"
+
+
+if __name__ == "__main__":
+    from conftest import _make_full_cc
+
+    _assessor_classes = [
+        ("P105", P105), ("P107", P107), ("P127", P127), ("P128", P128),
+        ("P129", P129), ("P131", P131), ("P133", P133), ("P138", P138),
+        ("P145", P145), ("P159", P159), ("P190", P190),
+    ]
+
+    def _print_scores(label, cc, circ, spt):
+        assessors = [(name, cls(cc, circ, spt)) for name, cls in _assessor_classes]
+        cells_ptr = []
+        cc.Cells(None, cells_ptr)
+        names = [n for n, _ in assessors]
+        header = f"{'Usage':15s}" + "".join(f"{n:>7s}" for n in names)
+        print(f"\n=== {label} ===")
+        print(header)
+        print("-" * len(header))
+        for cell in cells_ptr:
+            scores = "".join(f"{a.execute(cell):7.3f}" for _, a in assessors)
+            print(f"{cell.Usage():15s}{scores}")
+
+    cc = _make_simple_cc()
+    adj = cc.Adjacency()
+    adj.Circulation(cc)
+    spt = adj.ShortestPathTable()
+    _print_scores("Simple: two stacked 10×10×10 cubes", cc, adj, spt)
+
+    cc2, circ2, spt2 = _make_full_cc()
+    _print_scores("Full building: multi-room, multi-storey", cc2, circ2, spt2)
