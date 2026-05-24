@@ -4,8 +4,8 @@ Problem: In all but tropical climates, people gravitate toward outdoor spaces
 that receive sunlight and avoid those that are permanently shaded.
 
 Solution: Always place outdoor spaces to the south of the buildings which
-enclose them, so that the outdoor spaces are bathed in sunlight, not north-
-facing shade.
+enclose them (northern hemisphere), or to the north (southern hemisphere),
+so that the outdoor spaces are bathed in sunlight, not in permanent shade.
 
 Higher patterns:
 - 104 SITE REPAIR *
@@ -28,6 +28,7 @@ class Assessor:
 
     def __init__(self, cellcomplex, circulation, shortest_path_table, **settings):
         self.settings = {
+            "hemisphere": "north",
             "factors": {},
         }
         self.cellcomplex = cellcomplex
@@ -37,13 +38,19 @@ class Assessor:
             self.settings[key] = value
 
     def execute(self, cell):
-        """Score outdoor cells that sit to the south of adjacent indoor spaces"""
+        """Score outdoor cells that sit on the sunny side of adjacent indoor spaces"""
         if not cell.IsOutside():
             return 1.0
 
+        # Northern hemisphere: sun is to the south, so outdoor space should be
+        # south of the building — face normal points south (normal[1] < 0).
+        # Southern hemisphere: sun is to the north, so face normal points north
+        # (normal[1] > 0).
+        sign = -1.0 if self.settings["hemisphere"] == "north" else 1.0
+
         faces_ptr = []
         cell.Faces(None, faces_ptr)
-        south_area = 0.0
+        sunny_area = 0.0
         total_external_area = 0.0
         for face in faces_ptr:
             if not face.IsVertical():
@@ -52,11 +59,9 @@ class Assessor:
                 continue
             area = FaceUtility.Area(face)
             total_external_area += area
-            # face.Normal() points outward from the building mass (toward outside)
-            # when normal[1] < 0 the outside cell is to the south
-            if face.Normal()[1] < -0.3:
-                south_area += area
+            if face.Normal()[1] * sign < -0.3:
+                sunny_area += area
 
         if total_external_area == 0.0:
             return 1.0
-        return 1.0 + south_area / total_external_area
+        return 1.0 + sunny_area / total_external_area

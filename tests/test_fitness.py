@@ -115,6 +115,37 @@ def test_p105_inside_cells_return_neutral(assessor_args, inside_cells):
         assert a.execute(cell) == 1.0
 
 
+def test_p105_hemisphere_flips_score(setup_cell_complex):
+    """Southern hemisphere setting should produce a different score than northern."""
+    cc, circ, spt = setup_cell_complex
+    north = P105(cc, circ, spt, hemisphere="north")
+    south = P105(cc, circ, spt, hemisphere="south")
+    outside = [c for c in cc.Cells(None, []) or [] if c.IsOutside()]
+    # Build cell list properly
+    cells_ptr = []
+    cc.Cells(None, cells_ptr)
+    outside = [c for c in cells_ptr if c.IsOutside()]
+    if outside:
+        scores_north = [north.execute(c) for c in outside]
+        scores_south = [south.execute(c) for c in outside]
+        # The two hemispheres should not always produce identical scores
+        assert scores_north != scores_south
+
+
+def test_p128_hemisphere_flips_score(setup_cell_complex):
+    """Southern hemisphere setting should produce a different score than northern."""
+    cc, circ, spt = setup_cell_complex
+    north = P128(cc, circ, spt, hemisphere="north")
+    south = P128(cc, circ, spt, hemisphere="south")
+    cells_ptr = []
+    cc.Cells(None, cells_ptr)
+    living = [c for c in cells_ptr if c.Usage() == "living"]
+    if living:
+        scores_north = [north.execute(c) for c in living]
+        scores_south = [south.execute(c) for c in living]
+        assert scores_north != scores_south
+
+
 # ---------------------------------------------------------------------------
 # P107 WINGS OF LIGHT
 # ---------------------------------------------------------------------------

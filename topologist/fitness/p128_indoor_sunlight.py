@@ -1,12 +1,11 @@
 """128 INDOOR SUNLIGHT
 
-Problem: If the right rooms are facing south, a house feels light and sunny.
-If the wrong rooms are facing south, the house feels dark and gloomy.
+Problem: If the right rooms are facing the sun, a house feels light and sunny.
+If the wrong rooms face the sun, the house feels dark and gloomy.
 
-Solution: Place the most important rooms along the south edge of the
-building, and spread the building out along an east-west axis. Fine-tune
-the arrangement so that the rooms which you use most in the morning are
-on the east; rooms you use most in the afternoon are on the west.
+Solution: Place the most important rooms along the sunny edge of the building
+(south in the northern hemisphere, north in the southern hemisphere), and
+spread the building out along an east-west axis.
 
 Higher patterns:
 - 105 SOUTH FACING OUTDOORS **
@@ -29,6 +28,7 @@ class Assessor:
     def __init__(self, cellcomplex, circulation, shortest_path_table, **settings):
         self.settings = {
             "important_usages": {"living", "kitchen", "dining", "study", "workshop"},
+            "hemisphere": "north",
             "axis_threshold": 0.3,
         }
         self.cellcomplex = cellcomplex
@@ -38,7 +38,7 @@ class Assessor:
             self.settings[key] = value
 
     def execute(self, cell):
-        """Score important rooms with south-facing external walls"""
+        """Score important rooms with sun-facing external walls"""
         if cell.IsOutside():
             return 1.0
         usage = cell.Usage()
@@ -50,16 +50,18 @@ class Assessor:
         if not faces_ptr:
             return 0.8
 
+        # Northern hemisphere: sun-facing wall has normal[1] < 0 (pointing south).
+        # Southern hemisphere: sun-facing wall has normal[1] > 0 (pointing north).
+        sign = -1.0 if self.settings["hemisphere"] == "north" else 1.0
         threshold = self.settings["axis_threshold"]
-        south_area = 0.0
+        sunny_area = 0.0
         total_area = 0.0
         for face in faces_ptr:
             area = FaceUtility.Area(face)
             total_area += area
-            # face.Normal() points toward outside; south wall has normal[1] < 0
-            if face.Normal()[1] < -threshold:
-                south_area += area
+            if face.Normal()[1] * sign < -threshold:
+                sunny_area += area
 
         if total_area == 0.0:
             return 1.0
-        return 0.8 + 0.4 * (south_area / total_area)
+        return 0.8 + 0.4 * (sunny_area / total_area)
