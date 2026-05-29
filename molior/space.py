@@ -12,6 +12,17 @@ from .ifc import (
     assign_storey_byindex,
     get_context_by_name,
 )
+from topologist.fitness.p105_south_facing_outdoors import Assessor as P105
+from topologist.fitness.p107_wings_of_light import Assessor as P107
+from topologist.fitness.p127_intimacy_gradient import Assessor as P127
+from topologist.fitness.p128_indoor_sunlight import Assessor as P128
+from topologist.fitness.p129_common_areas_at_the_heart import Assessor as P129
+from topologist.fitness.p131_the_flow_through_rooms import Assessor as P131
+from topologist.fitness.p133_staircase_as_a_stage import Assessor as P133
+from topologist.fitness.p138_sleeping_to_the_east import Assessor as P138
+from topologist.fitness.p145_bulk_storage import Assessor as P145
+from topologist.fitness.p159_light_on_two_sides_of_every_room import Assessor as P159
+from topologist.fitness.p190_ceiling_height_variety import Assessor as P190
 
 api = ifcopenshell.api
 
@@ -29,6 +40,7 @@ class Space(TraceClass):
         self.inner = 0.08
         self.path = []
         self.usage = ""
+        self.shortest_path_table = None
         for arg in args:
             self.__dict__[arg] = args[arg]
         self.usage = self.name
@@ -48,16 +60,35 @@ class Space(TraceClass):
 
         try:
             is_external = cell.IsOutside()
-            crinkliness = int(cell.Crinkliness(self.cellcomplex) * 10) / 10
         except AttributeError:
             is_external = False
-            crinkliness = 1.0
         except RuntimeError:
             is_external = False
-            crinkliness = 1.0
         separation = cell.Get("separation")
         if separation is not None:
             separation = float(separation)
+
+        if self.cellcomplex is not None and type(cell).__name__ == "Cell":
+            assessors = [
+                ("P105", P105(self.cellcomplex, self.circulation, self.shortest_path_table)),
+                ("P107", P107(self.cellcomplex, self.circulation, self.shortest_path_table)),
+                ("P127", P127(self.cellcomplex, self.circulation, self.shortest_path_table)),
+                ("P128", P128(self.cellcomplex, self.circulation, self.shortest_path_table)),
+                ("P129", P129(self.cellcomplex, self.circulation, self.shortest_path_table)),
+                ("P131", P131(self.cellcomplex, self.circulation, self.shortest_path_table)),
+                ("P133", P133(self.cellcomplex, self.circulation, self.shortest_path_table)),
+                ("P138", P138(self.cellcomplex, self.circulation, self.shortest_path_table)),
+                ("P145", P145(self.cellcomplex, self.circulation, self.shortest_path_table)),
+                ("P159", P159(self.cellcomplex, self.circulation, self.shortest_path_table)),
+                ("P190", P190(self.cellcomplex, self.circulation, self.shortest_path_table)),
+            ]
+            pattern_scores = {key: round(a.execute(cell), 3) for key, a in assessors}
+        else:
+            pattern_scores = {
+                key: 1.0
+                for key in ["P105", "P107", "P127", "P128", "P129", "P131", "P133", "P138", "P145", "P159", "P190"]
+            }
+        pattern_scores["Separation"] = separation
 
         add_pset(
             self.file,
@@ -69,7 +100,7 @@ class Space(TraceClass):
             self.file,
             element,
             "EPset_Pattern",
-            {"Crinkliness": crinkliness, "Separation": separation},
+            pattern_scores,
         )
         if type(cell).__name__ == "Cell":
             add_pset(
@@ -120,11 +151,12 @@ class Space(TraceClass):
         )
 
         if not is_external:
-            red = np.clip(1.0 - crinkliness, 0.0, 1.0)
-            green = np.clip(crinkliness, 0.0, 1.0)
-            blue = np.clip(crinkliness - 1.0, 0.0, 1.0)
+            p159_score = pattern_scores["P159"]
+            red = np.clip(1.0 - p159_score, 0.0, 1.0)
+            green = np.clip(p159_score, 0.0, 1.0)
+            blue = np.clip(p159_score - 1.0, 0.0, 1.0)
             style = api.style.add_style(
-                self.file, name="Crinkliness " + str(crinkliness)
+                self.file, name="P159 " + str(p159_score)
             )
             api.style.add_surface_style(
                 self.file,
@@ -140,7 +172,6 @@ class Space(TraceClass):
                     "Transparency": 0.5,
                 },
             )
-            # FIXME report 159 LIGHT ON TWO SIDES: custom psets? STDERR?
         else:
             style = api.style.add_style(self.file, name="Outside Space")
             api.style.add_surface_style(

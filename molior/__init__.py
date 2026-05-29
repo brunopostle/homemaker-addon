@@ -104,7 +104,8 @@ class Molior:
         # Generate a circulation Graph
         circulation = cellcomplex.Adjacency()
         circulation.Circulation(cellcomplex)
-        circulation.Separation(circulation.ShortestPathTable(), cellcomplex)
+        spt = circulation.ShortestPathTable()
+        circulation.Separation(spt, cellcomplex)
 
         # Traces are 2D paths that define walls, extrusions and rooms
         # Hulls are 3D shells that define pitched roofs and soffits
@@ -115,6 +116,7 @@ class Molior:
         return cls(
             file=file,
             circulation=circulation,
+            shortest_path_table=spt,
             traces=traces,
             elevations=elevations,
             name=name,
@@ -214,6 +216,7 @@ class Molior:
         self.elevations = {}
         self.name = "Homemaker Building"
         self.circulation = None
+        self.shortest_path_table = None
         self.cellcomplex = None
         self.share_dir = "share"
         for arg in args:
@@ -863,6 +866,7 @@ class Molior:
                     "cellcomplex": self.cellcomplex,
                     "chain": chain,
                     "circulation": self.circulation,
+                    "shortest_path_table": self.shortest_path_table,
                     "file": self.file,
                     "building": self.building,
                     "structural_analysis_model": self.structural_analysis_model,
