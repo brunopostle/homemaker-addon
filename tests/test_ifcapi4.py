@@ -32,10 +32,10 @@ def ifc_project():
         name="purlin",
     )
 
-    mycolumn = api.root.create_entity(file, ifc_class="IfcColumn", name="My Column")
+    mymember = api.root.create_entity(file, ifc_class="IfcMember", name="My Member")
     api.type.assign_type(
         file,
-        related_objects=[mycolumn],
+        related_objects=[mymember],
         relating_type=column_type,
     )
 
@@ -74,7 +74,7 @@ def ifc_project():
     )
     api.geometry.assign_representation(
         file,
-        product=mycolumn,
+        product=mymember,
         representation=shape,
     )
 
