@@ -82,7 +82,7 @@ _SIMPLE_RE  = re.compile(r'^[A-Za-z0-9_\-]{1,64}$')
 _VALID_USAGES = frozenset({
     "living", "bedroom", "kitchen", "circulation",
     "toilet", "stair", "void", "outside",
-    "retail", "sahn",
+    "retail", "sahn", "utility",
 })
 _COORD_RANGE = (-10_000.0, 10_000.0)    # metres — sane building envelope
 _MIN_DIM     = 0.3                       # metres — mirrors editor MIN_DIM

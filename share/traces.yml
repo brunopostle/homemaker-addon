@@ -144,6 +144,13 @@ kitchen-space:
   psets:
       Pset_SpaceCommon:
           IsExternal: false
+utility-space:
+  class: Space
+  condition: utility
+  predefined_type: INTERNAL
+  psets:
+      Pset_SpaceCommon:
+          IsExternal: false
 living-space:
   class: Space
   condition: living
@@ -210,6 +217,12 @@ kitchen-floor:
   condition: kitchen
   ifc: IfcCovering
   typename: kitchen-floor
+  offset: 0.0
+utility-floor:
+  class: Floor
+  condition: utility
+  ifc: IfcCovering
+  typename: utility-floor
   offset: 0.0
 living-floor:
   class: Floor

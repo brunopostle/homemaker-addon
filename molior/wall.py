@@ -743,7 +743,7 @@ class Wall(TraceClass):
             self.openings[id_segment].append(
                 {"family": "toilet outside window", "along": 0.5, "size": 0}
             )
-        if interior_type == "kitchen":
+        if interior_type in ("kitchen", "utility"):
             self.openings[id_segment].append(
                 {"family": "kitchen outside window", "along": 0.5, "size": 0}
             )

@@ -31,6 +31,8 @@ circulation-floor:
   condition: noop
 kitchen-floor:
   condition: noop
+utility-floor:
+  condition: noop
 living-floor:
   condition: noop
 outside-floor:
