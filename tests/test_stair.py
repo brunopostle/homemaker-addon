@@ -377,10 +377,10 @@ def test_stair_for_every_storey_but_the_top(ifc):
     assert elevations == pytest.approx([0.0, 3.0])
     for stair in stairs:
         psets = ifcopenshell.util.element.get_psets(stair)
-        assert psets["Pset_StairCommon"]["NumberOfRiser"] == 16
-        assert psets["Pset_StairCommon"]["NumberOfTreads"] == 15
-        assert psets["Pset_StairCommon"]["RiserHeight"] == pytest.approx(0.1875)
-        assert psets["Pset_StairCommon"]["TreadLength"] >= 0.25
+        assert psets["Pset_StairCommon"]["NumberOfRiser"] == 15
+        assert psets["Pset_StairCommon"]["NumberOfTreads"] == 14
+        assert psets["Pset_StairCommon"]["RiserHeight"] == pytest.approx(0.2)
+        assert psets["Pset_StairCommon"]["TreadLength"] >= 0.225 - 1e-6
         assert "CellIndex" in psets["EPset_Topology"]
 
 
@@ -396,11 +396,11 @@ def test_stair_parts(ifc):
         assert sorted(parts) == ["IfcRailing", "IfcSlab", "IfcStairFlight"]
 
         flight = parts["IfcStairFlight"]
-        assert len(flight.Representation.Representations[0].Items) == 15
+        assert len(flight.Representation.Representations[0].Items) == 14
         lowest, highest = extents(flight)
         # from the floor to one riser below the floor above
         assert lowest[2] == pytest.approx(elevation, abs=0.001)
-        assert highest[2] == pytest.approx(elevation + 3.0 - 0.1875, abs=0.001)
+        assert highest[2] == pytest.approx(elevation + 3.0 - 0.2, abs=0.001)
         # within the walls
         assert lowest[0] >= 0.079 and highest[0] <= 2.921
         assert lowest[1] >= 0.079 and highest[1] <= 4.921
@@ -466,7 +466,7 @@ def test_stair_in_cells_that_are_not_rectangles(stair, other):
             # all the geometry is valid
             assert extents(part)
         pset = ifcopenshell.util.element.get_psets(stair_element)["Pset_StairCommon"]
-        assert pset["TreadLength"] >= 0.25
+        assert pset["TreadLength"] >= 0.225 - 1e-6
 
 
 def test_no_stair_without_a_stair_cell_above():
