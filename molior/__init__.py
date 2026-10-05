@@ -240,6 +240,7 @@ class Molior:
     def execute(self):
         """Iterate through 'traces' and 'hulls' and populate an ifc 'file' object"""
         self.init_building()
+        stairs = []
         for condition in self.traces:
             for elevation in self.traces[condition]:
                 for height in self.traces[condition][elevation]:
@@ -253,7 +254,11 @@ class Molior:
                                 elevation=elevation,
                                 height=height,
                                 chain=chain,
+                                deferred=stairs,
                             )
+        # stairs are fitted around doors, so the doors have to exist first
+        for stair in stairs:
+            stair.execute()
         for condition in self.hulls:
             for stylename in self.hulls[condition]:
                 for hull in self.hulls[condition][stylename]:
@@ -836,8 +841,10 @@ class Molior:
         elevation=0.0,
         height=2.7,
         chain=ugraph.graph(),
+        deferred=None,
     ):
-        """Generates IFC data for a single trace and adds to the current building"""
+        """Generates IFC data for a single trace and adds to the current building.
+        Stairs are added to the 'deferred' list, if there is one, and not executed"""
         results = []
         myconfig = Molior.style.get(stylename)
         level = 0
@@ -892,7 +899,10 @@ class Molior:
                 }
                 part = modules[config["class"]](vals)
 
-                part.execute()
+                if deferred is not None and isinstance(part, Stair):
+                    deferred.append(part)
+                else:
+                    part.execute()
                 # results are only used by test suite
                 results.append(part)
         return results
