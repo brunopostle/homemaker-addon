@@ -701,8 +701,13 @@ def door_targets(cellcomplex, circulation, elevations):
     Returns a dictionary keyed by Face index: a 2D point for the centre of
     the door, or None if this wall shouldn't be given an entrance door. Walls
     that aren't mentioned can do as they please.
+
+    The wall code puts an entrance in every outside wall of a ground floor
+    stair or circulation cell, one is enough: other circulation cells keep
+    the entrance in their longest outside wall.
     """
     targets = {}
+    planned = []
     cells_ptr = []
     cellcomplex.Cells(None, cells_ptr)
     for cell in cells_ptr:
@@ -775,11 +780,33 @@ def door_targets(cellcomplex, circulation, elevations):
                 )
         if ring is None or not faces:
             continue
+        planned.extend(stack)
         for key, station in plan_doors(ring, faces).items():
             if station is None:
                 targets[key] = None
             else:
                 targets[key] = [float(value) for value in ring.point_outer(station)]
+
+    for cell in cells_ptr:
+        if cell.Usage() not in ("circulation", "stair"):
+            continue
+        if elevations.get(cell.Elevation()) != 0:
+            continue
+        if any(cell.IsSame(other) for other in planned):
+            continue
+        outside = []
+        graph = cell.Perimeter(cellcomplex).graph
+        for node in graph:
+            edge = graph[node][1]
+            key = edge["face"].Get("index")
+            if edge["front_cell"] is not None or key is None:
+                continue
+            start = edge["start_vertex"].Coordinates()[0:2]
+            end = edge["end_vertex"].Coordinates()[0:2]
+            outside.append([float(np.linalg.norm(np.subtract(end, start))), key])
+        outside.sort(key=lambda item: item[0], reverse=True)
+        for _, key in outside[1:]:
+            targets[key] = None
     return targets
 
 
