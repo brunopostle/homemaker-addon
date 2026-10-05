@@ -41,7 +41,7 @@ for _p in (str(_here), str(_repo_root)):
 
 from molior import Molior
 import molior.ifc as molior_ifc
-from molior.rooms import faces_from_json, widgets_from_json, rooms_to_faces_and_widgets
+from molior.rooms import document_to_faces_and_widgets
 
 # Locate share/ — works both from a git clone and from a pip-installed package.
 # Override via SHARE_DIR env var for Docker deployments.
@@ -144,21 +144,23 @@ class FaceData(BaseModel):
     @field_validator("vertices")
     @classmethod
     def val_vertices(cls, v):
-        if len(v) != 4:
-            raise ValueError(f"face must have exactly 4 vertices, got {len(v)}")
+        if len(v) < 3:
+            raise ValueError(f"face must have at least 3 vertices, got {len(v)}")
+        if len(v) > 64:
+            raise ValueError(f"face must have at most 64 vertices, got {len(v)}")
         for i, vert in enumerate(v):
             _check_coords(vert, 3, f"vertex {i}")
         # Check edge lengths — too-short edges collapse in topologic.
-        for i in range(4):
-            a, b = v[i], v[(i + 1) % 4]
+        for i in range(len(v)):
+            a, b = v[i], v[(i + 1) % len(v)]
             length = math.sqrt(sum((a[j] - b[j]) ** 2 for j in range(3)))
             if length < _MIN_EDGE:
                 raise ValueError(
-                    f"edge {i}-{(i+1)%4} length {length:.4f} m is below minimum {_MIN_EDGE} m"
+                    f"edge {i}-{(i+1)%len(v)} length {length:.4f} m is below minimum {_MIN_EDGE} m"
                 )
             if length > _MAX_EDGE:
                 raise ValueError(
-                    f"edge {i}-{(i+1)%4} length {length:.1f} m exceeds maximum {_MAX_EDGE} m"
+                    f"edge {i}-{(i+1)%len(v)} length {length:.1f} m exceeds maximum {_MAX_EDGE} m"
                 )
         return v
 
@@ -261,7 +263,7 @@ class RoomData(BaseModel):
 
 class GenerateRequest(BaseModel):
     name: str = "My Building"
-    faces: Optional[list[FaceData]] = None    # raw face list (advanced use)
+    faces: Optional[list[FaceData]] = None    # raw faces, alone or to add roofs to rooms
     widgets: Optional[list[WidgetData]] = None
     rooms: Optional[list[RoomData]] = None    # cuboid editor format (preferred)
 
@@ -275,9 +277,7 @@ class GenerateRequest(BaseModel):
     @model_validator(mode="after")
     def val_not_empty(self):
         if not self.rooms and not self.faces:
-            raise ValueError("provide either rooms or faces")
-        if self.rooms and self.faces:
-            raise ValueError("provide either rooms or faces, not both")
+            raise ValueError("provide rooms or faces")
         if self.rooms and len(self.rooms) > _MAX_ROOMS:
             raise ValueError(f"too many rooms (max {_MAX_ROOMS})")
         if self.faces and len(self.faces) > _MAX_FACES:
@@ -300,13 +300,9 @@ def _generate_ifc(request_dict: dict, share_dir: str) -> bytes:
 
     from molior import Molior
     import molior.ifc as molior_ifc
-    from molior.rooms import faces_from_json, widgets_from_json, rooms_to_faces_and_widgets
+    from molior.rooms import document_to_faces_and_widgets
 
-    if request_dict.get("rooms"):
-        faces, widgets = rooms_to_faces_and_widgets(request_dict["rooms"])
-    else:
-        faces = faces_from_json(request_dict.get("faces") or [])
-        widgets = widgets_from_json(request_dict.get("widgets") or [])
+    faces, widgets = document_to_faces_and_widgets(request_dict)
 
     if not faces:
         raise ValueError("No geometry provided")
@@ -334,12 +330,9 @@ def _validate_geometry(request_dict: dict, share_dir: str) -> dict:
             sys.path.insert(0, p)
 
     from topologic_core import CellComplex
-    from molior.rooms import faces_from_json, widgets_from_json, rooms_to_faces_and_widgets
+    from molior.rooms import document_to_faces_and_widgets
 
-    if request_dict.get("rooms"):
-        faces, _ = rooms_to_faces_and_widgets(request_dict["rooms"])
-    else:
-        faces = faces_from_json(request_dict.get("faces") or [])
+    faces, _ = document_to_faces_and_widgets(request_dict)
 
     if not faces:
         return {"valid": False, "error": "No geometry provided"}

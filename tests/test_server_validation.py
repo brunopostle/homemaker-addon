@@ -229,13 +229,20 @@ class TestFaceData:
     def test_valid_quad(self):
         FaceData(**_quad())
 
-    def test_triangle_rejected(self):
-        with pytest.raises(ValidationError, match="exactly 4"):
-            FaceData(vertices=[[0,0,0],[1,0,0],[0,1,0]], stylename="default")
+    def test_triangle(self):
+        # hip ends of roofs are triangles
+        FaceData(vertices=[[0,0,0],[1,0,0],[0,1,0]], stylename="default")
 
-    def test_five_vertices_rejected(self):
-        with pytest.raises(ValidationError, match="exactly 4"):
-            FaceData(vertices=[[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0.5,0]], stylename="default")
+    def test_five_vertices(self):
+        FaceData(vertices=[[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0.5,0]], stylename="default")
+
+    def test_two_vertices_rejected(self):
+        with pytest.raises(ValidationError, match="at least 3"):
+            FaceData(vertices=[[0,0,0],[1,0,0]], stylename="default")
+
+    def test_too_many_vertices_rejected(self):
+        with pytest.raises(ValidationError, match="at most 64"):
+            FaceData(vertices=[[i,i*i,0] for i in range(65)], stylename="default")
 
     def test_vertex_missing_coord(self):
         with pytest.raises(ValidationError, match="exactly 3"):
@@ -288,12 +295,12 @@ class TestGenerateRequest:
         GenerateRequest(faces=[_quad()])
 
     def test_empty_rejected(self):
-        with pytest.raises(ValidationError, match="provide either"):
+        with pytest.raises(ValidationError, match="provide rooms or faces"):
             GenerateRequest(name="test")
 
-    def test_both_rooms_and_faces_rejected(self):
-        with pytest.raises(ValidationError, match="not both"):
-            GenerateRequest(rooms=[_room()], faces=[_quad()])
+    def test_both_rooms_and_faces(self):
+        # rooms are prisms, a pitched roof is added as faces
+        GenerateRequest(rooms=[_room()], faces=[_quad()])
 
     def test_name_too_long(self):
         with pytest.raises(ValidationError, match="256"):

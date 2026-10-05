@@ -84,3 +84,29 @@ def test_rooms2ifc_usage():
     result = run()
     assert result.returncode != 0
     assert "Usage:" in result.stderr
+
+
+def test_rooms2ifc_pitched_roof(tmp_path):
+    rooms_path = tmp_path / "roof.rooms.json"
+    ifc_path = tmp_path / "roof.ifc"
+    document = {
+        "rooms": [DOCUMENT["rooms"][1]],
+        # a hipped roof, the base is the ceiling of the room
+        "faces": [
+            {"vertices": [[4, 0, 3], [8, 0, 3], [6, 1.5, 4.5]]},
+            {"vertices": [[8, 0, 3], [8, 3, 3], [6, 1.5, 4.5]]},
+            {"vertices": [[8, 3, 3], [4, 3, 3], [6, 1.5, 4.5]]},
+            {"vertices": [[4, 3, 3], [4, 0, 3], [6, 1.5, 4.5]]},
+        ],
+    }
+    rooms_path.write_text(json.dumps(document))
+
+    result = run(str(rooms_path), str(ifc_path))
+    assert result.returncode == 0, result.stderr
+
+    ifc = ifcopenshell.open(str(ifc_path))
+    assert len(ifc.by_type("IfcRoof")) == 4
+    names = sorted(
+        (space.Name or "").split("/")[0] for space in ifc.by_type("IfcSpace")
+    )
+    assert names == ["kitchen-space", "void-space"], names

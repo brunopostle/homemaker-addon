@@ -20,6 +20,7 @@ from molior.rooms import (
     faces_from_json,
     widgets_from_json,
     rooms_to_faces_and_widgets,
+    document_to_faces_and_widgets,
     _coords as _float_coords,
     _room,
 )
@@ -332,3 +333,45 @@ class TestPerFaceStyles:
         faces, _ = rooms_to_faces_and_widgets(rooms)
         assert all(f.Get("stylename") == "a" for f in faces[:6])
         assert all(f.Get("stylename") == "b" for f in faces[6:])
+
+
+# ---------------------------------------------------------------------------
+# document_to_faces_and_widgets
+# ---------------------------------------------------------------------------
+
+# a hipped roof over an 8 x 5 room, the ceiling of the room is its base
+HIP_ROOF = {
+    "rooms": [_quad(w=8, d=5)],
+    "faces": [
+        {"vertices": [[0, 0, 3], [8, 0, 3], [5.5, 2.5, 5.5], [2.5, 2.5, 5.5]]},
+        {"vertices": [[8, 0, 3], [8, 5, 3], [5.5, 2.5, 5.5]]},
+        {"vertices": [[8, 5, 3], [0, 5, 3], [2.5, 2.5, 5.5], [5.5, 2.5, 5.5]]},
+        {"vertices": [[0, 5, 3], [0, 0, 3], [2.5, 2.5, 5.5]], "stylename": "fancy"},
+    ],
+    "widgets": [{"position": [4, 2.5, 4], "usage": "void"}],
+}
+
+
+class TestDocument:
+    def test_rooms_only(self):
+        faces, widgets = document_to_faces_and_widgets({"rooms": [_quad(), _quad(px=4)]})
+        assert len(faces) == 12
+        assert len(widgets) == 2
+
+    def test_empty(self):
+        assert document_to_faces_and_widgets({}) == ([], [])
+
+    def test_rooms_faces_and_widgets(self):
+        faces, widgets = document_to_faces_and_widgets(HIP_ROOF)
+        assert len(faces) == 6 + 4
+        assert [len(_face_vertices(face)) for face in faces[6:]] == [4, 3, 4, 3]
+        assert faces[-1].Get("stylename") == "fancy"
+        assert [widget.Get("usage") for widget in widgets] == ["living", "void"]
+
+    def test_a_roof_is_a_cell_above_the_room(self):
+        from topologic_core import CellComplex
+
+        faces, _ = document_to_faces_and_widgets(HIP_ROOF)
+        cells = []
+        CellComplex.ByFaces(faces, 0.0001).Cells(None, cells)
+        assert len(cells) == 2
