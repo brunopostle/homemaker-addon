@@ -6,7 +6,7 @@ Key things verified:
 - Widget centroid placed correctly in IFC space
 - Per-face style assignment
 - Direct faces_from_json / widgets_from_json paths
-- _snap rounding
+- coordinates are not rounded to a grid
 """
 
 import os
@@ -21,7 +21,7 @@ from geometry_adapter import (
     faces_from_json,
     widgets_from_json,
     rooms_to_faces_and_widgets,
-    _snap,
+    _coords as _float_coords,
     _room,
 )
 
@@ -58,18 +58,49 @@ def _quad(px=0, pz=0, w=4, d=4, elevation=0, height=3,
 
 
 # ---------------------------------------------------------------------------
-# _snap
+# _coords
 # ---------------------------------------------------------------------------
 
-class TestSnap:
-    def test_rounds_to_3dp(self):
-        assert _snap([1.23456789, 0.0, -2.99999]) == [1.235, 0.0, -3.0]
+class TestCoords:
+    def test_does_not_round(self):
+        assert _float_coords([1.23456789, 0.0, -2.99999]) == [1.23456789, 0.0, -2.99999]
 
     def test_handles_integers(self):
-        assert _snap([1, 2, 3]) == [1.0, 2.0, 3.0]
+        assert _float_coords([1, 2, 3]) == [1.0, 2.0, 3.0]
 
     def test_handles_strings(self):
-        assert _snap(["1.5", "2.5", "3.5"]) == [1.5, 2.5, 3.5]
+        assert _float_coords(["1.5", "2.5", "3.5"]) == [1.5, 2.5, 3.5]
+
+
+class TestTJunctions:
+    """A room corner part-way along a neighbour's wall has to stay on that wall."""
+
+    PLANS = [
+        [[0, 0], [8, 0], [8, 4], [0, 4]],
+        [[0, 4], [5, 4], [5, 8], [0, 8]],
+        [[5, 4], [8, 4], [8, 8], [5, 8]],
+        [[8, 0], [11, 0], [11, 2.5], [8, 2.5]],
+        [[8, 2.5], [11, 2.5], [11, 8], [8, 8]],
+    ]
+
+    @pytest.mark.parametrize("degrees", [0, 33, 75])
+    def test_one_cell_per_room_at_any_angle(self, degrees):
+        import math
+        from topologic_core import CellComplex
+
+        cos, sin = math.cos(math.radians(degrees)), math.sin(math.radians(degrees))
+        rooms = [
+            {
+                "vertices": [[x * cos - y * sin, x * sin + y * cos] for x, y in plan],
+                "elevation": 0.0,
+                "height": 3.0,
+            }
+            for plan in self.PLANS
+        ]
+        faces, _ = rooms_to_faces_and_widgets(rooms)
+        cells = []
+        CellComplex.ByFaces(faces, 0.0001).Cells(None, cells)
+        assert len(cells) == len(rooms)
 
 
 # ---------------------------------------------------------------------------

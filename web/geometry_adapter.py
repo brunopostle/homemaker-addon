@@ -37,7 +37,7 @@ def faces_from_json(face_data: list) -> list:
         if len(raw_verts) < 3:
             continue
         stylename = item.get("stylename", "default")
-        vertices = [Vertex.ByCoordinates(*_snap(v)) for v in raw_verts]
+        vertices = [Vertex.ByCoordinates(*_coords(v)) for v in raw_verts]
         face = Face.ByVertices(vertices)
         face.Set("stylename", stylename)
         faces.append(face)
@@ -57,7 +57,7 @@ def widgets_from_json(widget_data: list) -> list:
         if len(pos) < 3:
             continue
         usage = item.get("usage", "living")
-        vertex = Vertex.ByCoordinates(*_snap(pos))
+        vertex = Vertex.ByCoordinates(*_coords(pos))
         vertex.Set("usage", usage)
         widgets.append(vertex)
     return widgets
@@ -95,11 +95,11 @@ def _room(room: dict) -> tuple:
 
     # IFC X = three_x, IFC Y = three_z (depth), IFC Z = elevation
     floor_verts = [
-        Vertex.ByCoordinates(*_snap([v[0], v[1], ifc_floor_z]))
+        Vertex.ByCoordinates(*_coords([v[0], v[1], ifc_floor_z]))
         for v in vertices_2d
     ]
     ceil_verts = [
-        Vertex.ByCoordinates(*_snap([v[0], v[1], ifc_ceil_z]))
+        Vertex.ByCoordinates(*_coords([v[0], v[1], ifc_ceil_z]))
         for v in vertices_2d
     ]
 
@@ -127,14 +127,20 @@ def _room(room: dict) -> tuple:
 
     cx, cy = _polygon_centroid(vertices_2d)
     cz = elevation + height / 2
-    widget = Vertex.ByCoordinates(*_snap([cx, cy, cz]))
+    widget = Vertex.ByCoordinates(*_coords([cx, cy, cz]))
     widget.Set("usage", room.get("usage", "living"))
     return faces, widget
 
 
-def _snap(coords: list) -> list:
-    """Round coordinates to 3 decimal places to ensure face adjacency within tolerance."""
-    return [round(float(c), 3) for c in coords]
+def _coords(coords: list) -> list:
+    """Coordinates as floats, otherwise untouched.
+
+    Not rounded: rounding each coordinate to a grid moves a T-junction corner
+    (a room corner part-way along a neighbour's wall) off that wall whenever
+    the wall isn't axis-aligned, giving sliver cells. Near-coincident vertices
+    are left to the CellComplex.ByFaces tolerance.
+    """
+    return [float(c) for c in coords]
 
 
 def _polygon_centroid(vertices_2d: list) -> tuple:
