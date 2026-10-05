@@ -13,6 +13,10 @@ once, from the top down, once for each direction of rotation; the direction
 that fits best is used, with a preference for the traditional stair that
 rises clockwise.
 
+This works both ways: before any walls are built door_targets() decides where
+the doors around a stack of stair cells ought to go so that they leave room
+for the stair, and the walls oblige as best they can.
+
 The cell can be any convex polygon, the cells in a stack are expected to
 share more-or-less the same plan.
 """
@@ -632,6 +636,151 @@ def edge_points(ring, lo, hi):
             points.append(ring.newel[piece["index"]])
     points.append(ring.point_inner(hi))
     return points
+
+
+def plan_doors(ring, faces, slot=1.2):
+    """Decide where the doors around a stack of stair cells ought to go.
+
+    Doors that are bunched together leave more room for the stair. This finds
+    the shortest arc of the Ring that has room for a door in each wall that
+    needs one, and no more than one of the walls where a door is optional.
+
+    faces: a list of dictionaries, one for each wall that can have a door:
+    'key': something to identify the wall
+    'lo', 'hi': stations of each end of the wall
+    'optional': True if this wall doesn't need a door
+    slot: the length of wall that a door needs
+
+    Returns a dictionary with a station for the centre of each door, None for
+    optional walls that are to go without.
+    """
+    perimeter = ring.perimeter
+    required = [face for face in faces if not face["optional"]]
+    optional = [face for face in faces if face["optional"]]
+
+    def shortest_arc(chosen):
+        best = None
+        for first in chosen:
+            width_first = min(slot, first["hi"] - first["lo"])
+            for start in first["lo"], first["hi"] - width_first:
+                length = 0.0
+                places = {}
+                for face in chosen:
+                    width = min(slot, face["hi"] - face["lo"])
+                    distance = (face["lo"] - start) % perimeter
+                    place = start + distance
+                    overlap = distance + face["hi"] - face["lo"] - perimeter
+                    if overlap >= width - TOLERANCE:
+                        # this wall straddles the start and there is room for a door
+                        place = start
+                    places[face["key"]] = place + width / 2
+                    length = max(length, place + width - start)
+                if best is None or length < best[0] - TOLERANCE:
+                    best = (length, places)
+        return best
+
+    result = {face["key"]: None for face in optional}
+    best = None
+    # a door needs a wall that is long enough, prefer the longest
+    candidates = sorted(optional, key=lambda face: face["lo"] - face["hi"])
+    usable = [face for face in candidates if face["hi"] - face["lo"] >= slot + 0.6]
+    for face in usable or candidates[:1]:
+        arc = shortest_arc(required + [face])
+        if best is None or arc[0] < best[0] - TOLERANCE:
+            best = arc
+    if best is None and required:
+        best = shortest_arc(required)
+    if best is not None:
+        result.update(best[1])
+    return result
+
+
+def door_targets(cellcomplex, circulation, elevations):
+    """Where doors ought to go in the walls around each stack of stair cells.
+
+    Returns a dictionary keyed by Face index: a 2D point for the centre of
+    the door, or None if this wall shouldn't be given an entrance door. Walls
+    that aren't mentioned can do as they please.
+    """
+    targets = {}
+    cells_ptr = []
+    cellcomplex.Cells(None, cells_ptr)
+    for cell in cells_ptr:
+        if cell.Usage() != "stair":
+            continue
+        # start with the cell at the bottom of each stack
+        below_ptr = []
+        cell.CellsBelow(cellcomplex, below_ptr)
+        if any(other.Usage() == "stair" for other in below_ptr):
+            continue
+        stack = [cell]
+        while True:
+            above_ptr = []
+            stack[-1].CellsAbove(cellcomplex, above_ptr)
+            above = [
+                other
+                for other in above_ptr
+                if other.Usage() == "stair"
+                and not any(other.IsSame(seen) for seen in stack)
+            ]
+            if not above:
+                break
+            stack.append(above[0])
+        if len(stack) < 2:
+            continue
+
+        ring = None
+        faces = []
+        for stack_cell in stack:
+            graph = stack_cell.Perimeter(cellcomplex).graph
+            edges = [graph[node][1] for node in graph]
+            if ring is None:
+                try:
+                    ring = Ring(
+                        [edge["start_vertex"].Coordinates()[0:2] for edge in edges],
+                        1.0,
+                    )
+                except ValueError:
+                    break
+            for edge in edges:
+                face = edge["face"]
+                key = face.Get("index")
+                if key is None:
+                    continue
+                other = edge["front_cell"]
+                if other is None:
+                    # the wall code puts an entrance in every ground floor wall
+                    if elevations.get(stack_cell.Elevation()) != 0:
+                        continue
+                    optional = True
+                elif other.Usage() == "outside":
+                    optional = False
+                elif face.GraphVertex(circulation) is not None:
+                    optional = False
+                else:
+                    continue
+                start = edge["start_vertex"].Coordinates()[0:2]
+                end = edge["end_vertex"].Coordinates()[0:2]
+                length = float(np.linalg.norm(np.subtract(end, start)))
+                # doors can't go right into the corner
+                margin = min(0.25, length / 4)
+                lo = ring.station(start)
+                faces.append(
+                    {
+                        "key": key,
+                        "lo": lo + margin,
+                        "hi": lo + length - margin,
+                        "optional": optional,
+                    }
+                )
+        if ring is None or not faces:
+            continue
+        for key, station in plan_doors(ring, faces).items():
+            if station is None:
+                targets[key] = None
+            else:
+                targets[key] = [float(value) for value in ring.point_outer(station)]
+    return targets
 
 
 class Stair(TraceClass):

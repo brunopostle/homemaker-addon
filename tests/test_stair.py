@@ -21,6 +21,7 @@ from molior.stair import (  # noqa: E402
     Ring,
     ideal_going,
     plan_best,
+    plan_doors,
     plan_landing,
     plan_stack,
     plan_treads,
@@ -269,6 +270,56 @@ def test_plan_rotation():
 
 
 # ---------------------------------------------------------------------------
+# doors
+# ---------------------------------------------------------------------------
+
+
+def test_plan_doors_bunches_doors_together():
+    ring = Ring(RECTANGLE, 1.0)
+    faces = [
+        # east and north walls each need a door
+        {"key": "east", "lo": 3.25, "hi": 7.75, "optional": False},
+        {"key": "north", "lo": 8.25, "hi": 10.75, "optional": False},
+    ]
+    places = plan_doors(ring, faces, slot=1.2)
+    # either side of the corner between them
+    assert places["east"] == pytest.approx(7.75 - 0.6)
+    assert places["north"] == pytest.approx(8.25 + 0.6)
+
+
+def test_plan_doors_one_entrance():
+    ring = Ring(RECTANGLE, 1.0)
+    faces = [
+        {"key": "south", "lo": 0.25, "hi": 2.75, "optional": True},
+        {"key": "east", "lo": 3.25, "hi": 7.75, "optional": False},
+        {"key": "north", "lo": 8.25, "hi": 10.75, "optional": True},
+        {"key": "west", "lo": 11.25, "hi": 15.75, "optional": True},
+    ]
+    places = plan_doors(ring, faces, slot=1.2)
+    chosen = [key for key in ("south", "north", "west") if places[key] is not None]
+    assert len(chosen) == 1
+    # next to the door that is needed
+    assert abs(places[chosen[0]] - places["east"]) == pytest.approx(1.7)
+
+    # an entrance is better than nothing
+    places = plan_doors(ring, faces[:1], slot=1.2)
+    assert places["south"] is not None
+
+
+def test_plan_doors_long_wall():
+    ring = Ring(RECTANGLE, 1.0)
+    faces = [
+        {"key": "east", "lo": 3.25, "hi": 7.75, "optional": False},
+        {"key": "west", "lo": 11.25, "hi": 15.75, "optional": False},
+    ]
+    places = plan_doors(ring, faces, slot=1.2)
+    # opposite walls, both doors go to the same end of the cell
+    east = ring.point_outer(places["east"])
+    west = ring.point_outer(places["west"])
+    assert east[1] == pytest.approx(west[1])
+
+
+# ---------------------------------------------------------------------------
 # IFC
 # ---------------------------------------------------------------------------
 
@@ -363,17 +414,26 @@ def test_stair_parts(ifc):
         assert highest[2] > elevation + 3.0 + 0.9
 
 
-def test_stair_keeps_clear_of_inside_doors(ifc):
+def test_one_entrance_to_a_stack_of_stair_cells(ifc):
+    entrances = [
+        door
+        for door in ifc.by_type("IfcDoor")
+        if door.Name == "house entrance"
+        and ifcopenshell.util.element.get_psets(door)["EPset_Topology"]["BackCellIndex"]
+        == "0"
+    ]
+    assert len(entrances) == 1
+
+
+def test_stair_keeps_clear_of_doors(ifc):
     settings = ifcopenshell.geom.settings()
     settings.set("use-world-coords", True)
     checked = 0
     for door in ifc.by_type("IfcDoor"):
-        if door.Name != "living inside door":
-            continue
         matrix = ifcopenshell.util.placement.get_local_placement(door.ObjectPlacement)
         start = matrix[:3, 3]
         end = start + matrix[:3, 0] * door.OverallWidth
-        threshold = LineString([start[0:2], end[0:2]]).buffer(0.4)
+        threshold = LineString([start[0:2], end[0:2]]).buffer(0.4, cap_style=2)
         for flight in ifc.by_type("IfcStairFlight"):
             verts = ifcopenshell.geom.create_shape(settings, flight).geometry.verts
             for x, y, z in zip(verts[0::3], verts[1::3], verts[2::3]):

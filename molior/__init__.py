@@ -22,7 +22,7 @@ from .extrusion import Extrusion
 from .floor import Floor
 from .shell import Shell
 from .space import Space
-from .stair import Stair
+from .stair import Stair, door_targets
 from .wall import Wall
 from .repeat import Repeat
 from .grillage import Grillage
@@ -240,6 +240,12 @@ class Molior:
     def execute(self):
         """Iterate through 'traces' and 'hulls' and populate an ifc 'file' object"""
         self.init_building()
+        # doors around stairs want to be where they leave room for the stair
+        self.door_targets = {}
+        if self.cellcomplex and self.circulation:
+            self.door_targets = door_targets(
+                self.cellcomplex, self.circulation, self.elevations
+            )
         stairs = []
         for condition in self.traces:
             for elevation in self.traces[condition]:
@@ -887,6 +893,7 @@ class Molior:
                     "style_openings": myconfig["openings"],
                     "style_families": myconfig["families"],
                     "style_object": Molior.style,
+                    "door_targets": getattr(self, "door_targets", {}),
                 }
                 vals.update(config)
                 modules = {
