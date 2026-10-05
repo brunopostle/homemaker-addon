@@ -62,7 +62,7 @@ kitchen-floor:
 utility-floor:
   class: Shell
   ifc: IfcSlab
-  typename: utility-floor
+  typename: kitchen-floor
   condition: utility
   offset: 0.0
 living-floor:

@@ -221,7 +221,7 @@ The layout is also **autosaved** to `localStorage` on every edit, so the browser
 
 ### Style vs usage
 
-**Usage** is a property of the *cell* (room).  It tells homemaker what kind of space this is: `bedroom`, `kitchen`, `living`, `circulation`, `toilet`, `stair`, `void`, `outside`.  Set it per room in the properties panel.
+**Usage** is a property of the *cell* (room).  It tells homemaker what kind of space this is: `bedroom`, `kitchen`, `living`, `circulation`, `toilet`, `stair`, `utility`, `retail`, `sahn`, `void`, `outside`.  Set it per room in the properties panel.
 
 **Stylename** is a property of each *face* (wall, floor, ceiling).  It selects a named style definition from the `share/` directory tree.  Examples: `default`, `foxhouse`, `simple`, `party`.  A party wall — one that should render without windows — gets a different stylename from an external wall of the same room.
 

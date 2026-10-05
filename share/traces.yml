@@ -222,7 +222,7 @@ utility-floor:
   class: Floor
   condition: utility
   ifc: IfcCovering
-  typename: utility-floor
+  typename: kitchen-floor
   offset: 0.0
 living-floor:
   class: Floor
