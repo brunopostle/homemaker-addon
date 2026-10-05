@@ -818,10 +818,12 @@ class Stair(TraceClass):
         super().__init__(args)
         self.ifc = "IfcStair"
         self.path = []
-        # widest stair, including 'inner', narrow cells get a narrower stair
-        self.width = 1.0
+        # widest stair, including 'inner', narrow cells get a narrower stair.
+        # width and riser are the defaults of the homemaker-layout scorer
+        # (and of Urb before it), which decides if a cell can hold a stair
+        self.width = 1.25
         # tallest riser
-        self.riser = 0.19
+        self.riser = 0.21
         # 'going' is derived from the riser unless set
         self.going = None
         self.inner = 0.08
