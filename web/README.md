@@ -289,7 +289,23 @@ Generate an IFC file from a set of rooms.  Returns `application/octet-stream`.
 
 Any missing or null entry falls back to `stylename`.  The `stylename` field alone (no `face_styles`) applies one style to all faces.
 
-Advanced: send raw `faces` (list of 4-vertex arrays in IFC Z-up coordinates) and `widgets` (list of `{position: [x,y,z], usage}`) instead of `rooms` for direct control.
+Rooms are prisms, so they can't describe a pitched roof.  Send `faces` (a list of `{vertices, stylename}`, each with three or more `[x, y, z]` vertices in IFC Z-up coordinates) and `widgets` (a list of `{position: [x, y, z], usage}`) as well as `rooms`, or instead of `rooms` for direct control.  A roof is a cell enclosed by the ceilings of the rooms below and some sloping faces; the ceilings come with the rooms and don't need repeating:
+
+```json
+{
+  "rooms": [
+    {"vertices": [[0, 0], [8, 0], [8, 5], [0, 5]], "elevation": 0.0, "height": 3.0, "usage": "living"}
+  ],
+  "faces": [
+    {"vertices": [[0, 0, 3], [8, 0, 3], [5.5, 2.5, 5.5], [2.5, 2.5, 5.5]]},
+    {"vertices": [[8, 0, 3], [8, 5, 3], [5.5, 2.5, 5.5]]},
+    {"vertices": [[8, 5, 3], [0, 5, 3], [2.5, 2.5, 5.5], [5.5, 2.5, 5.5]]},
+    {"vertices": [[0, 5, 3], [0, 0, 3], [2.5, 2.5, 5.5]]}
+  ]
+}
+```
+
+`rooms2ifc.py` reads the same document from a file.  The editor itself only draws and saves `rooms`.
 
 ### `GET /api/styles`
 

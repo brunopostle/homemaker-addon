@@ -66,6 +66,22 @@ def widgets_from_json(widget_data: list) -> list:
     return widgets
 
 
+def document_to_faces_and_widgets(document: dict) -> tuple:
+    """Convert a rooms document to faces and widgets.
+
+    A document has a "rooms" list, see rooms_to_faces_and_widgets(), and/or
+    "faces" and "widgets" lists, see faces_from_json() and widgets_from_json().
+    Rooms are prisms, so anything else, a pitched roof for example, has to be
+    described with faces: a roof is a cell enclosed by the ceilings of the
+    rooms below and some sloping faces, there is no need to repeat the
+    ceilings. Returns (faces, widgets) ready for Molior.from_faces_and_widgets().
+    """
+    faces, widgets = rooms_to_faces_and_widgets(document.get("rooms") or [])
+    faces.extend(faces_from_json(document.get("faces") or []))
+    widgets.extend(widgets_from_json(document.get("widgets") or []))
+    return faces, widgets
+
+
 def rooms_to_faces_and_widgets(rooms: list) -> tuple:
     """Convert a list of room dicts (editor format) to faces and widgets.
 

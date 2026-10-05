@@ -4,7 +4,10 @@
 
 A rooms document is the JSON file saved by the web editor (rooms.json), see
 web/README.md: a "rooms" list where each room has "vertices", "elevation",
-"height", "face_styles" and "usage"; and an optional "name". Other keys are
+"height", "face_styles" and "usage"; and an optional "name". Rooms are prisms,
+anything else (a pitched roof) can be added with a "faces" list where each
+face has "vertices" (three or more [x, y, z]) and a "stylename"; and a
+"widgets" list where each has a "position" and a "usage". Other keys are
 ignored.
 
 Usage:
@@ -18,7 +21,7 @@ import os
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 from molior import Molior
-from molior.rooms import rooms_to_faces_and_widgets
+from molior.rooms import document_to_faces_and_widgets
 
 
 def rooms2ifc(rooms_path, ifc_path):
@@ -28,11 +31,10 @@ def rooms2ifc(rooms_path, ifc_path):
     # a bare list of rooms is accepted too
     if isinstance(document, list):
         document = {"rooms": document}
-    rooms = document.get("rooms")
-    if not rooms:
+    faces, widgets = document_to_faces_and_widgets(document)
+    if not faces:
         sys.exit(f"{rooms_path}: no rooms found")
 
-    faces, widgets = rooms_to_faces_and_widgets(rooms)
     molior_object = Molior.from_faces_and_widgets(
         faces=faces,
         widgets=widgets,
