@@ -58,7 +58,7 @@ function _faceName(fi) {
     if (fi === 1) return "Ceiling";
     return `Wall ${fi - 1}`;
 }
-const USAGES     = ["living","bedroom","kitchen","circulation","toilet","stair","void","outside","retail","sahn"];
+const USAGES     = ["living","bedroom","kitchen","circulation","toilet","stair","void","outside","retail","sahn","utility"];
 const DEFAULT_W = 4.0, DEFAULT_D = 4.0, DEFAULT_H = 3.0;
 
 // One colour per usage — used for floor-plan label fills.
@@ -74,6 +74,7 @@ const USAGE_COLOR = {
     outside:     0x1a6a1a,
     retail:      0x7a3a4a,
     sahn:        0x3a6a1a,
+    utility:     0x5a5a2a,
 };
 
 function _usageColorCss(usage) {

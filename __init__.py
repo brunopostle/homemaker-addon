@@ -50,6 +50,7 @@ ROOM_TYPES = [
     "retail",
     "sahn",
     "toilet",
+    "utility",
     "void",
 ]
 ROOM_PATTERN = re.compile("|".join(ROOM_TYPES), flags=re.IGNORECASE)

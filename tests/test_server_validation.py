@@ -172,7 +172,8 @@ class TestRoomStylename:
 
 class TestRoomUsage:
     @pytest.mark.parametrize("u", ["living", "bedroom", "kitchen", "circulation",
-                                   "toilet", "stair", "void", "outside"])
+                                   "toilet", "stair", "void", "outside",
+                                   "retail", "sahn", "utility"])
     def test_valid_usages(self, u):
         RoomData(**_room(usage=u))
 
