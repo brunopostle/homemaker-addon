@@ -53,6 +53,7 @@
 # - github.org
 # - github.repo
 
-sync.remote: "git+ssh://git@github.com/brunopostle/homemaker-addon.git"
 agent:
     profile: team-maintainer
+sync:
+    remote: "git+ssh://git@github.com/brunopostle/homemaker-addon.git"
