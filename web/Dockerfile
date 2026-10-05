@@ -27,7 +27,6 @@ COPY web/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY web/server.py .
-COPY web/geometry_adapter.py .
 
 # Copy frontend assets (no build step needed; Three.js loaded from CDN via importmap)
 COPY web/static ./static

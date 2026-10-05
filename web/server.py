@@ -31,8 +31,8 @@ from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, field_validator, model_validator
 
-# Both the web/ directory and repo root need to be on sys.path.
-# web/ for geometry_adapter; repo root for molior/, topologist/.
+# Both the web/ directory and repo root need to be on sys.path;
+# the repo root for molior/, topologist/.
 _here = pathlib.Path(__file__).parent       # .../web/
 _repo_root = _here.parent                   # .../homemaker-addon/
 for _p in (str(_here), str(_repo_root)):
@@ -41,7 +41,7 @@ for _p in (str(_here), str(_repo_root)):
 
 from molior import Molior
 import molior.ifc as molior_ifc
-from geometry_adapter import faces_from_json, widgets_from_json, rooms_to_faces_and_widgets
+from molior.rooms import faces_from_json, widgets_from_json, rooms_to_faces_and_widgets
 
 # Locate share/ — works both from a git clone and from a pip-installed package.
 # Override via SHARE_DIR env var for Docker deployments.
@@ -300,7 +300,7 @@ def _generate_ifc(request_dict: dict, share_dir: str) -> bytes:
 
     from molior import Molior
     import molior.ifc as molior_ifc
-    from geometry_adapter import faces_from_json, widgets_from_json, rooms_to_faces_and_widgets
+    from molior.rooms import faces_from_json, widgets_from_json, rooms_to_faces_and_widgets
 
     if request_dict.get("rooms"):
         faces, widgets = rooms_to_faces_and_widgets(request_dict["rooms"])
@@ -334,7 +334,7 @@ def _validate_geometry(request_dict: dict, share_dir: str) -> dict:
             sys.path.insert(0, p)
 
     from topologic_core import CellComplex
-    from geometry_adapter import faces_from_json, widgets_from_json, rooms_to_faces_and_widgets
+    from molior.rooms import faces_from_json, widgets_from_json, rooms_to_faces_and_widgets
 
     if request_dict.get("rooms"):
         faces, _ = rooms_to_faces_and_widgets(request_dict["rooms"])

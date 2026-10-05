@@ -217,6 +217,8 @@ systemctl restart homemaker-web
 | Force regeneration | **Generate IFC** button |
 | Download the IFC file | **Download IFC** button (enabled after first successful generation) |
 
+A saved `rooms.json` can also be built into an IFC file without the server or a browser: `rooms2ifc.py rooms.json building.ifc` (in the repository root).
+
 The layout is also **autosaved** to `localStorage` on every edit, so the browser restores your last session automatically on reload.
 
 ### Style vs usage
@@ -238,7 +240,6 @@ When two rooms share or partially overlap a wall, `CellComplex.ByFaces()` may sp
 ```
 web/
   server.py              FastAPI application
-  geometry_adapter.py    JSON rooms → topologic_core Face/Vertex objects
   requirements.txt       Python dependencies
   Dockerfile             Build from repo root: docker build -f web/Dockerfile ...
   static/
@@ -326,7 +327,7 @@ The IFC model regenerates automatically in the background:
 
 ### Coordinate systems
 
-Three.js uses Y-up (`Y` = elevation).  IFC and homemaker use Z-up (`Z` = elevation).  The conversion happens in `geometry_adapter.py`:
+Three.js uses Y-up (`Y` = elevation).  IFC and homemaker use Z-up (`Z` = elevation).  The conversion happens in `molior/rooms.py`:
 
 ```
 IFC X = Three.js vertex x   (east,  unchanged)
@@ -344,7 +345,7 @@ IFC Z = elevation           (Three.js Y elevation)
 
 ### WASM future
 
-`topologic_core` is the only dependency preventing the entire pipeline from running in the browser.  `ifcopenshell` already has a Pyodide WASM build (`wasm-wheels`).  If a WASM build of `topologic_core` becomes available, the JSON geometry API in `server.py` / `geometry_adapter.py` is designed as a clean replacement boundary — the same interface can be called from a Pyodide worker without changing the editor.
+`topologic_core` is the only dependency preventing the entire pipeline from running in the browser.  `ifcopenshell` already has a Pyodide WASM build (`wasm-wheels`).  If a WASM build of `topologic_core` becomes available, the JSON geometry API in `server.py` / `molior/rooms.py` is designed as a clean replacement boundary — the same interface can be called from a Pyodide worker without changing the editor.
 
 ## Tests
 
@@ -355,7 +356,7 @@ cd tests
 python -m pytest
 ```
 
-`test_geometry_adapter.py` covers the coordinate axis swap, per-face style assignment, face plane geometry, and widget centroid placement.  `test_server_validation.py` covers all Pydantic input validators (vertex bounds, height/elevation ranges, stylename sanitisation, usage whitelist, face edge lengths) without requiring topologic_core or a running server.  `tests/pytest.ini` prevents pytest from traversing up to the Blender addon `__init__.py`.
+`test_rooms.py` covers the coordinate axis swap, per-face style assignment, face plane geometry, and widget centroid placement.  `test_server_validation.py` covers all Pydantic input validators (vertex bounds, height/elevation ranges, stylename sanitisation, usage whitelist, face edge lengths) without requiring topologic_core or a running server.  `tests/pytest.ini` prevents pytest from traversing up to the Blender addon `__init__.py`.
 
 JavaScript unit tests use [Vitest](https://vitest.dev/) and run in Node — no browser required.
 

@@ -233,7 +233,7 @@ export async function loadIfc(arrayBuffer) {
         return;
     }
 
-    // geometry_adapter.py uses IFC Y = Three.js Z (toward camera / south).
+    // molior/rooms.py uses IFC Y = Three.js Z (toward camera / south).
     // @thatopen applies the standard IFC Z-up→Y-up transform: Three.js Z = -IFC Y,
     // so the model ends up mirrored on Z relative to the editor.  Undo that here.
     // The scale flip inverts face normals, so force DoubleSide on all materials.
