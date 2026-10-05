@@ -472,3 +472,40 @@ def test_stair_in_cells_that_are_not_rectangles(stair, other):
 def test_no_stair_without_a_stair_cell_above():
     ifc = build(RECTANGLE, [[3, 0], [8, 0], [8, 5], [3, 5]], storeys=1)
     assert len(ifc.by_type("IfcStair")) == 0
+
+
+def test_one_entrance_to_a_circulation_cell():
+    rooms = [
+        {
+            "vertices": [[0, 0], [3, 0], [3, 6], [0, 6]],
+            "elevation": 0.0,
+            "height": 3.0,
+            "usage": "circulation",
+        },
+        {
+            "vertices": [[3, 0], [8, 0], [8, 6], [3, 6]],
+            "elevation": 0.0,
+            "height": 3.0,
+            "usage": "living",
+        },
+    ]
+    faces, widgets = rooms_to_faces_and_widgets(rooms)
+    molior_object = Molior.from_faces_and_widgets(
+        faces=faces,
+        widgets=widgets,
+        name="entrance test",
+        share_dir=os.path.join(ROOT, "share"),
+    )
+    molior_object.execute()
+    entrances = [
+        door
+        for door in molior_object.file.by_type("IfcDoor")
+        if door.Name == "house entrance"
+    ]
+    assert len(entrances) == 1
+    # in the longest outside wall
+    matrix = ifcopenshell.util.placement.get_local_placement(
+        entrances[0].ObjectPlacement
+    )
+    assert abs(matrix[1][0]) == pytest.approx(1.0)
+    assert matrix[0][3] < 0.0
