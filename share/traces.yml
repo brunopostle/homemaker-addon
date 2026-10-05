@@ -261,7 +261,9 @@ sahn-floor:
   typename: sahn-floor
   offset: 0.0
 
-# FIXME stairs are not implemented yet
+# a stair is drawn in every stair cell that has a stair cell above it. The
+# widest stair, tallest riser, and the going (calculated from the riser unless
+# set here) can be set with "width:", "riser:" and "going:"
 
 stair:
   class: Stair
