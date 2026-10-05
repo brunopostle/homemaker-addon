@@ -13,6 +13,7 @@ from .geometry import (
     add_2d,
     scale_2d,
     distance_2d,
+    subtract_2d,
     subtract_3d,
     add_3d,
     transform,
@@ -52,6 +53,8 @@ class Wall(TraceClass):
         self.structural_thickness = 0.2
         self.openings = []
         self.path = []
+        # where doors ought to go, keyed by Face index, see molior.stair
+        self.door_targets = {}
         for arg in args:
             self.__dict__[arg] = args[arg]
 
@@ -690,9 +693,13 @@ class Wall(TraceClass):
                 access = 0
                 if exterior_type == "outside":
                     access = 1
-                self.populate_exterior_openings(id_segment, interior_type, access)
+                target = self.door_target(edge[1].get("face"))
+                self.populate_exterior_openings(
+                    id_segment, interior_type, access, entrance=target is not False
+                )
                 self.fix_heights(id_segment)
                 self.fix_segment(id_segment)
+                self.steer_door(id_segment, target)
                 self.fix_gable(id_segment)
         elif "do_populate_interior_openings" in self.__dict__:
             edge = self.chain.graph[self.chain.edges()[0][0]]
@@ -709,7 +716,8 @@ class Wall(TraceClass):
                 )
                 self.fix_heights(0)
                 self.fix_segment(0)
-                # TODO door location and account for gable headroom
+                self.steer_door(0, self.door_target(face))
+                # TODO account for gable headroom
 
     def opening_coor(self, id_segment, id_opening):
         """rectangle coordinates of an opening on the axis"""
@@ -729,7 +737,9 @@ class Wall(TraceClass):
 
         return [A[0], A[1], bottom], [B[0], B[1], top]
 
-    def populate_exterior_openings(self, id_segment, interior_type, access):
+    def populate_exterior_openings(
+        self, id_segment, interior_type, access, entrance=True
+    ):
         """Add initial windows and doors to a segment"""
         if interior_type is None:
             self.openings[id_segment].append(
@@ -759,7 +769,7 @@ class Wall(TraceClass):
             self.openings[id_segment].append(
                 {"family": "retail entrance", "along": 0.5, "size": 0}
             )
-        if interior_type in ("circulation", "stair") and self.level == 0:
+        if interior_type in ("circulation", "stair") and self.level == 0 and entrance:
             self.openings[id_segment].append(
                 {"family": "house entrance", "along": 0.5, "size": 0}
             )
@@ -767,6 +777,68 @@ class Wall(TraceClass):
             self.openings[id_segment].append(
                 {"family": "living outside door", "along": 0.5, "size": 0}
             )
+
+    def door_target(self, face):
+        """Has a place been chosen for a door in this Face? returns a 2D point,
+        False if the Face isn't to have an entrance, None if nobody cares"""
+        if face is None or not self.door_targets:
+            return None
+        index = face.Get("index")
+        if index not in self.door_targets:
+            return None
+        target = self.door_targets[index]
+        if target is None:
+            return False
+        return target
+
+    def steer_door(self, id_segment, target):
+        """Move a door as close as possible to a 2D point"""
+        openings = self.openings[id_segment]
+        if not target or not openings:
+            return
+        doors = [
+            opening
+            for opening in openings
+            if self.get_family(opening["family"])["type"] == "door"
+        ]
+        if not doors:
+            return
+        door = doors[0]
+        db = self.get_family(door["family"])
+        width = db["list"][door["size"]]["width"]
+        end = db["list"][door["size"]]["end"]
+        length = self.length_segment(id_segment)
+        border = self.border(id_segment)
+        offset = subtract_2d(target, self.corner_coor(id_segment))
+        direction = self.direction_segment(id_segment)
+        centre = offset[0] * direction[0] + offset[1] * direction[1]
+
+        # windows are spread along whatever is left, the door goes at one end
+        others = [opening for opening in openings if opening is not door]
+        if centre < length / 2:
+            self.openings[id_segment] = [door] + others
+        else:
+            self.openings[id_segment] = others + [door]
+        self.align_openings(id_segment)
+        along = centre - width / 2
+        along = min(along, length - border[1] - end - width)
+        along = max(along, border[0] + end)
+        door["along"] = along
+        if centre < length / 2:
+            self.fix_overlaps(id_segment)
+            self.fix_overrun(id_segment)
+        else:
+            # windows make way for the door
+            after = door
+            for opening in reversed(others):
+                size = self.get_family(opening["family"])["list"][opening["size"]]
+                size_after = self.get_family(after["family"])["list"][after["size"]]
+                side = max(size["side"], size_after["side"])
+                limit = after["along"] - side - size["width"]
+                if opening["along"] > limit:
+                    opening["along"] = limit
+                after = opening
+            self.fix_underrun(id_segment)
 
     def populate_interior_openings(self, id_segment, type_a, type_b, access):
         """Add an initial door to an interior segment"""
