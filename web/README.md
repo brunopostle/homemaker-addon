@@ -223,7 +223,7 @@ The layout is also **autosaved** to `localStorage` on every edit, so the browser
 
 **Usage** is a property of the *cell* (room).  It tells homemaker what kind of space this is: `bedroom`, `kitchen`, `living`, `circulation`, `toilet`, `stair`, `utility`, `retail`, `sahn`, `void`, `outside`.  Set it per room in the properties panel.
 
-**Stylename** is a property of each *face* (wall, floor, ceiling).  It selects a named style definition from the `share/` directory tree.  Examples: `default`, `foxhouse`, `simple`, `party`.  A party wall — one that should render without windows — gets a different stylename from an external wall of the same room.
+**Stylename** is a property of each *face* (wall, floor, ceiling).  It selects a named style definition from the `share/` directory tree.  Examples: `default`, `foxhouse`, `simple`, `blank`.  A party wall — one that should render without windows — gets the `blank` stylename, while the external walls of the same room keep theirs.
 
 The toolbar **Style** dropdown sets the default stylename for newly added rooms.  The properties panel **Style** dropdown resets all faces of the selected room to one style.  To override a single face, click its handle sphere (short click, not a drag) and change the **Face style** dropdown that appears.
 
@@ -265,7 +265,7 @@ Generate an IFC file from a set of rooms.  Returns `application/octet-stream`.
       "vertices": [[0, 0], [4, 0], [4, 4], [0, 4]],
       "elevation": 0.0,
       "height": 3.0,
-      "face_styles": ["default", "default", "default", "party", "default", "default"],
+      "face_styles": ["default", "default", "default", "blank", "default", "default"],
       "stylename": "default",
       "usage": "kitchen"
     }
