@@ -33,6 +33,9 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { Line2 } from "three/addons/lines/Line2.js";
+import { LineGeometry } from "three/addons/lines/LineGeometry.js";
+import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import {
     snapToFaces, snapVertexToWallPlanes, snapVertexToVertices, computeFaceDrag,
     SNAP_THRESHOLD, GRID_SNAP, MIN_DIM,
@@ -991,8 +994,11 @@ function _updateVertexDrag(event) {
 }
 
 // ---------------------------------------------------------------------------
-// Snap highlight — bright LineLoop quad drawn over the wall being snapped to
+// Snap highlight — bright outline drawn over the wall being snapped to
 // ---------------------------------------------------------------------------
+// WebGL draws THREE.Line one pixel wide whatever linewidth is asked for, so
+// this is a Line2 ("fat line"), whose width is in screen pixels.
+const SNAP_HIGHLIGHT_WIDTH = 3;
 let _snapHighlight = null;  // { mesh, snapRoom, wallIdx }
 
 function _showSnapHighlight(snapRoom, wallIdx) {
@@ -1003,15 +1009,23 @@ function _showSnapHighlight(snapRoom, wallIdx) {
     const v1 = snapRoom.vertices[(wallIdx + 1) % n];
     const lo = snapRoom.elevation;
     const hi = snapRoom.elevation + snapRoom.height;
-    const pts = new Float32Array([
+    // a closed loop, back to the first corner
+    const geo = new LineGeometry();
+    geo.setPositions([
         v0[0], lo, v0[1],
         v1[0], lo, v1[1],
         v1[0], hi, v1[1],
         v0[0], hi, v0[1],
+        v0[0], lo, v0[1],
     ]);
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.BufferAttribute(pts, 3));
-    const mesh = new THREE.LineLoop(geo, new THREE.LineBasicMaterial({ color: 0xffdd00 }));
+    const mat = new LineMaterial({
+        color: 0xffdd00,
+        linewidth: SNAP_HIGHLIGHT_WIDTH,
+        // on top of the room edges it coincides with
+        depthTest: false,
+    });
+    const mesh = new Line2(geo, mat);
+    mesh.renderOrder = 10;
     scene.add(mesh);
     _snapHighlight = { mesh, snapRoom, wallIdx };
 }
