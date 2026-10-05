@@ -57,9 +57,20 @@ def test_a_utility_room_becomes_a_utility_space(ifc):
     assert any(n.startswith("kitchen") for n in names), names
 
 
-def test_a_utility_room_gets_its_own_floor_covering(ifc):
-    types = [t.Name for t in ifc.by_type("IfcCoveringType")]
-    assert "utility-floor" in types, types
+def test_a_utility_floor_has_thickness(ifc):
+    # there is no 'utility-floor' type in library.ifc, a type invented on the
+    # fly has no material layers, hence a zero thickness floor; the utility
+    # floor entries use the kitchen-floor type instead
+    for ifc_class in ("IfcCovering", "IfcSlab"):
+        floors = [e for e in ifc.by_type(ifc_class) if "utility-floor" in (e.Name or "")]
+        assert floors, ifc_class
+        for floor in floors:
+            depths = [
+                item.Depth
+                for item in ifc.traverse(floor)
+                if item.is_a("IfcExtrudedAreaSolid")
+            ]
+            assert depths and all(depth > 0.0 for depth in depths), depths
 
 
 def test_utility_windows_are_kitchen_style_and_it_may_have_an_outside_door():
