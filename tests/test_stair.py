@@ -324,7 +324,7 @@ def test_plan_doors_long_wall():
 # ---------------------------------------------------------------------------
 
 
-def build(stair, other, storeys=3, degrees=0.0):
+def build(stair, other, storeys=3, degrees=0.0, stair_usage="stair"):
     cos, sin = math.cos(math.radians(degrees)), math.sin(math.radians(degrees))
 
     def rotate(points):
@@ -332,7 +332,7 @@ def build(stair, other, storeys=3, degrees=0.0):
 
     rooms = []
     for storey in range(storeys):
-        for vertices, usage in (stair, "stair"), (other, "living"):
+        for vertices, usage in (stair, stair_usage), (other, "living"):
             rooms.append(
                 {
                     "vertices": rotate(vertices),
@@ -509,3 +509,16 @@ def test_one_entrance_to_a_circulation_cell():
     )
     assert abs(matrix[1][0]) == pytest.approx(1.0)
     assert matrix[0][3] < 0.0
+
+
+def test_circulation_stair_is_a_stair():
+    # homemaker-layout calls its stair shafts 'circulation_stair'
+    ifc = build(
+        RECTANGLE,
+        [[3, 0], [8, 0], [8, 5], [3, 5]],
+        storeys=2,
+        stair_usage="circulation_stair",
+    )
+    assert len(ifc.by_type("IfcStair")) == 1
+    names = [space.Name.split("/")[0] for space in ifc.by_type("IfcSpace")]
+    assert names.count("stair-space") == 2

@@ -53,7 +53,10 @@ ROOM_TYPES = [
     "utility",
     "void",
 ]
-ROOM_PATTERN = re.compile("|".join(ROOM_TYPES), flags=re.IGNORECASE)
+# longest first, or 'circulation_stair' is taken for 'circulation'
+ROOM_PATTERN = re.compile(
+    "|".join(sorted(ROOM_TYPES, key=len, reverse=True)), flags=re.IGNORECASE
+)
 
 bl_info = {
     "name": "Homemaker Topologise",

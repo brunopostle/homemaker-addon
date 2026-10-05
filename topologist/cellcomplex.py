@@ -41,7 +41,11 @@ def AllocateCells(self, widgets):
             continue
         for widget in widgets:
             if CellUtility.Contains(cell, widget, 0.001) == 0:
-                cell.Set("usage", widget.Get("usage").lower())
+                usage = widget.Get("usage").lower()
+                # circulation that is part of a stair shaft is a stair
+                if usage == "circulation_stair":
+                    usage = "stair"
+                cell.Set("usage", usage)
                 break
 
     # tag faces between inside and outside spaces that face inwards
