@@ -2,6 +2,9 @@
 # Copyright (C) 2024 Bruno Postle <bruno@postle.net>
 """Convert JSON geometry data to topologic_core objects.
 
+This reads the 'rooms document' saved by the web editor (rooms.json), posted
+to the web server, and read by rooms2ifc.py.
+
 Coordinate conventions
 ----------------------
 Three.js uses Y-up:  X = east, Y = up (elevation), Z = north-south (depth)
@@ -86,21 +89,19 @@ def _room(room: dict) -> tuple:
     """
     vertices_2d = room["vertices"]  # [[three_x, three_z], ...]
     elevation = round(float(room.get("elevation", 0)), 3)
-    height    = round(float(room.get("height", 3)), 3)
+    height = round(float(room.get("height", 3)), 3)
     n = len(vertices_2d)
     stylename = room.get("stylename", "default")
 
     ifc_floor_z = elevation
-    ifc_ceil_z  = elevation + height
+    ifc_ceil_z = elevation + height
 
     # IFC X = three_x, IFC Y = three_z (depth), IFC Z = elevation
     floor_verts = [
-        Vertex.ByCoordinates(*_coords([v[0], v[1], ifc_floor_z]))
-        for v in vertices_2d
+        Vertex.ByCoordinates(*_coords([v[0], v[1], ifc_floor_z])) for v in vertices_2d
     ]
     ceil_verts = [
-        Vertex.ByCoordinates(*_coords([v[0], v[1], ifc_ceil_z]))
-        for v in vertices_2d
+        Vertex.ByCoordinates(*_coords([v[0], v[1], ifc_ceil_z])) for v in vertices_2d
     ]
 
     raw_face_styles = room.get("face_styles") or []
@@ -121,7 +122,9 @@ def _room(room: dict) -> tuple:
 
     for i in range(n):
         j = (i + 1) % n
-        wall = Face.ByVertices([floor_verts[i], floor_verts[j], ceil_verts[j], ceil_verts[i]])
+        wall = Face.ByVertices(
+            [floor_verts[i], floor_verts[j], ceil_verts[j], ceil_verts[i]]
+        )
         wall.Set("stylename", fstyle(2 + i))
         faces.append(wall)
 

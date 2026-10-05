@@ -1,4 +1,4 @@
-"""Tests for web/geometry_adapter.py.
+"""Tests for molior/rooms.py.
 
 Key things verified:
 - Three.js Y-up → IFC Z-up coordinate axis swap
@@ -14,10 +14,9 @@ import sys
 
 _repo = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, _repo)
-sys.path.insert(0, os.path.join(_repo, "web"))
 
 import pytest
-from geometry_adapter import (
+from molior.rooms import (
     faces_from_json,
     widgets_from_json,
     rooms_to_faces_and_widgets,

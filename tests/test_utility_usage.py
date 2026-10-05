@@ -16,11 +16,10 @@ import pytest
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
-sys.path.insert(0, os.path.join(ROOT, "web"))
 
 from molior import Molior  # noqa: E402
 from molior.wall import Wall  # noqa: E402
-from geometry_adapter import rooms_to_faces_and_widgets  # noqa: E402
+from molior.rooms import rooms_to_faces_and_widgets  # noqa: E402
 
 ROOMS = [
     {
