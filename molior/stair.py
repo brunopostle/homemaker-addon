@@ -930,9 +930,7 @@ class Stair(TraceClass):
                 continue
             if get_parent_building(door) != self.building:
                 continue
-            matrix = ifcopenshell.util.placement.get_local_placement(
-                door.ObjectPlacement
-            )
+            matrix = ifcopenshell.util.placement.get_placement(door.ObjectPlacement)
             direction = matrix[:3, 0]
             centre = matrix[:3, 3] + direction * door.OverallWidth / 2
             topology = ifcopenshell.util.element.get_psets(door).get(

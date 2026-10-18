@@ -185,7 +185,7 @@ class Molior:
         for rel in building.ContainsElements:
             for element in rel.RelatedElements:
                 if element.is_a("IfcAnnotation") and element.ObjectType == "USAGE":
-                    matrix = ifcopenshell.util.placement.get_local_placement(
+                    matrix = ifcopenshell.util.placement.get_placement(
                         element.ObjectPlacement
                     )
                     vertex = Vertex.ByCoordinates(
