@@ -371,7 +371,7 @@ def test_stair_for_every_storey_but_the_top(ifc):
     stairs = ifc.by_type("IfcStair")
     assert len(stairs) == 2
     elevations = sorted(
-        ifcopenshell.util.placement.get_local_placement(stair.ObjectPlacement)[2][3]
+        ifcopenshell.util.placement.get_placement(stair.ObjectPlacement)[2][3]
         for stair in stairs
     )
     assert elevations == pytest.approx([0.0, 3.0])
@@ -386,9 +386,9 @@ def test_stair_for_every_storey_but_the_top(ifc):
 
 def test_stair_parts(ifc):
     for stair in ifc.by_type("IfcStair"):
-        elevation = ifcopenshell.util.placement.get_local_placement(
-            stair.ObjectPlacement
-        )[2][3]
+        elevation = ifcopenshell.util.placement.get_placement(stair.ObjectPlacement)[2][
+            3
+        ]
         parts = {
             part.is_a(): part
             for part in ifcopenshell.util.element.get_decomposition(stair)
@@ -430,7 +430,7 @@ def test_stair_keeps_clear_of_doors(ifc):
     settings.set("use-world-coords", True)
     checked = 0
     for door in ifc.by_type("IfcDoor"):
-        matrix = ifcopenshell.util.placement.get_local_placement(door.ObjectPlacement)
+        matrix = ifcopenshell.util.placement.get_placement(door.ObjectPlacement)
         start = matrix[:3, 3]
         end = start + matrix[:3, 0] * door.OverallWidth
         threshold = LineString([start[0:2], end[0:2]]).buffer(0.4, cap_style=2)
@@ -504,9 +504,7 @@ def test_one_entrance_to_a_circulation_cell():
     ]
     assert len(entrances) == 1
     # in the longest outside wall
-    matrix = ifcopenshell.util.placement.get_local_placement(
-        entrances[0].ObjectPlacement
-    )
+    matrix = ifcopenshell.util.placement.get_placement(entrances[0].ObjectPlacement)
     assert abs(matrix[1][0]) == pytest.approx(1.0)
     assert matrix[0][3] < 0.0
 
