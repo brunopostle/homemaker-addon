@@ -17,7 +17,7 @@ IfcOpenShell.
 
 import re
 import ifcopenshell.util
-from topologic_core import CellComplex, CellUtility, Vertex, Face, Topology
+from topologic_core import CellComplex, Vertex, Face, Topology
 from .extrusion import Extrusion
 from .floor import Floor
 from .shell import Shell
@@ -820,7 +820,7 @@ class Molior:
         cells = []
         self.cellcomplex.Cells(None, cells)
         for cell in cells:
-            vertex = CellUtility.InternalVertex(cell, 0.001)
+            vertex = cell.InternalVertex()
 
             # stash the space usage as an annotation
             annotation = api.root.create_entity(

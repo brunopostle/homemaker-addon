@@ -27,10 +27,31 @@ def ByVertices(vertices):
 setattr(topologic_core.Face, "ByVertices", ByVertices)
 
 
+def InternalVertex(self):
+    """A Vertex inside this Face, found cheaply
+
+    FaceUtility.InternalVertex() falls back on sampling the face at up to
+    2047 x 2047 points, each tested with a boolean slice, when the centre of
+    mass fails its IsInside() test. On a sliver a millimetre or so wide every
+    sample fails, so it runs for hours, holding gigabytes, and then returns
+    None. The middle of the largest triangle is inside any planar face."""
+    vertex = self.CenterOfMass()
+    if FaceUtility.IsInside(self, vertex, 0.0001):
+        return vertex
+    triangles = []
+    FaceUtility.Triangulate(self, 0.01, triangles)
+    if not triangles:
+        return vertex
+    return max(triangles, key=FaceUtility.Area).CenterOfMass()
+
+
+setattr(topologic_core.Face, "InternalVertex", InternalVertex)
+
+
 @lru_cache(maxsize=256)
 def CellsOrdered(self, host_topology):
     """Front Cell and back Cell, can be [None, None]"""
-    centroid = FaceUtility.InternalVertex(self, 0.001).Coordinates()
+    centroid = self.InternalVertex().Coordinates()
     normal = self.Normal()
     vertex_front = Vertex.ByCoordinates(
         centroid[0] + (normal[0] / 10),
