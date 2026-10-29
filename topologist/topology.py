@@ -178,7 +178,7 @@ def ApplyDictionary(self, source_faces_ptr):
     faces_ptr = []
     self.Faces(None, faces_ptr)
     for face in faces_ptr:
-        vertex = FaceUtility.InternalVertex(face, 0.001)
+        vertex = face.InternalVertex()
         normal = face.Normal()
         for source_face in source_faces_ptr:
             if abs(dot_product_3d(normal, source_face.Normal())) < 0.99:

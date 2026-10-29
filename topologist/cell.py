@@ -1,7 +1,8 @@
 """Overloads domain-specific methods onto topologic_core.Cell"""
 
 import topologic_core
-from topologic_core import Edge, Face, FaceUtility, CellUtility
+from topologic_core import Edge, Face, FaceUtility, CellUtility, Vertex
+from topologic_core import CellContainmentState
 from .helpers import el
 from . import ugraph
 
@@ -188,6 +189,34 @@ def Perimeter(self, host_topology):
     return graph.find_paths()[0]
 
 
+def InternalVertex(self):
+    """A Vertex inside this Cell, found cheaply
+
+    When the centre of mass is outside, CellUtility.InternalVertex() starts
+    from FaceUtility.InternalVertex() on the first Face, which can take hours
+    on a sliver, see Face.InternalVertex(). Step in from the middle of the
+    largest Face instead."""
+    vertex = self.CenterOfMass()
+    if CellUtility.Contains(self, vertex, 0.001) == CellContainmentState.INSIDE:
+        return vertex
+    faces_ptr = []
+    self.Faces(None, faces_ptr)
+    for face in sorted(faces_ptr, key=FaceUtility.Area, reverse=True):
+        point = face.InternalVertex().Coordinates()
+        normal = face.Normal()
+        for distance in (0.05, -0.05, 0.01, -0.01):
+            candidate = Vertex.ByCoordinates(
+                *[point[i] + distance * normal[i] for i in range(3)]
+            )
+            if (
+                CellUtility.Contains(self, candidate, 0.001)
+                == CellContainmentState.INSIDE
+            ):
+                return candidate
+    return vertex
+
+
+setattr(topologic_core.Cell, "InternalVertex", InternalVertex)
 setattr(topologic_core.Cell, "FacesTop", FacesTop)
 setattr(topologic_core.Cell, "FacesBottom", FacesBottom)
 setattr(topologic_core.Cell, "FacesVerticalExternal", FacesVerticalExternal)
