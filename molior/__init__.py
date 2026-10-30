@@ -341,6 +341,7 @@ class Molior:
         edges_ptr = []
         self.cellcomplex.Edges(None, edges_ptr)
         point_list = []
+        point_lookup = {}
         for edge in edges_ptr:
             v_start = edge.StartVertex()
             v_end = edge.EndVertex()
@@ -489,33 +490,43 @@ class Molior:
                                 point_connection_name = "Column head connection"
                                 point_coordinates = end_coors
 
-                            point_connection = api.root.create_entity(
-                                self.file,
-                                ifc_class="IfcStructuralPointConnection",
-                                name=point_connection_name,
+                            # stacked columns share a Point Connection
+                            point_key = tuple(
+                                round(coordinate, 3) for coordinate in point_coordinates
                             )
-                            point_connection.ObjectPlacement = structural_placement
-                            api.geometry.assign_representation(
-                                self.file,
-                                product=point_connection,
-                                representation=self.file.createIfcTopologyRepresentation(
-                                    reference_context,
-                                    reference_context.ContextIdentifier,
-                                    "Vertex",
-                                    [
-                                        self.file.createIfcVertexPoint(
-                                            self.file.createIfcCartesianPoint(
-                                                point_coordinates
-                                            )
-                                        ),
-                                    ],
-                                ),
-                            )
-                            api.structural.assign_structural_analysis_model(
-                                self.file,
-                                products=[point_connection],
-                                structural_analysis_model=self.structural_analysis_model,
-                            )
+                            point_connection = point_lookup.get(point_key)
+                            if point_connection is not None:
+                                if point_connection.Name != point_connection_name:
+                                    point_connection.Name = "Column connection"
+                            else:
+                                point_connection = api.root.create_entity(
+                                    self.file,
+                                    ifc_class="IfcStructuralPointConnection",
+                                    name=point_connection_name,
+                                )
+                                point_lookup[point_key] = point_connection
+                                point_connection.ObjectPlacement = structural_placement
+                                api.geometry.assign_representation(
+                                    self.file,
+                                    product=point_connection,
+                                    representation=self.file.createIfcTopologyRepresentation(
+                                        reference_context,
+                                        reference_context.ContextIdentifier,
+                                        "Vertex",
+                                        [
+                                            self.file.createIfcVertexPoint(
+                                                self.file.createIfcCartesianPoint(
+                                                    point_coordinates
+                                                )
+                                            ),
+                                        ],
+                                    ),
+                                )
+                                api.structural.assign_structural_analysis_model(
+                                    self.file,
+                                    products=[point_connection],
+                                    structural_analysis_model=self.structural_analysis_model,
+                                )
                             api.structural.add_structural_member_connection(
                                 self.file,
                                 relating_structural_member=curve_member,
@@ -523,7 +534,6 @@ class Molior:
                             )
                             point_list.append([point_connection, curve_connection])
 
-        # TODO merge coincident Point Connections
         # attach column point connections to beams/footings/slabs/walls
         for item in point_list:
             connection_point = item[0]
