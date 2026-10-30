@@ -6,8 +6,10 @@ import subprocess
 import sys
 
 import ifcopenshell
+import ifcopenshell.geom
 import ifcopenshell.util.element
 import ifcopenshell.util.unit
+import numpy as np
 import pytest
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -128,3 +130,113 @@ def test_load_case_deleted_with_model():
     assert not ifc.by_type("IfcStructuralLoadCase")
     molior.ifc.get_structural_analysis_model_by_name(ifc, building, "Ours")
     assert len(ifc.by_type("IfcStructuralLoadCase")) == 1
+
+
+def wall_faces(ifc):
+    """structural surface members of walls, with the wall they stand for"""
+    for member in ifc.by_type("IfcStructuralSurfaceMember"):
+        for rel in member.ReferencedBy:
+            for wall in rel.RelatedObjects:
+                if wall.is_a("IfcWall"):
+                    yield member.Representation.Representations[0].Items[0], wall
+
+
+def loop_coordinates(bound):
+    return [
+        edge.EdgeElement.EdgeStart.VertexGeometry.Coordinates
+        for edge in bound.Bound.EdgeList
+    ]
+
+
+def test_walls_have_openings_in_structural_faces(ifc):
+    """every window and door is a hole that stops short of the edge of the face"""
+    holes = 0
+    doors = 0
+    for face, wall in wall_faces(ifc):
+        assert face.Bounds[0].is_a("IfcFaceOuterBound")
+        assert not any(bound.is_a("IfcFaceOuterBound") for bound in face.Bounds[1:])
+        fillings = [
+            filling.RelatedBuildingElement
+            for opening in wall.HasOpenings
+            for filling in opening.RelatedOpeningElement.HasFillings
+        ]
+        assert len(face.Bounds) - 1 == len(fillings)
+        holes += len(face.Bounds) - 1
+        doors += len([filling for filling in fillings if filling.is_a("IfcDoor")])
+
+        outer = loop_coordinates(face.Bounds[0])
+        assert len(outer) == 4
+        floor = min(point[2] for point in outer)
+        top = max(point[2] for point in outer)
+        for bound in face.Bounds[1:]:
+            for point in loop_coordinates(bound):
+                assert floor + 0.2 - 1e-6 <= point[2] <= top - 0.2 + 1e-6
+    assert holes == len(ifc.by_type("IfcWindow")) + len(ifc.by_type("IfcDoor"))
+    assert holes
+    assert doors
+
+
+def test_structural_connections_on_faces(ifc):
+    """each end of a line connection is on the outer bound of the faces it joins"""
+    for rel in ifc.by_type("IfcRelConnectsStructuralMember"):
+        connection = rel.RelatedStructuralConnection
+        member = rel.RelatingStructuralMember
+        if not connection.is_a("IfcStructuralCurveConnection"):
+            continue
+        if not member.is_a("IfcStructuralSurfaceMember"):
+            continue
+        edge = connection.Representation.Representations[0].Items[0]
+        ends = [
+            np.array(edge.EdgeStart.VertexGeometry.Coordinates),
+            np.array(edge.EdgeEnd.VertexGeometry.Coordinates),
+        ]
+        face = member.Representation.Representations[0].Items[0]
+        outer = [np.array(point) for point in loop_coordinates(face.Bounds[0])]
+        for end in ends:
+            assert any(
+                np.linalg.norm(np.cross(end - outer[i - 1], outer[i] - outer[i - 1]))
+                < 1e-6
+                for i in range(len(outer))
+            )
+
+
+def test_structural_faces_keep_their_plane(ifc):
+    """cutting openings doesn't move any corner out of the wall"""
+    for face, _ in wall_faces(ifc):
+        origin = face.FaceSurface.Position.Location.Coordinates
+        normal = face.FaceSurface.Position.Axis.DirectionRatios
+        for bound in face.Bounds:
+            for point in loop_coordinates(bound):
+                assert (
+                    abs(sum((point[i] - origin[i]) * normal[i] for i in range(3)))
+                    < 1e-6
+                )
+
+
+def test_structural_face_area(ifc):
+    """the cut face is what's left of the wall, as read by a geometry kernel"""
+    settings = ifcopenshell.geom.settings()
+    settings.set("use-world-coords", True)
+    for member in ifc.by_type("IfcStructuralSurfaceMember"):
+        face = member.Representation.Representations[0].Items[0]
+
+        def area(points):
+            origin = np.array(points[0])
+            total = np.zeros(3)
+            for i in range(1, len(points) - 1):
+                total += np.cross(
+                    np.array(points[i]) - origin, np.array(points[i + 1]) - origin
+                )
+            return np.linalg.norm(total) / 2
+
+        expected = area(loop_coordinates(face.Bounds[0])) - sum(
+            area(loop_coordinates(bound)) for bound in face.Bounds[1:]
+        )
+        shape = ifcopenshell.geom.create_shape(settings, member).geometry
+        verts = np.array(shape.verts).reshape(-1, 3)
+        triangles = np.array(shape.faces).reshape(-1, 3)
+        actual = sum(
+            np.linalg.norm(np.cross(verts[b] - verts[a], verts[c] - verts[a])) / 2
+            for a, b, c in triangles
+        )
+        assert actual == pytest.approx(expected)

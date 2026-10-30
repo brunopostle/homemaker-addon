@@ -5,6 +5,9 @@ import ifcopenshell.api.type
 import ifcopenshell.api.feature
 import ifcopenshell.geom
 import numpy as np
+from shapely.geometry import Polygon, box
+from shapely.geometry.polygon import orient
+from shapely.ops import unary_union
 
 from topologic_core import Vertex, Edge, Face, FaceUtility
 from .baseclass import TraceClass
@@ -252,7 +255,12 @@ class Wall(TraceClass):
             add_face_topology_epsets(self.file, mywall, face, back_cell, front_cell)
 
             # structure
-            face_surface = create_face_surface(self.file, vertices, normal)
+            face_surface = create_face_surface(
+                self.file,
+                vertices,
+                normal,
+                self.structural_holes(id_segment, vertices),
+            )
             # generate structural surfaces
             structural_surface = api.root.create_entity(
                 self.file,
@@ -718,6 +726,53 @@ class Wall(TraceClass):
                 self.fix_segment(0)
                 self.steer_door(0, self.door_target(face))
                 # TODO account for gable headroom
+
+    def structural_holes(self, id_segment, vertices):
+        """Loops for windows and doors in the structural face of a wall segment"""
+        if not self.openings[id_segment]:
+            return []
+
+        # the face in 2D, as distance along the segment and elevation
+        origin = self.path[id_segment]
+        direction = self.direction_segment(id_segment)
+        outline = Polygon(
+            [
+                (
+                    (vertex[0] - origin[0]) * direction[0]
+                    + (vertex[1] - origin[1]) * direction[1],
+                    vertex[2],
+                )
+                for vertex in vertices
+            ]
+        )
+        # openings stop short of the edge of the face, so it stays connected along
+        # all its edges, this leaves a strip of structure under a door
+        inset = outline.buffer(-self.structural_thickness, join_style="mitre")
+
+        cuts = []
+        for opening in self.openings[id_segment]:
+            db = self.get_family(opening["family"])
+            size = db["list"][opening["size"]]
+            cill = self.elevation + db["cill"]
+            cuts.append(
+                box(
+                    opening["along"],
+                    cill,
+                    opening["along"] + size["width"],
+                    cill + size["height"],
+                ).intersection(inset)
+            )
+        holes = unary_union(cuts)
+        # inner bounds wind the other way to the outer bound
+        sign = -1.0 if outline.exterior.is_ccw else 1.0
+        return [
+            [
+                [*add_2d(origin, scale_2d(along, direction)), elevation]
+                for along, elevation in orient(hole, sign).exterior.coords[:-1]
+            ]
+            for hole in getattr(holes, "geoms", [holes])
+            if hole.geom_type == "Polygon" and not hole.is_empty
+        ]
 
     def opening_coor(self, id_segment, id_opening):
         """rectangle coordinates of an opening on the axis"""

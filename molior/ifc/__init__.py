@@ -648,7 +648,10 @@ def create_extruded_area_solid2(
 
 
 def create_face_surface(
-    self: ifcopenshell.file, polygon: List[List[float]], normal: List[float]
+    self: ifcopenshell.file,
+    polygon: List[List[float]],
+    normal: List[float],
+    holes: Optional[List[List[List[float]]]] = None,
 ) -> ifcopenshell.entity_instance:
     """Create a single-face shape.
 
@@ -656,6 +659,7 @@ def create_face_surface(
         self: The IFC file.
         polygon: A list of 3D points defining the vertices of the face.
         normal: The normal vector of the face.
+        holes: Lists of 3D points defining the vertices of openings in the face.
 
     Returns:
         An IfcFaceSurface entity.
@@ -667,23 +671,26 @@ def create_face_surface(
             self.createIfcDirection(normalise_3d(subtract_3d(polygon[1], polygon[0]))),
         )
     )
-    vertices = []
-    for point in polygon:
-        vertices.append(self.createIfcVertexPoint(self.createIfcCartesianPoint(point)))
 
-    face_bound = self.createIfcFaceBound(
-        self.createIfcEdgeLoop(
+    def edge_loop(points):
+        vertices = [
+            self.createIfcVertexPoint(self.createIfcCartesianPoint(point))
+            for point in points
+        ]
+        return self.createIfcEdgeLoop(
             [
                 self.createIfcOrientedEdge(None, None, edge, True)
                 for edge in [
                     self.createIfcEdge(vertices[i - 1], vertices[i])
-                    for i in range(len(polygon))
+                    for i in range(len(points))
                 ]
             ]
-        ),
-        True,
-    )
-    return self.createIfcFaceSurface([face_bound], surface, True)
+        )
+
+    bounds = [self.createIfcFaceOuterBound(edge_loop(polygon), True)]
+    for hole in holes or []:
+        bounds.append(self.createIfcFaceBound(edge_loop(hole), True))
+    return self.createIfcFaceSurface(bounds, surface, True)
 
 
 def create_tessellation_from_mesh(
