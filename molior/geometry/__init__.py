@@ -242,3 +242,15 @@ def add_3d(A, B):
 
 def distance_3d(A, B):
     return float(np.linalg.norm(np.array(A) - np.array(B)))
+
+
+def point_on_segment(point, start, end, tolerance=0.001):
+    """Does this 3D point lie on this line segment, including the ends?"""
+    vector = subtract_3d(end, start)
+    length = magnitude_3d(vector)
+    if length < tolerance:
+        return distance_3d(point, start) < tolerance
+    along = dot_product_3d(subtract_3d(point, start), vector) / length
+    along = max(0.0, min(length, along))
+    nearest = add_3d(start, scale_3d(vector, along / length))
+    return distance_3d(point, nearest) < tolerance
