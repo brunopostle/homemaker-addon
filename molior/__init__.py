@@ -546,6 +546,53 @@ class Molior:
                     )
                 api.root.remove_product(self.file, product=curve_connection)
 
+        self.release_masonry()
+
+    def release_masonry(self):
+        """Masonry carries no moment into what it bears on or supports, so hinge it"""
+        hinge = self.file.createIfcBoundaryEdgeCondition(
+            "Masonry hinge",
+            *[self.file.createIfcBoolean(True)] * 3,
+            self.file.createIfcBoolean(False),
+            *[self.file.createIfcBoolean(True)] * 2,
+        )
+        origin = self.file.createIfcCartesianPoint([0.0, 0.0, 0.0])
+        for rel_group in self.structural_analysis_model.IsGroupedBy:
+            for connection in rel_group.RelatedObjects:
+                if (
+                    not connection.is_a("IfcStructuralCurveConnection")
+                    or connection.Name == "Vertical connection"
+                ):
+                    continue
+                rels = connection.ConnectsStructuralMembers
+                masonry = [
+                    rel
+                    for rel in rels
+                    if rel.RelatingStructuralMember.is_a("IfcStructuralSurfaceMember")
+                    and "masonry"
+                    in ifcopenshell.util.element.get_material(
+                        rel.RelatingStructuralMember
+                    ).Name.lower()
+                ]
+                # a joint within the masonry isn't a hinge
+                if len(masonry) == len(rels):
+                    continue
+                edge = connection.Representation.Representations[0].Items[0]
+                # the released rotation, X, is about the line of the joint
+                axes = self.file.createIfcAxis2Placement3D(
+                    origin,
+                    self.file.createIfcDirection(connection.Axis.DirectionRatios),
+                    self.file.createIfcDirection(
+                        subtract_3d(
+                            edge.EdgeEnd.VertexGeometry.Coordinates,
+                            edge.EdgeStart.VertexGeometry.Coordinates,
+                        )
+                    ),
+                )
+                for rel in masonry:
+                    rel.AppliedCondition = hinge
+                    rel.ConditionCoordinateSystem = axes
+
     def connect_spaces(self):
         """Given objects and boundaries are tagged with Topologic indexes, assign them to correct spaces"""
         body_context = get_context_by_name(self.file, context_identifier="Body")
