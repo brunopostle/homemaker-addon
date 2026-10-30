@@ -198,6 +198,11 @@ class Extrusion(TraceClass):
                 ) and association.RelatingMaterial.is_a("IfcMaterialProfileSet"):
                     profile_set = association.RelatingMaterial
                     material_profiles = association.RelatingMaterial.MaterialProfiles
+            if not material_profiles:
+                raise ValueError(
+                    f"style '{self.style}' has no {self.ifc}Type"
+                    f" '{self.typename}' with a Profile Set"
+                )
 
             shape_representation = api.geometry.add_profile_representation(
                 self.file,

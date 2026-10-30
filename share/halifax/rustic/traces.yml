@@ -47,9 +47,9 @@ external beam:
 
 crown:
   class: Extrusion
-  ifc: IfcWall
+  ifc: IfcCovering
   typename: crown
   condition: top-backward-level
-  xshift: 0.0
+  xshift: 0.254
   yshift: -0.535
   extension: 0.254

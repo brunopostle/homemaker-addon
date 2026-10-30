@@ -32,3 +32,22 @@ def test_style_initialization():
     # Test fallback to default when style not found
     default2 = mystyle.get("nonsuch")
     assert default == default2
+
+
+def test_style_types_are_in_libraries():
+    """A Type missing from the libraries is created empty, without any warning"""
+    mystyle = Style()
+    missing = []
+    for stylename in mystyle.data:
+        config = mystyle.get(stylename)
+        for section in ("traces", "hulls"):
+            for name, item in config[section].items():
+                if "typename" not in item or item.get("condition") == "noop":
+                    continue
+                ifc_type = item.get("ifc", "IfcBuildingElementProxy") + "Type"
+                element = mystyle.get_from_library(
+                    stylename, ifc_type, item["typename"]
+                )[2]
+                if element is None:
+                    missing.append([stylename, name, ifc_type, item["typename"]])
+    assert missing == []
