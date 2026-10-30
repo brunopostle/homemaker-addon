@@ -5,6 +5,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from topologic_core import Vertex, Face, Cell, CellComplex
 
 import topologist.face
+from molior import Molior
+from molior.rooms import document_to_faces_and_widgets
 
 assert topologist.face
 
@@ -216,3 +218,66 @@ def test_separation(cell_complex):
     for vertex in vertices_ptr:
         if vertex.Get("class") == "Cell":
             assert float(vertex.Get("separation")) > 0.0
+
+
+def _molior_with_void(extra_faces):
+    """Two rooms and some faces that enclose a void"""
+    room = {"elevation": 0.0, "height": 3.0}
+    faces, widgets = document_to_faces_and_widgets(
+        {
+            "rooms": [
+                {**room, "vertices": [[0, 0], [4, 0], [4, 4], [0, 4]]},
+                {**room, "vertices": [[0, 4], [4, 4], [4, 8], [0, 8]]},
+            ],
+            "faces": [
+                {"vertices": vertices, "stylename": "default"}
+                for vertices in extra_faces
+            ],
+        }
+    )
+    return Molior.from_faces_and_widgets(faces=faces, widgets=widgets)
+
+
+def _separations(molior_object):
+    cells_ptr = []
+    molior_object.cellcomplex.Cells(None, cells_ptr)
+    return {cell.Usage(): cell.Get("separation") for cell in cells_ptr}
+
+
+def test_no_door_into_void_beside_a_room():
+    # a wedge with a sloping roof, leaning against the wall of the first room
+    molior_object = _molior_with_void(
+        [
+            [[4, 0, 0], [8, 0, 0], [8, 4, 0], [4, 4, 0]],
+            [[4, 0, 3], [4, 4, 3], [8, 4, 0], [8, 0, 0]],
+            [[4, 0, 0], [8, 0, 0], [4, 0, 3]],
+            [[4, 4, 0], [4, 4, 3], [8, 4, 0]],
+        ]
+    )
+    separations = _separations(molior_object)
+    assert separations["void"] is None
+    assert separations["living"] is not None
+
+    molior_object.execute()
+    # only the door between the two rooms
+    assert len(molior_object.file.by_type("IfcDoor")) == 1
+
+
+def test_void_attic_does_not_disconnect_rooms():
+    # a hipped roof over the first room
+    molior_object = _molior_with_void(
+        [
+            [[0, 0, 3], [4, 0, 3], [2, 2, 5]],
+            [[4, 0, 3], [4, 4, 3], [2, 2, 5]],
+            [[4, 4, 3], [0, 4, 3], [2, 2, 5]],
+            [[0, 4, 3], [0, 0, 3], [2, 2, 5]],
+        ]
+    )
+    assert molior_object.circulation.IsConnected()
+    assert molior_object.shortest_path_table
+    separations = _separations(molior_object)
+    assert separations["void"] is None
+    assert separations["living"] is not None
+
+    molior_object.execute()
+    assert len(molior_object.file.by_type("IfcSpace")) >= 2

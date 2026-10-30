@@ -25,10 +25,11 @@ def Circulation(self, cellcomplex):
                 else:
                     # TODO should use 'separation' attribute to prune excess doors
                     # TODO not between toilet and toilet or bedroom and bedroom
-                    # FIXME this puts doors into 'void' spaces
                     usage_a = cells[0].Usage()
                     usage_b = cells[1].Usage()
-                    if (usage_a == "bedroom" or usage_a == "toilet") and not (
+                    if usage_a == "void" or usage_b == "void":
+                        vertices_ptr.append(vertex)
+                    elif (usage_a == "bedroom" or usage_a == "toilet") and not (
                         usage_b == "stair" or usage_b == "circulation"
                     ):
                         vertices_ptr.append(vertex)
@@ -50,6 +51,15 @@ def Circulation(self, cellcomplex):
             vertices_ptr.append(vertex)
         else:
             # neither vertical or horizontal
+            vertices_ptr.append(vertex)
+    # nobody goes to a 'void', an unreachable Cell would make the Graph disconnected
+    all_vertices_ptr = []
+    self.Vertices(all_vertices_ptr)
+    for vertex in all_vertices_ptr:
+        if (
+            vertex.Get("class") == "Cell"
+            and self.GetEntity(cellcomplex, vertex).Usage() == "void"
+        ):
             vertices_ptr.append(vertex)
     self.RemoveVertices(vertices_ptr)
 
