@@ -240,3 +240,38 @@ def test_structural_face_area(ifc):
             for a, b, c in triangles
         )
         assert actual == pytest.approx(expected)
+
+
+def test_masonry_is_hinged_where_it_meets_a_slab(ifc):
+    """about the line of a joint, walls rotate freely and slabs and beams stay rigid"""
+    hinged = 0
+    for connection in ifc.by_type("IfcStructuralCurveConnection"):
+        edge = connection.Representation.Representations[0].Items[0]
+        start = np.array(edge.EdgeStart.VertexGeometry.Coordinates)
+        end = np.array(edge.EdgeEnd.VertexGeometry.Coordinates)
+        rels = connection.ConnectsStructuralMembers
+        walls = [
+            rel
+            for rel in rels
+            if rel.RelatingStructuralMember.Name.split("/")[-1]
+            in ("exterior", "interior")
+        ]
+        for rel in rels:
+            if (
+                connection.Name == "Vertical connection"
+                or rel not in walls
+                or len(walls) == len(rels)
+            ):
+                assert rel.AppliedCondition is None
+                continue
+            condition = rel.AppliedCondition
+            assert condition.RotationalStiffnessByLengthX.wrappedValue is False
+            assert condition.RotationalStiffnessByLengthY.wrappedValue is True
+            assert condition.RotationalStiffnessByLengthZ.wrappedValue is True
+            assert condition.TranslationalStiffnessByLengthX.wrappedValue is True
+            assert condition.TranslationalStiffnessByLengthY.wrappedValue is True
+            assert condition.TranslationalStiffnessByLengthZ.wrappedValue is True
+            line = rel.ConditionCoordinateSystem.RefDirection.DirectionRatios
+            assert np.linalg.norm(np.cross(line, end - start)) < 1e-6
+            hinged += 1
+    assert hinged
