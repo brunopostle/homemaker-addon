@@ -275,3 +275,68 @@ def test_masonry_is_hinged_where_it_meets_a_slab(ifc):
             assert np.linalg.norm(np.cross(line, end - start)) < 1e-6
             hinged += 1
     assert hinged
+
+
+def test_stacked_columns_share_a_point_connection(tmp_path):
+    """Columns around an outside space, one above the other"""
+
+    def room(x, y, depth, elevation, usage):
+        return {
+            "vertices": [[x, y], [x + 4, y], [x + 4, y + depth], [x, y + depth]],
+            "elevation": elevation,
+            "height": 3.0,
+            "usage": usage,
+        }
+
+    rooms = []
+    for elevation in (0.0, 3.0):
+        for x in (0.0, 4.0):
+            rooms.append(room(x, 0.0, 4.0, elevation, "living"))
+            rooms.append(room(x, 4.0, 2.0, elevation, "outside"))
+    document_path = tmp_path / "porch.json"
+    document_path.write_text(json.dumps({"rooms": rooms}))
+    ifc_path = tmp_path / "porch.ifc"
+    subprocess.run(
+        [sys.executable, os.path.join(ROOT, "rooms2ifc.py"), document_path, ifc_path],
+        check=True,
+    )
+    ifc_file = ifcopenshell.open(ifc_path)
+    connections = ifc_file.by_type("IfcStructuralPointConnection")
+
+    points = [
+        tuple(
+            round(coordinate, 3)
+            for coordinate in connection.Representation.Representations[0]
+            .Items[0]
+            .VertexGeometry.Coordinates
+        )
+        for connection in connections
+    ]
+    assert connections
+    assert len(points) == len(set(points))
+
+    def columns(connection):
+        result = []
+        for rel in connection.ConnectsStructuralMembers:
+            member = rel.RelatingStructuralMember
+            if member.is_a("IfcStructuralCurveMember"):
+                edge = member.Representation.Representations[0].Items[0]
+                if (
+                    abs(
+                        edge.EdgeStart.VertexGeometry.Coordinates[2]
+                        - edge.EdgeEnd.VertexGeometry.Coordinates[2]
+                    )
+                    > 0.001
+                ):
+                    result.append(member)
+        return result
+
+    at_first_floor = [
+        connection
+        for connection, point in zip(connections, points)
+        if abs(point[2] - 3.0) < 0.001
+    ]
+    assert at_first_floor
+    for connection in at_first_floor:
+        assert len(columns(connection)) == 2
+        assert connection.Name == "Column connection"
