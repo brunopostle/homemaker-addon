@@ -28,7 +28,7 @@ from .repeat import Repeat
 from .grillage import Grillage
 
 from .style import Style
-from .geometry import subtract_3d, x_product_3d, matrix_align
+from .geometry import subtract_3d, x_product_3d, matrix_align, point_on_segment
 from .ifc import (
     init,
     get_site_by_name,
@@ -342,6 +342,43 @@ class Molior:
         self.cellcomplex.Edges(None, edges_ptr)
         point_list = []
         point_lookup = {}
+
+        def point_connection_at(coordinates, name):
+            """Members meeting at a point share a Point Connection"""
+            key = tuple(round(coordinate, 3) for coordinate in coordinates)
+            point_connection = point_lookup.get(key)
+            if point_connection is not None:
+                if point_connection.Name != name:
+                    point_connection.Name = "Column connection"
+                return point_connection
+            point_connection = api.root.create_entity(
+                self.file,
+                ifc_class="IfcStructuralPointConnection",
+                name=name,
+            )
+            point_lookup[key] = point_connection
+            point_connection.ObjectPlacement = structural_placement
+            api.geometry.assign_representation(
+                self.file,
+                product=point_connection,
+                representation=self.file.createIfcTopologyRepresentation(
+                    reference_context,
+                    reference_context.ContextIdentifier,
+                    "Vertex",
+                    [
+                        self.file.createIfcVertexPoint(
+                            self.file.createIfcCartesianPoint(coordinates)
+                        ),
+                    ],
+                ),
+            )
+            api.structural.assign_structural_analysis_model(
+                self.file,
+                products=[point_connection],
+                structural_analysis_model=self.structural_analysis_model,
+            )
+            return point_connection
+
         for edge in edges_ptr:
             v_start = edge.StartVertex()
             v_end = edge.EndVertex()
@@ -474,7 +511,6 @@ class Molior:
                                     },
                                 )
 
-                        # FIXME connect ends of horizontal members to other members
                         # member is non-horizontal, but one end coincides with this horizontal connection
                         elif (
                             abs(start_coors[2] - connection_elevation) < 0.001
@@ -490,43 +526,9 @@ class Molior:
                                 point_connection_name = "Column head connection"
                                 point_coordinates = end_coors
 
-                            # stacked columns share a Point Connection
-                            point_key = tuple(
-                                round(coordinate, 3) for coordinate in point_coordinates
+                            point_connection = point_connection_at(
+                                point_coordinates, point_connection_name
                             )
-                            point_connection = point_lookup.get(point_key)
-                            if point_connection is not None:
-                                if point_connection.Name != point_connection_name:
-                                    point_connection.Name = "Column connection"
-                            else:
-                                point_connection = api.root.create_entity(
-                                    self.file,
-                                    ifc_class="IfcStructuralPointConnection",
-                                    name=point_connection_name,
-                                )
-                                point_lookup[point_key] = point_connection
-                                point_connection.ObjectPlacement = structural_placement
-                                api.geometry.assign_representation(
-                                    self.file,
-                                    product=point_connection,
-                                    representation=self.file.createIfcTopologyRepresentation(
-                                        reference_context,
-                                        reference_context.ContextIdentifier,
-                                        "Vertex",
-                                        [
-                                            self.file.createIfcVertexPoint(
-                                                self.file.createIfcCartesianPoint(
-                                                    point_coordinates
-                                                )
-                                            ),
-                                        ],
-                                    ),
-                                )
-                                api.structural.assign_structural_analysis_model(
-                                    self.file,
-                                    products=[point_connection],
-                                    structural_analysis_model=self.structural_analysis_model,
-                                )
                             api.structural.add_structural_member_connection(
                                 self.file,
                                 relating_structural_member=curve_member,
@@ -545,6 +547,35 @@ class Molior:
                     relating_structural_member=member,
                     related_structural_connection=connection_point,
                 )
+
+        # join the ends of horizontal members to the members they touch
+        member_ends = []
+        for item in curve_list:
+            curve_edge = item[1].Representation.Representations[0].Items[0]
+            member_ends.append(
+                [
+                    item[1],
+                    curve_edge.EdgeStart.VertexGeometry.Coordinates,
+                    curve_edge.EdgeEnd.VertexGeometry.Coordinates,
+                ]
+            )
+        for member, start_coors, end_coors in member_ends:
+            if abs(start_coors[2] - end_coors[2]) > 0.001:
+                continue
+            for coors in (start_coors, end_coors):
+                touching = [
+                    item[0]
+                    for item in member_ends
+                    if item[0] != member and point_on_segment(coors, item[1], item[2])
+                ]
+                if touching:
+                    point_connection = point_connection_at(coors, "Beam connection")
+                    for touching_member in [member, *touching]:
+                        api.structural.add_structural_member_connection(
+                            self.file,
+                            relating_structural_member=touching_member,
+                            related_structural_connection=point_connection,
+                        )
 
         # delete unused curve connections
         for curve_connection in self.file.by_type("IfcStructuralCurveConnection"):

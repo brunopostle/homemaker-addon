@@ -277,8 +277,9 @@ def test_masonry_is_hinged_where_it_meets_a_slab(ifc):
     assert hinged
 
 
-def test_stacked_columns_share_a_point_connection(tmp_path):
-    """Columns around an outside space, one above the other"""
+@pytest.fixture(scope="module")
+def porch(tmp_path_factory):
+    """Two storeys of rooms with columns and beams around an outside space"""
 
     def room(x, y, depth, elevation, usage):
         return {
@@ -293,50 +294,79 @@ def test_stacked_columns_share_a_point_connection(tmp_path):
         for x in (0.0, 4.0):
             rooms.append(room(x, 0.0, 4.0, elevation, "living"))
             rooms.append(room(x, 4.0, 2.0, elevation, "outside"))
-    document_path = tmp_path / "porch.json"
+    path = tmp_path_factory.mktemp("porch")
+    document_path = path / "porch.json"
     document_path.write_text(json.dumps({"rooms": rooms}))
-    ifc_path = tmp_path / "porch.ifc"
+    ifc_path = path / "porch.ifc"
     subprocess.run(
         [sys.executable, os.path.join(ROOT, "rooms2ifc.py"), document_path, ifc_path],
         check=True,
     )
-    ifc_file = ifcopenshell.open(ifc_path)
-    connections = ifc_file.by_type("IfcStructuralPointConnection")
+    return ifcopenshell.open(ifc_path)
 
-    points = [
-        tuple(
-            round(coordinate, 3)
-            for coordinate in connection.Representation.Representations[0]
-            .Items[0]
-            .VertexGeometry.Coordinates
-        )
-        for connection in connections
+
+def member_ends(member):
+    edge = member.Representation.Representations[0].Items[0]
+    return [
+        tuple(round(coordinate, 3) for coordinate in vertex.VertexGeometry.Coordinates)
+        for vertex in (edge.EdgeStart, edge.EdgeEnd)
     ]
-    assert connections
+
+
+def connection_point(connection):
+    return tuple(
+        round(coordinate, 3)
+        for coordinate in connection.Representation.Representations[0]
+        .Items[0]
+        .VertexGeometry.Coordinates
+    )
+
+
+def test_point_connections_are_not_coincident(porch):
+    points = [
+        connection_point(connection)
+        for connection in porch.by_type("IfcStructuralPointConnection")
+    ]
+    assert points
     assert len(points) == len(set(points))
 
-    def columns(connection):
-        result = []
-        for rel in connection.ConnectsStructuralMembers:
-            member = rel.RelatingStructuralMember
-            if member.is_a("IfcStructuralCurveMember"):
-                edge = member.Representation.Representations[0].Items[0]
-                if (
-                    abs(
-                        edge.EdgeStart.VertexGeometry.Coordinates[2]
-                        - edge.EdgeEnd.VertexGeometry.Coordinates[2]
-                    )
-                    > 0.001
-                ):
-                    result.append(member)
-        return result
 
+def test_stacked_columns_share_a_point_connection(porch):
     at_first_floor = [
         connection
-        for connection, point in zip(connections, points)
-        if abs(point[2] - 3.0) < 0.001
+        for connection in porch.by_type("IfcStructuralPointConnection")
+        if connection_point(connection)[2] == 3.0
+        and connection.Name.startswith("Column")
     ]
     assert at_first_floor
     for connection in at_first_floor:
-        assert len(columns(connection)) == 2
+        columns = []
+        for rel in connection.ConnectsStructuralMembers:
+            member = rel.RelatingStructuralMember
+            if member.is_a("IfcStructuralCurveMember"):
+                start, end = member_ends(member)
+                if start[2] != end[2]:
+                    columns.append(member)
+        assert len(columns) == 2
         assert connection.Name == "Column connection"
+
+
+def test_horizontal_members_are_connected_where_they_meet(porch):
+    connections = {}
+    for connection in porch.by_type("IfcStructuralPointConnection"):
+        connections[connection_point(connection)] = {
+            rel.RelatingStructuralMember
+            for rel in connection.ConnectsStructuralMembers
+        }
+
+    at_point = {}
+    for member in porch.by_type("IfcStructuralCurveMember"):
+        start, end = member_ends(member)
+        if start[2] == end[2]:
+            for point in (start, end):
+                at_point.setdefault(point, []).append(member)
+
+    meeting = {point: members for point, members in at_point.items() if len(members) > 1}
+    assert meeting
+    for point, members in meeting.items():
+        assert connections[point].issuperset(members)
