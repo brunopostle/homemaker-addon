@@ -11,6 +11,8 @@ import ifcopenshell.util.unit
 import pytest
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, ROOT)
+import molior.ifc
 
 # two rooms over two rooms, this gets windows and an entrance door
 DOCUMENT = {
@@ -96,3 +98,33 @@ def test_units_of_stiffness_and_density(ifc):
         (element.Unit.UnitType, element.Unit.Prefix, element.Exponent)
         for element in density.Elements
     } == {("MASSUNIT", "KILO", 1), ("LENGTHUNIT", None, -3)}
+
+
+def test_dead_load_case(ifc):
+    """the model is loaded by its own weight, with nothing else to ask for"""
+    model = ifc.by_type("IfcStructuralAnalysisModel")[0]
+    assert len(ifc.by_type("IfcStructuralLoadGroup")) == 1
+    assert len(model.LoadedBy) == 1
+    load_case = model.LoadedBy[0]
+    assert load_case.is_a("IfcStructuralLoadCase")
+    assert load_case.PredefinedType == "LOAD_CASE"
+    assert load_case.ActionType == "PERMANENT_G"
+    assert load_case.ActionSource == "DEAD_LOAD_G"
+    assert load_case.SelfWeightCoefficients == (0.0, 0.0, -1.0)
+
+
+def test_load_case_deleted_with_model():
+    """regenerating a building has to leave one dead load, not accumulate them"""
+    ifc = molior.ifc.init(name="Our Project")
+    project = ifc.by_type("IfcProject")[0]
+    site = molior.ifc.get_site_by_name(ifc, project, "Our Site")
+    building = molior.ifc.get_building_by_name(ifc, site, "Our Building")
+    model = molior.ifc.get_structural_analysis_model_by_name(ifc, building, "Ours")
+    assert (
+        molior.ifc.get_structural_analysis_model_by_name(ifc, building, "Ours") == model
+    )
+    assert len(ifc.by_type("IfcStructuralLoadCase")) == 1
+    molior.ifc.delete_ifc_product(ifc, model)
+    assert not ifc.by_type("IfcStructuralLoadCase")
+    molior.ifc.get_structural_analysis_model_by_name(ifc, building, "Ours")
+    assert len(ifc.by_type("IfcStructuralLoadCase")) == 1

@@ -408,18 +408,23 @@ def get_structural_analysis_model_by_name(
         structural_analysis_model=model,
         building=spatial_element,
     )
-    load_group = api.root.create_entity(
+    # the weight of the structure, acting downwards
+    load_case = api.root.create_entity(
         self,
-        ifc_class="IfcStructuralLoadGroup",
-        name="Load Group",
-        predefined_type="NOTDEFINED",
+        ifc_class="IfcStructuralLoadCase",
+        name="Dead load",
+        predefined_type="LOAD_CASE",
     )
     api.attribute.edit_attributes(
         self,
-        product=load_group,
-        attributes={"ActionSource": "NOTDEFINED", "ActionType": "NOTDEFINED"},
+        product=load_case,
+        attributes={
+            "ActionSource": "DEAD_LOAD_G",
+            "ActionType": "PERMANENT_G",
+            "SelfWeightCoefficients": [0.0, 0.0, -1.0],
+        },
     )
-    model.LoadedBy = [load_group]
+    model.LoadedBy = [load_case]
     return model
 
 
@@ -1024,6 +1029,9 @@ def delete_ifc_product(
         for child in product.Nests:
             for child_product in child.RelatedObjects:
                 delete_ifc_product(self, child_product)
+    if product.is_a("IfcStructuralAnalysisModel"):
+        for load_group in product.LoadedBy or []:
+            api.root.remove_product(self, product=load_group)
     if product.is_a("IfcSpatialElement"):
         for child in product.ContainsElements:
             for child_product in child.RelatedElements:
