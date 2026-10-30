@@ -80,6 +80,9 @@ def init(
 
     length_unit = api.unit.add_si_unit(file, unit_type="LENGTHUNIT")
     force_unit = api.unit.add_si_unit(file, unit_type="FORCEUNIT", prefix="KILO")
+    # stiffness is in Pa and density in kg/m3, as held by share/*/library.ifc
+    pressure_unit = api.unit.add_si_unit(file, unit_type="PRESSUREUNIT")
+    mass_unit = api.unit.add_si_unit(file, unit_type="MASSUNIT", prefix="KILO")
     unit_assignment = api.unit.assign_unit(file)
     unit_assignment.Units = [
         length_unit,
@@ -95,6 +98,14 @@ def init(
         ),
         api.unit.add_derived_unit(
             file, "PLANARFORCEUNIT", None, {force_unit: 1, length_unit: -2}
+        ),
+        pressure_unit,
+        api.unit.add_derived_unit(
+            file, "MODULUSOFELASTICITYUNIT", None, {pressure_unit: 1}
+        ),
+        mass_unit,
+        api.unit.add_derived_unit(
+            file, "MASSDENSITYUNIT", None, {mass_unit: 1, length_unit: -3}
         ),
     ]
 
