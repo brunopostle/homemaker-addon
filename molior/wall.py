@@ -725,7 +725,8 @@ class Wall(TraceClass):
                 self.fix_heights(0)
                 self.fix_segment(0)
                 self.steer_door(0, self.door_target(face))
-                # TODO account for gable headroom
+                self.slide_door(0)
+                self.fix_gable(0)
 
     def structural_holes(self, id_segment, vertices):
         """Loops for windows and doors in the structural face of a wall segment"""
@@ -1305,6 +1306,47 @@ class Wall(TraceClass):
             along += module
         return
 
+    def under_roofline(self, id_segment, id_opening, face):
+        """Are both top corners of an opening inside the face?"""
+        coors = self.opening_coor(id_segment, id_opening)
+        left_top = Vertex.ByCoordinates(*coors[0][0:2], coors[1][2])
+        right_top = Vertex.ByCoordinates(*coors[1])
+        return FaceUtility.IsInside(face, left_top, 0.001) and FaceUtility.IsInside(
+            face, right_top, 0.001
+        )
+
+    def slide_door(self, id_segment, step=0.1):
+        """Move an interior door the shortest distance that gets it under the
+        roofline, removing it is a last resort as it may be the only way in"""
+        openings = self.openings[id_segment]
+        if len(openings) == 0:
+            return
+        segment = self.chain.edges()[id_segment]
+        face = self.chain.graph[segment[0]][1]["face"]
+
+        edges_ptr = []
+        face.EdgesCrop(edges_ptr)
+        if edges_ptr == [] or self.under_roofline(id_segment, 0, face):
+            return
+
+        door = openings[0]
+        db = self.get_family(door["family"])
+        size = db["list"][door["size"]]
+        border = self.border(id_segment)
+        first = border[0] + size["end"]
+        last = self.length_segment(id_segment) - border[1] - size["end"] - size["width"]
+        original = door["along"]
+
+        positions = [last]
+        while positions[-1] - step > first:
+            positions.append(positions[-1] - step)
+        positions.append(first)
+        for along in sorted(positions, key=lambda along: abs(along - original)):
+            door["along"] = along
+            if self.under_roofline(id_segment, 0, face):
+                return
+        door["along"] = original
+
     def fix_gable(self, id_segment):
         """Shorten or delete openings that project above roofline"""
         openings = self.openings[id_segment]
@@ -1321,12 +1363,7 @@ class Wall(TraceClass):
 
         bad_openings = []
         for id_opening in range(len(openings)):
-            coors = self.opening_coor(id_segment, id_opening)
-            left_top = Vertex.ByCoordinates(*coors[0][0:2], coors[1][2])
-            right_top = Vertex.ByCoordinates(*coors[1])
-            if not FaceUtility.IsInside(
-                face, left_top, 0.001
-            ) or not FaceUtility.IsInside(face, right_top, 0.001):
+            if not self.under_roofline(id_segment, id_opening, face):
                 # try and find a shorter window
                 opening = openings[id_opening]
                 db = self.get_family(opening["family"])
