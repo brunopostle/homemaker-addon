@@ -358,7 +358,6 @@ def IsCoplanar(self, face, k=0.01):
 
 def TopLevelConditions(self, host_topology):
     """Assuming this is a vertical external wall, how do the top edges continue?"""
-    # TODO traces where face above is open
     result = []
     edges_ptr = []
     self.EdgesTop(edges_ptr)
@@ -372,6 +371,9 @@ def TopLevelConditions(self, host_topology):
             # top face tilts backward (roof) if normal faces up, forward (soffit) if faces down
             normal = face.Normal()
             condition = "top"
+            if abs(normal[2]) < 0.0001 and face.IsOpen(host_topology):
+                result.append([edge, "top-open"])
+                continue
             if abs(normal[2]) < 0.0001:
                 condition += "-vertical"
             elif normal[2] > 0.0:
@@ -392,12 +394,10 @@ def TopLevelConditions(self, host_topology):
 def BottomLevelConditions(self, host_topology):
     """Assuming this is a vertical external wall, how do the bottom edges continue?
     Result is a list of [Edge, condition] pairs"""
-    # TODO traces where face below is open
     result = []
     edges_ptr = []
     self.EdgesBottom(edges_ptr)
     for edge in edges_ptr:
-        # FIXME FacesWorld() doesn't account for external walls facing outside cells
         faces_ptr = edge.FacesWorld(host_topology)
         for (
             face
@@ -407,6 +407,9 @@ def BottomLevelConditions(self, host_topology):
             # bottom face tilts forward (roof) if normal faces up, backward (soffit) if faces down
             normal = face.Normal()
             condition = "bottom"
+            if abs(normal[2]) < 0.0001 and face.IsOpen(host_topology):
+                result.append([edge, "bottom-open"])
+                continue
             if abs(normal[2]) < 0.0001:
                 condition += "-vertical"
             elif normal[2] > 0.0:
