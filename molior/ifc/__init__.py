@@ -54,21 +54,16 @@ def _register_library_file(
         _library_file_registry[project_file].append(library_file)
 
 
-def init(
-    name: str = "Homemaker Project", file: Optional[ifcopenshell.file] = None
-) -> ifcopenshell.file:
+def init(name: str = "Homemaker Project") -> ifcopenshell.file:
     """Creates and sets up an IFC 'file' object with basic project structure.
 
     Args:
         name: The name to give to the IFC project.
-        file: An existing IFC file to use. If None, creates a new file.
 
     Returns:
         The initialized IFC file with project, person, organization, and units.
     """
-    if file is None:
-        file = api.project.create_file()
-    # TODO skip each of these if already existing
+    file = api.project.create_file()
     api.owner.add_person(file)
     api.owner.add_organisation(file)
 
