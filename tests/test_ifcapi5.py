@@ -14,6 +14,7 @@ from molior.ifc import (
     get_site_by_name,
     get_building_by_name,
     get_library_by_name,
+    get_type_object,
     get_material_by_name,
     get_structural_analysis_model_by_name,
     create_storeys,
@@ -86,6 +87,36 @@ def test_import_material(ifc_file):
     get_material_by_name(file, mystyle, stylename="courtyard", name="Concrete")
 
     file.write("_test.ifc")
+
+
+def test_inherited_type_is_declared_in_ancestor_library(ifc_file):
+    file = ifc_file["file"]
+    mystyle = Style()
+
+    def library_name(element):
+        return element.HasContext[0].RelatingContext.Name
+
+    # 'courtyard' and 'fancy' both inherit 'exterior' from 'default'
+    inherited = get_type_object(file, mystyle, "IfcWallType", "default", "exterior")
+    assert get_type_object(file, mystyle, "IfcWallType", "courtyard", "exterior") == (
+        inherited
+    )
+    assert get_type_object(file, mystyle, "IfcWallType", "fancy", "exterior") == (
+        inherited
+    )
+    assert library_name(inherited) == "default"
+
+    # 'arcade' has an 'exterior' of its own, this isn't a duplicate
+    override = get_type_object(file, mystyle, "IfcWallType", "arcade", "exterior")
+    assert override != inherited
+    assert library_name(override) == "arcade"
+
+    # a Type that no library defines belongs to the style that asked for it
+    missing = get_type_object(file, mystyle, "IfcWallType", "fancy", "no-such-type")
+    assert library_name(missing) == "fancy"
+    assert get_type_object(file, mystyle, "IfcWallType", "fancy", "no-such-type") == (
+        missing
+    )
 
 
 def test_import_door(ifc_file):

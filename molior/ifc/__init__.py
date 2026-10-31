@@ -973,16 +973,18 @@ def get_type_object(
     Returns:
         The existing or newly created type object entity.
     """
+    # a Type inherited from an ancestor style belongs in the ancestor's library,
+    # every style that inherits it then shares one Type
+    (found_stylename, library_file, element) = style_object.get_from_library(
+        stylename, ifc_type, name
+    )
     # let's see if there is an existing Type Product defined in the relevant library
-    library = get_library_by_name(self, stylename)
+    library = get_library_by_name(self, found_stylename or stylename)
     for declares in library.Declares:
         for definition in declares.RelatedDefinitions:
             if definition.is_a(ifc_type) and definition.Name == name:
                 return definition
     # otherwise, load from IFC library file
-    (found_stylename, library_file, element) = style_object.get_from_library(
-        stylename, ifc_type, name
-    )
     if element:
         # Register library file to prevent garbage collection
         _register_library_file(self, library_file)
@@ -1000,7 +1002,7 @@ def get_type_object(
     api.project.assign_declaration(
         self,
         definitions=[definition],
-        relating_context=get_library_by_name(self, stylename),
+        relating_context=library,
     )
     return definition
 
@@ -1054,7 +1056,6 @@ def delete_ifc_product(
         for port in ifcopenshell.util.system.get_ports(product):
             api.root.remove_product(self, product=port)
     api.root.remove_product(self, product=product)
-
 
 
 def purge_unused(self: ifcopenshell.file) -> None:
