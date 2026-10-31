@@ -283,6 +283,7 @@ class Molior:
             self.connect_spaces()
             self.connect_assemblies()
             self.stash_topology()
+            self.anchor_lowest_edges()
         elif self.topology:
             self.connect_structure()
             self.anchor_lowest_edges()
@@ -598,20 +599,27 @@ class Molior:
         self.release_masonry()
 
     def anchor_lowest_edges(self):
-        """Without Cells nothing says where the ground is, assume the lowest edges
-        are fixed to it. These are starting points, supports can be edited later:
-        the Anchor condition can be removed from a connection, or assigned to any
-        other connection on an edge of the mesh"""
+        """A model with no footings has nothing to say where the ground is, assume
+        the lowest edges are fixed to it. These are starting points, supports can
+        be edited later: the Anchor condition can be removed from a connection, or
+        assigned to any other connection on an edge of the mesh"""
         connections = []
-        for connection in self.file.by_type("IfcStructuralCurveConnection"):
-            edge = connection.Representation.Representations[0].Items[0]
-            connections.append(
-                [
-                    connection,
-                    edge.EdgeStart.VertexGeometry.Coordinates[2],
-                    edge.EdgeEnd.VertexGeometry.Coordinates[2],
-                ]
-            )
+        for rel_group in self.structural_analysis_model.IsGroupedBy:
+            for connection in rel_group.RelatedObjects:
+                if not connection.is_a("IfcStructuralConnection"):
+                    continue
+                if connection.AppliedCondition:
+                    return
+                if not connection.is_a("IfcStructuralCurveConnection"):
+                    continue
+                edge = connection.Representation.Representations[0].Items[0]
+                connections.append(
+                    [
+                        connection,
+                        edge.EdgeStart.VertexGeometry.Coordinates[2],
+                        edge.EdgeEnd.VertexGeometry.Coordinates[2],
+                    ]
+                )
         if not connections:
             return
         lowest = min(min(item[1], item[2]) for item in connections)
@@ -626,9 +634,6 @@ class Molior:
                 if min(item[1], item[2]) - lowest < 0.001
             ]
         for connection in level:
-            # a footing has already supported this edge
-            if connection.AppliedCondition:
-                continue
             api.structural.add_structural_boundary_condition(
                 self.file,
                 name="Anchor",
