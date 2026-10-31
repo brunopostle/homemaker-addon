@@ -1,0 +1,148 @@
+---
+# Every kind of face is the same plate, see the README for the values to change.
+# 'exterior' and 'interior' are extra, the parent style draws walls with traces.
+
+exterior:
+  class: Shell
+  ifc: IfcPlate
+  typename: plate
+  offset: -0.005
+  structural_material: Steel plate
+  structural_thickness: 0.01
+  condition: external
+interior:
+  class: Shell
+  ifc: IfcPlate
+  typename: plate
+  offset: -0.005
+  structural_material: Steel plate
+  structural_thickness: 0.01
+  condition: internal
+pitched-roof:
+  class: Shell
+  ifc: IfcPlate
+  typename: plate
+  offset: -0.005
+  structural_material: Steel plate
+  structural_thickness: 0.01
+  condition: roof
+ceiling-soffit:
+  class: Shell
+  ifc: IfcPlate
+  typename: plate
+  offset: -0.005
+  structural_material: Steel plate
+  structural_thickness: 0.01
+  condition: soffit
+wall-panel:
+  class: Shell
+  ifc: IfcPlate
+  typename: plate
+  offset: -0.005
+  structural_material: Steel plate
+  structural_thickness: 0.01
+  condition: external-panel
+partition-panel:
+  class: Shell
+  ifc: IfcPlate
+  typename: plate
+  offset: -0.005
+  structural_material: Steel plate
+  structural_thickness: 0.01
+  condition: internal-panel
+flat-roof:
+  class: Shell
+  ifc: IfcPlate
+  typename: plate
+  offset: -0.005
+  structural_material: Steel plate
+  structural_thickness: 0.01
+  condition: flat
+ceiling-vault:
+  class: Shell
+  ifc: IfcPlate
+  typename: plate
+  offset: -0.005
+  structural_material: Steel plate
+  structural_thickness: 0.01
+  condition: vault
+bedroom-floor:
+  class: Shell
+  ifc: IfcPlate
+  typename: plate
+  offset: -0.005
+  structural_material: Steel plate
+  structural_thickness: 0.01
+  condition: bedroom
+circulation-floor:
+  class: Shell
+  ifc: IfcPlate
+  typename: plate
+  offset: -0.005
+  structural_material: Steel plate
+  structural_thickness: 0.01
+  condition: circulation
+kitchen-floor:
+  class: Shell
+  ifc: IfcPlate
+  typename: plate
+  offset: -0.005
+  structural_material: Steel plate
+  structural_thickness: 0.01
+  condition: kitchen
+utility-floor:
+  class: Shell
+  ifc: IfcPlate
+  typename: plate
+  offset: -0.005
+  structural_material: Steel plate
+  structural_thickness: 0.01
+  condition: utility
+living-floor:
+  class: Shell
+  ifc: IfcPlate
+  typename: plate
+  offset: -0.005
+  structural_material: Steel plate
+  structural_thickness: 0.01
+  condition: living
+retail-floor:
+  class: Shell
+  ifc: IfcPlate
+  typename: plate
+  offset: -0.005
+  structural_material: Steel plate
+  structural_thickness: 0.01
+  condition: retail
+stair-floor:
+  class: Shell
+  ifc: IfcPlate
+  typename: plate
+  offset: -0.005
+  structural_material: Steel plate
+  structural_thickness: 0.01
+  condition: stair
+toilet-floor:
+  class: Shell
+  ifc: IfcPlate
+  typename: plate
+  offset: -0.005
+  structural_material: Steel plate
+  structural_thickness: 0.01
+  condition: toilet
+outside-floor:
+  class: Shell
+  ifc: IfcPlate
+  typename: plate
+  offset: -0.005
+  structural_material: Steel plate
+  structural_thickness: 0.01
+  condition: outside
+sahn-floor:
+  class: Shell
+  ifc: IfcPlate
+  typename: plate
+  offset: -0.005
+  structural_material: Steel plate
+  structural_thickness: 0.01
+  condition: sahn
