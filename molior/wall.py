@@ -709,6 +709,7 @@ class Wall(TraceClass):
                 self.fix_segment(id_segment)
                 self.steer_door(id_segment, target)
                 self.fix_gable(id_segment)
+                self.close_doorless_face(id_segment, edge[1].get("face"))
         elif "do_populate_interior_openings" in self.__dict__:
             edge = self.chain.graph[self.chain.edges()[0][0]]
             face = edge[1]["face"]
@@ -727,6 +728,19 @@ class Wall(TraceClass):
                 self.steer_door(0, self.door_target(face))
                 self.slide_door(0)
                 self.fix_gable(0)
+                self.close_doorless_face(0, face)
+
+    def close_doorless_face(self, id_segment, face):
+        """Nobody can walk through a Face with no door, not even if the circulation
+        Graph was expecting one that didn't fit"""
+        if not self.circulation or face is None:
+            return
+        for opening in self.openings[id_segment]:
+            if self.get_family(opening["family"])["type"] == "door":
+                return
+        vertex = face.GraphVertex(self.circulation)
+        if vertex is not None:
+            self.circulation.RemoveVertices([vertex])
 
     def structural_holes(self, id_segment, vertices):
         """Loops for windows and doors in the structural face of a wall segment"""

@@ -123,6 +123,17 @@ def Separation(self, table, cellcomplex):
                 separation = str(total_length / len(table[index]))
                 vertex.Set("separation", separation)
                 self.GetEntity(cellcomplex, vertex).Set("separation", separation)
+    else:
+        # distances from an earlier Graph are no longer true
+        vertices_ptr = []
+        self.Vertices(vertices_ptr)
+        for vertex in vertices_ptr:
+            if vertex.Get("class") == "Cell":
+                entity = self.GetEntity(cellcomplex, vertex)
+                dictionary = entity.GetDictionary()
+                if dictionary.ContainsKey("separation"):
+                    dictionary.Remove("separation")
+                    entity.SetDictionary(dictionary)
 
 
 def Faces(self, cellcomplex):
