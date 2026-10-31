@@ -17,7 +17,7 @@ IfcOpenShell.
 
 import re
 import ifcopenshell.util
-from topologic_core import CellComplex, Vertex, Face, Topology
+from topologic_core import CellComplex, Vertex, Face
 from .extrusion import Extrusion
 from .floor import Floor
 from .shell import Shell
@@ -57,6 +57,12 @@ except ImportError:
 api = ifcopenshell.api
 
 
+NOT_A_CELLCOMPLEX = (
+    "These faces do not make a building: every room needs to be fully enclosed,"
+    " and joined to the others by a shared wall, floor or ceiling"
+)
+
+
 class Molior:
     """A Builder, has resources to build"""
 
@@ -71,26 +77,18 @@ class Molior:
         cellcomplex = CellComplex.ByFaces(faces, 0.0001)
 
         result = []
-        cellcomplex.Faces(None, result)
-        if result:
-            # Copy styles from Faces to the CellComplex
-            cellcomplex.ApplyDictionary(faces)
-            # Assign Cell usages from widgets
-            cellcomplex.AllocateCells(widgets)
-            return cls.from_cellcomplex(
-                file=file, cellcomplex=cellcomplex, name=name, share_dir=share_dir
-            )
+        if cellcomplex:
+            cellcomplex.Faces(None, result)
+        if not result:
+            raise ValueError(NOT_A_CELLCOMPLEX)
 
-        topology = Topology.ByFaces(faces, 0.0001)
-
-        result = []
-        topology.Faces(None, result)
-        if result:
-            # Copy styles from Faces to the Topology
-            topology.ApplyDictionary(faces)
-            return cls.from_topology(
-                file=file, topology=topology, name=name, share_dir=share_dir
-            )
+        # Copy styles from Faces to the CellComplex
+        cellcomplex.ApplyDictionary(faces)
+        # Assign Cell usages from widgets
+        cellcomplex.AllocateCells(widgets)
+        return cls.from_cellcomplex(
+            file=file, cellcomplex=cellcomplex, name=name, share_dir=share_dir
+        )
 
     @classmethod
     def from_cellcomplex(
