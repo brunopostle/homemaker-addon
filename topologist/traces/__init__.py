@@ -28,7 +28,7 @@ class Traces:
         if height not in traces[label][elevation]:
             traces[label][elevation][height] = {}
         if stylename not in traces[label][elevation][height]:
-            traces[label][elevation][height][stylename] = ugraph.graph()
+            traces[label][elevation][height][stylename] = ugraph.multigraph()
 
         traces[label][elevation][height][stylename].add_edge(
             {

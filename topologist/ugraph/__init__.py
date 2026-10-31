@@ -117,3 +117,67 @@ class graph:
     def find_paths(self):
         """Return result of find_chains() and find_cycles() as a single list"""
         return self.find_chains() + self.find_cycles()
+
+
+class multigraph:
+    """Edges that can include paths crossing at a node, this happens when rooms
+    touch at a corner, a graph has only one edge starting at each node"""
+
+    def __init__(self):
+        self.edges = []
+
+    def add_edge(self, edge):
+        """multigraph.add_edge({'C': ['D', {'back_cell': cell}]})"""
+        for key in edge:
+            self.edges.append([key, *edge[key]])
+
+    def following(self):
+        """Which edge, if any, does each edge continue into? At a crossing an edge
+        continues into the edge with the same back_cell, so walls follow the room"""
+        leaving = {}
+        arriving = {}
+        for edge in self.edges:
+            leaving.setdefault(edge[0], []).append(edge)
+            arriving.setdefault(edge[1], []).append(edge)
+
+        result = {}
+        for node in leaving:
+            if node not in arriving:
+                continue
+            if len(leaving[node]) == 1 and len(arriving[node]) == 1:
+                result[id(arriving[node][0])] = leaving[node][0]
+                continue
+            unused = list(leaving[node])
+            for edge in arriving[node]:
+                for candidate in unused:
+                    cell = edge[2]["back_cell"]
+                    other = candidate[2]["back_cell"]
+                    if cell and other and cell.IsSame(other):
+                        result[id(edge)] = candidate
+                        unused.remove(candidate)
+                        break
+        return result
+
+    def find_paths(self):
+        """Return a list of open chains and closed cycles as graph objects"""
+        following = self.following()
+        followed = {id(edge) for edge in following.values()}
+        # open chains need to start at the beginning, anything left is a cycle
+        todo = [edge for edge in self.edges if id(edge) not in followed]
+        todo += [edge for edge in self.edges if id(edge) in followed]
+
+        result = []
+        visited = set()
+        for edge in todo:
+            if id(edge) in visited:
+                continue
+            path = graph()
+            while edge is not None and id(edge) not in visited:
+                # a path can visit a crossing twice, a graph can't hold this
+                if edge[0] in path.graph:
+                    break
+                path.add_edge({edge[0]: [edge[1], edge[2]]})
+                visited.add(id(edge))
+                edge = following.get(id(edge))
+            result.append(path)
+        return result
