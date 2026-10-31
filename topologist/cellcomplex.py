@@ -144,32 +144,27 @@ def GetTraces(self):
                         back_cell=back_cell,
                     )
 
-                    # collect foundation strips
+                # collect foundation strips, a wall facing an 'outside' Cell isn't on
+                # the perimeter of the mesh so it needs one the same as an internal wall
+                if face.IsInternal(self) or (
+                    face.IsExternal(self) and not face.IsWorld(self)
+                ):
                     if not face.FacesBelow(self):
+                        axis = face.AxisOuter()
+                        label = "internal-beam"
                         if not face.CellsBelow(self):
-                            mytraces.add_axis_simple(
-                                "internal-footing",
-                                elevation,
-                                0.0,
-                                stylename,
-                                start_vertex=axis[0],
-                                end_vertex=axis[1],
-                                face=face,
-                                front_cell=front_cell,
-                                back_cell=back_cell,
-                            )
-                        else:
-                            mytraces.add_axis_simple(
-                                "internal-beam",
-                                elevation,
-                                0.0,
-                                stylename,
-                                start_vertex=axis[0],
-                                end_vertex=axis[1],
-                                face=face,
-                                front_cell=front_cell,
-                                back_cell=back_cell,
-                            )
+                            label = "internal-footing"
+                        mytraces.add_axis_simple(
+                            label,
+                            elevation,
+                            0.0,
+                            stylename,
+                            start_vertex=axis[0],
+                            end_vertex=axis[1],
+                            face=face,
+                            front_cell=front_cell,
+                            back_cell=back_cell,
+                        )
                 elevations[elevation] = 0
 
                 if face.IsWorld(self):
