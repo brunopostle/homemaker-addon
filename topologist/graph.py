@@ -24,7 +24,6 @@ def Circulation(self, cellcomplex):
                     vertices_ptr.append(vertex)
                 else:
                     # TODO should use 'separation' attribute to prune excess doors
-                    # TODO not between toilet and toilet or bedroom and bedroom
                     usage_a = cells[0].Usage()
                     usage_b = cells[1].Usage()
                     if usage_a == "void" or usage_b == "void":
