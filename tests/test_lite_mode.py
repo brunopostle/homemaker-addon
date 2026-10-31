@@ -4,6 +4,7 @@ import collections
 import os
 import sys
 
+import ifcopenshell.util.placement
 import pytest
 from topologic_core import Face, Vertex
 
@@ -63,7 +64,12 @@ def count(molior_object):
 def test_faces_make_elements(faces, walls, roofs):
     molior_object = build(faces())
     elements = count(molior_object)
-    assert elements["IfcWall"] == walls
+    exterior = [
+        item
+        for item in molior_object.file.by_type("IfcWall")
+        if item.Name == "exterior"
+    ]
+    assert len(exterior) == walls
     assert elements["IfcRoof"] == roofs
     assert len(molior_object.file.by_type("IfcSpace")) == 0
 
@@ -79,6 +85,60 @@ def test_faces_keep_their_style():
     elements = count(build([face(WALL, "arcade")]))
     assert elements["IfcCovering"] == 1
     assert elements["IfcWindow"] == 0
+
+
+def conditions(molior_object, condition, elevation):
+    chains = molior_object.traces[condition][elevation][0.0]["default"]
+    return sum(len(chain.edges()) for chain in chains)
+
+
+@pytest.mark.parametrize("clockwise", [False, True], ids=["anticlockwise", "clockwise"])
+def test_rooms_have_the_conditions_of_a_building(clockwise):
+    rooms = [room(0, 0, 4, 4), room(10, 0, 14, 4)]
+    if clockwise:
+        rooms = [dict(item, vertices=item["vertices"][::-1]) for item in rooms]
+    molior_object = build(room_faces(*rooms))
+    assert conditions(molior_object, "bottom-backward-level", 0.0) == 8
+    assert conditions(molior_object, "top-backward-level", 3.0) == 8
+    assert not molior_object.traces.keys() & {
+        "bottom-forward-level",
+        "top-forward-level",
+    }
+
+
+def test_lite_mode_traces_match_a_cellcomplex():
+    faces = room_faces(room(0, 0, 4, 4))
+    building = Molior.from_faces_and_widgets(faces=faces, widgets=[])
+    faces = room_faces(room(0, 0, 4, 4), room(10, 0, 14, 4))
+    lite = Molior.from_faces_and_widgets(faces=faces, widgets=[])
+    assert lite.cellcomplex is None
+    expected = {"external", "bottom-backward-level", "top-backward-level"}
+    assert expected <= building.traces.keys()
+    assert set(lite.traces) == expected
+
+
+def test_footing_and_walls_are_on_the_same_side_as_in_a_building():
+    faces = room_faces(room(0, 0, 4, 4))
+    building = Molior.from_faces_and_widgets(faces=faces, widgets=[])
+    building.execute()
+    lite = build(room_faces(room(0, 0, 4, 4), room(10, 0, 14, 4)))
+
+    def places(molior_object, ifc_class):
+        result = set()
+        for item in molior_object.file.by_type(ifc_class):
+            placement = ifcopenshell.util.placement.get_placement(item.ObjectPlacement)
+            if placement[0][3] < 5.0:
+                result.add((round(placement[0][3], 3), round(placement[1][3], 3)))
+        return result
+
+    assert places(lite, "IfcWall") == places(building, "IfcWall")
+    assert places(lite, "IfcFooting") == places(building, "IfcFooting")
+    assert places(lite, "IfcFooting")
+
+
+def test_a_wall_with_nothing_above_or_below_has_no_conditions():
+    molior_object = build([face(WALL)])
+    assert list(molior_object.traces) == ["external"]
 
 
 def test_no_faces_are_refused():

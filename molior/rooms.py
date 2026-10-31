@@ -127,20 +127,23 @@ def _room(room: dict) -> tuple:
             return raw_face_styles[i]
         return stylename
 
+    # Faces all point out of the room, a CellComplex doesn't care but without one
+    # a Topology gets its orientation from the Faces
+    clockwise = _signed_area(vertices_2d) < 0.0
+
     faces = []
-    floor_face = Face.ByVertices(floor_verts)
+    floor_face = Face.ByVertices(floor_verts if clockwise else floor_verts[::-1])
     floor_face.Set("stylename", fstyle(0))
     faces.append(floor_face)
 
-    ceil_face = Face.ByVertices(ceil_verts)
+    ceil_face = Face.ByVertices(ceil_verts[::-1] if clockwise else ceil_verts)
     ceil_face.Set("stylename", fstyle(1))
     faces.append(ceil_face)
 
     for i in range(n):
         j = (i + 1) % n
-        wall = Face.ByVertices(
-            [floor_verts[i], floor_verts[j], ceil_verts[j], ceil_verts[i]]
-        )
+        wall_verts = [floor_verts[i], floor_verts[j], ceil_verts[j], ceil_verts[i]]
+        wall = Face.ByVertices(wall_verts[::-1] if clockwise else wall_verts)
         wall.Set("stylename", fstyle(2 + i))
         faces.append(wall)
 
@@ -160,6 +163,16 @@ def _coords(coords: list) -> list:
     are left to the CellComplex.ByFaces tolerance.
     """
     return [float(c) for c in coords]
+
+
+def _signed_area(vertices_2d: list) -> float:
+    """Area of a simple polygon, negative if the vertices wind clockwise"""
+    n = len(vertices_2d)
+    return 0.5 * sum(
+        float(vertices_2d[i][0]) * float(vertices_2d[(i + 1) % n][1])
+        - float(vertices_2d[(i + 1) % n][0]) * float(vertices_2d[i][1])
+        for i in range(n)
+    )
 
 
 def _polygon_centroid(vertices_2d: list) -> tuple:

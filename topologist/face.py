@@ -221,9 +221,10 @@ def IsExternal(self, host_topology):
 
 @lru_cache(maxsize=256)
 def IsWorld(self, host_topology):
-    """Is this Face on the outside of the mesh? i.e. does it adjoin only one Cell?"""
+    """Is this Face on the outside of the mesh? i.e. does it adjoin one Cell, or
+    none as in a Topology without Cells?"""
     cells_ptr = self.Cells_Cached(host_topology)
-    if len(cells_ptr) == 1:
+    if len(cells_ptr) < 2:
         return True
     return False
 
