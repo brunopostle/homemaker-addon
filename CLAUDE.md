@@ -137,6 +137,9 @@ When generating IFC, the original CellComplex is "stashed" in the IfcBuilding as
 
 This allows `Molior.get_cellcomplex_from_ifc()` to reconstruct the CellComplex from an existing IFC file for regeneration.
 
+### Lite Mode
+Faces that don't make a CellComplex (a single wall, an open box, rooms that don't share a face) go through `Molior.from_topology()` and `Topology.GetTraces()`/`GetHulls()`. Every Face becomes a building element, but with no Cells there are no spaces, circulation or connected structure, and the IFC can't be regenerated as no topology is stashed.
+
 ## IFC Terminology
 
 See `coding.md` for detailed IFC naming conventions. Key distinctions:

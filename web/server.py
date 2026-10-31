@@ -330,7 +330,6 @@ def _validate_geometry(request_dict: dict, share_dir: str) -> dict:
             sys.path.insert(0, p)
 
     from topologic_core import CellComplex
-    from molior import NOT_A_CELLCOMPLEX
     from molior.rooms import document_to_faces_and_widgets
 
     faces, _ = document_to_faces_and_widgets(request_dict)
@@ -342,8 +341,6 @@ def _validate_geometry(request_dict: dict, share_dir: str) -> dict:
     cells, cc_faces = [], []
     cc.Cells(cc, cells)
     cc.Faces(cc, cc_faces)
-    if not cells:
-        return {"valid": False, "error": NOT_A_CELLCOMPLEX}
     return {"valid": True, "cells": len(cells), "faces": len(cc_faces)}
 
 
