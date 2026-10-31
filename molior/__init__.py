@@ -17,7 +17,7 @@ IfcOpenShell.
 
 import re
 import ifcopenshell.util
-from topologic_core import CellComplex, Vertex, Face
+from topologic_core import CellComplex, Vertex, Face, Topology
 from .extrusion import Extrusion
 from .floor import Floor
 from .shell import Shell
@@ -57,12 +57,6 @@ except ImportError:
 api = ifcopenshell.api
 
 
-NOT_A_CELLCOMPLEX = (
-    "These faces do not make a building: every room needs to be fully enclosed,"
-    " and joined to the others by a shared wall, floor or ceiling"
-)
-
-
 class Molior:
     """A Builder, has resources to build"""
 
@@ -73,21 +67,28 @@ class Molior:
         """Create a Molior object from lists of Topologic Faces and widgets."""
         """Faces can have a 'style' Dictionary attribute."""
         """Widgets are Topologic Vertices with a 'usage' Dictionary attribute."""
+        if not faces:
+            raise ValueError("No geometry provided")
         # Generate a Topologic CellComplex
         cellcomplex = CellComplex.ByFaces(faces, 0.0001)
 
         result = []
-        if cellcomplex:
-            cellcomplex.Faces(None, result)
-        if not result:
-            raise ValueError(NOT_A_CELLCOMPLEX)
+        cellcomplex.Faces(None, result)
+        if result:
+            # Copy styles from Faces to the CellComplex
+            cellcomplex.ApplyDictionary(faces)
+            # Assign Cell usages from widgets
+            cellcomplex.AllocateCells(widgets)
+            return cls.from_cellcomplex(
+                file=file, cellcomplex=cellcomplex, name=name, share_dir=share_dir
+            )
 
-        # Copy styles from Faces to the CellComplex
-        cellcomplex.ApplyDictionary(faces)
-        # Assign Cell usages from widgets
-        cellcomplex.AllocateCells(widgets)
-        return cls.from_cellcomplex(
-            file=file, cellcomplex=cellcomplex, name=name, share_dir=share_dir
+        # Faces that don't enclose rooms still make building elements, "lite mode"
+        topology = Topology.ByFaces(faces, 0.0001)
+        # Copy styles from Faces to the Topology
+        topology.ApplyDictionary(faces)
+        return cls.from_topology(
+            file=file, topology=topology, name=name, share_dir=share_dir
         )
 
     @classmethod
@@ -128,8 +129,10 @@ class Molior:
     def from_topology(
         cls, file=None, topology=None, name="My Building", share_dir="share"
     ):
-        """Create a Molior object from a tagged Topology"""
-        """Faces in the CellComplex can have a 'style' Dictionary attribute."""
+        """Create a Molior object from a tagged Topology, this is 'lite mode' for
+        faces that don't make a CellComplex: there are building elements, but no
+        spaces, circulation, or connected structure as there are no Cells"""
+        """Faces in the Topology can have a 'style' Dictionary attribute."""
         # Give every Cell and Face an index number
         topology.IndexTopology()
         traces, normals, elevations = topology.GetTraces()

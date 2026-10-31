@@ -5,10 +5,9 @@ import os
 import sys
 
 import ifcopenshell.util.placement
-import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from molior import Molior, NOT_A_CELLCOMPLEX
+from molior import Molior
 from molior.rooms import document_to_faces_and_widgets
 import topologist.ugraph as ugraph
 
@@ -158,45 +157,3 @@ def test_ring_of_rooms_touching_itself_at_a_corner():
     assert len(edges) == len(set(tuple(item) for item in edges))
     # three faces each for the two rooms at the corner, two each for the others
     assert len(edges) == 16
-
-
-NOT_BUILDINGS = {
-    "touching at a corner": [room(0, 0, 4, 4, "living"), room(4, 4, 8, 8, "living")],
-    "apart": [room(0, 0, 4, 4, "living"), room(10, 0, 14, 4, "living")],
-}
-
-
-@pytest.mark.parametrize("rooms", NOT_BUILDINGS.values(), ids=NOT_BUILDINGS.keys())
-def test_rooms_that_do_not_make_a_building_are_refused(rooms):
-    faces, widgets = document_to_faces_and_widgets({"rooms": rooms})
-    with pytest.raises(ValueError, match="do not make a building"):
-        Molior.from_faces_and_widgets(faces=faces, widgets=widgets)
-
-
-def test_faces_that_do_not_enclose_a_room_are_refused():
-    faces, widgets = document_to_faces_and_widgets(
-        {"rooms": [room(0, 0, 4, 4, "living")]}
-    )
-    with pytest.raises(ValueError, match="do not make a building"):
-        Molior.from_faces_and_widgets(faces=faces[:-1], widgets=widgets)
-
-
-def test_no_faces_are_refused():
-    with pytest.raises(ValueError, match="do not make a building"):
-        Molior.from_faces_and_widgets(faces=[], widgets=[])
-
-
-def test_web_server_reports_rooms_that_do_not_make_a_building():
-    pytest.importorskip("fastapi")
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "web"))
-    from server import _generate_ifc, _validate_geometry
-
-    document = {"rooms": NOT_BUILDINGS["touching at a corner"]}
-    assert _validate_geometry(document, "share") == {
-        "valid": False,
-        "error": NOT_A_CELLCOMPLEX,
-    }
-    with pytest.raises(ValueError, match="do not make a building"):
-        _generate_ifc(document, "share")
-    good = {"rooms": [room(0, 0, 4, 4, "living")]}
-    assert _validate_geometry(good, "share")["valid"] is True
