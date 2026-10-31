@@ -98,7 +98,6 @@ class Style:
 
     def get(self, stylename):
         """retrieves a flattened style definition with ancestors filling in the gaps"""
-        # FIXME this results in duplicated assets when an ancestor style is also in use
         if stylename not in self.data:
             return self.get("default")
         mydata = copy.deepcopy(self.data[stylename])
