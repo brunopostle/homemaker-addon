@@ -429,7 +429,6 @@ class Molior:
                     ],
                 ),
             )
-            # TODO merge duplicate columns
 
             # loop though all the faces connected to this edge
             faces_ptr = edge.Faces_Cached(self.cellcomplex)
