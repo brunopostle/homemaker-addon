@@ -140,6 +140,8 @@ This allows `Molior.get_cellcomplex_from_ifc()` to reconstruct the CellComplex f
 ### Lite Mode
 Faces that don't make a CellComplex (a single wall, an open box, rooms that don't share a face) go through `Molior.from_topology()` and `Topology.GetTraces()`/`GetHulls()`. Every Face becomes a building element, but with no Cells there are no spaces, circulation or connected structure, and the IFC can't be regenerated as no topology is stashed.
 
+The `top-*` and `bottom-*` conditions work as in a CellComplex, but there are no Cells to say which way is out: `Topology.ByFaces()` makes connected Faces agree with one of them, so draw them all facing out ("recalculate outside" in Blender) or the walls end up inside-out.
+
 ## IFC Terminology
 
 See `coding.md` for detailed IFC naming conventions. Key distinctions:
