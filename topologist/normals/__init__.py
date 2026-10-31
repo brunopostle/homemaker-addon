@@ -31,9 +31,12 @@ class Normals:
             self.normals[label][vertex_str] = vector
 
     def process(self):
-        """add_vector() increments the magnitude, normalise to 1.0"""
+        """add_vector() increments the magnitude, normalise to 1.0. Normals of rooms
+        touching at a corner can cancel out, these corners have no direction"""
         for label in self.normals:
-            for vertex_str in self.normals[label]:
-                self.normals[label][vertex_str] /= np.linalg.norm(
-                    self.normals[label][vertex_str]
-                )
+            for vertex_str in list(self.normals[label]):
+                magnitude = np.linalg.norm(self.normals[label][vertex_str])
+                if magnitude < 0.000001:
+                    del self.normals[label][vertex_str]
+                else:
+                    self.normals[label][vertex_str] /= magnitude
