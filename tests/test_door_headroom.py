@@ -3,6 +3,7 @@
 import os
 import sys
 
+import ifcopenshell.util.element
 import ifcopenshell.util.placement
 import pytest
 
@@ -11,7 +12,7 @@ from molior import Molior
 from molior.rooms import document_to_faces_and_widgets
 
 
-def lean_to(height_start, height_end, depth=6.0):
+def build_lean_to(height_start, height_end, depth=6.0):
     """Two rooms either side of an interior wall at x=4, its top slopes in y"""
     z0, z1 = height_start, height_end
     vertices = [[[4, 0, 0], [4, depth, 0], [4, depth, z1], [4, 0, z0]]]
@@ -28,6 +29,11 @@ def lean_to(height_start, height_end, depth=6.0):
     )
     molior_object = Molior.from_faces_and_widgets(faces=faces, widgets=widgets)
     molior_object.execute()
+    return molior_object
+
+
+def lean_to(height_start, height_end, depth=6.0):
+    molior_object = build_lean_to(height_start, height_end, depth)
     return [door_extent(door) for door in molior_object.file.by_type("IfcDoor")]
 
 
@@ -66,3 +72,26 @@ def test_door_moves_no_further_than_it_needs():
 def test_door_is_removed_when_it_fits_nowhere():
     # tall enough for the door at its highest point, but too steep for its width
     assert lean_to(1.0, 2.4, depth=2.0) == []
+
+
+def test_removed_door_is_removed_from_circulation():
+    molior_object = build_lean_to(1.0, 2.4, depth=2.0)
+    assert not molior_object.file.by_type("IfcDoor")
+    # the two rooms have no other way in, so there are no distances between them
+    assert not molior_object.circulation.IsConnected()
+    assert molior_object.shortest_path_table == {}
+    spaces = molior_object.file.by_type("IfcSpace")
+    assert len(spaces) == 2
+    for space in spaces:
+        psets = ifcopenshell.util.element.get_psets(space)
+        assert psets["EPset_Pattern"].get("Separation") is None
+
+
+def test_door_that_fits_stays_in_circulation():
+    molior_object = build_lean_to(3.0, 3.0, depth=6.0)
+    assert len(molior_object.file.by_type("IfcDoor")) == 1
+    assert molior_object.circulation.IsConnected()
+    assert molior_object.shortest_path_table
+    for space in molior_object.file.by_type("IfcSpace"):
+        psets = ifcopenshell.util.element.get_psets(space)
+        assert psets["EPset_Pattern"]["Separation"] > 0.0

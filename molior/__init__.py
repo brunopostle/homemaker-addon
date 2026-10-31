@@ -249,7 +249,8 @@ class Molior:
             self.door_targets = door_targets(
                 self.cellcomplex, self.circulation, self.elevations
             )
-        stairs = []
+        vertices_before = self.count_circulation_vertices()
+        deferred = []
         for condition in self.traces:
             for elevation in self.traces[condition]:
                 for height in self.traces[condition][elevation]:
@@ -263,11 +264,18 @@ class Molior:
                                 elevation=elevation,
                                 height=height,
                                 chain=chain,
-                                deferred=stairs,
+                                deferred=deferred,
                             )
-        # stairs are fitted around doors, so the doors have to exist first
-        for stair in stairs:
-            stair.execute()
+        # a door that didn't fit is no longer in the circulation Graph
+        if self.count_circulation_vertices() != vertices_before:
+            self.shortest_path_table = self.circulation.ShortestPathTable()
+            self.circulation.Separation(self.shortest_path_table, self.cellcomplex)
+        # stairs are fitted around doors, and spaces are assessed by how doors
+        # connect them, so the doors have to exist first
+        for part in deferred:
+            if isinstance(part, Space):
+                part.shortest_path_table = self.shortest_path_table
+            part.execute()
         for condition in self.hulls:
             for stylename in self.hulls[condition]:
                 for hull in self.hulls[condition][stylename]:
@@ -287,6 +295,14 @@ class Molior:
         elif self.topology:
             self.connect_structure()
             self.anchor_lowest_edges()
+
+    def count_circulation_vertices(self):
+        """How many Vertices remain in the circulation Graph, if there is one"""
+        if not self.circulation:
+            return 0
+        vertices_ptr = []
+        self.circulation.Vertices(vertices_ptr)
+        return len(vertices_ptr)
 
     def connect_structure(self):
         """Given Structural Member entities are tagged with Topologic indexes, connect them"""
@@ -1004,7 +1020,8 @@ class Molior:
         deferred=None,
     ):
         """Generates IFC data for a single trace and adds to the current building.
-        Stairs are added to the 'deferred' list, if there is one, and not executed"""
+        Spaces and Stairs are added to the 'deferred' list, if there is one, and not
+        executed"""
         results = []
         myconfig = Molior.style.get(stylename)
         level = 0
@@ -1060,7 +1077,7 @@ class Molior:
                 }
                 part = modules[config["class"]](vals)
 
-                if deferred is not None and isinstance(part, Stair):
+                if deferred is not None and isinstance(part, (Space, Stair)):
                     deferred.append(part)
                 else:
                     part.execute()
