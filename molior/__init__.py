@@ -130,8 +130,8 @@ class Molior:
         cls, file=None, topology=None, name="My Building", share_dir="share"
     ):
         """Create a Molior object from a tagged Topology, this is 'lite mode' for
-        faces that don't make a CellComplex: there are building elements, but no
-        spaces, circulation, or connected structure as there are no Cells"""
+        faces that don't make a CellComplex: there are building elements and
+        connected structure, but no spaces or circulation as there are no Cells"""
         """Faces in the Topology can have a 'style' Dictionary attribute."""
         # Give every Cell and Face an index number
         topology.IndexTopology()
@@ -145,6 +145,7 @@ class Molior:
             name=name,
             hulls=hulls,
             normals=normals,
+            topology=topology,
             share_dir=share_dir,
         )
 
@@ -219,6 +220,7 @@ class Molior:
         self.circulation = None
         self.shortest_path_table = None
         self.cellcomplex = None
+        self.topology = None
         self.share_dir = "share"
         for arg in args:
             self.__dict__[arg] = args[arg]
@@ -281,6 +283,9 @@ class Molior:
             self.connect_spaces()
             self.connect_assemblies()
             self.stash_topology()
+        elif self.topology:
+            self.connect_structure()
+            self.anchor_lowest_edges()
 
     def connect_structure(self):
         """Given Structural Member entities are tagged with Topologic indexes, connect them"""
@@ -339,8 +344,9 @@ class Molior:
                     curve_list.append([pset_topology["FaceIndex"], member])
 
         # iterate all the edges in the topologic_core model
+        topology = self.cellcomplex or self.topology
         edges_ptr = []
-        self.cellcomplex.Edges(None, edges_ptr)
+        topology.Edges(None, edges_ptr)
         point_list = []
         point_lookup = {}
 
@@ -432,7 +438,7 @@ class Molior:
             )
 
             # loop though all the faces connected to this edge
-            faces_ptr = edge.Faces_Cached(self.cellcomplex)
+            faces_ptr = edge.Faces_Cached(topology)
             for face in faces_ptr:
                 index = face.Get("index")
                 # connect this surface member to this curve connection
@@ -577,9 +583,11 @@ class Molior:
                             related_structural_connection=point_connection,
                         )
 
-        # delete unused curve connections
+        # delete unused curve connections, without Cells a free edge is kept as it
+        # is somewhere that the user can add a support
+        needed = 2 if self.cellcomplex else 1
         for curve_connection in self.file.by_type("IfcStructuralCurveConnection"):
-            if len(curve_connection.ConnectsStructuralMembers) < 2:
+            if len(curve_connection.ConnectsStructuralMembers) < needed:
                 for relation in curve_connection.ConnectsStructuralMembers:
                     api.structural.remove_structural_connection_condition(
                         self.file,
@@ -588,6 +596,59 @@ class Molior:
                 api.root.remove_product(self.file, product=curve_connection)
 
         self.release_masonry()
+
+    def anchor_lowest_edges(self):
+        """Without Cells nothing says where the ground is, assume the lowest edges
+        are fixed to it. These are starting points, supports can be edited later:
+        the Anchor condition can be removed from a connection, or assigned to any
+        other connection on an edge of the mesh"""
+        connections = []
+        for connection in self.file.by_type("IfcStructuralCurveConnection"):
+            edge = connection.Representation.Representations[0].Items[0]
+            connections.append(
+                [
+                    connection,
+                    edge.EdgeStart.VertexGeometry.Coordinates[2],
+                    edge.EdgeEnd.VertexGeometry.Coordinates[2],
+                ]
+            )
+        if not connections:
+            return
+        lowest = min(min(item[1], item[2]) for item in connections)
+        level = [
+            item[0] for item in connections if max(item[1], item[2]) - lowest < 0.001
+        ]
+        # a mesh can stand on a corner, anything from this corner will have to do
+        if not level:
+            level = [
+                item[0]
+                for item in connections
+                if min(item[1], item[2]) - lowest < 0.001
+            ]
+        for connection in level:
+            # a footing has already supported this edge
+            if connection.AppliedCondition:
+                continue
+            api.structural.add_structural_boundary_condition(
+                self.file,
+                name="Anchor",
+                connection=connection,
+            )
+            api.structural.edit_structural_boundary_condition(
+                self.file,
+                condition=connection.AppliedCondition,
+                attributes={
+                    name: {"type": "IfcBoolean", "value": True}
+                    for name in (
+                        "TranslationalStiffnessByLengthX",
+                        "TranslationalStiffnessByLengthY",
+                        "TranslationalStiffnessByLengthZ",
+                        "RotationalStiffnessByLengthX",
+                        "RotationalStiffnessByLengthY",
+                        "RotationalStiffnessByLengthZ",
+                    )
+                },
+            )
 
     def release_masonry(self):
         """Masonry carries no moment into what it bears on or supports, so hinge it"""

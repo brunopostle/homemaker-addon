@@ -138,7 +138,9 @@ When generating IFC, the original CellComplex is "stashed" in the IfcBuilding as
 This allows `Molior.get_cellcomplex_from_ifc()` to reconstruct the CellComplex from an existing IFC file for regeneration.
 
 ### Lite Mode
-Faces that don't make a CellComplex (a single wall, an open box, rooms that don't share a face) go through `Molior.from_topology()` and `Topology.GetTraces()`/`GetHulls()`. Every Face becomes a building element, but with no Cells there are no spaces, circulation or connected structure, and the IFC can't be regenerated as no topology is stashed.
+Faces that don't make a CellComplex (a single wall, an open box, rooms that don't share a face) go through `Molior.from_topology()` and `Topology.GetTraces()`/`GetHulls()`. Every Face becomes a building element, but with no Cells there are no spaces or circulation, and the IFC can't be regenerated as no topology is stashed.
+
+Structural members are connected along shared Edges, and every free Edge keeps a connection. The lowest Edges get a fully fixed `Anchor` boundary condition, unless a footing already supports them. These are a starting point: to change the supports, edit `AppliedCondition` of the connections.
 
 The `top-*` and `bottom-*` conditions work as in a CellComplex, but there are no Cells to say which way is out: `Topology.ByFaces()` makes connected Faces agree with one of them, so draw them all facing out ("recalculate outside" in Blender) or the walls end up inside-out.
 
