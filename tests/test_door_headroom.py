@@ -106,3 +106,72 @@ def test_door_that_fits_stays_in_circulation():
     for space in molior_object.file.by_type("IfcSpace"):
         psets = ifcopenshell.util.element.get_psets(space)
         assert psets["EPset_Pattern"]["Separation"] > 0.0
+
+
+def build_bathroom(depth):
+    """A bathroom off the corridor, its wall to the corridor is 'depth' long, and
+    a bedroom on the other side of it"""
+    rooms = [
+        ["circulation", [[0, 0], [4, 0], [4, 8], [0, 8]]],
+        ["bedroom", [[4, 0], [8, 0], [8, 4], [4, 4]]],
+        ["toilet", [[4, 4], [8, 4], [8, 4 + depth], [4, 4 + depth]]],
+    ]
+    faces, widgets = document_to_faces_and_widgets(
+        {
+            "rooms": [
+                {"elevation": 0.0, "height": 3.0, "usage": usage, "vertices": vertices}
+                for usage, vertices in rooms
+            ]
+        }
+    )
+    molior_object = Molior.from_faces_and_widgets(faces=faces, widgets=widgets)
+    molior_object.execute()
+    return molior_object
+
+
+def door_walls(molior_object):
+    """Usages either side of each wall with a door in the circulation Graph"""
+    cc = molior_object.cellcomplex
+    return sorted(
+        sorted(cell.Usage() for cell in face.Cells_Cached(cc))
+        for face in molior_object.circulation.Faces(cc)
+        if face.IsVertical()
+    )
+
+
+def test_door_that_doesnt_fit_goes_in_another_wall():
+    # the corridor wall is too short for a door, the bedroom wall isn't
+    molior_object = build_bathroom(1.05)
+    assert door_walls(molior_object) == [
+        ["bedroom", "circulation"],
+        ["bedroom", "toilet"],
+    ]
+    assert molior_object.warnings == []
+    doors = molior_object.file.by_type("IfcDoor")
+    assert len(doors) == 3
+    # the door is in the wall between bedroom and bathroom
+    assert [door_extent(door)[0] for door in doors].count(
+        pytest.approx(4.0, abs=0.1)
+    ) == 1
+    # the Graph changed, so distances are calculated again, through the bedroom
+    assert molior_object.circulation.IsConnected()
+    usages = {
+        cell.Usage(): cell.Get("index")
+        for cell in molior_object.circulation.Cells(molior_object.cellcomplex)
+    }
+    table = molior_object.shortest_path_table
+    corridor, bedroom, toilet = (
+        usages[usage] for usage in ("circulation", "bedroom", "toilet")
+    )
+    assert table[corridor][toilet] == pytest.approx(
+        table[corridor][bedroom] + table[bedroom][toilet]
+    )
+
+
+def test_door_that_fits_isnt_moved():
+    molior_object = build_bathroom(1.2)
+    assert door_walls(molior_object) == [
+        ["bedroom", "circulation"],
+        ["circulation", "toilet"],
+    ]
+    assert len(molior_object.file.by_type("IfcDoor")) == 3

@@ -58,6 +58,8 @@ class Wall(TraceClass):
         self.path = []
         # where doors ought to go, keyed by Face index, see molior.stair
         self.door_targets = {}
+        # Molior may place the openings of every wall before building any
+        self.openings_planned = False
         for arg in args:
             self.__dict__[arg] = args[arg]
 
@@ -77,7 +79,8 @@ class Wall(TraceClass):
             self.file, context_identifier="Clearance"
         )
 
-        self.init_openings()
+        if not self.openings_planned:
+            self.init_openings()
 
         # traces have one or more segments, aggregate them
         aggregate = api.root.create_entity(
@@ -714,21 +717,30 @@ class Wall(TraceClass):
             edge = self.chain.graph[self.chain.edges()[0][0]]
             face = edge[1]["face"]
             vertex = face.GraphVertex(self.circulation)
-            # FIXME determine door orientation using 'separation' attribute, see Molior.connect_spaces()
-            if (
-                vertex is not None
-                and edge[1]["back_cell"] is not None
-                and edge[1]["front_cell"] is not None
-            ):
-                self.populate_interior_openings(
-                    0, edge[1]["back_cell"].Usage(), edge[1]["front_cell"].Usage(), 0
-                )
-                self.fix_heights(0)
-                self.fix_segment(0)
-                self.steer_door(0, self.door_target(face))
-                self.slide_door(0)
-                self.fix_gable(0)
+            if vertex is not None:
+                self.fit_interior_door()
                 self.close_doorless_face(0, face)
+        self.openings_planned = True
+
+    def fit_interior_door(self):
+        """Put a door in an interior wall where it fits, is there one?"""
+        edge = self.chain.graph[self.chain.edges()[0][0]]
+        face = edge[1]["face"]
+        # FIXME determine door orientation using 'separation' attribute, see Molior.connect_spaces()
+        if edge[1]["back_cell"] is None or edge[1]["front_cell"] is None:
+            return False
+        self.populate_interior_openings(
+            0, edge[1]["back_cell"].Usage(), edge[1]["front_cell"].Usage(), 0
+        )
+        self.fix_heights(0)
+        self.fix_segment(0)
+        self.steer_door(0, self.door_target(face))
+        self.slide_door(0)
+        self.fix_gable(0)
+        for opening in self.openings[0]:
+            if self.get_family(opening["family"])["type"] == "door":
+                return True
+        return False
 
     def close_doorless_face(self, id_segment, face):
         """Nobody can walk through a Face with no door, not even if the circulation

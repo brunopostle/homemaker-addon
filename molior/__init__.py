@@ -18,7 +18,7 @@ IfcOpenShell.
 import logging
 import re
 import ifcopenshell.util
-from topologic_core import CellComplex, Vertex, Face, Topology
+from topologic_core import CellComplex, Vertex, Edge, Face, Topology
 from .extrusion import Extrusion
 from .floor import Floor
 from .shell import Shell
@@ -251,7 +251,8 @@ class Molior:
             self.door_targets = door_targets(
                 self.cellcomplex, self.circulation, self.elevations
             )
-        vertices_before = self.count_circulation_vertices()
+        vertices_before = self.circulation_vertices()
+        queued = []
         deferred = []
         for condition in self.traces:
             for elevation in self.traces[condition]:
@@ -267,9 +268,21 @@ class Molior:
                                 height=height,
                                 chain=chain,
                                 deferred=deferred,
+                                queued=queued,
                             )
-        # a door that didn't fit is no longer in the circulation Graph
-        if self.count_circulation_vertices() != vertices_before:
+        # a door that didn't fit is no longer in the circulation Graph, so place
+        # the doors of every wall before building any, there may be another way in
+        walls = [part for part in queued if isinstance(part, Wall)]
+        components = []
+        if self.circulation:
+            components = self.circulation.Components()
+        for wall in walls:
+            wall.init_openings()
+        self.refit_doors(walls, components)
+        for part in queued:
+            part.execute()
+        # doors removed or moved change the circulation Graph
+        if self.circulation_vertices() != vertices_before:
             self.shortest_path_table = self.circulation.ShortestPathTable()
             self.circulation.Separation(self.shortest_path_table, self.cellcomplex)
         self.warn_unreachable_cells()
@@ -298,6 +311,70 @@ class Molior:
         elif self.topology:
             self.connect_structure()
             self.anchor_lowest_edges()
+
+    def refit_doors(self, walls, components_before):
+        """A room left with no way in, as its door didn't fit, can have a door in
+        an interior wall that Circulation() left out for privacy. A room that
+        never had a way in is left for warn_unreachable_cells() to report"""
+        if not self.cellcomplex or not self.circulation:
+            return
+        before = {}
+        for id_component, indexes in enumerate(components_before):
+            for index in indexes:
+                before[index] = id_component
+        candidates = []
+        for wall in walls:
+            if "do_populate_interior_openings" not in wall.__dict__:
+                continue
+            face = wall.chain.graph[wall.chain.edges()[0][0]][1]["face"]
+            if face.GraphVertex(self.circulation) is not None:
+                continue
+            cells = face.Cells_Cached(self.cellcomplex)
+            if len(cells) != 2 or cells[0].Elevation() != cells[1].Elevation():
+                continue
+            candidates.append([wall, face, cells])
+        adjacency = None
+        while candidates:
+            components = self.circulation.Components()
+            if len(components) < 2:
+                return
+            component = {}
+            for id_component, indexes in enumerate(components):
+                for index in indexes:
+                    component[index] = id_component
+            # join the largest part first, preferably not through a bedroom
+            joins = []
+            for candidate in candidates:
+                indexes = [cell.Get("index") for cell in candidate[2]]
+                a, b = [component.get(index) for index in indexes]
+                if a is None or b is None or a == b:
+                    continue
+                if before.get(indexes[0]) != before.get(indexes[1]):
+                    continue
+                other = candidate[2][[a, b].index(min(a, b))].Usage()
+                private = other in ("bedroom", "toilet")
+                joins.append([min(a, b), private, candidate])
+            joins.sort(key=lambda join: join[0:2])
+            for join in joins:
+                wall, face, cells = join[2]
+                candidates.remove(join[2])
+                if wall.fit_interior_door():
+                    if adjacency is None:
+                        adjacency = self.cellcomplex.Adjacency()
+                    vertex = face.GraphVertex(adjacency)
+                    self.circulation.AddEdges(
+                        [
+                            Edge.ByStartVertexEndVertex(
+                                vertex, cell.GraphVertex(self.circulation)
+                            )
+                            for cell in cells
+                        ],
+                        0.0001,
+                    )
+                    break
+                wall.openings[0] = []
+            else:
+                return
 
     def warn_unreachable_cells(self):
         """Report rooms that the circulation Graph doesn't connect to the rest of
@@ -330,13 +407,13 @@ class Molior:
         logging.getLogger(__name__).warning(message)
         self.warnings.append(message)
 
-    def count_circulation_vertices(self):
-        """How many Vertices remain in the circulation Graph, if there is one"""
+    def circulation_vertices(self):
+        """What Vertices remain in the circulation Graph, if there is one"""
         if not self.circulation:
-            return 0
+            return set()
         vertices_ptr = []
         self.circulation.Vertices(vertices_ptr)
-        return len(vertices_ptr)
+        return {(vertex.Get("class"), vertex.Get("index")) for vertex in vertices_ptr}
 
     def connect_structure(self):
         """Given Structural Member entities are tagged with Topologic indexes, connect them"""
@@ -1052,10 +1129,11 @@ class Molior:
         height=2.7,
         chain=ugraph.graph(),
         deferred=None,
+        queued=None,
     ):
         """Generates IFC data for a single trace and adds to the current building.
         Spaces and Stairs are added to the 'deferred' list, if there is one, and not
-        executed"""
+        executed, everything else is added to the 'queued' list, if there is one"""
         results = []
         myconfig = Molior.style.get(stylename)
         level = 0
@@ -1113,6 +1191,8 @@ class Molior:
 
                 if deferred is not None and isinstance(part, (Space, Stair)):
                     deferred.append(part)
+                elif queued is not None:
+                    queued.append(part)
                 else:
                     part.execute()
                 # results are only used by test suite
