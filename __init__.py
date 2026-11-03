@@ -310,6 +310,7 @@ class ObjectHomemaker(bpy.types.Operator):
                 share_dir=self.share_dir,
             )
             molior_object.execute()
+            self._report_warnings(molior_object)
 
         elif self.action == "generate_ifc":
             # Create new buildings from blender objects
@@ -322,6 +323,12 @@ class ObjectHomemaker(bpy.types.Operator):
                     share_dir=self.share_dir,
                 )
                 molior_object.execute()
+                self._report_warnings(molior_object)
+
+    def _report_warnings(self, molior_object):
+        """Show problems that didn't stop the building being made"""
+        for message in molior_object.warnings:
+            self.report({"WARNING"}, message)
 
 
 def topologic_faces_from_blender_object(blender_object) -> List[Face]:

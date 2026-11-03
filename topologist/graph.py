@@ -136,6 +136,31 @@ def Separation(self, table, cellcomplex):
                     entity.SetDictionary(dictionary)
 
 
+def Components(self):
+    """Index numbers of Cells that can reach each other, as lists, largest first"""
+    vertices_ptr = []
+    self.Vertices(vertices_ptr)
+    unvisited = {(v.Get("class"), v.Get("index")): v for v in vertices_ptr}
+    components = []
+    while unvisited:
+        stack = [unvisited.popitem()[1]]
+        cells = []
+        while stack:
+            vertex = stack.pop()
+            if vertex.Get("class") == "Cell":
+                cells.append(vertex.Get("index"))
+            adjacent_ptr = []
+            self.AdjacentVertices(vertex, adjacent_ptr)
+            for adjacent in adjacent_ptr:
+                key = (adjacent.Get("class"), adjacent.Get("index"))
+                if key in unvisited:
+                    stack.append(unvisited.pop(key))
+        if cells:
+            components.append(sorted(cells, key=int))
+    components.sort(key=lambda cells: (-len(cells), int(cells[0])))
+    return components
+
+
 def Faces(self, cellcomplex):
     """Return all the Faces from a CellComplex corresponding to this Graph"""
     vertices_ptr = []
@@ -204,6 +229,7 @@ setattr(topologic_core.Graph, "Circulation", Circulation)
 setattr(topologic_core.Graph, "IsConnected", IsConnected)
 setattr(topologic_core.Graph, "ShortestPathTable", ShortestPathTable)
 setattr(topologic_core.Graph, "Separation", Separation)
+setattr(topologic_core.Graph, "Components", Components)
 setattr(topologic_core.Graph, "Faces", Faces)
 setattr(topologic_core.Graph, "Cells", Cells)
 setattr(topologic_core.Graph, "GetEntity", GetEntity)

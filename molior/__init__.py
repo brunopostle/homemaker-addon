@@ -15,6 +15,7 @@ IfcOpenShell.
 
 """
 
+import logging
 import re
 import ifcopenshell.util
 from topologic_core import CellComplex, Vertex, Face, Topology
@@ -222,6 +223,7 @@ class Molior:
         self.cellcomplex = None
         self.topology = None
         self.share_dir = "share"
+        self.warnings = []
         for arg in args:
             self.__dict__[arg] = args[arg]
         Molior.style = Style({"share_dir": self.share_dir})
@@ -270,6 +272,7 @@ class Molior:
         if self.count_circulation_vertices() != vertices_before:
             self.shortest_path_table = self.circulation.ShortestPathTable()
             self.circulation.Separation(self.shortest_path_table, self.cellcomplex)
+        self.warn_unreachable_cells()
         # stairs are fitted around doors, and spaces are assessed by how doors
         # connect them, so the doors have to exist first
         for part in deferred:
@@ -295,6 +298,37 @@ class Molior:
         elif self.topology:
             self.connect_structure()
             self.anchor_lowest_edges()
+
+    def warn_unreachable_cells(self):
+        """Report rooms that the circulation Graph doesn't connect to the rest of
+        the building, there is no door or none fitted"""
+        if not self.cellcomplex or not self.circulation:
+            return
+        components = self.circulation.Components()
+        if len(components) < 2:
+            return
+        # with no single largest part, nowhere is 'the rest of the building'
+        if len(components[0]) == len(components[1]):
+            unreachable = components
+        else:
+            unreachable = components[1:]
+        cells_ptr = []
+        self.cellcomplex.Cells(None, cells_ptr)
+        usages = {cell.Get("index"): cell.Usage() for cell in cells_ptr}
+        for component in unreachable:
+            names = [usages[index] + "/" + str(index) for index in component]
+            self.warn(
+                "No door connects "
+                + ", ".join(names)
+                + " to the rest of building '"
+                + self.name
+                + "'"
+            )
+
+    def warn(self, message):
+        """Keep a message for the user, the build carries on"""
+        logging.getLogger(__name__).warning(message)
+        self.warnings.append(message)
 
     def count_circulation_vertices(self):
         """How many Vertices remain in the circulation Graph, if there is one"""

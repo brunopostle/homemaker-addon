@@ -87,10 +87,21 @@ def test_removed_door_is_removed_from_circulation():
         assert psets["EPset_Pattern"].get("Separation") is None
 
 
+def test_removed_door_is_reported():
+    molior_object = build_lean_to(1.0, 2.4, depth=2.0)
+    # neither room is the larger part of the building, so both are reported
+    assert molior_object.circulation.Components() == [["0"], ["1"]]
+    assert len(molior_object.warnings) == 2
+    for message in molior_object.warnings:
+        assert message.startswith("No door connects living/")
+
+
 def test_door_that_fits_stays_in_circulation():
     molior_object = build_lean_to(3.0, 3.0, depth=6.0)
     assert len(molior_object.file.by_type("IfcDoor")) == 1
     assert molior_object.circulation.IsConnected()
+    assert len(molior_object.circulation.Components()) == 1
+    assert molior_object.warnings == []
     assert molior_object.shortest_path_table
     for space in molior_object.file.by_type("IfcSpace"):
         psets = ifcopenshell.util.element.get_psets(space)
