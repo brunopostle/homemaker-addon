@@ -314,7 +314,8 @@ class Molior:
 
     def refit_doors(self, walls, components_before):
         """A room left with no way in, as its door didn't fit, can have a door in
-        an interior wall that Circulation() left out for privacy. A room that
+        an interior wall that Circulation() left out for privacy, or as one
+        door to circulation is enough. A room that
         never had a way in is left for warn_unreachable_cells() to report"""
         if not self.cellcomplex or not self.circulation:
             return

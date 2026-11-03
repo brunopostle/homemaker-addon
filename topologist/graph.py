@@ -1,5 +1,6 @@
 """Overloads domain-specific methods onto topologic_core.Graph"""
 
+import heapq
 import topologic_core
 from topologic_core import VertexUtility
 
@@ -44,7 +45,6 @@ def Circulation(self, cellcomplex):
         else:
             # neither vertical or horizontal
             vertices_ptr.append(vertex)
-    # TODO should use 'separation' attribute to prune excess doors
     public = ["stair", "circulation"]
     private = ["bedroom", "toilet"]
     # a toilet with no door to circulation is an en-suite
@@ -72,6 +72,98 @@ def Circulation(self, cellcomplex):
         ):
             vertices_ptr.append(vertex)
     self.RemoveVertices(vertices_ptr)
+    self.PruneDoors(cellcomplex, doors, public)
+
+
+def PruneDoors(self, cellcomplex, doors, public):
+    """Rooms only want one door to circulation: a bedroom or toilet keeps the
+    door to the least 'popular' circulation, a living room or kitchen to the
+    most, where popular is the least 'separation' from all other Cells"""
+    lookup = self.Lookup()
+    separation = {}
+    for key in lookup:
+        if key[0] == "Cell":
+            distances = _distances(lookup, key)
+            others = [
+                length
+                for other, length in distances.items()
+                if other[0] == "Cell" and other != key
+            ]
+            if others:
+                separation[key[1]] = sum(others) / len(others)
+    # walls between a room and circulation, by room
+    rooms = {}
+    for vertex, cells, usages in doors:
+        key = ("Face", vertex.Get("index"))
+        if key not in lookup:
+            continue
+        for cell, usage, other_cell, other in zip(
+            cells, usages, reversed(cells), reversed(usages)
+        ):
+            if usage in ("bedroom", "toilet", "living", "kitchen") and other in public:
+                index = cell.Get("index")
+                if index not in rooms:
+                    rooms[index] = [usage, []]
+                rooms[index][1].append([key, other_cell.Get("index"), vertex])
+    removed = []
+    for index in sorted(rooms, key=int):
+        usage, walls = rooms[index]
+        if len(walls) < 2:
+            continue
+        sign = -1.0 if usage in ("bedroom", "toilet") else 1.0
+        walls.sort(
+            key=lambda wall: (
+                sign * separation.get(wall[1], 0.0),
+                int(wall[1]),
+                int(wall[0][1]),
+            )
+        )
+        for key, other, vertex in walls[1:]:
+            neighbours = lookup.pop(key)
+            for neighbour in neighbours:
+                del lookup[neighbour][key]
+            # keep a door to circulation that is only reached through this room
+            if ("Cell", other) in _distances(lookup, ("Cell", index)):
+                removed.append(vertex)
+            else:
+                lookup[key] = neighbours
+                for neighbour, length in neighbours.items():
+                    lookup[neighbour][key] = length
+    self.RemoveVertices(removed)
+
+
+def Lookup(self):
+    """The Graph as a dictionary of Vertices, keyed by class and index, of
+    adjacent Vertices and the length of the Edge to them"""
+    vertices_ptr = []
+    self.Vertices(vertices_ptr)
+    lookup = {(v.Get("class"), v.Get("index")): {} for v in vertices_ptr}
+    edges_ptr = []
+    self.Edges(edges_ptr)
+    for edge in edges_ptr:
+        start = edge.StartVertex()
+        end = edge.EndVertex()
+        a = (start.Get("class"), start.Get("index"))
+        b = (end.Get("class"), end.Get("index"))
+        if a in lookup and b in lookup:
+            lookup[a][b] = edge.Length()
+            lookup[b][a] = edge.Length()
+    return lookup
+
+
+def _distances(lookup, start):
+    """Shortest path lengths from one Vertex in a Lookup() to those it reaches"""
+    distances = {start: 0.0}
+    queue = [(0.0, start)]
+    while queue:
+        distance, key = heapq.heappop(queue)
+        if distance > distances[key]:
+            continue
+        for other, length in lookup[key].items():
+            if other not in distances or distance + length < distances[other]:
+                distances[other] = distance + length
+                heapq.heappush(queue, (distance + length, other))
+    return distances
 
 
 def IsConnected(self):
@@ -237,6 +329,8 @@ def Dot(self, cellcomplex):
 
 
 setattr(topologic_core.Graph, "Circulation", Circulation)
+setattr(topologic_core.Graph, "PruneDoors", PruneDoors)
+setattr(topologic_core.Graph, "Lookup", Lookup)
 setattr(topologic_core.Graph, "IsConnected", IsConnected)
 setattr(topologic_core.Graph, "ShortestPathTable", ShortestPathTable)
 setattr(topologic_core.Graph, "Separation", Separation)

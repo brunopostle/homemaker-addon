@@ -336,3 +336,56 @@ def test_no_door_between_bedrooms():
         ]
     )
     assert doors == [["bedroom", "circulation"], ["bedroom", "circulation"]]
+
+
+def _l_shaped_corridor(usage):
+    """A room beside two circulation Cells: one at the end of the building,
+    and one that also serves a bedroom, the more 'popular'"""
+    return _circulation_doors(
+        [
+            ["circulation", [[0, 0], [2, 0], [2, 8], [0, 8]]],
+            ["circulation", [[2, 0], [10, 0], [10, 2], [2, 2]]],
+            [usage, [[2, 2], [6, 2], [6, 6], [2, 6]]],
+            ["bedroom", [[6, 2], [10, 2], [10, 6], [6, 6]]],
+        ]
+    )
+
+
+def _circulation_neighbours(molior_object, index):
+    """Index numbers of the circulation Cells with a door to a room"""
+    cc = molior_object.cellcomplex
+    result = []
+    for face in molior_object.circulation.Faces(cc):
+        cells = face.Cells_Cached(cc)
+        if face.IsVertical() and index in [cell.Get("index") for cell in cells]:
+            result.extend(
+                cell.Get("index") for cell in cells if cell.Usage() == "circulation"
+            )
+    return sorted(result)
+
+
+def test_living_room_has_one_door_to_popular_circulation():
+    for usage in ["living", "kitchen"]:
+        molior_object, doors = _l_shaped_corridor(usage)
+        assert doors.count(sorted([usage, "circulation"])) == 1
+        assert _circulation_neighbours(molior_object, "1") == ["2"]
+        assert molior_object.circulation.IsConnected()
+
+
+def test_bedroom_has_one_door_to_quiet_circulation():
+    for usage in ["bedroom", "toilet"]:
+        molior_object, doors = _l_shaped_corridor(usage)
+        assert _circulation_neighbours(molior_object, "1") == ["0"]
+        assert molior_object.circulation.IsConnected()
+
+
+def test_room_keeps_doors_to_circulation_only_it_reaches():
+    molior_object, doors = _circulation_doors(
+        [
+            ["circulation", [[0, 0], [2, 0], [2, 4], [0, 4]]],
+            ["living", [[2, 0], [6, 0], [6, 4], [2, 4]]],
+            ["circulation", [[6, 0], [8, 0], [8, 4], [6, 4]]],
+        ]
+    )
+    assert doors == [["circulation", "living"], ["circulation", "living"]]
+    assert molior_object.circulation.IsConnected()
