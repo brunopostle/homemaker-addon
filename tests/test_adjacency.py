@@ -1,6 +1,7 @@
 import pytest
 import sys
 import os
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from topologic_core import Vertex, Face, Cell, CellComplex
 
@@ -281,3 +282,57 @@ def test_void_attic_does_not_disconnect_rooms():
 
     molior_object.execute()
     assert len(molior_object.file.by_type("IfcSpace")) >= 2
+
+
+def _circulation_doors(rooms):
+    """Usages either side of each wall in the circulation Graph"""
+    faces, widgets = document_to_faces_and_widgets(
+        {
+            "rooms": [
+                {"elevation": 0.0, "height": 3.0, "usage": usage, "vertices": vertices}
+                for usage, vertices in rooms
+            ]
+        }
+    )
+    molior_object = Molior.from_faces_and_widgets(faces=faces, widgets=widgets)
+    cc = molior_object.cellcomplex
+    doors = []
+    for face in molior_object.circulation.Faces(cc):
+        if face.IsVertical():
+            doors.append(sorted(cell.Usage() for cell in face.Cells_Cached(cc)))
+    return molior_object, sorted(doors)
+
+
+def test_en_suite_has_door_to_bedroom():
+    molior_object, doors = _circulation_doors(
+        [
+            ["circulation", [[0, 0], [4, 0], [4, 4], [0, 4]]],
+            ["bedroom", [[4, 0], [8, 0], [8, 4], [4, 4]]],
+            ["toilet", [[8, 0], [10, 0], [10, 4], [8, 4]]],
+        ]
+    )
+    assert doors == [["bedroom", "circulation"], ["bedroom", "toilet"]]
+    assert molior_object.circulation.IsConnected()
+
+
+def test_bathroom_off_circulation_has_no_door_to_bedroom():
+    molior_object, doors = _circulation_doors(
+        [
+            ["circulation", [[0, 0], [4, 0], [4, 8], [0, 8]]],
+            ["bedroom", [[4, 0], [8, 0], [8, 4], [4, 4]]],
+            ["toilet", [[4, 4], [8, 4], [8, 6], [4, 6]]],
+        ]
+    )
+    assert doors == [["bedroom", "circulation"], ["circulation", "toilet"]]
+    assert molior_object.circulation.IsConnected()
+
+
+def test_no_door_between_bedrooms():
+    molior_object, doors = _circulation_doors(
+        [
+            ["circulation", [[0, 0], [4, 0], [4, 8], [0, 8]]],
+            ["bedroom", [[4, 0], [8, 0], [8, 4], [4, 4]]],
+            ["bedroom", [[4, 4], [8, 4], [8, 8], [4, 8]]],
+        ]
+    )
+    assert doors == [["bedroom", "circulation"], ["bedroom", "circulation"]]

@@ -8,6 +8,8 @@ def Circulation(self, cellcomplex):
     """Reduce an adjacency Graph to a circulation Graph.
     Uses heuristics for connecting rooms and floors between stair cells"""
     vertices_ptr = []
+    # walls that can have a door, with the usages either side
+    doors = []
     for face in self.Faces(cellcomplex):
         vertex = face.GraphVertex(self)
         if face.IsVertical():
@@ -17,25 +19,16 @@ def Circulation(self, cellcomplex):
                 # is too narrow for a door
                 vertices_ptr.append(vertex)
             else:
-                cells_ptr = face.Cells_Cached(cellcomplex)
-                cells = cells_ptr
+                cells = face.Cells_Cached(cellcomplex)
                 if cells[0].Elevation() != cells[1].Elevation():
                     # floors either side are not at the same level
                     vertices_ptr.append(vertex)
                 else:
-                    # TODO should use 'separation' attribute to prune excess doors
-                    usage_a = cells[0].Usage()
-                    usage_b = cells[1].Usage()
-                    if usage_a == "void" or usage_b == "void":
+                    usages = [cells[0].Usage(), cells[1].Usage()]
+                    if "void" in usages:
                         vertices_ptr.append(vertex)
-                    elif (usage_a == "bedroom" or usage_a == "toilet") and not (
-                        usage_b == "stair" or usage_b == "circulation"
-                    ):
-                        vertices_ptr.append(vertex)
-                    elif (usage_b == "bedroom" or usage_b == "toilet") and not (
-                        usage_a == "stair" or usage_a == "circulation"
-                    ):
-                        vertices_ptr.append(vertex)
+                    else:
+                        doors.append([vertex, cells, usages])
 
         elif face.IsHorizontal():
             # floor
@@ -50,6 +43,24 @@ def Circulation(self, cellcomplex):
             vertices_ptr.append(vertex)
         else:
             # neither vertical or horizontal
+            vertices_ptr.append(vertex)
+    # TODO should use 'separation' attribute to prune excess doors
+    public = ["stair", "circulation"]
+    private = ["bedroom", "toilet"]
+    # a toilet with no door to circulation is an en-suite
+    toilets_public = set()
+    for vertex, cells, usages in doors:
+        for cell, usage, other in zip(cells, usages, reversed(usages)):
+            if usage == "toilet" and other in public:
+                toilets_public.add(cell.Get("index"))
+    for vertex, cells, usages in doors:
+        if sorted(usages) == ["bedroom", "toilet"]:
+            toilet = cells[usages.index("toilet")]
+            if toilet.Get("index") in toilets_public:
+                vertices_ptr.append(vertex)
+        elif (usages[0] in private and usages[1] not in public) or (
+            usages[1] in private and usages[0] not in public
+        ):
             vertices_ptr.append(vertex)
     # nobody goes to a 'void', an unreachable Cell would make the Graph disconnected
     all_vertices_ptr = []
