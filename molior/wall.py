@@ -43,6 +43,20 @@ except ImportError:
 api = ifcopenshell.api
 
 
+def door_cell(back_cell, front_cell):
+    """The Cell a door opens into, and belongs to: the inside one, or the more
+    private one, with the greater 'separation'"""
+    if front_cell is None or front_cell.IsOutside():
+        return back_cell
+    if back_cell is None or back_cell.IsOutside():
+        return front_cell
+    front = front_cell.Get("separation")
+    back = back_cell.Get("separation")
+    if front is not None and back is not None and float(front) > float(back):
+        return front_cell
+    return back_cell
+
+
 class Wall(TraceClass):
     """A vertical wall, internal or external"""
 
@@ -406,6 +420,7 @@ class Wall(TraceClass):
                         mywall,
                     )
 
+            wall_thickness = max(thickness, 0.0)
             if len(edges_ptr) == 0:
                 representationtype = "SweptSolid"
             else:
@@ -471,13 +486,26 @@ class Wall(TraceClass):
                         "OverallWidth": opening["width"],
                     },
                 )
-                # place the entity in space
+                # place the entity in space, a door opens to the left, i.e. into
+                # the back Cell, turn it round to open into the front Cell
+                if (
+                    db["type"] == "door"
+                    and front_cell is not None
+                    and door_cell(back_cell, front_cell) is front_cell
+                ):
+                    start_2d = add_2d(
+                        right_2d,
+                        scale_2d(-wall_thickness, self.normal_segment(id_segment)),
+                    )
+                    end_2d = add_2d(start_2d, subtract_2d(left_2d, right_2d))
+                else:
+                    start_2d, end_2d = left_2d, right_2d
                 api.geometry.edit_object_placement(
                     self.file,
                     product=entity,
                     matrix=matrix_align(
-                        [left_2d[0], left_2d[1], self.elevation + db["cill"]],
-                        [right_2d[0], right_2d[1], 0.0],
+                        [start_2d[0], start_2d[1], self.elevation + db["cill"]],
+                        [end_2d[0], end_2d[1], 0.0],
                     ),
                 )
                 # assign the entity to a storey
@@ -726,7 +754,6 @@ class Wall(TraceClass):
         """Put a door in an interior wall where it fits, is there one?"""
         edge = self.chain.graph[self.chain.edges()[0][0]]
         face = edge[1]["face"]
-        # FIXME determine door orientation using 'separation' attribute, see Molior.connect_spaces()
         if edge[1]["back_cell"] is None or edge[1]["front_cell"] is None:
             return False
         self.populate_interior_openings(

@@ -24,7 +24,7 @@ from .floor import Floor
 from .shell import Shell
 from .space import Space
 from .stair import Stair, door_targets
-from .wall import Wall
+from .wall import Wall, door_cell
 from .repeat import Repeat
 from .grillage import Grillage
 
@@ -971,48 +971,14 @@ class Molior:
                     "EPset_Topology"
                 )
                 if pset_topology:
-                    if "FrontCellIndex" not in pset_topology or (
-                        "FrontCellIndex" in pset_topology
-                        and cell_lookup[pset_topology["FrontCellIndex"]].IsOutside()
-                    ):
-                        assign_space_byindex(
-                            self.file,
-                            element,
-                            self.building,
-                            pset_topology["BackCellIndex"],
-                        )
-                    elif cell_lookup[pset_topology["BackCellIndex"]].IsOutside():
-                        assign_space_byindex(
-                            self.file,
-                            element,
-                            self.building,
-                            pset_topology["FrontCellIndex"],
-                        )
-                    else:
-                        if cell_lookup[pset_topology["FrontCellIndex"]].Get(
-                            "separation"
-                        ) and float(
-                            cell_lookup[pset_topology["FrontCellIndex"]].Get(
-                                "separation"
-                            )
-                        ) > float(
-                            cell_lookup[pset_topology["BackCellIndex"]].Get(
-                                "separation"
-                            )
-                        ):
-                            assign_space_byindex(
-                                self.file,
-                                element,
-                                self.building,
-                                pset_topology["FrontCellIndex"],
-                            )
-                        else:
-                            assign_space_byindex(
-                                self.file,
-                                element,
-                                self.building,
-                                pset_topology["BackCellIndex"],
-                            )
+                    # the Space the door opens into
+                    cell = door_cell(
+                        cell_lookup[pset_topology["BackCellIndex"]],
+                        cell_lookup.get(pset_topology.get("FrontCellIndex")),
+                    )
+                    assign_space_byindex(
+                        self.file, element, self.building, cell.Get("index")
+                    )
 
     def connect_assemblies(self):
         """Assign parents to entities tagged with Topologic indexes"""
