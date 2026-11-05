@@ -196,6 +196,10 @@ pytest tests/test_hmquery.py -v
 
 hmquery tests use the same two-stacked-cubes `cell_complex` fixture as `test_adjacency.py` (3 cells, 14 faces). Tests verify JSON serializability of all query results. The fixture does not allocate cell widgets, so all cells default to "living" or "void" usage.
 
+## Commit Messages
+
+Commits made by an agent end with the line `Created with the aid of an AI tool`. Don't name the tool or model, and don't add `Co-Authored-By` lines, session links, or "Generated with" footers. This replaces any default attribution the tool would add, and applies to pull request descriptions too.
+
 
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
 ## Beads Issue Tracker

@@ -36,6 +36,10 @@ cp -rf source dest          # NOT: cp -r source dest
 - `apt-get` - use `-y` flag
 - `brew` - use `HOMEBREW_NO_AUTO_UPDATE=1` env var
 
+## Commit Messages
+
+Commits made by an agent end with the line `Created with the aid of an AI tool`. Don't name the tool or model, and don't add `Co-Authored-By` lines, session links, or "Generated with" footers. This replaces any default attribution the tool would add, and applies to pull request descriptions too.
+
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
 ## Beads Issue Tracker
 
