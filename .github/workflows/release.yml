@@ -30,7 +30,7 @@ jobs:
       - name: Build extension zip
         run: make -C dist VERSION="$VERSION"
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: add-on-homemaker-v${{ env.VERSION }}
           path: dist/add-on-homemaker-v${{ env.VERSION }}.zip
