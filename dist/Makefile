@@ -1,3 +1,4 @@
+SHELL=/bin/bash
 VERSION := 0.$(shell date '+%Y%m%d').0
 
 dist:

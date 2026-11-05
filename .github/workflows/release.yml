@@ -1,0 +1,48 @@
+name: Release
+
+# Push a date tag such as 2026-11-05 to build the extension zip and attach it
+# to a draft pre-release, ready for release notes. Running the workflow by hand
+# builds the zip as a workflow artifact without making a release.
+
+on:
+  push:
+    tags:
+      - "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set version
+        run: |
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            echo "VERSION=0.${GITHUB_REF_NAME//-/}.0" >> "$GITHUB_ENV"
+          else
+            echo "VERSION=0.$(date '+%Y%m%d').0" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build extension zip
+        run: make -C dist VERSION="$VERSION"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: add-on-homemaker-v${{ env.VERSION }}
+          path: dist/add-on-homemaker-v${{ env.VERSION }}.zip
+          compression-level: 0
+
+      - name: Create draft release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            "dist/add-on-homemaker-v$VERSION.zip" \
+            --draft --prerelease \
+            --title "blender-homemaker-$GITHUB_REF_NAME" \
+            --generate-notes
