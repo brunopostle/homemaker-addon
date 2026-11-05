@@ -30,11 +30,10 @@ jobs:
       - name: Build extension zip
         run: make -C dist VERSION="$VERSION"
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
-          name: add-on-homemaker-v${{ env.VERSION }}
           path: dist/add-on-homemaker-v${{ env.VERSION }}.zip
-          compression-level: 0
+          archive: false
 
       - name: Create draft release
         if: github.ref_type == 'tag'
