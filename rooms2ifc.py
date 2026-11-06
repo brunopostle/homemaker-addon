@@ -7,8 +7,9 @@ web/README.md: a "rooms" list where each room has "vertices", "elevation",
 "height", "face_styles" and "usage"; and an optional "name". Rooms are prisms,
 anything else (a pitched roof) can be added with a "faces" list where each
 face has "vertices" (three or more [x, y, z]) and a "stylename"; and a
-"widgets" list where each has a "position" and a "usage". Other keys are
-ignored.
+"widgets" list where each has a "position" and a "usage"; and an optional
+"site" with "latitude" and "longitude" in decimal degrees (north and east are
+positive) and "elevation" in metres above sea level. Other keys are ignored.
 
 Usage:
     rooms2ifc.py myrooms.json mybuilding.ifc
@@ -21,7 +22,7 @@ import os
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 from molior import Molior
-from molior.rooms import document_to_faces_and_widgets
+from molior.rooms import document_to_faces_and_widgets, site_from_json
 
 
 def rooms2ifc(rooms_path, ifc_path):
@@ -39,6 +40,7 @@ def rooms2ifc(rooms_path, ifc_path):
         faces=faces,
         widgets=widgets,
         name=document.get("name") or "rooms2ifc building",
+        site=site_from_json(document.get("site")),
     )
     molior_object.execute()
     molior_object.file.write(ifc_path)

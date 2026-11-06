@@ -29,7 +29,7 @@ from typing import Optional, Annotated
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 # Both the web/ directory and repo root need to be on sys.path;
 # the repo root for molior/, topologist/.
@@ -181,6 +181,12 @@ class WidgetData(BaseModel):
         return v
 
 
+class SiteData(BaseModel):
+    latitude:  Optional[float] = Field(None, ge=-90.0, le=90.0)     # decimal degrees, north +
+    longitude: Optional[float] = Field(None, ge=-180.0, le=180.0)   # decimal degrees, east +
+    elevation: Optional[float] = Field(None, ge=-10000.0, le=10000.0)  # metres above sea level
+
+
 class RoomData(BaseModel):
     vertices:    list[list[float]]           # [[x,z],...] Three.js XZ plane (≥3, ≤64)
     elevation:   float = 0.0
@@ -266,6 +272,7 @@ class GenerateRequest(BaseModel):
     faces: Optional[list[FaceData]] = None    # raw faces, alone or to add roofs to rooms
     widgets: Optional[list[WidgetData]] = None
     rooms: Optional[list[RoomData]] = None    # cuboid editor format (preferred)
+    site: Optional[SiteData] = None
 
     @field_validator("name")
     @classmethod
@@ -300,7 +307,7 @@ def _generate_ifc(request_dict: dict, share_dir: str) -> bytes:
 
     from molior import Molior
     import molior.ifc as molior_ifc
-    from molior.rooms import document_to_faces_and_widgets
+    from molior.rooms import document_to_faces_and_widgets, site_from_json
 
     faces, widgets = document_to_faces_and_widgets(request_dict)
 
@@ -314,6 +321,7 @@ def _generate_ifc(request_dict: dict, share_dir: str) -> bytes:
         widgets=widgets,
         name=request_dict.get("name", "My Building"),
         share_dir=share_dir,
+        site=site_from_json(request_dict.get("site")),
     )
     molior_obj.execute()
 

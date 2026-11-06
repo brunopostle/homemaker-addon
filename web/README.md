@@ -305,6 +305,15 @@ Rooms are prisms, so they can't describe a pitched roof.  Send `faces` (a list o
 }
 ```
 
+An optional `site` places the building on the Earth, `latitude` and `longitude` are decimal degrees (north and east are positive) and `elevation` is metres above sea level, any of them can be left out.  Without a `site` the IfcSite is in Sheffield:
+
+```json
+{
+  "site": {"latitude": 51.5072, "longitude": -0.1276, "elevation": 11.0},
+  "rooms": [...]
+}
+```
+
 `rooms2ifc.py` reads the same document from a file.  The editor itself only draws and saves `rooms`.
 
 ### `GET /api/styles`

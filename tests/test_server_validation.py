@@ -322,3 +322,19 @@ class TestGenerateRequest:
 
     def test_5000_faces_accepted(self):
         GenerateRequest(faces=[_quad(z=float(i) * 2) for i in range(5000)])
+
+    def test_site_accepted(self):
+        request = GenerateRequest(
+            rooms=[_room()], site={"latitude": 53.38, "longitude": -1.47}
+        )
+        assert request.model_dump()["site"] == {
+            "latitude": 53.38,
+            "longitude": -1.47,
+            "elevation": None,
+        }
+
+    def test_site_out_of_range(self):
+        with pytest.raises(ValidationError):
+            GenerateRequest(rooms=[_room()], site={"latitude": 90.5})
+        with pytest.raises(ValidationError):
+            GenerateRequest(rooms=[_room()], site={"longitude": -181.0})

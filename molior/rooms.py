@@ -82,6 +82,30 @@ def document_to_faces_and_widgets(document: dict) -> tuple:
     return faces, widgets
 
 
+def site_from_json(site_data: dict) -> dict:
+    """Convert the "site" of a rooms document to the site of a Molior object.
+
+    The site dict can have "latitude" and "longitude" in decimal degrees,
+    north and east are positive, and "elevation" in metres above sea level.
+    Returns None if there is no site, raises ValueError if it is wrong.
+    """
+    if not site_data:
+        return None
+    limits = {"latitude": 90.0, "longitude": 180.0, "elevation": 10000.0}
+    site = {}
+    for key, value in site_data.items():
+        if key not in limits:
+            raise ValueError(f"site has unknown key '{key}'")
+        if value is None:
+            continue
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError(f"site {key} {value!r} is not a number")
+        if abs(value) > limits[key]:
+            raise ValueError(f"site {key} {value} out of range ±{limits[key]}")
+        site[key] = float(value)
+    return site or None
+
+
 def rooms_to_faces_and_widgets(rooms: list) -> tuple:
     """Convert a list of room dicts (editor format) to faces and widgets.
 

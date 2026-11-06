@@ -211,6 +211,7 @@ class ObjectHomemaker(bpy.types.Operator):
 
         # Get share directory from addon preferences
         self.share_dir = self._get_share_dir()
+        self.site = site_from_scene(context.scene)
 
         ifc_element = tool.Ifc.get_entity(bpy.context.active_object)
         if ifc_element:
@@ -308,6 +309,7 @@ class ObjectHomemaker(bpy.types.Operator):
                 cellcomplex=self.cellcomplex,
                 name=self.building_name,
                 share_dir=self.share_dir,
+                site=self.site,
             )
             molior_object.execute()
             self._report_warnings(molior_object)
@@ -321,6 +323,7 @@ class ObjectHomemaker(bpy.types.Operator):
                     widgets=self.widgets,
                     name=blender_object.name,
                     share_dir=self.share_dir,
+                    site=self.site,
                 )
                 molior_object.execute()
                 self._report_warnings(molior_object)
@@ -329,6 +332,23 @@ class ObjectHomemaker(bpy.types.Operator):
         """Show problems that didn't stop the building being made"""
         for message in molior_object.warnings:
             self.report({"WARNING"}, message)
+
+
+def site_from_scene(scene):
+    """Latitude and longitude of the scene, if an add-on has set them
+
+    BlenderGIS keeps them as 'latitude' and 'longitude' custom properties of
+    the scene, the Sun Position add-on in sun_pos_properties, where 0.0, 0.0
+    is the default and taken to mean not set. Neither has an elevation."""
+    if "latitude" in scene and "longitude" in scene:
+        return {
+            "latitude": float(scene["latitude"]),
+            "longitude": float(scene["longitude"]),
+        }
+    sun = getattr(scene, "sun_pos_properties", None)
+    if sun is not None and (sun.latitude, sun.longitude) != (0.0, 0.0):
+        return {"latitude": sun.latitude, "longitude": sun.longitude}
+    return None
 
 
 def topologic_faces_from_blender_object(blender_object) -> List[Face]:

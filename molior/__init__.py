@@ -64,7 +64,13 @@ class Molior:
 
     @classmethod
     def from_faces_and_widgets(
-        cls, file=None, faces=[], widgets=[], name="My Building", share_dir="share"
+        cls,
+        file=None,
+        faces=[],
+        widgets=[],
+        name="My Building",
+        share_dir="share",
+        site=None,
     ):
         """Create a Molior object from lists of Topologic Faces and widgets."""
         """Faces can have a 'style' Dictionary attribute."""
@@ -82,7 +88,11 @@ class Molior:
             # Assign Cell usages from widgets
             cellcomplex.AllocateCells(widgets)
             return cls.from_cellcomplex(
-                file=file, cellcomplex=cellcomplex, name=name, share_dir=share_dir
+                file=file,
+                cellcomplex=cellcomplex,
+                name=name,
+                share_dir=share_dir,
+                site=site,
             )
 
         # Faces that don't enclose rooms still make building elements, "lite mode"
@@ -90,12 +100,17 @@ class Molior:
         # Copy styles from Faces to the Topology
         topology.ApplyDictionary(faces)
         return cls.from_topology(
-            file=file, topology=topology, name=name, share_dir=share_dir
+            file=file, topology=topology, name=name, share_dir=share_dir, site=site
         )
 
     @classmethod
     def from_cellcomplex(
-        cls, file=None, cellcomplex=None, name="My Building", share_dir="share"
+        cls,
+        file=None,
+        cellcomplex=None,
+        name="My Building",
+        share_dir="share",
+        site=None,
     ):
         """Create a Molior object from a tagged CellComplex"""
         """Faces in the CellComplex can have a 'style' Dictionary attribute."""
@@ -125,11 +140,17 @@ class Molior:
             normals=normals,
             cellcomplex=cellcomplex,
             share_dir=share_dir,
+            site=site,
         )
 
     @classmethod
     def from_topology(
-        cls, file=None, topology=None, name="My Building", share_dir="share"
+        cls,
+        file=None,
+        topology=None,
+        name="My Building",
+        share_dir="share",
+        site=None,
     ):
         """Create a Molior object from a tagged Topology, this is 'lite mode' for
         faces that don't make a CellComplex: there are building elements and
@@ -149,6 +170,7 @@ class Molior:
             normals=normals,
             topology=topology,
             share_dir=share_dir,
+            site=site,
         )
 
     @classmethod
@@ -222,6 +244,8 @@ class Molior:
         self.cellcomplex = None
         self.topology = None
         self.share_dir = "share"
+        # latitude, longitude and elevation, see get_site_by_name()
+        self.site = None
         self.warnings = []
         for arg in args:
             self.__dict__[arg] = args[arg]
@@ -234,7 +258,7 @@ class Molior:
         else:
             create_default_contexts(self.file)
         self.project = self.file.by_type("IfcProject")[0]
-        site = get_site_by_name(self.file, self.project, self.name)
+        site = get_site_by_name(self.file, self.project, self.name, **(self.site or {}))
         self.building = get_building_by_name(self.file, site, self.name)
         self.structural_analysis_model = get_structural_analysis_model_by_name(
             self.file, self.building, self.name

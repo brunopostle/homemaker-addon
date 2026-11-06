@@ -322,8 +322,27 @@ def get_context(
     return None
 
 
+def compound_angle(degrees: float) -> List[int]:
+    """An IfcCompoundPlaneAngleMeasure of decimal degrees.
+
+    Degrees, minutes, seconds and microseconds, all with the same sign.
+    Rounded to the microsecond before splitting, so a part can't be 60 seconds
+    or a million microseconds."""
+    sign = -1 if degrees < 0 else 1
+    microseconds = round(abs(degrees) * 3600000000)
+    seconds, microseconds = divmod(microseconds, 1000000)
+    minutes, seconds = divmod(seconds, 60)
+    degrees, minutes = divmod(minutes, 60)
+    return [sign * part for part in (degrees, minutes, seconds, microseconds)]
+
+
 def get_site_by_name(
-    self: ifcopenshell.file, parent: ifcopenshell.entity_instance, name: str
+    self: ifcopenshell.file,
+    parent: ifcopenshell.entity_instance,
+    name: str,
+    latitude: Optional[float] = None,
+    longitude: Optional[float] = None,
+    elevation: Optional[float] = None,
 ) -> ifcopenshell.entity_instance:
     """Add a Site to a Project, or retrieve if already there.
 
@@ -331,6 +350,12 @@ def get_site_by_name(
         self: The IFC file.
         parent: The parent project to which the site belongs.
         name: The name of the site to find or create.
+        latitude: Decimal degrees, north is positive.
+        longitude: Decimal degrees, east is positive.
+        elevation: Metres above sea level.
+
+    A location that is given replaces the location of an existing site. A new
+    site with no location given is in Sheffield.
 
     Returns:
         The existing or newly created site entity.
@@ -341,19 +366,21 @@ def get_site_by_name(
             and site.Decomposes
             and site.Decomposes[0].RelatingObject == parent
         ):
-            return site
-    site = api.root.create_entity(self, ifc_class="IfcSite", name=name)
-    # TODO allow setting location
-    api.attribute.edit_attributes(
-        self,
-        product=site,
-        attributes={
-            "RefLatitude": [53, 23, 0],
-            "RefLongitude": [1, 28, 0],
-            "RefElevation": 75.0,
-        },
-    )
-    api.aggregate.assign_object(self, products=[site], relating_object=parent)
+            break
+    else:
+        site = api.root.create_entity(self, ifc_class="IfcSite", name=name)
+        api.aggregate.assign_object(self, products=[site], relating_object=parent)
+        if latitude is None and longitude is None and elevation is None:
+            latitude, longitude, elevation = 53 + 23 / 60, -(1 + 28 / 60), 75.0
+    attributes = {}
+    if latitude is not None:
+        attributes["RefLatitude"] = compound_angle(latitude)
+    if longitude is not None:
+        attributes["RefLongitude"] = compound_angle(longitude)
+    if elevation is not None:
+        attributes["RefElevation"] = float(elevation)
+    if attributes:
+        api.attribute.edit_attributes(self, product=site, attributes=attributes)
     return site
 
 
