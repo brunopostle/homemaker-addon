@@ -54,14 +54,17 @@ class Repeat(TraceClass):
         reference_context = get_context_by_name(
             self.file, context_identifier="Reference", target_view="GRAPH_VIEW"
         )
+        axis_context = get_context_by_name(self.file, context_identifier="Axis")
         from . import Molior
 
         style = Molior.style
         myconfig = style.get(self.style)
+        # the Type is drawn from 0.0 to the height of its family member
+        type_height = self.height - self.ceiling
         if self.family in self.style_families:
             for index in range(len(self.style_families[self.family])):
-                height = self.style_families[self.family][index]["height"]
-                if height >= self.height - self.ceiling:
+                type_height = self.style_families[self.family][index]["height"]
+                if type_height >= self.height - self.ceiling:
                     break
             asset_name = self.style_families[self.family][index]["typename"]
         else:
@@ -308,12 +311,28 @@ class Repeat(TraceClass):
                         stylename=self.style,
                         name=asset_name,
                     )
+                    # the Axis goes in the Type, occurrences get a mapped copy
+                    type_identifiers = [
+                        representation_map.MappedRepresentation.RepresentationIdentifier
+                        for representation_map in type_product.RepresentationMaps or []
+                    ]
+                    if (
+                        entity.is_a("IfcColumn") or entity.is_a("IfcMember")
+                    ) and "Axis" not in type_identifiers:
+                        api.geometry.assign_representation(
+                            self.file,
+                            product=type_product,
+                            representation=api.geometry.add_axis_representation(
+                                self.file,
+                                context=axis_context,
+                                axis=[[0.0, 0.0, 0.0], [0.0, 0.0, type_height]],
+                            ),
+                        )
                     api.type.assign_type(
                         self.file,
                         related_objects=[entity],
                         relating_type=type_product,
                     )
-                    # TODO Axis Representation
 
                     # place the entity in space
                     elevation = self.elevation + self.yshift

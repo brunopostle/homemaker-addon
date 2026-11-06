@@ -355,8 +355,7 @@ def test_horizontal_members_are_connected_where_they_meet(porch):
     connections = {}
     for connection in porch.by_type("IfcStructuralPointConnection"):
         connections[connection_point(connection)] = {
-            rel.RelatingStructuralMember
-            for rel in connection.ConnectsStructuralMembers
+            rel.RelatingStructuralMember for rel in connection.ConnectsStructuralMembers
         }
 
     at_point = {}
@@ -366,7 +365,29 @@ def test_horizontal_members_are_connected_where_they_meet(porch):
             for point in (start, end):
                 at_point.setdefault(point, []).append(member)
 
-    meeting = {point: members for point, members in at_point.items() if len(members) > 1}
+    meeting = {
+        point: members for point, members in at_point.items() if len(members) > 1
+    }
     assert meeting
     for point, members in meeting.items():
         assert connections[point].issuperset(members)
+
+
+def test_columns_have_an_axis_the_height_of_their_body(porch):
+    settings = ifcopenshell.geom.settings()
+    columns = porch.by_type("IfcColumn")
+    assert columns
+    for column in columns:
+        axes = [
+            representation
+            for representation in column.Representation.Representations
+            if representation.RepresentationIdentifier == "Axis"
+        ]
+        assert len(axes) == 1
+        axis = axes[0].Items[0].MappingSource.MappedRepresentation
+        start, end = axis.Items[0].Points.CoordList
+        assert start == (0.0, 0.0, 0.0)
+        shape = ifcopenshell.geom.create_shape(settings, column)
+        heights = np.array(shape.geometry.verts).reshape(-1, 3)[:, 2]
+        assert end == pytest.approx((0.0, 0.0, heights.max()), abs=1e-6)
+        assert heights.min() == pytest.approx(0.0, abs=1e-6)
