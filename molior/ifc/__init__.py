@@ -12,6 +12,7 @@ import ifcopenshell.entity_instance
 import ifcopenshell.api.aggregate
 import ifcopenshell.api.context
 import ifcopenshell.api.geometry
+import ifcopenshell.api.material
 import ifcopenshell.api.owner
 import ifcopenshell.api.project
 import ifcopenshell.api.pset
@@ -19,6 +20,7 @@ import ifcopenshell.api.root
 import ifcopenshell.api.structural
 import ifcopenshell.api.style
 import ifcopenshell.api.unit
+import ifcopenshell.util.element
 import ifcopenshell.util.placement
 import ifcopenshell.util.system
 from ..geometry import (
@@ -523,6 +525,84 @@ def get_material_by_name(
             # we need to create a new material
             mymaterial = api.material.add_material(self, name=name)
     return mymaterial
+
+
+def assign_structural_profile(
+    self: ifcopenshell.file,
+    structural_member: ifcopenshell.entity_instance,
+    type_product: Optional[ifcopenshell.entity_instance],
+    style_object: Any,
+    stylename: str = "default",
+    profile: Optional[list] = None,
+    material: Optional[str] = None,
+    default_profile: Optional[list] = None,
+) -> None:
+    """Give a Structural Curve Member a Profile Set like its Element's.
+
+    The Profile is the one given, as ["IfcRectangleProfileDef", {attributes}],
+    or else the Type's if it is parametric, as a profile drawn around the
+    shape of a moulding isn't one an analysis can use, or else the default.
+
+    The Material is the one named, or else the Type's if it has a
+    YoungModulus to analyse with, or else Concrete.
+
+    Args:
+        self: The IFC file.
+        structural_member: The IfcStructuralCurveMember.
+        type_product: The Type of the Element, or None.
+        style_object: The style manager object that provides library access.
+        stylename: The style to look for a named Material in.
+        profile: A profile definition from a style, or None.
+        material: The name of a Material from a style, or None.
+        default_profile: A profile definition, a 0.2 square if None.
+    """
+    if default_profile is None:
+        default_profile = [
+            "IfcRectangleProfileDef",
+            {"ProfileType": "AREA", "XDim": 0.2, "YDim": 0.2},
+        ]
+    type_profile = None
+    type_material = None
+    if type_product is not None:
+        for association in type_product.HasAssociations:
+            if not association.is_a("IfcRelAssociatesMaterial"):
+                continue
+            relating = association.RelatingMaterial
+            if relating.is_a("IfcMaterialProfileSet") and relating.MaterialProfiles:
+                type_profile = relating.MaterialProfiles[0].Profile
+                type_material = relating.MaterialProfiles[0].Material
+            elif relating.is_a("IfcMaterial"):
+                type_material = relating
+
+    if profile is not None:
+        ifc_profile = self.create_entity(profile[0], **profile[1])
+    elif type_profile is not None and type_profile.is_a("IfcParameterizedProfileDef"):
+        ifc_profile = type_profile
+    else:
+        ifc_profile = self.create_entity(default_profile[0], **default_profile[1])
+
+    if material is not None:
+        ifc_material = get_material_by_name(
+            self, style_object, name=material, stylename=stylename
+        )
+    elif type_material is not None and ifcopenshell.util.element.get_psets(
+        type_material
+    ).get("Pset_MaterialMechanical", {}).get("YoungModulus"):
+        ifc_material = type_material
+    else:
+        ifc_material = get_material_by_name(
+            self, style_object, name="Concrete", stylename=stylename
+        )
+
+    rel = api.material.assign_material(
+        self, products=[structural_member], type="IfcMaterialProfileSet"
+    )
+    material_profile = api.material.add_profile(
+        self, profile_set=rel.RelatingMaterial, material=ifc_material
+    )
+    api.material.assign_profile(
+        self, material_profile=material_profile, profile=ifc_profile
+    )
 
 
 def get_parent_building(

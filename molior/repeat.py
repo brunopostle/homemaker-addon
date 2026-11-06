@@ -8,9 +8,9 @@ from .baseclass import TraceClass
 from .geometry import add_2d, subtract_2d, scale_2d, distance_2d, matrix_align
 from .ifc import (
     add_face_topology_epsets,
+    assign_structural_profile,
     assign_storey_byindex,
     get_type_object,
-    get_material_by_name,
     get_context_by_name,
 )
 from .extrusion import Extrusion
@@ -32,11 +32,9 @@ class Repeat(TraceClass):
         self.xshift = 0.0
         self.yshift = 0.0
         self.offset = -0.08
-        self.structural_material = "Concrete"
-        self.structural_profile = [
-            "IfcRectangleProfileDef",
-            {"ProfileType": "AREA", "XDim": 0.2, "YDim": 0.2},
-        ]
+        # None to take them from the Type, see assign_structural_profile()
+        self.structural_material = None
+        self.structural_profile = None
         self.path = []
         self.spacing = 1.0
         self.ref_direction = None
@@ -271,30 +269,20 @@ class Repeat(TraceClass):
                                 ),
                             ),
                         )
-                        # FIXME create Type and Profile Set using get_type_object()
-                        profile = self.file.create_entity(
-                            self.structural_profile[0], **self.structural_profile[1]
-                        )
-                        rel = api.material.assign_material(
+                        assign_structural_profile(
                             self.file,
-                            products=[structural_member],
-                            type="IfcMaterialProfileSet",
-                        )
-                        profile_set = rel.RelatingMaterial
-                        material_profile = api.material.add_profile(
-                            self.file,
-                            profile_set=profile_set,
-                            material=get_material_by_name(
+                            structural_member,
+                            get_type_object(
                                 self.file,
                                 self.style_object,
-                                name=self.structural_material,
+                                ifc_type=self.ifc + "Type",
                                 stylename=self.style,
+                                name=asset_name,
                             ),
-                        )
-                        api.material.assign_profile(
-                            self.file,
-                            material_profile=material_profile,
-                            profile=profile,
+                            self.style_object,
+                            stylename=self.style,
+                            profile=self.structural_profile,
+                            material=self.structural_material,
                         )
 
                     # representation

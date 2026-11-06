@@ -12,8 +12,8 @@ from .geometry import (
 )
 from .ifc import (
     add_face_topology_epsets,
+    assign_structural_profile,
     assign_storey_byindex,
-    get_material_by_name,
     get_context_by_name,
     get_type_object,
 )
@@ -32,11 +32,9 @@ class Extrusion(TraceClass):
         self.xshift = 0.0
         self.yshift = 0.0
         self.ref_direction = None
-        self.structural_material = "Concrete"
-        self.structural_profile = [
-            "IfcRectangleProfileDef",
-            {"ProfileType": "AREA", "XDim": 0.2, "YDim": 0.3},
-        ]
+        # None to take them from the Type, see assign_structural_profile()
+        self.structural_material = None
+        self.structural_profile = None
         self.path = []
         for arg in args:
             self.__dict__[arg] = args[arg]
@@ -301,30 +299,18 @@ class Extrusion(TraceClass):
                         ),
                     ),
                 )
-                # FIXME get Type as per Grillage
-                profile = self.file.create_entity(
-                    self.structural_profile[0], **self.structural_profile[1]
-                )
-                rel = api.material.assign_material(
+                assign_structural_profile(
                     self.file,
-                    products=[structural_member],
-                    type="IfcMaterialProfileSet",
-                )
-                profile_set = rel.RelatingMaterial
-                material_profile = api.material.add_profile(
-                    self.file,
-                    profile_set=profile_set,
-                    material=get_material_by_name(
-                        self.file,
-                        self.style_object,
-                        name=self.structural_material,
-                        stylename=self.style,
-                    ),
-                )
-                api.material.assign_profile(
-                    self.file,
-                    material_profile=material_profile,
-                    profile=profile,
+                    structural_member,
+                    type_product,
+                    self.style_object,
+                    stylename=self.style,
+                    profile=self.structural_profile,
+                    material=self.structural_material,
+                    default_profile=[
+                        "IfcRectangleProfileDef",
+                        {"ProfileType": "AREA", "XDim": 0.2, "YDim": 0.3},
+                    ],
                 )
 
         # segments done
