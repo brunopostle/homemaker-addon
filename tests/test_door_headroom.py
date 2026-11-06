@@ -4,11 +4,11 @@ import os
 import sys
 
 import ifcopenshell.util.element
-import ifcopenshell.util.placement
 import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from molior import Molior
+from molior.ifc import get_placement
 from molior.rooms import document_to_faces_and_widgets
 
 
@@ -39,7 +39,7 @@ def lean_to(height_start, height_end, depth=6.0):
 
 def door_extent(door):
     """Distance along the wall of each side of a door, and height of the top"""
-    placement = ifcopenshell.util.placement.get_placement(door.ObjectPlacement)
+    placement = get_placement(door.ObjectPlacement)
     y, z = placement[1][3], placement[2][3]
     near, far = sorted([y, y + placement[1][0] * door.OverallWidth])
     return near, far, z + door.OverallHeight

@@ -19,6 +19,7 @@ import ifcopenshell.api.root
 import ifcopenshell.api.structural
 import ifcopenshell.api.style
 import ifcopenshell.api.unit
+import ifcopenshell.util.placement
 import ifcopenshell.util.system
 from ..geometry import (
     matrix_align,
@@ -30,6 +31,15 @@ from ..geometry import (
 )
 
 api = ifcopenshell.api
+
+# IfcOpenShell replaced get_local_placement() with get_placement() in October
+# 2026, both give the fully composed matrix in file units. Released wheels on
+# PyPI still only have the old one.
+get_placement = getattr(
+    ifcopenshell.util.placement,
+    "get_placement",
+    getattr(ifcopenshell.util.placement, "get_local_placement", None),
+)
 
 # Registry to keep library files alive as long as the project file exists
 # Maps project IFC files to lists of library IFC files they depend on

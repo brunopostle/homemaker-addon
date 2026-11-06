@@ -29,7 +29,6 @@ import ifcopenshell.api.geometry
 import ifcopenshell.api.root
 import ifcopenshell.api.style
 import ifcopenshell.util.element
-import ifcopenshell.util.placement
 from ifcopenshell.util.shape_builder import ShapeBuilder
 from shapely.geometry import MultiPolygon, Polygon
 from shapely.geometry.polygon import orient
@@ -43,6 +42,7 @@ from .ifc import (
     assign_storey_byindex,
     get_context_by_name,
     get_parent_building,
+    get_placement,
 )
 
 api = ifcopenshell.api
@@ -930,7 +930,7 @@ class Stair(TraceClass):
                 continue
             if get_parent_building(door) != self.building:
                 continue
-            matrix = ifcopenshell.util.placement.get_placement(door.ObjectPlacement)
+            matrix = get_placement(door.ObjectPlacement)
             direction = matrix[:3, 0]
             centre = matrix[:3, 3] + direction * door.OverallWidth / 2
             topology = ifcopenshell.util.element.get_psets(door).get(

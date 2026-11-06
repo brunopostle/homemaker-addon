@@ -4,10 +4,10 @@ import math
 import os
 import sys
 
-import ifcopenshell.util.placement
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from molior import Molior
+from molior.ifc import get_placement
 from molior.rooms import document_to_faces_and_widgets
 import topologist.ugraph as ugraph
 
@@ -128,7 +128,7 @@ def test_rooms_touching_at_a_corner_each_have_all_their_walls():
     ]
     assert len(walls) == 8
     for wall in walls:
-        placement = ifcopenshell.util.placement.get_placement(wall.ObjectPlacement)
+        placement = get_placement(wall.ObjectPlacement)
         assert all(math.isfinite(value) for value in placement.flatten())
 
 

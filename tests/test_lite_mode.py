@@ -4,12 +4,12 @@ import collections
 import os
 import sys
 
-import ifcopenshell.util.placement
 import pytest
 from topologic_core import Face, Vertex
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from molior import Molior
+from molior.ifc import get_placement
 from molior.rooms import document_to_faces_and_widgets
 
 
@@ -126,7 +126,7 @@ def test_footing_and_walls_are_on_the_same_side_as_in_a_building():
     def places(molior_object, ifc_class):
         result = set()
         for item in molior_object.file.by_type(ifc_class):
-            placement = ifcopenshell.util.placement.get_placement(item.ObjectPlacement)
+            placement = get_placement(item.ObjectPlacement)
             if placement[0][3] < 5.0:
                 result.add((round(placement[0][3], 3), round(placement[1][3], 3)))
         return result

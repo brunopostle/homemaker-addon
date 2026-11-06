@@ -12,7 +12,7 @@ sys.path.insert(0, ROOT)
 
 import ifcopenshell.geom  # noqa: E402
 import ifcopenshell.util.element  # noqa: E402
-import ifcopenshell.util.placement  # noqa: E402
+from molior.ifc import get_placement  # noqa: E402
 from molior import Molior  # noqa: E402
 from molior.rooms import rooms_to_faces_and_widgets  # noqa: E402
 from molior.stair import (  # noqa: E402
@@ -370,10 +370,7 @@ def ifc():
 def test_stair_for_every_storey_but_the_top(ifc):
     stairs = ifc.by_type("IfcStair")
     assert len(stairs) == 2
-    elevations = sorted(
-        ifcopenshell.util.placement.get_placement(stair.ObjectPlacement)[2][3]
-        for stair in stairs
-    )
+    elevations = sorted(get_placement(stair.ObjectPlacement)[2][3] for stair in stairs)
     assert elevations == pytest.approx([0.0, 3.0])
     for stair in stairs:
         psets = ifcopenshell.util.element.get_psets(stair)
@@ -386,9 +383,7 @@ def test_stair_for_every_storey_but_the_top(ifc):
 
 def test_stair_parts(ifc):
     for stair in ifc.by_type("IfcStair"):
-        elevation = ifcopenshell.util.placement.get_placement(stair.ObjectPlacement)[2][
-            3
-        ]
+        elevation = get_placement(stair.ObjectPlacement)[2][3]
         parts = {
             part.is_a(): part
             for part in ifcopenshell.util.element.get_decomposition(stair)
@@ -430,7 +425,7 @@ def test_stair_keeps_clear_of_doors(ifc):
     settings.set("use-world-coords", True)
     checked = 0
     for door in ifc.by_type("IfcDoor"):
-        matrix = ifcopenshell.util.placement.get_placement(door.ObjectPlacement)
+        matrix = get_placement(door.ObjectPlacement)
         start = matrix[:3, 3]
         end = start + matrix[:3, 0] * door.OverallWidth
         threshold = LineString([start[0:2], end[0:2]]).buffer(0.4, cap_style=2)
@@ -504,7 +499,7 @@ def test_one_entrance_to_a_circulation_cell():
     ]
     assert len(entrances) == 1
     # in the longest outside wall
-    matrix = ifcopenshell.util.placement.get_placement(entrances[0].ObjectPlacement)
+    matrix = get_placement(entrances[0].ObjectPlacement)
     assert abs(matrix[1][0]) == pytest.approx(1.0)
     assert matrix[0][3] < 0.0
 

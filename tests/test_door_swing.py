@@ -5,11 +5,10 @@ import sys
 
 import numpy as np
 import ifcopenshell.util.element
-import ifcopenshell.util.placement
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from molior import Molior
-from molior.ifc import get_thickness
+from molior.ifc import get_placement, get_thickness
 from molior.rooms import document_to_faces_and_widgets
 
 
@@ -32,7 +31,7 @@ def build_row(usages):
 
 def swings_into(door):
     """x coordinate of a point the door leaf sweeps, and the door's Space"""
-    matrix = ifcopenshell.util.placement.get_placement(door.ObjectPlacement)
+    matrix = get_placement(door.ObjectPlacement)
     point = matrix[:3, 3] + 0.4 * matrix[:3, 0] + 0.5 * matrix[:3, 1]
     space = ifcopenshell.util.element.get_container(door)
     return point, space
@@ -76,8 +75,8 @@ def test_turned_door_stays_in_its_opening():
         thickness = get_thickness(
             molior_object.file, ifcopenshell.util.element.get_type(wall)
         )
-        matrix_door = ifcopenshell.util.placement.get_placement(door.ObjectPlacement)
-        matrix = ifcopenshell.util.placement.get_placement(opening.ObjectPlacement)
+        matrix_door = get_placement(door.ObjectPlacement)
+        matrix = get_placement(opening.ObjectPlacement)
         if np.allclose(matrix_door, matrix):
             continue
         # turned round about the far corner of the opening, on the other face

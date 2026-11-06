@@ -42,6 +42,7 @@ from .ifc import (
     assign_storey_byindex,
     get_context_by_name,
     get_parent_building,
+    get_placement,
     create_tessellation_from_mesh,
     create_tessellations_from_mesh_split,
 )
@@ -188,9 +189,7 @@ class Molior:
         for rel in building.ContainsElements:
             for element in rel.RelatedElements:
                 if element.is_a("IfcAnnotation") and element.ObjectType == "USAGE":
-                    matrix = ifcopenshell.util.placement.get_placement(
-                        element.ObjectPlacement
-                    )
+                    matrix = get_placement(element.ObjectPlacement)
                     vertex = Vertex.ByCoordinates(
                         matrix[0][3], matrix[1][3], matrix[2][3]
                     )
