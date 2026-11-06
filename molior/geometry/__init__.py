@@ -254,3 +254,10 @@ def point_on_segment(point, start, end, tolerance=0.001):
     along = max(0.0, min(length, along))
     nearest = add_3d(start, scale_3d(vector, along / length))
     return distance_3d(point, nearest) < tolerance
+
+
+def distance_to_line_2d(point, start, end):
+    """Distance in plan from a point to the line through start and end"""
+    direction = normalise_2d(subtract_2d(end[0:2], start[0:2]))
+    offset = subtract_2d(point[0:2], start[0:2])
+    return abs(offset[0] * direction[1] - offset[1] * direction[0])

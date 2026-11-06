@@ -156,49 +156,53 @@ class Shell(BaseClass):
                 continue
 
             # TODO skip unless Pset_*Common.LoadBearing
-            # generate structural surfaces
-            structural_surface = api.root.create_entity(
-                self.file,
-                ifc_class="IfcStructuralSurfaceMember",
-                name=self.style + "/" + self.name,
-                predefined_type="SHELL",
-            )
-            add_face_topology_epsets(
-                self.file,
-                structural_surface,
-                face[1]["face"],
-                face[1]["back_cell"],
-                face[1]["front_cell"],
-            )
-            structural_surface.Thickness = self.structural_thickness
-            api.structural.assign_structural_analysis_model(
-                self.file,
-                products=[structural_surface],
-                structural_analysis_model=self.structural_analysis_model,
-            )
-            api.geometry.assign_representation(
-                self.file,
-                product=structural_surface,
-                representation=api.geometry.add_topology_representation(
+            # no analysis model, as for the infill of a Grillage
+            if self.structural_analysis_model is not None:
+                # generate structural surfaces
+                structural_surface = api.root.create_entity(
                     self.file,
-                    context=reference_context,
-                    item=face_surface,
-                ),
-            )
-            api.material.assign_material(
-                self.file,
-                products=[structural_surface],
-                material=get_material_by_name(
+                    ifc_class="IfcStructuralSurfaceMember",
+                    name=self.style + "/" + self.name,
+                    predefined_type="SHELL",
+                )
+                add_face_topology_epsets(
                     self.file,
-                    self.style_object,
-                    name=self.structural_material,
-                    stylename=self.style,
-                ),
-            )
+                    structural_surface,
+                    face[1]["face"],
+                    face[1]["back_cell"],
+                    face[1]["front_cell"],
+                )
+                structural_surface.Thickness = self.structural_thickness
+                api.structural.assign_structural_analysis_model(
+                    self.file,
+                    products=[structural_surface],
+                    structural_analysis_model=self.structural_analysis_model,
+                )
+                api.geometry.assign_representation(
+                    self.file,
+                    product=structural_surface,
+                    representation=api.geometry.add_topology_representation(
+                        self.file,
+                        context=reference_context,
+                        item=face_surface,
+                    ),
+                )
+                api.material.assign_material(
+                    self.file,
+                    products=[structural_surface],
+                    material=get_material_by_name(
+                        self.file,
+                        self.style_object,
+                        name=self.structural_material,
+                        stylename=self.style,
+                    ),
+                )
 
-            api.structural.assign_product(
-                self.file, relating_product=structural_surface, related_object=element
-            )
+                api.structural.assign_product(
+                    self.file,
+                    relating_product=structural_surface,
+                    related_object=element,
+                )
 
             # type (IfcVirtualElementType isn't valid)
 

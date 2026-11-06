@@ -29,7 +29,13 @@ from .repeat import Repeat
 from .grillage import Grillage
 
 from .style import Style
-from .geometry import subtract_3d, x_product_3d, matrix_align, point_on_segment
+from .geometry import (
+    subtract_3d,
+    x_product_3d,
+    matrix_align,
+    point_on_segment,
+    distance_to_line_2d,
+)
 from .ifc import (
     init,
     get_site_by_name,
@@ -480,6 +486,11 @@ class Molior:
                     "EPset_Topology"
                 )
                 if pset_topology:
+                    # a covering over a wall is in the same place as the wall, an
+                    # analysis can only use one of them, keep the first
+                    if pset_topology["FaceIndex"] in surface_lookup:
+                        api.root.remove_product(self.file, product=member)
+                        continue
                     surface_lookup[pset_topology["FaceIndex"]] = member
             self.file.createIfcStyledItem(
                 member.Representation.Representations[0].Items[0],
@@ -616,11 +627,19 @@ class Molior:
                         start_coors = curve_edge.EdgeStart.VertexGeometry.Coordinates
                         end_coors = curve_edge.EdgeEnd.VertexGeometry.Coordinates
 
+                        at_start = abs(start_coors[2] - connection_elevation) < 0.001
+                        at_end = abs(end_coors[2] - connection_elevation) < 0.001
+                        # a horizontal member can run along this connection, or
+                        # across it, as a joist bears on a wall
+                        along = (
+                            at_start
+                            and at_end
+                            and distance_to_line_2d(start_coors, start, end) < 0.01
+                            and distance_to_line_2d(end_coors, start, end) < 0.01
+                        )
+
                         # member is horizontal and coincides with this horizontal connection
-                        if (
-                            abs(start_coors[2] - connection_elevation) < 0.001
-                            and abs(end_coors[2] - connection_elevation) < 0.001
-                        ):
+                        if along:
                             api.structural.add_structural_member_connection(
                                 self.file,
                                 relating_structural_member=curve_member,
@@ -669,18 +688,26 @@ class Molior:
                                     },
                                 )
 
-                        # member is non-horizontal, but one end coincides with this horizontal connection
-                        elif (
-                            abs(start_coors[2] - connection_elevation) < 0.001
-                            or abs(end_coors[2] - connection_elevation) < 0.001
-                        ):
+                        # one end coincides with this horizontal connection
+                        elif at_start or at_end:
+                            # a horizontal member across the connection, the end nearer it
+                            if at_start and at_end:
+                                point_connection_name = "Beam connection"
+                                point_coordinates = min(
+                                    start_coors,
+                                    end_coors,
+                                    key=lambda coors: distance_to_line_2d(
+                                        coors, start, end
+                                    ),
+                                )
+
                             # start point of non-horizontal curve member coincides with this horizontal connection
-                            if abs(start_coors[2] - connection_elevation) < 0.001:
+                            elif at_start:
                                 point_connection_name = "Column base connection"
                                 point_coordinates = start_coors
 
                             # end point of non-horizontal curve member coincides with this horizontal connection
-                            elif abs(start_coors[2] - connection_elevation) > 0.001:
+                            else:
                                 point_connection_name = "Column head connection"
                                 point_coordinates = end_coors
 
