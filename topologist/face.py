@@ -479,14 +479,16 @@ def ParallelSlice(self, inc=0.45, radians=0.0, origin=[0.0, 0.0]):
     miny = min(node.Coordinates()[1] for node in vertices)
     maxy = max(node.Coordinates()[1] for node in vertices)
 
-    # create Topologic Edges for slicing the Face
-    # FIXME fixx and fixy adjustment only works for orthogonal angles
+    # create Topologic Edges for slicing the Face, one line passes through
+    # the origin, so the lines don't move when the Face does
     cutting_edges = []
     if abs(math.tan(radians)) > 1.0:
         shift = (maxy - miny) / math.tan(radians)
         incx = inc / abs(math.sin(radians))
-        fixx = (minx - origin[0]) % incx
-        x = minx - abs(shift) - fixx
+        # where the line through the origin crosses miny
+        x_origin = origin[0] + (miny - origin[1]) / math.tan(radians)
+        x = minx - abs(shift)
+        x -= (x - x_origin) % incx
         while x < maxx + abs(shift):
             cutting_edges.append(
                 Edge.ByStartVertexEndVertex(
@@ -498,8 +500,10 @@ def ParallelSlice(self, inc=0.45, radians=0.0, origin=[0.0, 0.0]):
     else:
         shift = (maxx - minx) * math.tan(radians)
         incy = inc / abs(math.cos(radians))
-        fixy = (miny - origin[1]) % incy
-        y = miny - abs(shift) - fixy
+        # where the line through the origin crosses minx
+        y_origin = origin[1] + (minx - origin[0]) * math.tan(radians)
+        y = miny - abs(shift)
+        y -= (y - y_origin) % incy
         while y < maxy + abs(shift):
             cutting_edges.append(
                 Edge.ByStartVertexEndVertex(
