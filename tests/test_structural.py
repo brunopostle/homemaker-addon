@@ -112,9 +112,6 @@ def test_linear_types_have_stiffness():
                 continue
             if not molior.ifc.is_load_bearing(type_product):
                 continue
-            # FIXME cinema seating rows are carpet
-            if type_product.Name == "Cinema row":
-                continue
             for material in ifcopenshell.util.element.get_materials(type_product):
                 psets = ifcopenshell.util.element.get_psets(material)
                 mechanical = psets.get("Pset_MaterialMechanical", {})
