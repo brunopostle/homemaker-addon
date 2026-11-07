@@ -10,7 +10,7 @@ from .baseclass import BaseClass
 from .geometry import map_to_2d, map_to_2d_simple, matrix_align, inset_path
 from .ifc import (
     add_face_topology_epsets,
-    add_imposed_load,
+    add_gravity_load,
     create_extruded_area_solid,
     create_face_surface,
     assign_storey_byindex,
@@ -18,6 +18,7 @@ from .ifc import (
     get_thickness,
     get_context_by_name,
     get_structural_layer,
+    get_site_altitude,
     is_load_bearing,
 )
 
@@ -47,6 +48,18 @@ IMPOSED_LOADS = {
 ROOF_CONDITIONS = ("roof", "flat")
 
 
+# Snow zone of the UK National Annex to EN 1991-1-3, figure NA.1, for the
+# ground snow load at the altitude of the Site, see ground_snow_load()
+SNOW_ZONE = 3
+
+
+def pitch_factor(normal):
+    """One for a roof up to 30°, less to nothing at 60°, as EN 1991-1-1 table
+    6.10 (UK NA) and the snow shape coefficient of EN 1991-1-3 table 5.2"""
+    pitch = np.degrees(np.arccos(min(1.0, abs(normal[2]))))
+    return min(1.0, max(0.0, (60.0 - pitch) / 30.0))
+
+
 def imposed_load(condition, normal, value=None):
     """Downward imposed load per true area of a Face in kN/m², from a load on
     plan, of the style or the default of the condition. A roof load is less on
@@ -54,9 +67,37 @@ def imposed_load(condition, normal, value=None):
     if value is None:
         value = IMPOSED_LOADS.get(condition, 0.0)
         if condition in ROOF_CONDITIONS:
-            pitch = np.degrees(np.arccos(min(1.0, abs(normal[2]))))
-            value *= min(1.0, max(0.0, (60.0 - pitch) / 30.0))
+            value *= pitch_factor(normal)
     return value * abs(normal[2])
+
+
+def ground_snow_load(altitude, zone=SNOW_ZONE):
+    """Characteristic snow load on the ground in kN/m², UK National Annex to
+    EN 1991-1-3, at an altitude in metres"""
+    return max(0.0, 0.15 + (0.1 * zone + 0.05) + (altitude - 100.0) / 525.0)
+
+
+def snow_load(condition, normal, altitude=0.0, value=None):
+    """Downward snow load per true area of a Face in kN/m², from a load on
+    plan, of the style or, on a roof, the shape coefficient 0.8 reduced over
+    30° pitch times the ground snow load. No drifts, exposure or heat loss"""
+    if value is None:
+        value = 0.0
+        if condition in ROOF_CONDITIONS:
+            value = 0.8 * pitch_factor(normal) * ground_snow_load(altitude)
+    return value * abs(normal[2])
+
+
+def gravity_loads(condition, normal, altitude=0.0, imposed=None, snow=None):
+    """Downward loads per true area of a Face in kN/m² by load case, imposed
+    load on a roof is a case of its own as it isn't combined with snow"""
+    name = "Imposed load"
+    if condition in ROOF_CONDITIONS:
+        name = "Roof imposed load"
+    return {
+        name: imposed_load(condition, normal, imposed),
+        "Snow load": snow_load(condition, normal, altitude, snow),
+    }
 
 
 class Shell(BaseClass):
@@ -72,8 +113,10 @@ class Shell(BaseClass):
         self.structural_thickness = None
         # holes for the openings of a Wall on the same Face, see Molior
         self.opening_holes = None
-        # kN/m² on plan, None for the default of the condition, see imposed_load()
+        # kN/m² on plan, None for the default of the condition, see
+        # imposed_load() and snow_load()
         self.imposed_load = None
+        self.snow_load = None
         for arg in args:
             self.__dict__[arg] = args[arg]
 
@@ -260,14 +303,20 @@ class Shell(BaseClass):
                     relating_product=structural_surface,
                     related_object=element,
                 )
-                add_imposed_load(
-                    self.file,
-                    self.structural_analysis_model,
-                    structural_surface,
-                    imposed_load(
-                        getattr(self, "condition", None), normal, self.imposed_load
-                    ),
-                )
+                for name, load in gravity_loads(
+                    getattr(self, "condition", None),
+                    normal,
+                    get_site_altitude(self.structural_analysis_model),
+                    self.imposed_load,
+                    self.snow_load,
+                ).items():
+                    add_gravity_load(
+                        self.file,
+                        self.structural_analysis_model,
+                        structural_surface,
+                        load,
+                        name,
+                    )
 
             thickness = get_thickness(self.file, product_type)
             inner = thickness + self.offset

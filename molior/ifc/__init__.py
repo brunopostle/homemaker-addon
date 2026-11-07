@@ -417,6 +417,17 @@ def get_building_by_name(
     return building
 
 
+# EN 1990 equation 6.10 with the UK National Annex, and the characteristic
+# combination. Imposed load on a roof isn't combined with snow (EN 1991-1-1
+# 3.3.2), floors accompany snow with psi0 0.7
+LOAD_COMBINATIONS = {
+    "ULS": {"Dead load": 1.35, "Imposed load": 1.5, "Roof imposed load": 1.5},
+    "ULS snow": {"Dead load": 1.35, "Imposed load": 1.05, "Snow load": 1.5},
+    "SLS": {"Dead load": 1.0, "Imposed load": 1.0, "Roof imposed load": 1.0},
+    "SLS snow": {"Dead load": 1.0, "Imposed load": 0.7, "Snow load": 1.0},
+}
+
+
 def get_structural_analysis_model_by_name(
     self: ifcopenshell.file, spatial_element: ifcopenshell.entity_instance, name: str
 ) -> ifcopenshell.entity_instance:
@@ -460,21 +471,27 @@ def get_structural_analysis_model_by_name(
             "SelfWeightCoefficients": [0.0, 0.0, -1.0],
         },
     )
-    # the use of floors and roofs, see add_imposed_load()
-    imposed_load = api.root.create_entity(
-        self,
-        ifc_class="IfcStructuralLoadCase",
-        name="Imposed load",
-        predefined_type="LOAD_CASE",
-    )
-    api.attribute.edit_attributes(
-        self,
-        product=imposed_load,
-        attributes={"ActionSource": "LIVE_LOAD_Q", "ActionType": "VARIABLE_Q"},
-    )
-    groups = [dead_load, imposed_load]
-    # EN 1990 equation 6.10, and the characteristic combination
-    for name, factors in (("ULS", (1.35, 1.5)), ("SLS", (1.0, 1.0))):
+    # the use of floors, of roofs, and snow on roofs, see add_gravity_load()
+    load_cases = {"Dead load": dead_load}
+    for name, source in (
+        ("Imposed load", "LIVE_LOAD_Q"),
+        ("Roof imposed load", "LIVE_LOAD_Q"),
+        ("Snow load", "SNOW_S"),
+    ):
+        load_case = api.root.create_entity(
+            self,
+            ifc_class="IfcStructuralLoadCase",
+            name=name,
+            predefined_type="LOAD_CASE",
+        )
+        api.attribute.edit_attributes(
+            self,
+            product=load_case,
+            attributes={"ActionSource": source, "ActionType": "VARIABLE_Q"},
+        )
+        load_cases[name] = load_case
+    groups = list(load_cases.values())
+    for name, factors in LOAD_COMBINATIONS.items():
         combination = api.root.create_entity(
             self,
             ifc_class="IfcStructuralLoadGroup",
@@ -486,10 +503,10 @@ def get_structural_analysis_model_by_name(
             product=combination,
             attributes={"ActionSource": "NOTDEFINED", "ActionType": "NOTDEFINED"},
         )
-        for load_case, factor in zip((dead_load, imposed_load), factors):
+        for load_case, factor in factors.items():
             self.createIfcRelAssignsToGroupByFactor(
                 ifcopenshell.guid.new(),
-                RelatedObjects=[load_case],
+                RelatedObjects=[load_cases[load_case]],
                 RelatingGroup=combination,
                 Factor=factor,
             )
@@ -498,13 +515,14 @@ def get_structural_analysis_model_by_name(
     return model
 
 
-def add_imposed_load(
+def add_gravity_load(
     self: ifcopenshell.file,
     model: ifcopenshell.entity_instance,
     structural_member: ifcopenshell.entity_instance,
     value: float,
+    name: str = "Imposed load",
 ) -> Optional[ifcopenshell.entity_instance]:
-    """Load a Structural Member downwards in the 'Imposed load' case.
+    """Load a Structural Member downwards in a load case of the model.
 
     Args:
         self: The IFC file.
@@ -512,24 +530,23 @@ def add_imposed_load(
         structural_member: The surface or curve member to load.
         value: The load in kN/m² of a surface, or kN/m of a curve, nothing is
             added if zero.
+        name: The load case, 'Imposed load', 'Roof imposed load' or 'Snow load'.
 
     Returns:
         The new Structural Planar or Curve Action, or None.
     """
     if value <= 0.0:
         return None
-    (load_case,) = [
-        group for group in model.LoadedBy or [] if group.Name == "Imposed load"
-    ]
+    (load_case,) = [group for group in model.LoadedBy or [] if group.Name == name]
     if structural_member.is_a("IfcStructuralCurveMember"):
         applied_load = api.structural.add_structural_load(
-            self, name="Imposed load", ifc_class="IfcStructuralLoadLinearForce"
+            self, name=name, ifc_class="IfcStructuralLoadLinearForce"
         )
         applied_load.LinearForceZ = -float(value)
         ifc_class = "IfcStructuralCurveAction"
     else:
         applied_load = api.structural.add_structural_load(
-            self, name="Imposed load", ifc_class="IfcStructuralLoadPlanarForce"
+            self, name=name, ifc_class="IfcStructuralLoadPlanarForce"
         )
         applied_load.PlanarForceZ = -float(value)
         ifc_class = "IfcStructuralPlanarAction"
@@ -539,9 +556,21 @@ def add_imposed_load(
         structural_member=structural_member,
         ifc_class=ifc_class,
     )
-    action.Name = "Imposed load"
+    action.Name = name
     api.group.assign_group(self, products=[action], group=load_case)
     return action
+
+
+def get_site_altitude(model: ifcopenshell.entity_instance) -> float:
+    """Metres above sea level of the Site of the Building a structural model
+    services, zero if it isn't known"""
+    for rel in model.ServicesBuildings or []:
+        for building in rel.RelatedBuildings:
+            for decomposes in building.Decomposes or []:
+                site = decomposes.RelatingObject
+                if site.is_a("IfcSite") and site.RefElevation is not None:
+                    return float(site.RefElevation)
+    return 0.0
 
 
 def get_library_by_name(

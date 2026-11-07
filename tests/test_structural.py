@@ -142,28 +142,37 @@ def test_units_of_stiffness_and_density(ifc):
 
 
 def test_load_cases(ifc):
-    """the model is loaded by its own weight, and by the use of floors and roofs"""
+    """the model is loaded by its own weight, by the use of floors and roofs,
+    and by snow"""
     model = ifc.by_type("IfcStructuralAnalysisModel")[0]
-    assert len(ifc.by_type("IfcStructuralLoadGroup")) == 4
+    assert len(ifc.by_type("IfcStructuralLoadGroup")) == 8
     assert [group.Name for group in model.LoadedBy] == [
         "Dead load",
         "Imposed load",
+        "Roof imposed load",
+        "Snow load",
         "ULS",
+        "ULS snow",
         "SLS",
+        "SLS snow",
     ]
-    dead_load, imposed_load = model.LoadedBy[0:2]
-    for load_case in dead_load, imposed_load:
+    dead_load, imposed_load, roof_load, snow_load = model.LoadedBy[0:4]
+    for load_case in dead_load, imposed_load, roof_load, snow_load:
         assert load_case.is_a("IfcStructuralLoadCase")
         assert load_case.PredefinedType == "LOAD_CASE"
     assert dead_load.ActionType == "PERMANENT_G"
     assert dead_load.ActionSource == "DEAD_LOAD_G"
     assert dead_load.SelfWeightCoefficients == (0.0, 0.0, -1.0)
-    assert imposed_load.ActionType == "VARIABLE_Q"
+    for load_case in imposed_load, roof_load, snow_load:
+        assert load_case.ActionType == "VARIABLE_Q"
+        assert not load_case.SelfWeightCoefficients
     assert imposed_load.ActionSource == "LIVE_LOAD_Q"
-    assert not imposed_load.SelfWeightCoefficients
+    assert roof_load.ActionSource == "LIVE_LOAD_Q"
+    assert snow_load.ActionSource == "SNOW_S"
 
 
 def test_load_combinations(ifc):
+    """imposed load on a roof isn't combined with snow, floors accompany snow"""
     model = ifc.by_type("IfcStructuralAnalysisModel")[0]
     factors = {
         group.Name: {
@@ -171,32 +180,42 @@ def test_load_combinations(ifc):
             for rel in group.IsGroupedBy
             for load_case in rel.RelatedObjects
         }
-        for group in model.LoadedBy[2:]
+        for group in model.LoadedBy[4:]
     }
     assert factors == {
-        "ULS": {"Dead load": 1.35, "Imposed load": 1.5},
-        "SLS": {"Dead load": 1.0, "Imposed load": 1.0},
+        "ULS": {"Dead load": 1.35, "Imposed load": 1.5, "Roof imposed load": 1.5},
+        "ULS snow": {"Dead load": 1.35, "Imposed load": 1.05, "Snow load": 1.5},
+        "SLS": {"Dead load": 1.0, "Imposed load": 1.0, "Roof imposed load": 1.0},
+        "SLS snow": {"Dead load": 1.0, "Imposed load": 0.7, "Snow load": 1.0},
     }
-    for group in model.LoadedBy[2:]:
+    for group in model.LoadedBy[4:]:
         assert group.PredefinedType == "LOAD_COMBINATION"
 
 
+# 0.8 times the ground snow load in zone 3 at 75 m, the default Site
+FLAT_SNOW = 0.8 * (0.15 + 0.35 - 25.0 / 525.0)
+
+
 def test_imposed_loads_on_floors_and_roofs(ifc):
-    """1.5 kN/m² on floors of dwellings, 0.6 kN/m² on a roof without access"""
+    """1.5 kN/m² on floors of dwellings, 0.6 kN/m² on a roof without access,
+    and snow on the roof"""
     loads = {}
     for action in ifc.by_type("IfcStructuralPlanarAction"):
         (rel,) = action.AssignedToStructuralItem
         (group,) = [rel.RelatingGroup for rel in action.HasAssignments]
-        assert group.Name == "Imposed load"
+        assert action.Name == group.Name
         assert action.GlobalOrLocal == "GLOBAL_COORDS"
         load = action.AppliedLoad
         assert not load.PlanarForceX and not load.PlanarForceY
-        loads.setdefault(rel.RelatingElement.Name, set()).add(load.PlanarForceZ)
+        loads.setdefault((rel.RelatingElement.Name, group.Name), set()).add(
+            round(load.PlanarForceZ, 6)
+        )
     assert loads == {
-        "default/living-floor": {-1.5},
-        "default/kitchen-floor": {-1.5},
-        "default/bedroom-floor": {-1.5},
-        "default/flat-roof": {-0.6},
+        ("default/living-floor", "Imposed load"): {-1.5},
+        ("default/kitchen-floor", "Imposed load"): {-1.5},
+        ("default/bedroom-floor", "Imposed load"): {-1.5},
+        ("default/flat-roof", "Roof imposed load"): {-0.6},
+        ("default/flat-roof", "Snow load"): {round(-FLAT_SNOW, 6)},
     }
 
 
@@ -223,6 +242,46 @@ def test_imposed_load_of_a_pitched_roof():
     assert imposed_load("roof", [0.0, np.sin(pitch), np.cos(pitch)]) == 0.0
 
 
+def test_snow_load():
+    from molior.shell import ground_snow_load, snow_load, gravity_loads
+
+    # UK National Annex, zone 3: 0.5 kN/m² at 100 m, more higher up
+    assert ground_snow_load(100.0) == pytest.approx(0.5)
+    assert ground_snow_load(625.0) == pytest.approx(1.5)
+    assert ground_snow_load(100.0, zone=1) == pytest.approx(0.3)
+    assert ground_snow_load(-1000.0) == 0.0
+    # shape coefficient 0.8 up to 30°, then less to nothing at 60°
+    assert snow_load("flat", [0.0, 0.0, 1.0], 100.0) == pytest.approx(0.4)
+    pitch = np.radians(45.0)
+    normal = [0.0, np.sin(pitch), np.cos(pitch)]
+    assert snow_load("roof", normal, 100.0) == pytest.approx(0.2 * np.cos(pitch))
+    pitch = np.radians(70.0)
+    assert snow_load("roof", [0.0, np.sin(pitch), np.cos(pitch)], 100.0) == 0.0
+    # no snow on floors, unless the style says so
+    assert snow_load("living", [0.0, 0.0, 1.0], 100.0) == 0.0
+    assert snow_load("outside", [0.0, 0.0, 1.0], 100.0, 0.5) == 0.5
+    # imposed load on roofs is a case of its own
+    assert gravity_loads("living", [0.0, 0.0, 1.0], 100.0) == {
+        "Imposed load": 1.5,
+        "Snow load": 0.0,
+    }
+    assert gravity_loads("roof", [0.0, 0.0, 1.0], 100.0, snow=1.0) == {
+        "Roof imposed load": 0.6,
+        "Snow load": 1.0,
+    }
+
+
+def test_snow_at_the_altitude_of_the_site():
+    ifc = molior.ifc.init(name="Our Project")
+    project = ifc.by_type("IfcProject")[0]
+    site = molior.ifc.get_site_by_name(ifc, project, "Our Site", elevation=300.0)
+    building = molior.ifc.get_building_by_name(ifc, site, "Our Building")
+    model = molior.ifc.get_structural_analysis_model_by_name(ifc, building, "Ours")
+    assert molior.ifc.get_site_altitude(model) == 300.0
+    site.RefElevation = None
+    assert molior.ifc.get_site_altitude(model) == 0.0
+
+
 def test_load_case_deleted_with_model():
     """regenerating a building has to leave one set of loads, not accumulate them"""
     ifc = molior.ifc.init(name="Our Project")
@@ -233,18 +292,19 @@ def test_load_case_deleted_with_model():
     assert (
         molior.ifc.get_structural_analysis_model_by_name(ifc, building, "Ours") == model
     )
-    assert len(ifc.by_type("IfcStructuralLoadGroup")) == 4
+    assert len(ifc.by_type("IfcStructuralLoadGroup")) == 8
     member = ifc.createIfcStructuralSurfaceMember(ifcopenshell.guid.new())
-    molior.ifc.add_imposed_load(ifc, model, member, 1.5)
-    assert not molior.ifc.add_imposed_load(ifc, model, member, 0.0)
-    assert len(ifc.by_type("IfcStructuralPlanarAction")) == 1
+    molior.ifc.add_gravity_load(ifc, model, member, 1.5)
+    molior.ifc.add_gravity_load(ifc, model, member, 0.4, "Snow load")
+    assert not molior.ifc.add_gravity_load(ifc, model, member, 0.0)
+    assert len(ifc.by_type("IfcStructuralPlanarAction")) == 2
     molior.ifc.delete_ifc_product(ifc, model)
     assert not ifc.by_type("IfcStructuralLoadGroup")
     assert not ifc.by_type("IfcStructuralPlanarAction")
     assert not ifc.by_type("IfcStructuralLoadPlanarForce")
     assert not ifc.by_type("IfcRelConnectsStructuralActivity")
     molior.ifc.get_structural_analysis_model_by_name(ifc, building, "Ours")
-    assert len(ifc.by_type("IfcStructuralLoadGroup")) == 4
+    assert len(ifc.by_type("IfcStructuralLoadGroup")) == 8
 
 
 def wall_members(ifc):
@@ -538,7 +598,7 @@ def test_columns_have_an_axis_the_height_of_their_body(porch):
 
 
 def test_imposed_load_is_carried(ifc, tmp_path):
-    """72 m² of floor at 1.5 kN/m² and 36 m² of flat roof at 0.6 kN/m²"""
+    """72 m² of floor at 1.5 kN/m², 36 m² of flat roof at 0.6 kN/m², and snow"""
     pytest.importorskip("ifc_structural_mechanics")
     if not shutil.which("ccx"):
         pytest.skip("CalculiX is not installed")
@@ -562,8 +622,16 @@ def test_imposed_load_is_carried(ifc, tmp_path):
     assert "Status: success" in result.stdout, result.stdout + result.stderr
     results = json.loads((tmp_path / "output" / "results.json").read_text())
     reactions = results["global_reactions"]
-    imposed = reactions["by_load_case"]["Imposed load"]["fz_N"]
-    assert imposed == pytest.approx(1000.0 * (72 * 1.5 + 36 * 0.6), rel=0.001)
-    dead = reactions["by_load_case"]["Dead load"]["fz_N"]
-    uls = reactions["by_load_combination"]["ULS"]["fz_N"]
-    assert uls == pytest.approx(1.35 * dead + 1.5 * imposed, rel=0.001)
+    by_load_case = reactions["by_load_case"]
+    imposed = by_load_case["Imposed load"]["fz_N"]
+    assert imposed == pytest.approx(1000.0 * 72 * 1.5, rel=0.001)
+    roof = by_load_case["Roof imposed load"]["fz_N"]
+    assert roof == pytest.approx(1000.0 * 36 * 0.6, rel=0.001)
+    snow = by_load_case["Snow load"]["fz_N"]
+    assert snow == pytest.approx(1000.0 * 36 * FLAT_SNOW, rel=0.001)
+    dead = by_load_case["Dead load"]["fz_N"]
+    by_combination = reactions["by_load_combination"]
+    uls = by_combination["ULS"]["fz_N"]
+    assert uls == pytest.approx(1.35 * dead + 1.5 * (imposed + roof), rel=0.001)
+    uls = by_combination["ULS snow"]["fz_N"]
+    assert uls == pytest.approx(1.35 * dead + 1.05 * imposed + 1.5 * snow, rel=0.001)

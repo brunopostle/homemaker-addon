@@ -55,6 +55,7 @@ purlins:
   inset: -0.06
   # the joists cross the purlins and carry the roof to them
   imposed_load: 0.0
+  snow_load: 0.0
 joists:
   class: Grillage
   condition: roof

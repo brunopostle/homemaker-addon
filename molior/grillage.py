@@ -11,7 +11,8 @@ from topologic_core import Face, Vertex
 from .baseclass import BaseClass
 from .geometry import map_to_2d, add_2d, scale_2d, subtract_3d, inset_path
 from .ifc import (
-    add_imposed_load,
+    add_gravity_load,
+    get_site_altitude,
     add_face_topology_epsets,
     assign_storey_byindex,
     assign_structural_profile,
@@ -21,7 +22,7 @@ from .ifc import (
 )
 from .extrusion import Extrusion
 from .repeat import Repeat
-from .shell import Shell, imposed_load
+from .shell import Shell, gravity_loads
 
 try:
     from topologist import hulls
@@ -117,8 +118,10 @@ class Grillage(BaseClass):
         self.Shell = Shell
         self.Grillage = Grillage
         self.opening_holes = None
-        # kN/m² on plan, None for the default of the condition, see imposed_load()
+        # kN/m² on plan, None for the default of the condition, see
+        # imposed_load() and snow_load()
         self.imposed_load = None
+        self.snow_load = None
         for arg in args:
             self.__dict__[arg] = args[arg]
 
@@ -357,17 +360,25 @@ class Grillage(BaseClass):
                         )
                     )
 
-            # the imposed load on the Face is shared by the length of its lines
-            load = imposed_load(
-                getattr(self, "condition", None), normal, self.imposed_load
-            )
+            # loads on the Face are shared by the length of its lines
             length = sum(piece_length for member, piece_length in line_members)
-            if load > 0.0 and length > 0.0:
-                load *= Polygon(nodes_2d).area / length
-                for member, piece_length in line_members:
-                    add_imposed_load(
-                        self.file, self.structural_analysis_model, member, load
-                    )
+            for name, load in gravity_loads(
+                getattr(self, "condition", None),
+                normal,
+                get_site_altitude(self.structural_analysis_model),
+                self.imposed_load,
+                self.snow_load,
+            ).items():
+                if load > 0.0 and length > 0.0:
+                    load *= Polygon(nodes_2d).area / length
+                    for member, piece_length in line_members:
+                        add_gravity_load(
+                            self.file,
+                            self.structural_analysis_model,
+                            member,
+                            load,
+                            name,
+                        )
 
             # members of this face, and of grillages within it, move with it
             transform_structural_members(face_members, matrix)
