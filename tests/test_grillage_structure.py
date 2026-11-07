@@ -86,12 +86,20 @@ def test_grillage_lines_have_curve_members(ifc):
     )
     for name in ("stud-external", "joist", "purlin", "nogging-flat-roof"):
         assert members["framing/" + name], name
-    # every structural line is drawn as a member, and only once
+    # every structural line is drawn as a member, or as pieces either side of
+    # an opening, which don't overlap
     for item in ifc.by_type("IfcMember"):
-        assigned = [
-            rel for rel in item.HasAssignments if rel.is_a("IfcRelAssignsToProduct")
+        members = [
+            rel.RelatingProduct
+            for rel in item.HasAssignments
+            if rel.is_a("IfcRelAssignsToProduct")
         ]
-        assert len(assigned) == 1
+        assert members
+        heights = sorted(
+            sorted(point[2] for point in ends(member)) for member in members
+        )
+        for below, above in zip(heights[:-1], heights[1:]):
+            assert below[1] < above[0] + 1e-6
 
 
 def test_curve_members_have_the_section_of_their_type(ifc):
@@ -112,6 +120,9 @@ def test_curve_members_are_where_their_elements_are(ifc):
     settings.set("use-world-coords", True)
     checked = collections.Counter()
     for member in ifc.by_type("IfcStructuralCurveMember"):
+        if not member.ReferencedBy:
+            # heads and sills of openings
+            continue
         shape = ifcopenshell.geom.create_shape(settings, element(member))
         vertices = np.array(shape.geometry.verts).reshape(-1, 3)
         low, high = vertices.min(axis=0) - 0.15, vertices.max(axis=0) + 0.15
@@ -172,6 +183,72 @@ def test_sheathing_has_holes_for_openings(ifc):
     assert holes["framing/ply-sheathing"]
     assert sum(holes.values()) == len(ifc.by_type("IfcWindow")) + len(
         ifc.by_type("IfcDoor")
+    )
+
+
+def test_studs_stop_at_openings(ifc):
+    """studs are cut by windows, a head and sill carry them across"""
+    openings = []
+    for item in ifc.by_type("IfcWindow") + ifc.by_type("IfcDoor"):
+        shape = ifcopenshell.geom.create_shape(settings(), item)
+        vertices = np.array(shape.geometry.verts).reshape(-1, 3)
+        openings.append((vertices.min(axis=0), vertices.max(axis=0)))
+    assert openings
+    studs = [
+        member
+        for member in ifc.by_type("IfcStructuralCurveMember")
+        if member.Name == "framing/stud-external"
+    ]
+    for member in studs:
+        start, end = ends(member)
+        for low, high in openings:
+            middle = (start + end) / 2
+            # no stud runs through the middle of an opening
+            if (middle[0:2] >= low[0:2] - 0.01).all() and (
+                middle[0:2] <= high[0:2] + 0.01
+            ).all():
+                assert (
+                    not min(start[2], end[2])
+                    < (low[2] + high[2]) / 2
+                    < max(start[2], end[2])
+                )
+    heads = [member for member in studs if not member.ReferencedBy]
+    # a head and a sill for each window, this house has only an inside door
+    assert len(heads) == 2 * len(ifc.by_type("IfcWindow"))
+    stud_ends = [
+        point for member in studs if member.ReferencedBy for point in ends(member)
+    ]
+    for head in heads:
+        start, end = ends(head)
+        assert abs(start[2] - end[2]) < 1e-6
+        # cut studs end on it, and its ends are on studs that carry on past it
+        assert any(
+            np.linalg.norm(np.cross(end - start, point - start)) < 1e-6
+            and np.dot(point - start, end - start) > 0.0
+            for point in stud_ends
+        )
+
+
+def settings():
+    settings = ifcopenshell.geom.settings()
+    settings.set("use-world-coords", True)
+    return settings
+
+
+def test_opening_edges_of_a_door():
+    """a door at the foot of the face has a head but no sill"""
+    from shapely.geometry import LineString, Polygon
+    from molior.grillage import cut_line, opening_edges
+
+    holes = [Polygon([(1.0, 0.0), (1.8, 0.0), (1.8, 2.1), (1.0, 2.1)])]
+    pieces = []
+    for x in (0.45, 0.9, 1.35, 2.25):
+        pieces.extend(cut_line(LineString([(x, 0.0), (x, 3.0)]), holes))
+    assert len(pieces) == 4
+    assert opening_edges(holes, pieces) == [[[2.25, 2.1], [0.9, 2.1]]]
+    # a window narrower than the spacing of the studs cuts none
+    assert (
+        opening_edges([Polygon([(1.4, 1), (1.7, 1), (1.7, 2), (1.4, 2)])], pieces) == []
     )
 
 

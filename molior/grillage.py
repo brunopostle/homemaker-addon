@@ -1,9 +1,12 @@
+import collections
+
 import numpy as np
 import ifcopenshell.api.attribute
 import ifcopenshell.api.geometry
 import ifcopenshell.api.root
 import ifcopenshell.api.structural
 
+from shapely.geometry import LineString, Polygon
 from topologic_core import Face, Vertex
 from .baseclass import BaseClass
 from .geometry import map_to_2d, add_2d, scale_2d, subtract_3d, inset_path
@@ -43,6 +46,59 @@ def transform_structural_members(members, matrix):
         ]
 
 
+def cross_2d(a, b):
+    return a[0] * b[1] - a[1] * b[0]
+
+
+def cut_line(line, holes):
+    """Pieces of a 2D LineString outside some Polygons"""
+    for hole in holes:
+        line = line.difference(hole)
+    return [
+        piece
+        for piece in getattr(line, "geoms", [line])
+        if piece.geom_type == "LineString" and piece.length > 0.01
+    ]
+
+
+def opening_edges(holes, pieces):
+    """Edges of 2D Polygons where pieces of cut lines end, as heads and sills,
+    each extended along itself to the nearest pieces beyond its ends"""
+    edges = []
+    for hole in holes:
+        coords = hole.exterior.coords
+        for a, b in zip(coords[:-1], coords[1:]):
+            a, b = np.array(a), np.array(b)
+            vector = b - a
+            if np.linalg.norm(vector) < 0.01:
+                continue
+            ending = False
+            before, after = 0.0, 1.0
+            for piece in pieces:
+                p, q = np.array(piece.coords[0]), np.array(piece.coords[-1])
+                along = q - p
+                denominator = cross_2d(vector, along)
+                if abs(denominator) < 1e-9 * np.linalg.norm(along):
+                    continue
+                # position on the edge, and on the piece, of the crossing
+                t = cross_2d(p - a, along) / denominator
+                u = cross_2d(p - a, vector) / denominator
+                if not -1e-6 < u < 1.0 + 1e-6:
+                    continue
+                if -1e-6 < t < 1.0 + 1e-6:
+                    if u < 1e-6 or u > 1.0 - 1e-6:
+                        ending = True
+                elif t < 0.0:
+                    before = t if before == 0.0 else max(before, t)
+                else:
+                    after = t if after == 1.0 else min(after, t)
+            if ending:
+                edges.append([a + before * vector, a + after * vector])
+    return [
+        [[float(x) for x in start], [float(x) for x in end]] for start, end in edges
+    ]
+
+
 class Grillage(BaseClass):
     """planar feature consisting of repeated linear elements"""
 
@@ -59,6 +115,7 @@ class Grillage(BaseClass):
         self.Repeat = Repeat
         self.Shell = Shell
         self.Grillage = Grillage
+        self.opening_holes = None
         for arg in args:
             self.__dict__[arg] = args[arg]
 
@@ -189,6 +246,17 @@ class Grillage(BaseClass):
                             if config["class"] == "Grillage":
                                 face_members.extend(part.structural_members)
 
+            # windows and doors of a Wall on this Face, in the coordinates of the face
+            holes = []
+            if self.opening_holes is not None and self.structural_analysis_model:
+                inverse = np.linalg.inv(matrix)
+                holes = [
+                    Polygon([(inverse @ [*point, 1.0])[0:2] for point in hole])
+                    for hole in self.opening_holes(face[1]["face"], vertices, 0.0)
+                ]
+            cut_parts = {}
+            cut_pieces = collections.defaultdict(list)
+
             # multiple linear elements on this Face
 
             for cropped_edge in cropped_edges:
@@ -256,18 +324,33 @@ class Grillage(BaseClass):
                                     )
                                 )
                             ):
-                                face_members.append(
-                                    self.add_curve_member(
-                                        part,
-                                        element,
-                                        face,
-                                        [*start[0:2], 0.0],
-                                        [
-                                            *add_2d(start, scale_2d(direction, length)),
-                                            0.0,
-                                        ],
-                                    )
+                                line = LineString(
+                                    [
+                                        start[0:2],
+                                        add_2d(start, scale_2d(direction, length)),
+                                    ]
                                 )
+                                cut_parts[name] = part
+                                for piece in cut_line(line, holes):
+                                    cut_pieces[name].append(piece)
+                                    face_members.append(
+                                        self.add_curve_member(
+                                            part,
+                                            element,
+                                            face,
+                                            [*piece.coords[0], 0.0],
+                                            [*piece.coords[-1], 0.0],
+                                        )
+                                    )
+
+            # heads and sills of openings carry the studs cut by them
+            for name, part in cut_parts.items():
+                for start, end in opening_edges(holes, cut_pieces[name]):
+                    face_members.append(
+                        self.add_curve_member(
+                            part, None, face, [*start, 0.0], [*end, 0.0]
+                        )
+                    )
 
             # members of this face, and of grillages within it, move with it
             transform_structural_members(face_members, matrix)
@@ -294,7 +377,8 @@ class Grillage(BaseClass):
 
     def add_curve_member(self, part, element, face, start, end):
         """A Structural Curve Member for a linear Element drawn by a trace, from
-        start to end in the coordinates of the face, with the face normal as Axis"""
+        start to end in the coordinates of the face, with the face normal as Axis,
+        or with no Element for the head or sill of an opening"""
         reference_context = get_context_by_name(
             self.file, context_identifier="Reference", target_view="GRAPH_VIEW"
         )
@@ -304,11 +388,12 @@ class Grillage(BaseClass):
             name=part.style + "/" + part.name,
             predefined_type="RIGID_JOINED_MEMBER",
         )
-        api.structural.assign_product(
-            self.file,
-            relating_product=structural_member,
-            related_object=element,
-        )
+        if element is not None:
+            api.structural.assign_product(
+                self.file,
+                relating_product=structural_member,
+                related_object=element,
+            )
         add_face_topology_epsets(
             self.file,
             structural_member,
