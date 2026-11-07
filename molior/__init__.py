@@ -253,6 +253,8 @@ class Molior:
         # latitude, longitude and elevation, see get_site_by_name()
         self.site = None
         self.warnings = []
+        # Walls built by execute(), Shells on their Faces take their openings
+        self.walls = []
         for arg in args:
             self.__dict__[arg] = args[arg]
         Molior.style = Style({"share_dir": self.share_dir})
@@ -302,6 +304,7 @@ class Molior:
         # a door that didn't fit is no longer in the circulation Graph, so place
         # the doors of every wall before building any, there may be another way in
         walls = [part for part in queued if isinstance(part, Wall)]
+        self.walls = walls
         components = []
         if self.circulation:
             components = self.circulation.Components()
@@ -1216,6 +1219,18 @@ class Molior:
                 results.append(part)
         return results
 
+    def opening_holes(self, face, vertices, thickness):
+        """Loops for the windows and doors of a Wall in a structural face on the
+        same Face, as for sheathing hung on a Wall, see Wall.structural_holes()"""
+        index = face.Get("index")
+        for wall in self.walls:
+            for id_segment, segment in enumerate(wall.chain.edges()):
+                if not wall.openings[id_segment]:
+                    continue
+                if wall.chain.graph[segment[0]][1]["face"].Get("index") == index:
+                    return wall.structural_holes(id_segment, vertices, thickness)
+        return []
+
     def build_hull(self, stylename="default", condition="panel", hull=ushell.shell()):
         """Generates IFC data for a single hull and adds to the current building"""
         results = []
@@ -1236,6 +1251,7 @@ class Molior:
                     "hull": hull,
                     "style_families": myconfig["families"],
                     "style_object": Molior.style,
+                    "opening_holes": self.opening_holes,
                 }
                 vals.update(config)
                 modules = {"Shell": Shell, "Grillage": Grillage}

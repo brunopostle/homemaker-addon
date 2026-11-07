@@ -38,6 +38,8 @@ class Shell(BaseClass):
         # None to take them from the Type, see get_structural_layer()
         self.structural_material = None
         self.structural_thickness = None
+        # holes for the openings of a Wall on the same Face, see Molior
+        self.opening_holes = None
         for arg in args:
             self.__dict__[arg] = args[arg]
 
@@ -70,8 +72,6 @@ class Shell(BaseClass):
         for face in self.hull.faces:
             vertices = [[*string_to_coor(node_str)] for node_str in face[0]]
             normal = face[1]["face"].Normal()
-            # need this for structure
-            face_surface = create_face_surface(self.file, vertices, normal)
             for vertex in vertices:
                 if elevation is None or vertex[2] < elevation:
                     elevation = el(vertex[2])
@@ -184,6 +184,10 @@ class Shell(BaseClass):
                     material=self.structural_material,
                     thickness=self.structural_thickness,
                 )
+                holes = []
+                if self.opening_holes is not None:
+                    holes = self.opening_holes(face[1]["face"], vertices, thickness)
+                face_surface = create_face_surface(self.file, vertices, normal, holes)
                 # generate structural surfaces
                 structural_surface = api.root.create_entity(
                     self.file,

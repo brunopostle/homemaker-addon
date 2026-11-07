@@ -163,6 +163,18 @@ def test_surfaces_only_for_load_bearing_types(ifc):
             assert (material.Name, round(member.Thickness, 3)) == ("Concrete", 0.18)
 
 
+def test_sheathing_has_holes_for_openings(ifc):
+    """sheathing on 'exterior-empty' walls is cut by their windows and doors"""
+    holes = collections.Counter()
+    for member in ifc.by_type("IfcStructuralSurfaceMember"):
+        face = member.Representation.Representations[0].Items[0]
+        holes[member.Name] += len(face.Bounds) - 1
+    assert holes["framing/ply-sheathing"]
+    assert sum(holes.values()) == len(ifc.by_type("IfcWindow")) + len(
+        ifc.by_type("IfcDoor")
+    )
+
+
 def test_framing_can_be_analysed(framing, tmp_path):
     pytest.importorskip("ifc_structural_mechanics")
     if not shutil.which("ccx"):
