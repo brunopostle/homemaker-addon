@@ -504,30 +504,40 @@ def add_imposed_load(
     structural_member: ifcopenshell.entity_instance,
     value: float,
 ) -> Optional[ifcopenshell.entity_instance]:
-    """Load a Structural Surface Member downwards in the 'Imposed load' case.
+    """Load a Structural Member downwards in the 'Imposed load' case.
 
     Args:
         self: The IFC file.
         model: The structural analysis model with the load case.
-        structural_member: The surface member to load.
-        value: The load in kN/m² of the surface, nothing is added if zero.
+        structural_member: The surface or curve member to load.
+        value: The load in kN/m² of a surface, or kN/m of a curve, nothing is
+            added if zero.
 
     Returns:
-        The new Structural Planar Action, or None.
+        The new Structural Planar or Curve Action, or None.
     """
     if value <= 0.0:
         return None
     (load_case,) = [
         group for group in model.LoadedBy or [] if group.Name == "Imposed load"
     ]
-    applied_load = api.structural.add_structural_load(
-        self, name="Imposed load", ifc_class="IfcStructuralLoadPlanarForce"
-    )
-    applied_load.PlanarForceZ = -float(value)
+    if structural_member.is_a("IfcStructuralCurveMember"):
+        applied_load = api.structural.add_structural_load(
+            self, name="Imposed load", ifc_class="IfcStructuralLoadLinearForce"
+        )
+        applied_load.LinearForceZ = -float(value)
+        ifc_class = "IfcStructuralCurveAction"
+    else:
+        applied_load = api.structural.add_structural_load(
+            self, name="Imposed load", ifc_class="IfcStructuralLoadPlanarForce"
+        )
+        applied_load.PlanarForceZ = -float(value)
+        ifc_class = "IfcStructuralPlanarAction"
     action = api.structural.add_structural_activity(
         self,
         applied_load=applied_load,
         structural_member=structural_member,
+        ifc_class=ifc_class,
     )
     action.Name = "Imposed load"
     api.group.assign_group(self, products=[action], group=load_case)

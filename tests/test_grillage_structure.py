@@ -252,6 +252,25 @@ def test_opening_edges_of_a_door():
     )
 
 
+def test_imposed_load_on_joists(ifc):
+    """roofs without access, 0.6 kN/m² on plan, reduced for a 36.9° pitch, are
+    carried by the joists, the purlins are loaded by the joists crossing them"""
+    total = collections.Counter()
+    for action in ifc.by_type("IfcStructuralCurveAction"):
+        (rel,) = action.AssignedToStructuralItem
+        member = rel.RelatingElement
+        (group,) = [rel.RelatingGroup for rel in action.HasAssignments]
+        assert group.Name == "Imposed load"
+        load = action.AppliedLoad
+        assert load.is_a("IfcStructuralLoadLinearForce")
+        assert not load.LinearForceX and not load.LinearForceY
+        start, end = ends(member)
+        total[member.Name] -= load.LinearForceZ * np.linalg.norm(end - start)
+    assert set(total) == {"framing/joist"}
+    pitched = 0.6 * (60.0 - np.degrees(np.arctan(1.5 / 2.0))) / 30.0
+    assert total["framing/joist"] == pytest.approx(5 * 4 * pitched + 3 * 4 * 0.6)
+
+
 def test_framing_can_be_analysed(framing, tmp_path):
     pytest.importorskip("ifc_structural_mechanics")
     if not shutil.which("ccx"):

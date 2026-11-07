@@ -11,6 +11,7 @@ from topologic_core import Face, Vertex
 from .baseclass import BaseClass
 from .geometry import map_to_2d, add_2d, scale_2d, subtract_3d, inset_path
 from .ifc import (
+    add_imposed_load,
     add_face_topology_epsets,
     assign_storey_byindex,
     assign_structural_profile,
@@ -20,7 +21,7 @@ from .ifc import (
 )
 from .extrusion import Extrusion
 from .repeat import Repeat
-from .shell import Shell
+from .shell import Shell, imposed_load
 
 try:
     from topologist import hulls
@@ -116,6 +117,8 @@ class Grillage(BaseClass):
         self.Shell = Shell
         self.Grillage = Grillage
         self.opening_holes = None
+        # kN/m² on plan, None for the default of the condition, see imposed_load()
+        self.imposed_load = None
         for arg in args:
             self.__dict__[arg] = args[arg]
 
@@ -256,6 +259,8 @@ class Grillage(BaseClass):
                 ]
             cut_parts = {}
             cut_pieces = collections.defaultdict(list)
+            # structural members of the lines, with their lengths
+            line_members = []
 
             # multiple linear elements on this Face
 
@@ -333,15 +338,15 @@ class Grillage(BaseClass):
                                 cut_parts[name] = part
                                 for piece in cut_line(line, holes):
                                     cut_pieces[name].append(piece)
-                                    face_members.append(
-                                        self.add_curve_member(
-                                            part,
-                                            element,
-                                            face,
-                                            [*piece.coords[0], 0.0],
-                                            [*piece.coords[-1], 0.0],
-                                        )
+                                    member = self.add_curve_member(
+                                        part,
+                                        element,
+                                        face,
+                                        [*piece.coords[0], 0.0],
+                                        [*piece.coords[-1], 0.0],
                                     )
+                                    face_members.append(member)
+                                    line_members.append((member, piece.length))
 
             # heads and sills of openings carry the studs cut by them
             for name, part in cut_parts.items():
@@ -350,6 +355,18 @@ class Grillage(BaseClass):
                         self.add_curve_member(
                             part, None, face, [*start, 0.0], [*end, 0.0]
                         )
+                    )
+
+            # the imposed load on the Face is shared by the length of its lines
+            load = imposed_load(
+                getattr(self, "condition", None), normal, self.imposed_load
+            )
+            length = sum(piece_length for member, piece_length in line_members)
+            if load > 0.0 and length > 0.0:
+                load *= Polygon(nodes_2d).area / length
+                for member, piece_length in line_members:
+                    add_imposed_load(
+                        self.file, self.structural_analysis_model, member, load
                     )
 
             # members of this face, and of grillages within it, move with it
