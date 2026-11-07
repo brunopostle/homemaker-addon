@@ -14,8 +14,9 @@ from .ifc import (
     assign_storey_byindex,
     get_type_object,
     get_thickness,
-    get_material_by_name,
     get_context_by_name,
+    get_structural_layer,
+    is_load_bearing,
 )
 
 try:
@@ -34,8 +35,9 @@ class Shell(BaseClass):
         super().__init__(args)
         self.ifc = "IfcRoof"
         self.party_wall = False
-        self.structural_material = "Concrete"
-        self.structural_thickness = 0.2
+        # None to take them from the Type, see get_structural_layer()
+        self.structural_material = None
+        self.structural_thickness = None
         for arg in args:
             self.__dict__[arg] = args[arg]
 
@@ -155,9 +157,33 @@ class Shell(BaseClass):
             if not self.do_representation:
                 continue
 
-            # TODO skip unless Pset_*Common.LoadBearing
+            # type (IfcVirtualElementType isn't valid)
+
+            product_type = get_type_object(
+                self.file,
+                self.style_object,
+                ifc_type=self.ifc + "Type",
+                stylename=self.style,
+                name=self.typename,
+            )
+            api.type.assign_type(
+                self.file,
+                related_objects=[element],
+                relating_type=product_type,
+            )
+
             # no analysis model, as for the infill of a Grillage
-            if self.structural_analysis_model is not None:
+            if self.structural_analysis_model is not None and is_load_bearing(
+                product_type
+            ):
+                material, thickness = get_structural_layer(
+                    self.file,
+                    product_type,
+                    self.style_object,
+                    stylename=self.style,
+                    material=self.structural_material,
+                    thickness=self.structural_thickness,
+                )
                 # generate structural surfaces
                 structural_surface = api.root.create_entity(
                     self.file,
@@ -172,7 +198,7 @@ class Shell(BaseClass):
                     face[1]["back_cell"],
                     face[1]["front_cell"],
                 )
-                structural_surface.Thickness = self.structural_thickness
+                structural_surface.Thickness = thickness
                 api.structural.assign_structural_analysis_model(
                     self.file,
                     products=[structural_surface],
@@ -188,14 +214,7 @@ class Shell(BaseClass):
                     ),
                 )
                 api.material.assign_material(
-                    self.file,
-                    products=[structural_surface],
-                    material=get_material_by_name(
-                        self.file,
-                        self.style_object,
-                        name=self.structural_material,
-                        stylename=self.style,
-                    ),
+                    self.file, products=[structural_surface], material=material
                 )
 
                 api.structural.assign_product(
@@ -203,21 +222,6 @@ class Shell(BaseClass):
                     relating_product=structural_surface,
                     related_object=element,
                 )
-
-            # type (IfcVirtualElementType isn't valid)
-
-            product_type = get_type_object(
-                self.file,
-                self.style_object,
-                ifc_type=self.ifc + "Type",
-                stylename=self.style,
-                name=self.typename,
-            )
-            api.type.assign_type(
-                self.file,
-                related_objects=[element],
-                relating_type=product_type,
-            )
 
             thickness = get_thickness(self.file, product_type)
             inner = thickness + self.offset

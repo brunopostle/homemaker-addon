@@ -13,6 +13,7 @@ from .geometry import (
 from .ifc import (
     add_face_topology_epsets,
     assign_structural_profile,
+    is_load_bearing,
     assign_storey_byindex,
     get_context_by_name,
     get_type_object,
@@ -252,11 +253,14 @@ class Extrusion(TraceClass):
             # structural stuff
 
             if (
-                linear_element.is_a("IfcBeam")
-                or linear_element.is_a("IfcFooting")
-                or linear_element.is_a("IfcMember")
-            ) and hasattr(self, "chain"):
-                # TODO skip unless Pset_MemberCommon.LoadBearing
+                (
+                    linear_element.is_a("IfcBeam")
+                    or linear_element.is_a("IfcFooting")
+                    or linear_element.is_a("IfcMember")
+                )
+                and hasattr(self, "chain")
+                and is_load_bearing(type_product)
+            ):
                 # generate structural edges
                 structural_member = api.root.create_entity(
                     self.file,

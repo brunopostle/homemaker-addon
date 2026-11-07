@@ -13,6 +13,7 @@ from .ifc import (
     assign_structural_profile,
     get_context_by_name,
     get_type_object,
+    is_load_bearing,
 )
 from .extrusion import Extrusion
 from .repeat import Repeat
@@ -240,8 +241,20 @@ class Grillage(BaseClass):
                             vals.update(config)
                             part = getattr(self, config["class"])(vals)
                             element = part.execute()
-                            if self.structural_analysis_model is not None and (
-                                element.is_a("IfcMember") or element.is_a("IfcBeam")
+                            if (
+                                self.structural_analysis_model is not None
+                                and (
+                                    element.is_a("IfcMember") or element.is_a("IfcBeam")
+                                )
+                                and is_load_bearing(
+                                    get_type_object(
+                                        self.file,
+                                        self.style_object,
+                                        ifc_type=part.ifc + "Type",
+                                        stylename=part.style,
+                                        name=part.typename,
+                                    )
+                                )
                             ):
                                 face_members.append(
                                     self.add_curve_member(

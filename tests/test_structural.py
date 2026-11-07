@@ -132,13 +132,19 @@ def test_load_case_deleted_with_model():
     assert len(ifc.by_type("IfcStructuralLoadCase")) == 1
 
 
-def wall_faces(ifc):
+def wall_members(ifc):
     """structural surface members of walls, with the wall they stand for"""
     for member in ifc.by_type("IfcStructuralSurfaceMember"):
         for rel in member.ReferencedBy:
             for wall in rel.RelatedObjects:
                 if wall.is_a("IfcWall"):
-                    yield member.Representation.Representations[0].Items[0], wall
+                    yield member, wall
+
+
+def wall_faces(ifc):
+    """faces of structural surface members of walls, with the wall"""
+    for member, wall in wall_members(ifc):
+        yield member.Representation.Representations[0].Items[0], wall
 
 
 def loop_coordinates(bound):
@@ -152,7 +158,8 @@ def test_walls_have_openings_in_structural_faces(ifc):
     """every window and door is a hole that stops short of the edge of the face"""
     holes = 0
     doors = 0
-    for face, wall in wall_faces(ifc):
+    for member, wall in wall_members(ifc):
+        face = member.Representation.Representations[0].Items[0]
         assert face.Bounds[0].is_a("IfcFaceOuterBound")
         assert not any(bound.is_a("IfcFaceOuterBound") for bound in face.Bounds[1:])
         fillings = [
@@ -170,7 +177,11 @@ def test_walls_have_openings_in_structural_faces(ifc):
         top = max(point[2] for point in outer)
         for bound in face.Bounds[1:]:
             for point in loop_coordinates(bound):
-                assert floor + 0.2 - 1e-6 <= point[2] <= top - 0.2 + 1e-6
+                assert (
+                    floor + member.Thickness - 1e-6
+                    <= point[2]
+                    <= top - member.Thickness + 1e-6
+                )
     assert holes == len(ifc.by_type("IfcWindow")) + len(ifc.by_type("IfcDoor"))
     assert holes
     assert doors

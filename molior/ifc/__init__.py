@@ -605,6 +605,86 @@ def assign_structural_profile(
     )
 
 
+def is_load_bearing(type_product: Optional[ifcopenshell.entity_instance]) -> bool:
+    """Whether an Element of this Type gets a structural member.
+
+    Only a Pset_*Common LoadBearing that is FALSE says no, so a Type without
+    the property, or no Type at all, is load bearing.
+
+    Args:
+        type_product: The Type of the Element, or None.
+
+    Returns:
+        False if the Type says it is not load bearing, else True.
+    """
+    if type_product is None:
+        return True
+    for name, pset in ifcopenshell.util.element.get_psets(type_product).items():
+        if name.endswith("Common") and pset.get("LoadBearing") is False:
+            return False
+    return True
+
+
+def get_structural_layer(
+    self: ifcopenshell.file,
+    type_product: Optional[ifcopenshell.entity_instance],
+    style_object: Any,
+    stylename: str = "default",
+    material: Optional[str] = None,
+    thickness: Optional[float] = None,
+    default_material: str = "Concrete",
+) -> tuple:
+    """The Material and Thickness of a Structural Surface Member for an Element.
+
+    The Material is the one named, or else that of the thickest Layer of the
+    Type with a YoungModulus to analyse with, or else the default. The
+    Thickness is the one given, or else that Layer's, or else 0.2.
+
+    Args:
+        self: The IFC file.
+        type_product: The Type of the Element, or None.
+        style_object: The style manager object that provides library access.
+        stylename: The style to look for a named Material in.
+        material: The name of a Material from a style, or None.
+        thickness: A thickness from a style, or None.
+        default_material: The name of a Material to use otherwise.
+
+    Returns:
+        The IfcMaterial and the thickness.
+    """
+    layer = None
+    if type_product is not None:
+        layer_set = ifcopenshell.util.element.get_material(type_product)
+        if layer_set is not None and layer_set.is_a("IfcMaterialLayerSet"):
+            for material_layer in layer_set.MaterialLayers:
+                if material_layer.Material is None or not (
+                    ifcopenshell.util.element.get_psets(material_layer.Material)
+                    .get("Pset_MaterialMechanical", {})
+                    .get("YoungModulus")
+                ):
+                    continue
+                if (
+                    layer is None
+                    or material_layer.LayerThickness > layer.LayerThickness
+                ):
+                    layer = material_layer
+
+    if material is not None:
+        ifc_material = get_material_by_name(
+            self, style_object, name=material, stylename=stylename
+        )
+    elif layer is not None:
+        ifc_material = layer.Material
+    else:
+        ifc_material = get_material_by_name(
+            self, style_object, name=default_material, stylename=stylename
+        )
+
+    if thickness is None:
+        thickness = layer.LayerThickness if layer is not None else 0.2
+    return ifc_material, thickness
+
+
 def get_parent_building(
     entity: ifcopenshell.entity_instance,
 ) -> Optional[ifcopenshell.entity_instance]:

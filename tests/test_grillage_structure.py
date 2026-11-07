@@ -147,6 +147,22 @@ def test_one_structural_surface_per_face(ifc):
     assert max(faces.values()) == 1
 
 
+def test_surfaces_only_for_load_bearing_types(ifc):
+    """'exterior-empty' walls only hold windows, the sheathing braces the studs"""
+    names = collections.Counter(
+        member.Name for member in ifc.by_type("IfcStructuralSurfaceMember")
+    )
+    assert "framing/exterior-empty" not in names
+    assert names["framing/ply-sheathing"]
+    for member in ifc.by_type("IfcStructuralSurfaceMember"):
+        material = ifcopenshell.util.element.get_material(member)
+        if member.Name == "framing/ply-sheathing":
+            assert (material.Name, round(member.Thickness, 3)) == ("Plywood", 0.025)
+        if member.Name == "framing/living-floor":
+            # the Concrete layer of the inherited 'living-floor' slab
+            assert (material.Name, round(member.Thickness, 3)) == ("Concrete", 0.18)
+
+
 def test_framing_can_be_analysed(framing, tmp_path):
     pytest.importorskip("ifc_structural_mechanics")
     if not shutil.which("ccx"):

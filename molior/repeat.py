@@ -9,6 +9,7 @@ from .geometry import add_2d, subtract_2d, scale_2d, distance_2d, matrix_align
 from .ifc import (
     add_face_topology_epsets,
     assign_structural_profile,
+    is_load_bearing,
     assign_storey_byindex,
     get_type_object,
     get_context_by_name,
@@ -221,10 +222,19 @@ class Repeat(TraceClass):
                     # structural stuff
 
                     if (
-                        entity.is_a("IfcColumn") or entity.is_a("IfcMember")
-                    ) and hasattr(self, "chain"):
+                        (entity.is_a("IfcColumn") or entity.is_a("IfcMember"))
+                        and hasattr(self, "chain")
+                        and is_load_bearing(
+                            get_type_object(
+                                self.file,
+                                self.style_object,
+                                ifc_type=self.ifc + "Type",
+                                stylename=self.style,
+                                name=asset_name,
+                            )
+                        )
+                    ):
                         # TODO support IfcPile IfcFooting
-                        # TODO skip unless Pset_MemberCommon.LoadBearing
                         start = [*location, self.elevation]
                         end = [*location, self.elevation + self.height]
                         structural_member = api.root.create_entity(

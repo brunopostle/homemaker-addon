@@ -29,9 +29,10 @@ from .ifc import (
     create_face_surface,
     assign_storey_byindex,
     get_type_object,
-    get_material_by_name,
     get_context_by_name,
+    get_structural_layer,
     get_thickness,
+    is_load_bearing,
     create_closed_profile_from_points,
 )
 
@@ -66,8 +67,9 @@ class Wall(TraceClass):
         self.ceiling = 0.35
         self.ifc = "IfcWall"
         self.party_wall = False
-        self.structural_material = "Masonry"
-        self.structural_thickness = 0.2
+        # None to take them from the Type, see get_structural_layer()
+        self.structural_material = None
+        self.structural_thickness = None
         self.openings = []
         self.path = []
         # where doors ought to go, keyed by Face index, see molior.stair
@@ -82,9 +84,6 @@ class Wall(TraceClass):
 
         #  contexts
 
-        reference_context = get_context_by_name(
-            self.file, context_identifier="Reference", target_view="GRAPH_VIEW"
-        )
         body_context = get_context_by_name(self.file, context_identifier="Body")
         axis_context = get_context_by_name(
             self.file, context_identifier="Axis", parent_context_identifier="Plan"
@@ -272,50 +271,17 @@ class Wall(TraceClass):
             add_face_topology_epsets(self.file, mywall, face, back_cell, front_cell)
 
             # structure
-            face_surface = create_face_surface(
-                self.file,
-                vertices,
-                normal,
-                self.structural_holes(id_segment, vertices),
-            )
-            # generate structural surfaces
-            structural_surface = api.root.create_entity(
-                self.file,
-                ifc_class="IfcStructuralSurfaceMember",
-                name=self.style + "/" + self.name,
-                predefined_type="SHELL",
-            )
-            api.structural.assign_product(
-                self.file, relating_product=structural_surface, related_object=mywall
-            )
-            add_face_topology_epsets(
-                self.file, structural_surface, face, back_cell, front_cell
-            )
-            structural_surface.Thickness = self.structural_thickness
-            api.structural.assign_structural_analysis_model(
-                self.file,
-                products=[structural_surface],
-                structural_analysis_model=self.structural_analysis_model,
-            )
-            api.geometry.assign_representation(
-                self.file,
-                product=structural_surface,
-                representation=api.geometry.add_topology_representation(
-                    self.file,
-                    context=reference_context,
-                    item=face_surface,
-                ),
-            )
-            api.material.assign_material(
-                self.file,
-                products=[structural_surface],
-                material=get_material_by_name(
-                    self.file,
-                    self.style_object,
-                    name=self.structural_material,
-                    stylename=self.style,
-                ),
-            )
+            if is_load_bearing(product_type):
+                self.add_structural_surface(
+                    mywall,
+                    product_type,
+                    id_segment,
+                    vertices,
+                    normal,
+                    face,
+                    back_cell,
+                    front_cell,
+                )
 
             # clip the top of the wall if face isn't rectangular
             edges_ptr = []
@@ -781,7 +747,68 @@ class Wall(TraceClass):
         if vertex is not None:
             self.circulation.RemoveVertices([vertex])
 
-    def structural_holes(self, id_segment, vertices):
+    def add_structural_surface(
+        self,
+        mywall,
+        product_type,
+        id_segment,
+        vertices,
+        normal,
+        face,
+        back_cell,
+        front_cell,
+    ):
+        """A Structural Surface Member for a wall segment, with holes for openings"""
+        reference_context = get_context_by_name(
+            self.file, context_identifier="Reference", target_view="GRAPH_VIEW"
+        )
+        material, thickness = get_structural_layer(
+            self.file,
+            product_type,
+            self.style_object,
+            stylename=self.style,
+            material=self.structural_material,
+            thickness=self.structural_thickness,
+            default_material="Masonry",
+        )
+        face_surface = create_face_surface(
+            self.file,
+            vertices,
+            normal,
+            self.structural_holes(id_segment, vertices, thickness),
+        )
+        structural_surface = api.root.create_entity(
+            self.file,
+            ifc_class="IfcStructuralSurfaceMember",
+            name=self.style + "/" + self.name,
+            predefined_type="SHELL",
+        )
+        api.structural.assign_product(
+            self.file, relating_product=structural_surface, related_object=mywall
+        )
+        add_face_topology_epsets(
+            self.file, structural_surface, face, back_cell, front_cell
+        )
+        structural_surface.Thickness = thickness
+        api.structural.assign_structural_analysis_model(
+            self.file,
+            products=[structural_surface],
+            structural_analysis_model=self.structural_analysis_model,
+        )
+        api.geometry.assign_representation(
+            self.file,
+            product=structural_surface,
+            representation=api.geometry.add_topology_representation(
+                self.file,
+                context=reference_context,
+                item=face_surface,
+            ),
+        )
+        api.material.assign_material(
+            self.file, products=[structural_surface], material=material
+        )
+
+    def structural_holes(self, id_segment, vertices, thickness):
         """Loops for windows and doors in the structural face of a wall segment"""
         if not self.openings[id_segment]:
             return []
@@ -801,7 +828,7 @@ class Wall(TraceClass):
         )
         # openings stop short of the edge of the face, so it stays connected along
         # all its edges, this leaves a strip of structure under a door
-        inset = outline.buffer(-self.structural_thickness, join_style="mitre")
+        inset = outline.buffer(-thickness, join_style="mitre")
 
         cuts = []
         for opening in self.openings[id_segment]:
