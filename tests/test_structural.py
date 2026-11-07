@@ -88,6 +88,43 @@ def test_materials_have_stiffness(ifc):
     assert names == {"Concrete", "Masonry"}
 
 
+LINEAR_TYPES = (
+    "IfcBeamType",
+    "IfcColumnType",
+    "IfcFootingType",
+    "IfcMemberType",
+    "IfcPileType",
+)
+
+
+def test_linear_types_have_stiffness():
+    """a beam, column or member is analysed as its own material, if it has a
+    stiffness, a Type in any library without one would be analysed as Concrete"""
+    import glob
+
+    checked = 0
+    for path in glob.glob(
+        os.path.join(ROOT, "share", "**", "library.ifc"), recursive=True
+    ):
+        library = ifcopenshell.open(path)
+        for type_product in library.by_type("IfcTypeProduct"):
+            if type_product.is_a() not in LINEAR_TYPES:
+                continue
+            if not molior.ifc.is_load_bearing(type_product):
+                continue
+            # FIXME cinema seating rows are carpet
+            if type_product.Name == "Cinema row":
+                continue
+            for material in ifcopenshell.util.element.get_materials(type_product):
+                psets = ifcopenshell.util.element.get_psets(material)
+                mechanical = psets.get("Pset_MaterialMechanical", {})
+                assert mechanical.get("YoungModulus"), (path, material.Name)
+                assert 0.0 < mechanical["PoissonRatio"] < 0.5
+                assert psets["Pset_MaterialCommon"]["MassDensity"] > 0.0
+                checked += 1
+    assert checked > 10
+
+
 def test_units_of_stiffness_and_density(ifc):
     """values in share/library.ifc are Pa and kg/m3, while forces are in kN"""
     assert ifcopenshell.util.unit.calculate_unit_scale(ifc, "FORCEUNIT") == 1000.0
@@ -460,6 +497,24 @@ def test_horizontal_members_are_connected_where_they_meet(porch):
     assert meeting
     for point, members in meeting.items():
         assert connections[point].issuperset(members)
+
+
+def test_columns_and_beams_are_timber(porch):
+    """the default Types are timber, they aren't analysed as concrete"""
+    for element_class, name in (("IfcColumn", "Wood"), ("IfcBeam", "Timber")):
+        elements = porch.by_type(element_class)
+        assert elements
+        for element in elements:
+            members = [
+                rel.RelatingProduct
+                for rel in element.HasAssignments
+                if rel.is_a("IfcRelAssignsToProduct")
+                and rel.RelatingProduct.is_a("IfcStructuralCurveMember")
+            ]
+            assert members, element
+            for member in members:
+                materials = ifcopenshell.util.element.get_materials(member)
+                assert [material.Name for material in materials] == [name]
 
 
 def test_columns_have_an_axis_the_height_of_their_body(porch):
