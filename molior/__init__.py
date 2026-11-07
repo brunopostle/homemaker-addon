@@ -741,6 +741,47 @@ class Molior:
                     related_structural_connection=connection_point,
                 )
 
+        # a pile or pad footing from a Repeat is a vertical member, pin its base
+        for item in curve_list:
+            member = item[1]
+            if not any(
+                related_object.is_a("IfcPile") or related_object.is_a("IfcFooting")
+                for referenced_by in member.ReferencedBy
+                for related_object in referenced_by.RelatedObjects
+            ):
+                continue
+            curve_edge = member.Representation.Representations[0].Items[0]
+            start_coors = curve_edge.EdgeStart.VertexGeometry.Coordinates
+            end_coors = curve_edge.EdgeEnd.VertexGeometry.Coordinates
+            if abs(start_coors[2] - end_coors[2]) < 0.001:
+                continue
+            base_coors = min(start_coors, end_coors, key=lambda coors: coors[2])
+            point_connection = point_connection_at(base_coors, "Foundation connection")
+            api.structural.add_structural_member_connection(
+                self.file,
+                relating_structural_member=member,
+                related_structural_connection=point_connection,
+            )
+            if point_connection.AppliedCondition:
+                continue
+            api.structural.add_structural_boundary_condition(
+                self.file,
+                name="foundation",
+                connection=point_connection,
+            )
+            api.structural.edit_structural_boundary_condition(
+                self.file,
+                condition=point_connection.AppliedCondition,
+                attributes={
+                    "TranslationalStiffnessX": {"type": "IfcBoolean", "value": True},
+                    "TranslationalStiffnessY": {"type": "IfcBoolean", "value": True},
+                    "TranslationalStiffnessZ": {"type": "IfcBoolean", "value": True},
+                    "RotationalStiffnessX": {"type": "IfcBoolean", "value": False},
+                    "RotationalStiffnessY": {"type": "IfcBoolean", "value": False},
+                    "RotationalStiffnessZ": {"type": "IfcBoolean", "value": False},
+                },
+            )
+
         # join the ends of horizontal members to the members they touch
         member_ends = []
         for item in curve_list:

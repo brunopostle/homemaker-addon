@@ -221,9 +221,15 @@ class Repeat(TraceClass):
 
                     # structural stuff
 
+                    is_foundation = entity.is_a("IfcPile") or entity.is_a("IfcFooting")
                     if (
-                        (entity.is_a("IfcColumn") or entity.is_a("IfcMember"))
+                        (
+                            entity.is_a("IfcColumn")
+                            or entity.is_a("IfcMember")
+                            or is_foundation
+                        )
                         and hasattr(self, "chain")
+                        and (not is_foundation or type_height > 0.0)
                         and is_load_bearing(
                             get_type_object(
                                 self.file,
@@ -234,9 +240,17 @@ class Repeat(TraceClass):
                             )
                         )
                     ):
-                        # TODO support IfcPile IfcFooting
                         start = [*location, self.elevation]
                         end = [*location, self.elevation + self.height]
+                        if is_foundation:
+                            # a pile or pad hangs below the trace, as a footing
+                            # trace has no height, the member is the Element
+                            # itself, connect_structure() supports its base
+                            start = [*location, self.elevation + self.yshift]
+                            end = [
+                                *location,
+                                self.elevation + self.yshift + type_height,
+                            ]
                         structural_member = api.root.create_entity(
                             self.file,
                             ifc_class="IfcStructuralCurveMember",

@@ -73,6 +73,11 @@ internal ground beam:
   offset: 0.0
   extension: 0.0
 
+# A Repeat of IfcPile or IfcFooting along these traces makes piles or pad
+# footings, set 'yshift' to minus the family height so they hang below the
+# trace. Each gets a Structural Member pinned at its base, use 'ifc: IfcBeam'
+# for the ground beam so that it doesn't support the building as well.
+
 # Dress a subsection of traces with extruded Elements.
 
 eaves corona:
