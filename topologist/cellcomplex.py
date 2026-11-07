@@ -369,8 +369,9 @@ def FootPrint(self):
         cells_ptr = []
         self.Cells(None, cells_ptr)
         cell = cells_ptr[0]
-    ugraph = cell.Perimeter(self)
-    return ugraph.find_paths()
+    return [
+        path for perimeter in cell.Perimeters(self) for path in perimeter.find_paths()
+    ]
 
 
 setattr(topologic_core.CellComplex, "IndexTopology", IndexTopology)

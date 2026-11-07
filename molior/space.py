@@ -121,11 +121,28 @@ class Space(TraceClass):
 
         if not self.do_representation:
             return
-        # simple extruded representation
+        # simple extruded representation, a doughnut shaped Cell has holes
+        holes = []
+        if self.cellcomplex is not None and type(cell).__name__ == "Cell":
+            for perimeter in cell.Perimeters(self.cellcomplex)[1:]:
+                hole = TraceClass(
+                    {
+                        "closed": True,
+                        "inner": self.inner,
+                        "path": [
+                            perimeter.graph[node][1]["start_vertex"].Coordinates()[0:2]
+                            for node in perimeter.graph
+                        ],
+                    }
+                )
+                holes.append(
+                    [hole.corner_in(index) for index in range(len(hole.path))]
+                )
         representation = create_extruded_area_solid(
             self.file,
             [self.corner_in(index) for index in range(len(self.path))],
             self.height - self.ceiling,
+            holes=holes,
         )
         representationtype = "SweptSolid"
 

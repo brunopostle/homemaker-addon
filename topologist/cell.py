@@ -114,7 +114,19 @@ def Crinkliness(self, cellcomplex):
 
 
 def Perimeter(self, host_topology):
-    """2D outline of Cell vertical walls, closed, anti-clockwise. Result is a ugraph graph"""
+    """2D outline of Cell vertical walls, closed, anti-clockwise. Result is a ugraph
+    graph, empty if there isn't one. A doughnut shaped Cell has holes too, see
+    Perimeters()"""
+    perimeters = self.Perimeters(host_topology)
+    if perimeters:
+        return perimeters[0]
+    return ugraph.graph()
+
+
+def Perimeters(self, host_topology):
+    """2D outlines of Cell vertical walls, closed, as a list of ugraph graphs. The
+    outer perimeter is first and anti-clockwise, any holes of a doughnut shaped
+    Cell follow, clockwise, so the Cell is on the same side of every edge"""
     elevation = self.Elevation()
     faces_ptr = []
     self.FacesVertical(faces_ptr)
@@ -137,56 +149,74 @@ def Perimeter(self, host_topology):
                     face,
                 ]
 
-    graph = ugraph.graph()
+    # edges are in no particular order or direction, sort them into loops
+    loops = {}
+    for edge in edges_ptr:
+        keys = [edge.StartVertex().CoorAsString(), edge.EndVertex().CoorAsString()]
+        joined = [loop for loop in loops.values() if loop["nodes"] & set(keys)]
+        loop = {"nodes": set(keys), "edges": [edge]}
+        for other in joined:
+            loop["nodes"] |= other["nodes"]
+            loop["edges"] += other["edges"]
+            del loops[id(other)]
+        loops[id(loop)] = loop
 
-    # edges are in no particular order or direction
-    if len(edges_ptr) < 3:
-        return graph
-    try:
-        floor = Face.ByEdges(edges_ptr)
-    except RuntimeError:
-        return graph
+    floors = []
+    for loop in loops.values():
+        if len(loop["edges"]) < 3:
+            return []
+        try:
+            floors.append(Face.ByEdges(loop["edges"]))
+        except RuntimeError:
+            return []
+    floors.sort(key=FaceUtility.Area, reverse=True)
 
-    normal = floor.Normal()
-    vertices_ptr = []
-    floor.VerticesPerimeter(vertices_ptr)
+    results = []
+    for floor in floors:
+        normal = floor.Normal()
+        vertices_ptr = []
+        floor.VerticesPerimeter(vertices_ptr)
 
-    clockwise = False
-    if normal[2] < 0.0:
-        clockwise = True
-    for i in range(len(vertices_ptr)):
-        if clockwise:
-            start = vertices_ptr[i]
-            end = vertices_ptr[i - 1]
-        else:
-            start = vertices_ptr[i - 1]
-            end = vertices_ptr[i]
-        start_coor = start.CoorAsString()
-        end_coor = end.CoorAsString()
-        refs = lookup[start_coor + " " + end_coor]
+        clockwise = False
+        if normal[2] < 0.0:
+            clockwise = True
+        # holes go the other way
+        if results:
+            clockwise = not clockwise
+        graph = ugraph.graph()
+        for i in range(len(vertices_ptr)):
+            if clockwise:
+                start = vertices_ptr[i]
+                end = vertices_ptr[i - 1]
+            else:
+                start = vertices_ptr[i - 1]
+                end = vertices_ptr[i]
+            start_coor = start.CoorAsString()
+            end_coor = end.CoorAsString()
+            refs = lookup[start_coor + " " + end_coor]
 
-        outer_cell = None
-        face = refs[2]
-        cells_ptr = face.Cells_Cached(host_topology)
-        for cell in cells_ptr:
-            if not cell.IsSame(self):
-                outer_cell = cell
-        graph.add_edge(
-            {
-                start_coor: [
-                    end_coor,
-                    {
-                        "start_vertex": refs[0],
-                        "end_vertex": refs[1],
-                        "face": refs[2],
-                        "back_cell": self,
-                        "front_cell": outer_cell,
-                    },
-                ]
-            }
-        )
-    # FIXME should return list of cycles, with outer perimeter first (to support doughnut shaped rooms)
-    return graph.find_paths()[0]
+            outer_cell = None
+            face = refs[2]
+            cells_ptr = face.Cells_Cached(host_topology)
+            for cell in cells_ptr:
+                if not cell.IsSame(self):
+                    outer_cell = cell
+            graph.add_edge(
+                {
+                    start_coor: [
+                        end_coor,
+                        {
+                            "start_vertex": refs[0],
+                            "end_vertex": refs[1],
+                            "face": refs[2],
+                            "back_cell": self,
+                            "front_cell": outer_cell,
+                        },
+                    ]
+                }
+            )
+        results.append(graph.find_paths()[0])
+    return results
 
 
 def InternalVertex(self):
@@ -229,3 +259,4 @@ setattr(topologic_core.Cell, "Volume", Volume)
 setattr(topologic_core.Cell, "ExternalWallArea", ExternalWallArea)
 setattr(topologic_core.Cell, "Crinkliness", Crinkliness)
 setattr(topologic_core.Cell, "Perimeter", Perimeter)
+setattr(topologic_core.Cell, "Perimeters", Perimeters)

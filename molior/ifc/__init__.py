@@ -868,6 +868,7 @@ def create_extruded_area_solid(
     points: List[List[float]],
     height: float,
     direction: List[float] = [0.0, 0.0, 1.0],
+    holes: Optional[List[List[List[float]]]] = None,
 ) -> ifcopenshell.entity_instance:
     """A simple vertically extruded profile.
 
@@ -876,12 +877,24 @@ def create_extruded_area_solid(
         points: A list of 2D points defining the profile to extrude.
         height: The extrusion height.
         direction: The direction vector for extrusion (default: upward in Z-axis).
+        holes: Lists of 2D points, each a hole in the profile.
 
     Returns:
         An IfcExtrudedAreaSolid entity.
     """
+    profile = create_closed_profile_from_points(self, points)
+    if holes:
+        profile = self.createIfcArbitraryProfileDefWithVoids(
+            "AREA",
+            None,
+            profile.OuterCurve,
+            [
+                create_closed_profile_from_points(self, hole).OuterCurve
+                for hole in holes
+            ],
+        )
     return self.createIfcExtrudedAreaSolid(
-        create_closed_profile_from_points(self, points),
+        profile,
         self.createIfcAxis2Placement3D(
             self.createIfcCartesianPoint((0.0, 0.0, 0.0)), None, None
         ),
