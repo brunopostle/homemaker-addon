@@ -5,10 +5,12 @@ import ifcopenshell.api.material
 import ifcopenshell.api.root
 import ifcopenshell.api.structural
 import ifcopenshell.api.type
+import numpy as np
 from .baseclass import BaseClass
 from .geometry import map_to_2d, map_to_2d_simple, matrix_align, inset_path
 from .ifc import (
     add_face_topology_epsets,
+    add_imposed_load,
     create_extruded_area_solid,
     create_face_surface,
     assign_storey_byindex,
@@ -26,6 +28,36 @@ except ImportError:
 
 api = ifcopenshell.api
 
+# Imposed loads in kN/m², EN 1991-1-1 with the UK National Annex, for a floor
+# by the usage of the room above, and for a roof without access (category H)
+IMPOSED_LOADS = {
+    "bedroom": 1.5,
+    "circulation": 1.5,
+    "kitchen": 1.5,
+    "living": 1.5,
+    "stair": 1.5,
+    "toilet": 1.5,
+    "utility": 1.5,
+    "outside": 2.5,
+    "retail": 4.0,
+    "sahn": 5.0,
+    "roof": 0.6,
+    "flat": 0.6,
+}
+ROOF_CONDITIONS = ("roof", "flat")
+
+
+def imposed_load(condition, normal, value=None):
+    """Downward imposed load per true area of a Face in kN/m², from a load on
+    plan, of the style or the default of the condition. A roof load is less on
+    a pitch over 30°, and none over 60°"""
+    if value is None:
+        value = IMPOSED_LOADS.get(condition, 0.0)
+        if condition in ROOF_CONDITIONS:
+            pitch = np.degrees(np.arccos(min(1.0, abs(normal[2]))))
+            value *= min(1.0, max(0.0, (60.0 - pitch) / 30.0))
+    return value * abs(normal[2])
+
 
 class Shell(BaseClass):
     """A pitched roof or soffit"""
@@ -40,6 +72,8 @@ class Shell(BaseClass):
         self.structural_thickness = None
         # holes for the openings of a Wall on the same Face, see Molior
         self.opening_holes = None
+        # kN/m² on plan, None for the default of the condition, see imposed_load()
+        self.imposed_load = None
         for arg in args:
             self.__dict__[arg] = args[arg]
 
@@ -225,6 +259,14 @@ class Shell(BaseClass):
                     self.file,
                     relating_product=structural_surface,
                     related_object=element,
+                )
+                add_imposed_load(
+                    self.file,
+                    self.structural_analysis_model,
+                    structural_surface,
+                    imposed_load(
+                        getattr(self, "condition", None), normal, self.imposed_load
+                    ),
                 )
 
             thickness = get_thickness(self.file, product_type)

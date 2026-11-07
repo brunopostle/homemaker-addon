@@ -9,9 +9,11 @@ import weakref
 import numpy as np
 import ifcopenshell
 import ifcopenshell.entity_instance
+import ifcopenshell.guid
 import ifcopenshell.api.aggregate
 import ifcopenshell.api.context
 import ifcopenshell.api.geometry
+import ifcopenshell.api.group
 import ifcopenshell.api.material
 import ifcopenshell.api.owner
 import ifcopenshell.api.project
@@ -443,7 +445,7 @@ def get_structural_analysis_model_by_name(
         building=spatial_element,
     )
     # the weight of the structure, acting downwards
-    load_case = api.root.create_entity(
+    dead_load = api.root.create_entity(
         self,
         ifc_class="IfcStructuralLoadCase",
         name="Dead load",
@@ -451,15 +453,85 @@ def get_structural_analysis_model_by_name(
     )
     api.attribute.edit_attributes(
         self,
-        product=load_case,
+        product=dead_load,
         attributes={
             "ActionSource": "DEAD_LOAD_G",
             "ActionType": "PERMANENT_G",
             "SelfWeightCoefficients": [0.0, 0.0, -1.0],
         },
     )
-    model.LoadedBy = [load_case]
+    # the use of floors and roofs, see add_imposed_load()
+    imposed_load = api.root.create_entity(
+        self,
+        ifc_class="IfcStructuralLoadCase",
+        name="Imposed load",
+        predefined_type="LOAD_CASE",
+    )
+    api.attribute.edit_attributes(
+        self,
+        product=imposed_load,
+        attributes={"ActionSource": "LIVE_LOAD_Q", "ActionType": "VARIABLE_Q"},
+    )
+    groups = [dead_load, imposed_load]
+    # EN 1990 equation 6.10, and the characteristic combination
+    for name, factors in (("ULS", (1.35, 1.5)), ("SLS", (1.0, 1.0))):
+        combination = api.root.create_entity(
+            self,
+            ifc_class="IfcStructuralLoadGroup",
+            name=name,
+            predefined_type="LOAD_COMBINATION",
+        )
+        api.attribute.edit_attributes(
+            self,
+            product=combination,
+            attributes={"ActionSource": "NOTDEFINED", "ActionType": "NOTDEFINED"},
+        )
+        for load_case, factor in zip((dead_load, imposed_load), factors):
+            self.createIfcRelAssignsToGroupByFactor(
+                ifcopenshell.guid.new(),
+                RelatedObjects=[load_case],
+                RelatingGroup=combination,
+                Factor=factor,
+            )
+        groups.append(combination)
+    model.LoadedBy = groups
     return model
+
+
+def add_imposed_load(
+    self: ifcopenshell.file,
+    model: ifcopenshell.entity_instance,
+    structural_member: ifcopenshell.entity_instance,
+    value: float,
+) -> Optional[ifcopenshell.entity_instance]:
+    """Load a Structural Surface Member downwards in the 'Imposed load' case.
+
+    Args:
+        self: The IFC file.
+        model: The structural analysis model with the load case.
+        structural_member: The surface member to load.
+        value: The load in kN/m² of the surface, nothing is added if zero.
+
+    Returns:
+        The new Structural Planar Action, or None.
+    """
+    if value <= 0.0:
+        return None
+    (load_case,) = [
+        group for group in model.LoadedBy or [] if group.Name == "Imposed load"
+    ]
+    applied_load = api.structural.add_structural_load(
+        self, name="Imposed load", ifc_class="IfcStructuralLoadPlanarForce"
+    )
+    applied_load.PlanarForceZ = -float(value)
+    action = api.structural.add_structural_activity(
+        self,
+        applied_load=applied_load,
+        structural_member=structural_member,
+    )
+    action.Name = "Imposed load"
+    api.group.assign_group(self, products=[action], group=load_case)
+    return action
 
 
 def get_library_by_name(
@@ -1232,6 +1304,11 @@ def delete_ifc_product(
                 delete_ifc_product(self, child_product)
     if product.is_a("IfcStructuralAnalysisModel"):
         for load_group in product.LoadedBy or []:
+            for rel in load_group.IsGroupedBy:
+                for action in rel.RelatedObjects:
+                    if action.is_a("IfcStructuralActivity"):
+                        remove_structural_activity(self, action)
+        for load_group in product.LoadedBy or []:
             api.root.remove_product(self, product=load_group)
     if product.is_a("IfcSpatialElement"):
         for child in product.ContainsElements:
@@ -1253,6 +1330,18 @@ def delete_ifc_product(
         for port in ifcopenshell.util.system.get_ports(product):
             api.root.remove_product(self, product=port)
     api.root.remove_product(self, product=product)
+
+
+def remove_structural_activity(
+    self: ifcopenshell.file, activity: ifcopenshell.entity_instance
+) -> None:
+    """Delete a Structural Action or Reaction, with the load it applies"""
+    applied_load = activity.AppliedLoad
+    for rel in activity.AssignedToStructuralItem or []:
+        self.remove(rel)
+    api.root.remove_product(self, product=activity)
+    if applied_load is not None and not self.get_total_inverses(applied_load):
+        self.remove(applied_load)
 
 
 def purge_unused(self: ifcopenshell.file) -> None:

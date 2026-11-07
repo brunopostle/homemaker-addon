@@ -2,11 +2,13 @@
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 
 import ifcopenshell
 import ifcopenshell.geom
+import ifcopenshell.guid
 import ifcopenshell.util.element
 import ifcopenshell.util.unit
 import numpy as np
@@ -102,21 +104,90 @@ def test_units_of_stiffness_and_density(ifc):
     } == {("MASSUNIT", "KILO", 1), ("LENGTHUNIT", None, -3)}
 
 
-def test_dead_load_case(ifc):
-    """the model is loaded by its own weight, with nothing else to ask for"""
+def test_load_cases(ifc):
+    """the model is loaded by its own weight, and by the use of floors and roofs"""
     model = ifc.by_type("IfcStructuralAnalysisModel")[0]
-    assert len(ifc.by_type("IfcStructuralLoadGroup")) == 1
-    assert len(model.LoadedBy) == 1
-    load_case = model.LoadedBy[0]
-    assert load_case.is_a("IfcStructuralLoadCase")
-    assert load_case.PredefinedType == "LOAD_CASE"
-    assert load_case.ActionType == "PERMANENT_G"
-    assert load_case.ActionSource == "DEAD_LOAD_G"
-    assert load_case.SelfWeightCoefficients == (0.0, 0.0, -1.0)
+    assert len(ifc.by_type("IfcStructuralLoadGroup")) == 4
+    assert [group.Name for group in model.LoadedBy] == [
+        "Dead load",
+        "Imposed load",
+        "ULS",
+        "SLS",
+    ]
+    dead_load, imposed_load = model.LoadedBy[0:2]
+    for load_case in dead_load, imposed_load:
+        assert load_case.is_a("IfcStructuralLoadCase")
+        assert load_case.PredefinedType == "LOAD_CASE"
+    assert dead_load.ActionType == "PERMANENT_G"
+    assert dead_load.ActionSource == "DEAD_LOAD_G"
+    assert dead_load.SelfWeightCoefficients == (0.0, 0.0, -1.0)
+    assert imposed_load.ActionType == "VARIABLE_Q"
+    assert imposed_load.ActionSource == "LIVE_LOAD_Q"
+    assert not imposed_load.SelfWeightCoefficients
+
+
+def test_load_combinations(ifc):
+    model = ifc.by_type("IfcStructuralAnalysisModel")[0]
+    factors = {
+        group.Name: {
+            load_case.Name: rel.Factor
+            for rel in group.IsGroupedBy
+            for load_case in rel.RelatedObjects
+        }
+        for group in model.LoadedBy[2:]
+    }
+    assert factors == {
+        "ULS": {"Dead load": 1.35, "Imposed load": 1.5},
+        "SLS": {"Dead load": 1.0, "Imposed load": 1.0},
+    }
+    for group in model.LoadedBy[2:]:
+        assert group.PredefinedType == "LOAD_COMBINATION"
+
+
+def test_imposed_loads_on_floors_and_roofs(ifc):
+    """1.5 kN/m² on floors of dwellings, 0.6 kN/m² on a roof without access"""
+    loads = {}
+    for action in ifc.by_type("IfcStructuralPlanarAction"):
+        (rel,) = action.AssignedToStructuralItem
+        (group,) = [rel.RelatingGroup for rel in action.HasAssignments]
+        assert group.Name == "Imposed load"
+        assert action.GlobalOrLocal == "GLOBAL_COORDS"
+        load = action.AppliedLoad
+        assert not load.PlanarForceX and not load.PlanarForceY
+        loads.setdefault(rel.RelatingElement.Name, set()).add(load.PlanarForceZ)
+    assert loads == {
+        "default/living-floor": {-1.5},
+        "default/kitchen-floor": {-1.5},
+        "default/bedroom-floor": {-1.5},
+        "default/flat-roof": {-0.6},
+    }
+
+
+def test_imposed_load_of_a_pitched_roof():
+    from molior.shell import imposed_load
+
+    # a floor is loaded the same on plan and on its true area
+    assert imposed_load("living", [0.0, 0.0, 1.0]) == 1.5
+    assert imposed_load("living", [0.0, 0.0, -1.0]) == 1.5
+    # nothing on walls or soffits, unless the style says so
+    assert imposed_load("external", [1.0, 0.0, 0.0]) == 0.0
+    assert imposed_load("soffit", [0.0, 0.0, -1.0]) == 0.0
+    assert imposed_load("soffit", [0.0, 0.0, -1.0], 2.0) == 2.0
+    # 0.6 kN/m² on plan up to 30°, then less to nothing at 60°
+    pitch = np.radians(30.0)
+    assert imposed_load("roof", [0.0, np.sin(pitch), np.cos(pitch)]) == (
+        pytest.approx(0.6 * np.cos(pitch))
+    )
+    pitch = np.radians(45.0)
+    assert imposed_load("roof", [0.0, np.sin(pitch), np.cos(pitch)]) == (
+        pytest.approx(0.3 * np.cos(pitch))
+    )
+    pitch = np.radians(70.0)
+    assert imposed_load("roof", [0.0, np.sin(pitch), np.cos(pitch)]) == 0.0
 
 
 def test_load_case_deleted_with_model():
-    """regenerating a building has to leave one dead load, not accumulate them"""
+    """regenerating a building has to leave one set of loads, not accumulate them"""
     ifc = molior.ifc.init(name="Our Project")
     project = ifc.by_type("IfcProject")[0]
     site = molior.ifc.get_site_by_name(ifc, project, "Our Site")
@@ -125,11 +196,18 @@ def test_load_case_deleted_with_model():
     assert (
         molior.ifc.get_structural_analysis_model_by_name(ifc, building, "Ours") == model
     )
-    assert len(ifc.by_type("IfcStructuralLoadCase")) == 1
+    assert len(ifc.by_type("IfcStructuralLoadGroup")) == 4
+    member = ifc.createIfcStructuralSurfaceMember(ifcopenshell.guid.new())
+    molior.ifc.add_imposed_load(ifc, model, member, 1.5)
+    assert not molior.ifc.add_imposed_load(ifc, model, member, 0.0)
+    assert len(ifc.by_type("IfcStructuralPlanarAction")) == 1
     molior.ifc.delete_ifc_product(ifc, model)
-    assert not ifc.by_type("IfcStructuralLoadCase")
+    assert not ifc.by_type("IfcStructuralLoadGroup")
+    assert not ifc.by_type("IfcStructuralPlanarAction")
+    assert not ifc.by_type("IfcStructuralLoadPlanarForce")
+    assert not ifc.by_type("IfcRelConnectsStructuralActivity")
     molior.ifc.get_structural_analysis_model_by_name(ifc, building, "Ours")
-    assert len(ifc.by_type("IfcStructuralLoadCase")) == 1
+    assert len(ifc.by_type("IfcStructuralLoadGroup")) == 4
 
 
 def wall_members(ifc):
@@ -402,3 +480,35 @@ def test_columns_have_an_axis_the_height_of_their_body(porch):
         heights = np.array(shape.geometry.verts).reshape(-1, 3)[:, 2]
         assert end == pytest.approx((0.0, 0.0, heights.max()), abs=1e-6)
         assert heights.min() == pytest.approx(0.0, abs=1e-6)
+
+
+def test_imposed_load_is_carried(ifc, tmp_path):
+    """72 m² of floor at 1.5 kN/m² and 36 m² of flat roof at 0.6 kN/m²"""
+    pytest.importorskip("ifc_structural_mechanics")
+    if not shutil.which("ccx"):
+        pytest.skip("CalculiX is not installed")
+    path = tmp_path / "test.ifc"
+    ifc.write(str(path))
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "from ifc_structural_mechanics.cli import cli; cli()",
+            "analyze",
+            str(path),
+            "--output",
+            str(tmp_path / "output"),
+            "--mesh-size",
+            "1.0",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert "Status: success" in result.stdout, result.stdout + result.stderr
+    results = json.loads((tmp_path / "output" / "results.json").read_text())
+    reactions = results["global_reactions"]
+    imposed = reactions["by_load_case"]["Imposed load"]["fz_N"]
+    assert imposed == pytest.approx(1000.0 * (72 * 1.5 + 36 * 0.6), rel=0.001)
+    dead = reactions["by_load_case"]["Dead load"]["fz_N"]
+    uls = reactions["by_load_combination"]["ULS"]["fz_N"]
+    assert uls == pytest.approx(1.35 * dead + 1.5 * imposed, rel=0.001)

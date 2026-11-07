@@ -51,6 +51,7 @@ from .ifc import (
     get_placement,
     create_tessellation_from_mesh,
     create_tessellations_from_mesh_split,
+    remove_structural_activity,
 )
 
 try:
@@ -492,6 +493,10 @@ class Molior:
                     # a covering over a wall is in the same place as the wall, an
                     # analysis can only use one of them, keep the first
                     if pset_topology["FaceIndex"] in surface_lookup:
+                        for rel in member.AssignedStructuralActivity:
+                            remove_structural_activity(
+                                self.file, rel.RelatedStructuralActivity
+                            )
                         api.root.remove_product(self.file, product=member)
                         continue
                     surface_lookup[pset_topology["FaceIndex"]] = member
