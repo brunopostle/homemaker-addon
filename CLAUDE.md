@@ -68,13 +68,7 @@ The codebase is organized into three libraries that are designed to be platform-
    - Handles structural analysis models and space boundaries
    - Main entry point: `Molior` class with factory methods `from_faces_and_widgets()`, `from_cellcomplex()`, `from_topology()`
 
-3. **hmquery** - CLI tool for querying topology of homemaker-generated IFC files
-   - Loads IFC files and reconstructs CellComplex via `Molior.get_cellcomplex_from_ifc()`
-   - Subcommands: `cells`, `faces`, `adjacency`, `circulation`, `shortest-path`, `separation`
-   - All output is JSON; queries cell properties, face classification, adjacency/circulation graphs, shortest paths, and centrality measures
-   - Entry point: `hmquery <ifc_file> <subcommand> [options]`
-
-4. **__init__.py** - Blender add-on integration
+3. **__init__.py** - Blender add-on integration
    - Provides Blender UI operators: `ObjectTopologise` (visualize topology), `ObjectHomemaker` (generate IFC)
    - Converts Blender mesh geometry to Topologic faces
    - Handles "widgets" (vertex objects named after room types like "bedroom", "kitchen") for cell usage assignment
@@ -180,21 +174,13 @@ Tests are in `tests/` (current) and `tests_old/` (legacy). Tests cover:
 - Geometric operations
 - Style system and configuration parsing
 - Topological analysis (adjacency, circulation, etc.)
-- hmquery topology queries (`tests/test_hmquery.py`)
 
 Use `pytest` configuration in `tests/pytest.ini`.
 
 ```bash
 # Run all tests
 pytest tests/
-
-# Run hmquery tests only
-pytest tests/test_hmquery.py -v
 ```
-
-### hmquery Test Pattern
-
-hmquery tests use the same two-stacked-cubes `cell_complex` fixture as `test_adjacency.py` (3 cells, 14 faces). Tests verify JSON serializability of all query results. The fixture does not allocate cell widgets, so all cells default to "living" or "void" usage.
 
 ## Commit Messages
 
