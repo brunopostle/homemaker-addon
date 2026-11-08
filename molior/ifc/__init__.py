@@ -802,7 +802,7 @@ def get_parent_building(
     """Retrieve whatever Building contains this entity, or None.
 
     This function traverses the IFC relationship hierarchy to find the building
-    that contains the given entity.
+    that contains the given entity, a Building is its own.
 
     Args:
         entity: The IFC entity to find the containing building for.
@@ -810,6 +810,8 @@ def get_parent_building(
     Returns:
         The parent building entity, or None if not found.
     """
+    if entity.is_a("IfcBuilding"):
+        return entity
     if entity.is_a("IfcElement"):
         parents = entity.ContainedInStructure
         decomposes = entity.Decomposes
@@ -836,8 +838,6 @@ def get_parent_building(
         parent = services[0].RelatedBuildings[0]
     else:
         return None
-    if parent.is_a("IfcBuilding"):
-        return parent
     return get_parent_building(parent)
 
 
